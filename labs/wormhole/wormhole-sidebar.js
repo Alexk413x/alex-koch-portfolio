@@ -3,17 +3,15 @@
  * unit exists.
  */
 import { as } from '../kit/units.js';
-import { MODES } from './wormhole-presets.js';
 
 export const SECTIONS = [
   /* RENDER ABOVE THE FIELD, for the reason crt-sidebar puts it above the tube: it sets the resolution everything
    * else is drawn at, so it governs every section rather than belonging to one -- and it is the control you reach
    * for first when the frame rate is wrong, which is not a reason to scroll. */
   ['RENDER', [['renderScale', 'RENDER SCALE', 0.35, 1, 0.01]]],
-  /* MODE FIRST, because it decides which of the three density functions the rows below are feeding. TURBULENCE
-   * does nothing at all in LIGHTSPEED, so reading the mode after the sliders is reading them in the wrong order. */
-  ['FIELD', [['mode', 'MODE', MODES],
-             ['speed', 'SPEED', -12, 12, 0.05],
+  /* MODE is not a row: it selects which of the three density functions every slider below is feeding, so it sits
+   * at the top of the panel as its own strip, above the sections. TURBULENCE does nothing at all in LIGHTSPEED. */
+  ['FIELD', [['speed', 'SPEED', -12, 12, 0.05],
              ['turb', 'TURBULENCE', 0, 3, 0.05],
              ['twist', 'TWIST', -4, 4, 0.05],
              ['rot', 'ROTATION', -2, 2, 0.02]]],

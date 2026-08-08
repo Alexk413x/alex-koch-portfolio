@@ -25,12 +25,15 @@
 </div>
 <div id="panel">
   <h1>WORMHOLE FIELD</h1>
+  <!-- MODE selects which density function every slider below feeds, so it sits above the sections rather than
+       inside one — the same place CRT GL puts its phosphor selector. -->
+  <div class="btns" id="modes"></div>
   <div id="controls"></div>
 </div>
 
 <script type="module">
 import { createQuad } from '../kit/glquad.js';
-import { createPanel, mountPanelToggle } from '../kit/panel.js';
+import { createPanel, buildActions, mountPanelToggle } from '../kit/panel.js';
 import { persist, fitCanvas, runLoop, textOut, reportNoGL } from '../kit/lab.js';
 import { FRAG, UNIFORMS } from './wormhole-shader.js';
 import { SECTIONS, FMT } from './wormhole-sidebar.js';
@@ -41,12 +44,19 @@ const R = createQuad(document.getElementById('field'),
                      { frag: FRAG, uniforms: UNIFORMS, onRestore: () => fit(true) });
 if (!R) { reportNoGL(); throw new Error('WebGL unavailable'); }
 
+// `mode` is a strip rather than a row, so persist() cannot find it from the panel layout.
 const state = defaultPreset(R.gpu);
-const store = persist({ key: 'wormhole', version: 1, state, sections: SECTIONS });
+const store = persist({ key: 'wormhole', version: 1, state, sections: SECTIONS, extra: ['mode'] });
 store.restore();
+state.mode = Math.max(0, Math.min(MODES.length - 1, Math.round(state.mode)));
 
 const modeEl = document.getElementById('modename');
 const syncMode = () => textOut(modeEl, 'WebGL shader · ' + MODES[state.mode]);
+
+// The mode strip: exactly one lit, and `lit` asks state rather than remembering which button was pressed.
+buildActions(document.getElementById('modes'),
+  MODES.map((name, i) => [name, () => { state.mode = i; syncMode(); store.queueSave(); },
+                                () => state.mode === i]));
 syncMode();
 
 // panel.js has already written the value and the next frame reads state directly, so nothing needs propagating.
@@ -56,7 +66,6 @@ createPanel({
   state, sections: SECTIONS, fmt: FMT,
   onChange: (key) => {
     if (key === 'renderScale') fit(true);
-    if (key === 'mode') syncMode();
     store.queueSave();
   },
 });
