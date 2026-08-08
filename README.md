@@ -96,9 +96,10 @@ bench.py        the frame-rate harness
 ## Known limits
 
 - **Designed for desktop.** These are instruments laid out at around 1560x1100. Below 820px the control
-  panel folds away behind a **CONTROLS** button so the tube gets the screen to itself, and it slides over
-  the picture rather than reflowing it — but the readouts and the control density are still built for a
-  large window.
+  panel folds away behind a chevron so the tube gets the screen to itself, and the raster scales up so the
+  terminal text holds its column count instead of arriving at desktop size on a fifth of the width — a real
+  set has a fixed line count whatever size the tube is. Above 820px nothing is adjusted: the raster is
+  exactly as authored. The panel's own control density is still built for a large window.
 - **No vendored dependencies.** Offline use would need React, ReactDOM and Babel copied in locally.
 - The WebGL build is demanding. It defaults to a reduced render scale on integrated graphics, and
   **RENDER SCALE** in the panel is the lever if your machine struggles.

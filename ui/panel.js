@@ -231,9 +231,13 @@ export function mountPanelToggle({ panel, host = document.body, breakpoint = 820
 
   const apply = (hidden, notify) => {
     document.body.classList.toggle('panel-hidden', hidden);
-    b.textContent = hidden ? 'CONTROLS' : 'CLOSE';
+    /* THE GLYPH IS THE DIRECTION THE PANEL MOVES, not a word: > sends it away, < brings it back. It carries
+     * no meaning to a screen reader, so aria-label states the ACTION and aria-expanded the state -- a button
+     * whose whole label is a punctuation mark is announced as "greater-than" without them. */
+    b.textContent = hidden ? '‹' : '›';
     b.setAttribute('aria-expanded', String(!hidden));
     b.setAttribute('aria-label', hidden ? 'Show controls' : 'Hide controls');
+    b.title = hidden ? 'Show controls' : 'Hide controls';
     // AFTER the class, so a caller measuring the stage measures the layout it is about to render into.
     if (notify) onToggle(hidden);
   };

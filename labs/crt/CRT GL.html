@@ -63,7 +63,6 @@
 </div>
 <div id="panel">
   <h1>CRT GL</h1>
-  <div class="sub">ONE FRAGMENT PASS · NO COMPOSITED LAYERS</div>
   <div class="btns" id="actions"></div>
   <div class="phos" id="phosrow"></div>
   <div id="controls"></div>
@@ -629,10 +628,71 @@ function advRatio() {
  * over the content texture, so in this space one scanline is exactly contentPx.h / nSL tall and one grille column
  * is contentPx.w / nCOL wide. Both are computed from cssPx for the reason given where scanN is handed to the
  * renderer: a density is a statement about the tube, not about the buffer it is rasterised into. */
+/* HOW MANY COLUMNS OF TEXT A NARROW DISPLAY IS HELD TO. Above the width where this is satisfied the raster
+ * is left exactly as authored; below it the density is scaled up so the count does not collapse. */
+const TEXT_COLS_MIN = 40;
+const RASTER_K_MAX = 6;         // a pathologically narrow viewport must not ask for a thousand scanlines
+/* WHAT COUNTS AS A NARROW DISPLAY, and the scale applies below this and nowhere else. Shared with the panel's
+ * own breakpoint (passed to mountPanelToggle) so "small screen" means one thing here; panel.css carries the
+ * same 820 in a media query, which a stylesheet cannot read from here and which must be kept in step.
+ *
+ * THE GATE IS THE CORRECTION. Written as a pure column target with no width test, the rule fired on a DESKTOP
+ * whenever the authored raster was coarse enough to make text wide -- caught by the fingerprint harness, where
+ * the `fineRaster` scene (12 PPI, 5-scanline cells, on a 1247px stage) came out scaled by 1.146 and its hash
+ * moved. Overriding a density somebody deliberately set, on a screen with plenty of room, is not what this is
+ * for: it is an accommodation for displays that cannot fit the text, not an opinion about legibility. */
+const NARROW_W = 820;
+
+/* THE SMALL-DISPLAY RASTER SCALE, and the reason it exists is that the glyph was pinned to an ABSOLUTE size.
+ *
+ * Work em through to screen pixels and the viewport cancels out: em_css = tcell * 100 / scan, which is 30px
+ * at every display size. Measured -- 30.0px on a 1855px desktop and 30.0px on a 390px phone, so the phone was
+ * being handed the desktop's type on a fifth of the width and the boot text wrapped at 16 columns.
+ *
+ * The cause is that the PITCH is held constant while the line COUNT floats (101 scanlines on the desktop, 84
+ * on the phone). A real set is the other way round: a 525-line tube is 525 lines whether it is nine inches or
+ * twenty-seven, and the pitch is whatever that works out to. Scaling the density on small displays restores
+ * that -- the tube keeps its proportions and the type shrinks with everything else, rather than the type being
+ * special-cased away from the raster it is supposed to sit on.
+ *
+ * k IS INDEPENDENT OF ITSELF, which is what makes this a closed form rather than a search. A character spans
+ * `cpc` grille columns, and cpc = round(advRatio * em / colW) where em carries 1/k and colW carries 1/k too --
+ * so the ratio, and therefore cpc, is the same at every scale. Columns across the block then vary linearly
+ * with k, and the k that yields TEXT_COLS_MIN can be solved directly.
+ *
+ * NEVER BELOW 1. This only ever makes a cramped display finer; it cannot coarsen a roomy one, so every
+ * desktop-sized window renders exactly what it rendered before this existed.
+ */
+function rasterScale() {
+  const s = state;
+  if (cssPx.w > NARROW_W) return 1;              // roomy display: exactly what was authored, always
+  const scan = Math.max(0.001, s.scan), grille = Math.max(0.001, s.grille);
+  const cpc = s.tcols < 1
+    ? Math.max(1, Math.round(advRatio() * s.tcell * grille / scan))
+    : s.tcols;
+  const blockW = s.tw < 1 ? cssPx.w : cssPx.w * s.tw / 100;
+  if (!(blockW > 0)) return 1;
+  return Math.min(RASTER_K_MAX, Math.max(1, TEXT_COLS_MIN * cpc * 100 / (blockW * grille)));
+}
+
+/* THE RASTER'S LINE AND COLUMN COUNTS -- ONE PLACE, ELEVEN CALLERS.
+ *
+ * These two expressions were written out inline eleven times: twice in textGrid and nine more in the uniform
+ * bag, where the beam's height, the tip's radii, the convergence error and the sweep's step are all measured
+ * in scanlines or grille columns and each divided by its own copy. Eleven copies of a density is eleven places
+ * for the scale above to be applied to ten of them -- the beam would then be measured in a different raster
+ * from the one being drawn, which is precisely the two-descriptions failure this project keeps paying for.
+ */
+function rasterN() {
+  const k = rasterScale();
+  return { sl:  Math.max(1, cssPx.h * state.scan   * k / 100),
+           col: Math.max(1, cssPx.w * state.grille * k / 100) };
+}
+
 function textGrid() {
   const W = contentPx.w, H = contentPx.h;
-  const nSL  = Math.max(1, cssPx.h * state.scan   / 100);
-  const nCOL = Math.max(1, cssPx.w * state.grille / 100);
+  const R = rasterN();
+  const nSL = R.sl, nCOL = R.col;
   const cell = Math.min(nSL, state.tcell);
   const gap  = Math.max(0, Math.min(nSL - cell, state.tgap));
   const colW = W / nCOL;
@@ -1193,7 +1253,9 @@ resize();
  * narrow case moves nothing, and R.size returns immediately when the buffer dimensions are unchanged, so
  * calling it there costs a bounding-rect read and nothing else. Not debounced: a click is one event, and the
  * 120ms settle above exists for resize STREAMS. */
-mountPanelToggle({ panel: document.getElementById('panel'), onToggle: () => resize() });
+// NARROW_W, not a second 820: the panel folding away and the raster scaling up are the same judgement about
+// the display, and two constants that mean "small screen" would eventually disagree.
+mountPanelToggle({ panel: document.getElementById('panel'), breakpoint: NARROW_W, onToggle: () => resize() });
 
 /* A LOST CONTEXT IS A NORMAL EVENT ON THIS HARDWARE, AND NOTHING HERE USED TO HANDLE IT.
  *
@@ -1377,6 +1439,10 @@ function frame(now) {
   const hA = lim(state.healthA * dip(bA.hmod) * (sg ? sg.health : 1));
   const hB = lim(state.healthB * dip(bB.hmod) * (sg ? sg.health : 1));
   const p = pal(tA, tB);
+  /* THE RASTER, RESOLVED ONCE FOR THE WHOLE FRAME. Named RN because R is the renderer. Every line-count and
+   * column-count below reads this rather than recomputing the density, so the beam, the tip, the convergence
+   * and the text are all measured in the same raster the shader is told to draw. */
+  const RN = rasterN();
 
   R.draw({
     /* FIT: OVERSCAN COMPUTED SO THE PICTURE'S RIM STAYS ON THE GLASS, whatever FACE, DEPTH, CURVE AREA and
@@ -1420,7 +1486,7 @@ function frame(now) {
      * a 970px one gives 243 and 3.992px. Dropping the round leaves the density meaning exactly 100/density at
      * every size. The control is the density again because a pitch and a density are the same setting said two
      * ways, and this is the way the reference says it. */
-    scanN: Math.max(1, cssPx.h * state.scan / 100),
+    scanN: RN.sl,
     /* WIDTH IS IN CSS PIXELS TOO, for the same reason the density is -- and it was the other half of the same bug.
      * The reference strokes with vector-effect="non-scaling-stroke" at stroke-width 1.0, and a non-scaling stroke
      * is measured in CSS pixels, so on a 1.74x display its line is 1.74 device pixels of ink. This handed the raw
@@ -1429,7 +1495,7 @@ function frame(now) {
      * reference's 0.096. Converted here, once, so the readout keeps meaning CSS pixels the way the reference's
      * does. */
     scanW: state.scanw * pxScale, scanA: state.scanop / 100,
-    grilleN: Math.max(1, cssPx.w * state.grille / 100),
+    grilleN: RN.col,
     grilleW: state.grillew * pxScale, grilleA: state.grilleop / 100,
     phos: state.phos, bloom: state.bloom, bloomThresh: state.bloomThresh,
     /* PX -> TAP SPACING, converted here because only this side knows the ratios. The blur buffer is a
@@ -1462,9 +1528,9 @@ function frame(now) {
     /* SCANLINES AND COLUMNS -> suv, converted once here. nSL and nCOL are the SAME counts handed to the shader
      * as scanN/grilleN a few lines up, so the beam cannot disagree with the pattern it is drawing: one scanline
      * is 1/nSL of the picture's height by construction, one grille column 1/nCOL of its width. */
-    sweepH: state.sweepSL / Math.max(1, cssPx.h * state.scan / 100),
-    dotRY:  state.dotH    / Math.max(1, cssPx.h * state.scan / 100),
-    dotRX:  state.dotW    / Math.max(1, cssPx.w * state.grille / 100),
+    sweepH: state.sweepSL / RN.sl,
+    dotRY:  state.dotH    / RN.sl,
+    dotRX:  state.dotW    / RN.col,
     /* PX -> suv, ONCE, HERE. The three tip distances are specified in CSS pixels because that is the only unit
      * a radius or a displacement means anything in; suv runs 0..1 over the picture, so a CSS pixel is
      * 1/cssPx.h of it. Same conversion, same reason, as the scanline width and the frame's own width. */
@@ -1474,14 +1540,14 @@ function frame(now) {
     sweepRGB: state.sweepRGB / Math.max(1, cssPx.h),
     dotR:     state.dotR     / Math.max(1, cssPx.h),
     dotLvl:   state.dotNits / 100,                       // nits -> the emission scale uBright is on
-    sweepStep: state.sweepStep / Math.max(1, cssPx.h * state.scan / 100),
+    sweepStep: state.sweepStep / RN.sl,
     dotHalo:   state.dotHaloNits / 100,
     /* COLUMNS -> suv x and SCANLINES -> suv y, the units TIP WIDTH and TIP HEIGHT are in -- so a split of
      * one is one cell of misconvergence on that axis, whichever axis you are reading. */
-    tipRGBX:   state.tipRGBc / Math.max(1, cssPx.w * state.grille / 100),
-    tipRGBY:   state.tipRGBr / Math.max(1, cssPx.h * state.scan   / 100),
+    tipRGBX:   state.tipRGBc / RN.col,
+    tipRGBY:   state.tipRGBr / RN.sl,
     // COLUMNS -> suv x, the unit the CONVERGENCE section's own error would be in if it were raster-based.
-    beamConv:  state.beamConvC / Math.max(1, cssPx.w * state.grille / 100),
+    beamConv:  state.beamConvC / RN.col,
     dipNoise:  state.dipNoise, pullInk: state.pullInk,
     /* THE TUBES' SURFACE AND THEIR SUPPLY. The mains phase is wrapped HERE, in doubles, because the
      * shader cannot: a 100Hz cosine of wall-clock seconds is an argument in the millions by the time
@@ -1609,6 +1675,11 @@ requestAnimationFrame(frame);
  * recovered by REBUILDING the renderer, so a handle that captured the original by value would hand every
  * consumer -- render-probe.js reads G.R.gl -- a dead context that silently returns zeros for everything. */
 window.CRTGL = { state, get R() { return R; }, resize, textGrid, drawContent, renderNow, content: cc, contentPx, cssPx,
+  /* THE RASTER AND THE SMALL-DISPLAY SCALE APPLIED TO IT. Published for the same reason textGrid is: this is a
+   * measuring tool, and "how many scanlines is it actually drawing" stopped being answerable from the panel the
+   * moment a narrow display could scale the density. rasterScale() === 1 is also the check that a change is
+   * inert at a given size -- which is how the render fingerprint was shown to be unaffected by it. */
+  rasterN, rasterScale,
   // A WINDOW ONTO THE TYPEWRITER, so a finished block can be inspected without waiting out the boot -- and so a
   // measurement is not at the mercy of when it happens to be taken. Writing it is what REBOOT does.
   get typed() { return typed; }, set typed(v) { typed = Math.max(0, Math.min(FULL, v | 0)); },

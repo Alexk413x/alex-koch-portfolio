@@ -114,18 +114,38 @@
  * The button is fixed rather than in either box, so it cannot be scrolled away from or covered by the panel
  * it controls -- and on wide screens it tucks against the panel's outer edge rather than sitting on top of
  * its scrollbar. */
+/* A CHEVRON, AND IT LIVES IN THE PANEL'S OWN TOP-RIGHT CORNER when the panel is open. Fixed rather than
+ * placed inside #panel so the OPEN affordance has somewhere to be once the panel is gone -- one element in
+ * two places beats two elements that can disagree about the state. The panel occupies the right edge, so
+ * `right: 10px` is inside it while it is open and against the screen edge once it is not.
+ *
+ * The glyph is the DIRECTION THE PANEL WILL MOVE, not an icon for "menu": > pushes it away to the right,
+ * < pulls it back in. That is why it does not need a word beside it -- and the accessible name, which does
+ * carry the meaning, is set in mountPanelToggle. */
 #paneltgl {
   position: fixed; z-index: 60;
   top: calc(10px + env(safe-area-inset-top, 0px));
-  right: calc(var(--panel-w) + 10px + env(safe-area-inset-right, 0px));
+  right: calc(10px + env(safe-area-inset-right, 0px));
+  width: 22px; height: 22px; padding: 0;
+  display: grid; place-items: center;
   background: var(--panel-bg); border: 1px solid var(--panel-edge); color: var(--panel-accent);
-  font-family: inherit; font-size: 10px; letter-spacing: .14em; font-weight: 700;
-  padding: 8px 12px; border-radius: 3px; cursor: pointer; line-height: 1;
-  transition: right .22s ease, border-color .15s, background .15s;
+  font-family: inherit; font-size: 13px; font-weight: 700; line-height: 1;
+  border-radius: 3px; cursor: pointer;
+  transition: border-color .15s, background .15s, opacity .15s;
 }
 #paneltgl:hover { border-color: var(--panel-accent); background: var(--panel-hover) }
 #paneltgl:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--panel-accent-soft) }
-body.panel-hidden #paneltgl { right: calc(10px + env(safe-area-inset-right, 0px)) }
+
+/* CLOSED: a pull-tab on the edge rather than a button floating over the picture. Flush right with only the
+ * left corners rounded, so it reads as something to drag out rather than a control sitting on the tube --
+ * and dimmed until pointed at, because with the panel away the instrument is the thing being looked at. */
+body.panel-hidden #paneltgl {
+  right: calc(0px + env(safe-area-inset-right, 0px));
+  width: 18px; height: 30px; font-size: 12px; opacity: .55;
+  border-radius: 3px 0 0 3px; border-right: none;
+}
+body.panel-hidden #paneltgl:hover,
+body.panel-hidden #paneltgl:focus-visible { opacity: 1 }
 body.panel-hidden #panel { display: none }
 
 @media (max-width: 820px) {
@@ -142,9 +162,10 @@ body.panel-hidden #panel { display: none }
   /* `display:none` is NOT reused here. It would skip the transition, and more to the point a display-toggled
      element cannot animate at all -- so the narrow case slides and the wide case simply goes. */
   body.panel-hidden #panel { display: block; transform: translateX(100%) }
-  #paneltgl, body.panel-hidden #paneltgl { right: calc(10px + env(safe-area-inset-right, 0px)) }
-  /* Above the panel it opens, or the button it has to be dismissed with sits underneath it. */
-  #paneltgl { z-index: 60 }
+  /* No position override here any more. The panel occupies the right edge at BOTH widths, so the base rules
+   * already put the chevron inside it when open and on the edge when closed; an override repeating that only
+   * gave the closed tab somewhere different to sit on a phone than on a desktop. z-index is on the base rule
+   * too, and it has to stay above the panel -- this is the control the panel is dismissed with. */
 }
 
 /* NO ANIMATION ON THE FIRST PAINT, and this is a correction rather than a polish. The starting state is a
