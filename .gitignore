@@ -1,0 +1,14 @@
+# Python bytecode from bench.py
+__pycache__/
+*.py[cod]
+
+# Tooling-generated preview image, not source
+.thumbnail
+
+# OS and editor cruft
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+*.swp

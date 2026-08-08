@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Alex Koch — Portfolio &amp; Labs</title>
+<meta name="description" content="A portfolio site and a set of instruments, including an amber CRT simulated two independent ways.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  /* Deliberately single-look: this is the porch light for a set of amber CRT instruments, so it does not
+     follow the viewer's colour scheme. Everything below is self-contained -- no build step, one file. */
+  :root{
+    --bg:#0b0906; --panel:#141009; --line:#3a2a16;
+    --ink:#f0a24a; --hi:#ffe0c0; --dim:#997d5a; --warn:#ff8a3c;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--bg); color:var(--ink);
+    font-family:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    font-size:14px; line-height:1.7; letter-spacing:.02em;
+    padding:clamp(24px,5vw,72px) clamp(20px,5vw,40px);
+    /* the faintest scanline wash, so the page belongs to the things it links to */
+    background-image:repeating-linear-gradient(180deg,rgba(0,0,0,.28) 0 1px,transparent 1px 3px);
+  }
+  .wrap{max-width:860px;margin:0 auto}
+  h1{
+    font-size:clamp(22px,4.5vw,34px); font-weight:700; margin:0 0 4px;
+    color:var(--hi); letter-spacing:.12em; text-transform:uppercase;
+    text-shadow:0 0 18px rgba(255,180,84,.28);
+  }
+  .sub{color:var(--dim);margin:0 0 8px}
+  a{color:var(--ink)}
+  h2{
+    font-size:12px; font-weight:700; letter-spacing:.22em; text-transform:uppercase;
+    color:var(--dim); margin:44px 0 14px; padding-bottom:8px; border-bottom:1px solid var(--line);
+  }
+  .grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+  .card{
+    display:block; padding:16px 18px; text-decoration:none; color:inherit;
+    background:var(--panel); border:1px solid var(--line); border-radius:3px;
+    transition:border-color .15s, transform .15s, box-shadow .15s;
+  }
+  .card:hover,.card:focus-visible{
+    border-color:var(--ink); transform:translateY(-2px);
+    box-shadow:0 0 0 1px rgba(240,162,74,.25),0 8px 26px rgba(0,0,0,.5); outline:none;
+  }
+  .card .name{color:var(--hi);font-weight:700;letter-spacing:.06em}
+  .card .tag{color:var(--warn);font-size:10px;letter-spacing:.18em;text-transform:uppercase}
+  .card p{margin:6px 0 0;color:var(--dim);font-size:12.5px;line-height:1.6}
+  ul.plain{list-style:none;padding:0;margin:0}
+  ul.plain li{padding:5px 0;border-bottom:1px solid rgba(58,42,22,.5)}
+  .note{
+    margin-top:44px;padding:14px 16px;border-left:2px solid var(--warn);
+    background:rgba(255,138,60,.05);color:var(--dim);font-size:12.5px;line-height:1.65;
+  }
+  footer{margin-top:44px;padding-top:16px;border-top:1px solid var(--line);color:var(--dim);font-size:12px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>Alex Koch</h1>
+  <p class="sub">Portfolio, and a set of instruments.</p>
+  <p class="sub" style="max-width:64ch">
+    Tools built to make something physical <em>measurable</em> rather than merely to look like it.
+    Hand-authored — no build step, no bundler.
+  </p>
+
+  <h2>The CRT</h2>
+  <div class="grid">
+    <a class="card" href="labs/crt/CRT%20GL.html">
+      <span class="tag">WebGL2</span>
+      <div class="name">CRT GL</div>
+      <p>The tube as a fragment shader: face curvature, shadow mask, beam, phosphor persistence and a
+         ray-traced light fitting reflected in the glass, solved per pixel.</p>
+    </a>
+    <a class="card" href="labs/crt/CRT%20Lab.dc.html">
+      <span class="tag">DOM / SVG</span>
+      <div class="name">CRT Lab</div>
+      <p>The original. Thirteen blended layers, the curve plotted into SVG paths rather than resampled,
+         CSS custom properties driven every frame.</p>
+    </a>
+  </div>
+  <p class="sub" style="font-size:12.5px;margin-top:12px">
+    Two independent renderers, one description of the surface — both walk the same pure geometry modules,
+    so they cannot disagree about the shape of the glass.
+  </p>
+
+  <h2>Other labs</h2>
+  <div class="grid">
+    <a class="card" href="labs/reactor/Reactor%20Lab.dc.html"><div class="name">Reactor Lab</div></a>
+    <a class="card" href="labs/wormhole/Wormhole%20Lab.dc.html"><div class="name">Wormhole Lab</div></a>
+    <a class="card" href="lab/Lab%20Shell.dc.html">
+      <div class="name">Lab Shell</div>
+      <p>The reference lab — every control type the shared sidebar offers, wired correctly.</p>
+    </a>
+  </div>
+
+  <h2>Portfolio</h2>
+  <div class="grid">
+    <a class="card" href="Alex%20Koch%20Portfolio.dc.html"><div class="name">Portfolio</div></a>
+    <a class="card" href="Alex%20Koch%20Cinematic%20Intro.dc.html"><div class="name">Cinematic Intro</div></a>
+    <a class="card" href="Alex%20Koch%20Console%20OS.dc.html"><div class="name">Console OS</div></a>
+  </div>
+
+  <h2>Notes</h2>
+  <ul class="plain">
+    <li><a href="Portfolio%20Directions.dc.html">Portfolio Directions</a></li>
+    <li><a href="Realistic%20Light%20Roadmap.dc.html">Realistic Light Roadmap</a></li>
+    <li><a href="https://github.com/Alexk413x/alex-koch-portfolio">Source on GitHub</a></li>
+  </ul>
+
+  <div class="note">
+    <strong>Best on desktop.</strong> These are instruments designed at around 1560&times;1100 and there is
+    no mobile layout — a phone gets a cramped version of the same page. The WebGL build is demanding; if it
+    struggles, <strong>RENDER SCALE</strong> in its panel is the lever. First load pulls React and Babel
+    from a CDN, so give it a moment.
+  </div>
+
+  <footer>
+    <a href="mailto:Alexk413x@gmail.com">Alexk413x@gmail.com</a> ·
+    <a href="https://www.linkedin.com/in/alexk413x/">LinkedIn</a> ·
+    <a href="https://github.com/Alexk413x">GitHub</a>
+  </footer>
+
+</div>
+</body>
+</html>

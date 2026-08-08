@@ -1,0 +1,108 @@
+/* panel.css — THE CONTROL PANEL, FOR EVERY LAB.
+ *
+ * ONE COPY. This markup existed three times: as 54 inline rules in CRT GL, again in lab/Sidebar.dc.html and a
+ * third time in components/ControlPanel.dc.html. Three implementations of a slider drift, and a fix applied to
+ * the one you happened to open does not reach the other two.
+ *
+ * WHAT IS HERE IS ONLY WHAT IS GENERIC: the panel shell, section headers, rows, and the four controls a row can
+ * hold -- range, toggle, choice and colour -- plus the action button strip. Anything that knows what a lab
+ * MEASURES belongs to that lab's own stylesheet, not here.
+ *
+ * THEMED THROUGH CUSTOM PROPERTIES so a lab can retint the kit without forking it. The defaults are CRT GL's
+ * amber, unchanged, because it was the first caller and matching it exactly is what made the extraction
+ * verifiable -- a computed-style fingerprint of twenty elements has to come out identical.
+ */
+:root {
+  --panel-w:      340px;
+  --panel-bg:     #0b0d10;
+  --panel-line:   #1c2128;
+  --panel-accent: #ffb454;
+  --panel-accent-soft: rgba(255, 180, 84, .35);
+  --panel-accent-lit:  #ffd9a0;
+  --panel-label:  #8b949e;
+  --panel-dim:    #6e7681;
+  --panel-fill:   #12100c;
+  --panel-fill-2: #12161b;
+  --panel-edge:   #2a2620;
+  --panel-hot:    #2a1a08;
+  --panel-hover:  #1b1408;
+  --panel-focus:  #141a21;
+  --panel-focus-edge: #3a2a14;
+  --panel-track:  rgba(120, 128, 140, .55);
+}
+
+/* flex-shrink:0 so the panel keeps its width, and scrollbar-gutter so the scrollbar does not eat
+   into the row when the content gets long enough to need one. */
+#panel { flex: 0 0 var(--panel-w); width: var(--panel-w); background: var(--panel-bg);
+         border-left: 1px solid var(--panel-line);
+         padding: 14px 16px 40px; overflow-y: auto; scrollbar-gutter: stable; font-size: 11px }
+#panel h1 { font-family: Archivo, sans-serif; font-size: 13px; letter-spacing: .2em;
+            color: var(--panel-accent); margin: 0 0 2px; font-weight: 900 }
+#panel .sub { color: var(--panel-dim); font-size: 10px; letter-spacing: .1em; margin: 0 0 14px }
+
+.sec { color: var(--panel-accent); letter-spacing: .16em; font-size: 10px; margin: 16px 0 8px;
+       padding-bottom: 4px; border-bottom: 1px solid var(--panel-line); font-weight: 700 }
+.sec { display: flex; align-items: center; gap: 6px; cursor: pointer; user-select: none }
+.sec:hover { color: var(--panel-accent) }
+.sec .caret { flex: 0 0 9px; font-size: 9px; opacity: .55; line-height: 1 }
+.sec:hover .caret { opacity: 1 }
+.sec .sectitle { flex: 1 1 auto }
+.sec.has-tgl { justify-content: space-between }
+
+.row { display: flex; align-items: center; gap: 5px; margin: 0 0 6px; padding: 2px 4px; border-radius: 3px;
+       border: 1px solid transparent }
+/* WHICH ROW HAS FOCUS, which 61 sliders badly needed. :focus-within lights the whole row rather than just the
+   thumb, so arrowing down the panel shows you where you are without hunting for a 3px outline. */
+.row:focus-within { background: var(--panel-focus); border-color: var(--panel-focus-edge) }
+.row:focus-within label { color: var(--panel-accent) }
+.row input[type=range]:focus { outline: none }
+.row input[type=range]:focus::-webkit-slider-thumb { box-shadow: 0 0 0 3px var(--panel-accent-soft),
+  0 0 10px rgba(255, 180, 84, .9) }
+.row label { flex: 0 0 88px; min-width: 0; color: var(--panel-label); letter-spacing: .03em; font-size: 10px;
+             overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
+/* min-width:0 IS THE FIX, and without it the value column was pushed off the panel entirely.
+   A flex item defaults to min-width:auto, which refuses to shrink below its intrinsic size -- and a
+   range input's intrinsic minimum is ~129px. So the row demanded 303px inside a 283px panel, the
+   overflow went to the right, and the numbers ended up past the window edge. Measured: value column
+   at 1535..1597 against a panel ending at 1587. */
+.row input[type=range] { flex: 1 1 0; min-width: 0; -webkit-appearance: none; appearance: none; height: 3px;
+  border-radius: 3px; background: var(--panel-track); outline: none }
+.row input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 11px; height: 11px;
+  border-radius: 50%; background: var(--panel-accent); cursor: pointer;
+  box-shadow: 0 0 8px rgba(255, 180, 84, .8) }
+/* THE STEPPERS, as the reference has them: a nudge either side of the readout, so a value can be set exactly
+   without hunting for a pixel on a 110px track. They repeat on hold, because a 0.01 step over a 0..2 range is
+   200 clicks otherwise. */
+.row .val { flex: 0 0 52px; text-align: center; color: var(--panel-accent); font-size: 10px; white-space: nowrap;
+            font-variant-numeric: tabular-nums; overflow: visible }
+.row .stp { flex: 0 0 15px; background: none; border: none; color: var(--panel-dim); font-family: inherit;
+            font-size: 11px; line-height: 1; cursor: pointer; padding: 2px 0; border-radius: 2px;
+            user-select: none }
+.row .stp:hover { color: var(--panel-accent); background: var(--panel-hover) }
+.row:focus-within .stp { color: var(--panel-label) }
+
+.mtgl, .row .tgl { font-family: inherit; font-size: 10px; letter-spacing: .06em; cursor: pointer;
+                   background: var(--panel-fill); border: 1px solid var(--panel-edge); color: var(--panel-dim);
+                   border-radius: 3px; padding: 2px 9px }
+.mtgl:hover, .row .tgl:hover { border-color: var(--panel-accent); color: var(--panel-accent) }
+.mtgl.on, .row .tgl.on { background: var(--panel-hot); border-color: var(--panel-accent);
+                         color: var(--panel-accent-lit) }
+.row .tgl { flex: 0 0 86px; text-align: center; margin-left: auto }
+/* A CHOICE ROW SHARES THE SLIDER'S TRACK between its buttons, so the pills line up with the sliders above and
+ * below rather than sitting in the 86px a single toggle claims. margin-left:auto on the first one only, or
+ * every gap in the group would be pushed to the left. */
+.row.choice .tgl { flex: 1 1 0; min-width: 0; margin-left: 0; padding: 2px 0 }
+.row.choice .tgl:first-of-type { margin-left: auto }
+
+.row .csw { flex: 0 0 86px; height: 18px; margin-left: auto; padding: 0; border: none; border-radius: 3px;
+            background: none; cursor: pointer }
+.row .csw::-webkit-color-swatch-wrapper { padding: 0 }
+.row .csw::-webkit-color-swatch { border: none; border-radius: 3px }
+
+.btns { display: flex; gap: 6px; flex-wrap: wrap; margin: 8px 0 2px }
+.btns button { flex: 1 1 auto; background: var(--panel-fill-2); border: 1px solid var(--panel-focus-edge);
+  color: var(--panel-accent); padding: 7px 8px;
+  font-family: inherit; font-size: 10px; letter-spacing: .12em; cursor: pointer; border-radius: 3px }
+.btns button:hover { border-color: var(--panel-accent); background: var(--panel-hover) }
+.btns button.on { background: var(--panel-hot); border-color: var(--panel-accent);
+                  color: var(--panel-accent-lit) }

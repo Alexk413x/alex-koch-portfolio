@@ -1,0 +1,11 @@
+# Normalise to LF in the repository, check out native. Set at the initial commit so it never has to
+# rewrite history later.
+* text=auto
+
+# Explicit, so a tool that guesses wrong cannot mangle them.
+*.html  text
+*.js    text
+*.css   text
+*.md    text
+*.py    text
+*.webp  binary

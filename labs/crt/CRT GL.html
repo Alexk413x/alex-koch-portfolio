@@ -1,0 +1,1621 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CRT GL — one pass</title>
+<!-- AN INLINE FAVICON, because a browser asks for /favicon.ico whether or not one exists and logs a 404 when it
+     does not. A data URI answers the question in the document rather than needing a file beside it, which keeps
+     this page a single artefact -- the same reason its markup, logic and styles all live in one document. -->
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%23120c06'/%3E%3Crect x='2.5' y='3.5' width='11' height='9' rx='2.5' fill='none' stroke='%23a8734a' stroke-width='1.2'/%3E%3Cpath d='M4.5 6.5h7M4.5 8.5h7M4.5 10.5h4' stroke='%23ffb454' stroke-width='1' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Archivo:wght@700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../ui/panel.css">
+<style>
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;height:100%}
+  body{background:#050505;color:#cfd3d8;font-family:'JetBrains Mono',monospace;overflow:hidden;display:flex}
+  #stage{flex:1;position:relative;background:radial-gradient(120% 120% at 50% 46%,#111 0%,#070707 60%,#020202 100%);
+         display:flex;align-items:center;justify-content:center;overflow:hidden}
+  #tube{display:block;width:100%;height:100%}
+  /* MASTHEAD TOP-LEFT, READOUT BOTTOM-LEFT -- the reference's layout. The name of the instrument belongs where
+     you look first; a frame counter does not. */
+  #mast{position:absolute;top:22px;left:26px;pointer-events:none;line-height:1.25}
+  #mast .t{font-family:Archivo,sans-serif;font-weight:900;font-size:26px;letter-spacing:.02em;color:#f2f4f6}
+  #mast .s{font-size:11px;letter-spacing:.14em;color:#ffb454;opacity:.85;margin-top:3px}
+  #hud{position:absolute;bottom:10px;left:26px;background:linear-gradient(90deg,rgba(5,5,5,.75),rgba(5,5,5,0));
+       padding:4px 40px 4px 0;border-radius:2px;font-size:11px;letter-spacing:.1em;color:#ffb454;
+       text-shadow:0 0 8px rgba(255,180,84,.35);pointer-events:none;line-height:1.7;opacity:.9}
+  #gpu{opacity:.45;font-size:10px}
+  #scaleinfo{opacity:.6;font-size:10px}
+  #heatread{opacity:.75;font-size:10px;color:#ff8a3c}
+  #glstate{color:#ff5f45;font-size:10px}
+  /* flex-shrink:0 so the panel keeps its width, and scrollbar-gutter so the scrollbar does not eat
+     into the row when the content gets long enough to need one. */
+  /* THE PHOSPHOR ROW, which the reference puts directly under the actions: the active one is filled rather
+     than outlined, so which palette is live is readable at a glance instead of by comparing borders. */
+  .phos{display:flex;gap:6px;margin:6px 0 2px}
+  .phos button{flex:1 1 0;background:#12161b;border:1px solid #29313a;color:#8b949e;padding:7px 4px;
+    font-family:inherit;font-size:10px;letter-spacing:.1em;cursor:pointer;border-radius:3px}
+  .phos button.on{background:#ffb454;border-color:#ffb454;color:#1a1206;font-weight:700}
+  /* THE SWATCH IS THE BUTTON. input[type=color] draws its own border and pads the swatch inside it, which
+     showed as a white frame; the wrapper and swatch pseudo-elements are the only way to remove them. */
+  .phos .sw{flex:0 0 40px;border:none;outline:none;border-radius:3px;cursor:pointer;padding:0;
+            background:none;-webkit-appearance:none;appearance:none;height:29px}
+  .phos .sw::-webkit-color-swatch-wrapper{padding:0;border:none;border-radius:3px}
+  .phos .sw::-webkit-color-swatch{border:none;border-radius:3px}
+  .phos .sw::-moz-color-swatch{border:none;border-radius:3px}
+</style>
+</head>
+<body>
+<div id="stage">
+  <canvas id="tube"></canvas>
+  <!-- THE INSTRUMENT STAYS VECTOR, AND DELIBERATELY NOT IN THE SHADER. It is hairlines and, eventually, labels; it
+       changes only when a control moves; and it is the thing the warp is JUDGED BY. Rasterising it into the same
+       pass as the picture would make it share the picture's resolution cap -- so a 0.62-scale tube would be
+       measured by a 0.62-scale ruler. As an overlay it stays crisp at device resolution and costs nothing per
+       frame, because nothing about it is animated. -->
+  <svg id="cal" viewBox="0 0 100 100" preserveAspectRatio="none"
+       style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible"></svg>
+  <div id="mast"><div class="t">CRT GL</div><div class="s">TERMINAL</div></div>
+  <div id="hud"><span id="fps">-- FPS</span> <span id="scaleinfo"></span><br><span id="gpu"></span> <span id="heatread"></span> <span id="glstate"></span></div>
+</div>
+<div id="panel">
+  <h1>CRT GL</h1>
+  <div class="sub">ONE FRAGMENT PASS · NO COMPOSITED LAYERS</div>
+  <div class="btns" id="actions"></div>
+  <div class="phos" id="phosrow"></div>
+  <div id="controls"></div>
+</div>
+
+<script type="module">
+import { faceProfile, faceShaped } from './crt-projection.js';
+import { guideOutline, shapeRatio, axisWeight } from './crt-geometry.js';
+import { curvedGridPaths } from './crt-grid.js';
+import { PH, hexRgb, kelvinRgb } from './crt-phosphor.js';
+import { bezelCols } from './crt-bezel.js';
+import { bootLines } from './crt-terminal.js';
+import { createFlicker } from './crt-flicker.js';
+import { createRenderer, buildFaceLUT, buildOutlineLUT, toLinear } from './crt-gl.js';
+import { defaultPreset } from './crt-presets.js';
+import { makeFmt, SECTIONS } from './crt-sidebar.js';
+import { createPanel, buildActions } from '../../ui/panel.js';
+
+const canvas = document.getElementById('tube');
+// A FACTORY, because it holds machine phase -- two instruments on one page cannot share each other's state.
+const FLK = createFlicker();
+// NOT const: the renderer is rebuilt from scratch after a lost context. See the handlers beside resize().
+let R = createRenderer(canvas);
+if (!R) { document.getElementById('hud').textContent = 'needs WebGL2 + EXT_color_buffer_half_float'; throw 0; }
+
+/* THE PALETTE IS NOT INVENTED HERE. PH.amber is crt-phosphor's table -- fg #f0a24a, hi #ffe0c0, halo 255,150,60 --
+ * and #4a2c22 is crt-bezel's plastic base. Converted to LINEAR because the shader works in linear light and
+ * tone-maps once at the end, which is what lets the bloom bleed instead of haze. */
+/* THE PHOSPHOR IS A CHOICE, not a constant. crt-phosphor.PH carries amber, green and white with their own fg,
+ * hi and glow, and the shader already takes all three as uniforms -- so this needed wiring, not inventing.
+ * bootLines takes it too, which is why the boot text's label/value two-tone follows the palette automatically
+ * (including its targeted rule for WHITE, where hi cannot be brighter than fg). */
+let phName = 'amber';
+let ph = PH[phName];
+
+/* MEMOISED ON THEIR INPUTS, and this cost 30fps when it was not.
+ *
+ * These two build the palette and the moulding's tones by running crt-phosphor's kelvin lookup, crt-bezel's whole
+ * colour model, several rgb() string parses and toLinear's three Math.pow per channel -- then allocating fresh
+ * arrays for the result. Called from inside the draw, that is all of it sixty times a second to produce the same
+ * numbers, plus the garbage. Measured: 59.9fps before, 30.1fps with 55% dropped after, on the same scene.
+ *
+ * Nothing they read changes per frame. TEMP, FRAME TINT, FRAME LIGHT, POWER and LIGHT are control inputs, so the
+ * cache key is those and the work happens when one of them moves. The flicker multipliers stay per-frame because
+ * they genuinely are -- they are applied to the result, not baked into it. */
+const memo = (key, build) => { const box = { k: null, v: null };
+  const f = (...a) => { const kk = key(...a); if (kk !== box.k) { box.k = kk; box.v = build(...a); }
+                        return box.v; };
+  f.box = box; return f; };
+
+/* THE TEMPERATURES ARE ARGUMENTS NOW, not closure reads, and the mains fault is why.
+ *
+ * They used to come straight off state, which is correct for a control and wrong for an EVENT: a surge drags the
+ * arc cold, so what the lamps are emitting this frame is not what the TEMP sliders say. Taking them as parameters
+ * lets the caller hand over the surge-shifted pair while the sliders stay the sliders -- and because they are in
+ * the memo key, the cache still holds for as long as the colour genuinely holds still. */
+const pal = memo((tA, tB) => phName + '|' + tA + '|' + tB, (tA, tB) => ({
+  ink:     toLinear(hexRgb(ph.fg)),
+  hi:      toLinear(hexRgb(ph.hi)),
+  halo:    toLinear(ph.glow.split(',').map(Number)),
+  /* EACH LAMP ITS OWN COLOUR, and their average for the things that see the fitting as ONE source -- the
+   * moulding's highlight, the scatter halo. Averaged in LINEAR light, which is the only space where adding two
+   * colours together means anything. */
+  lampA:   toLinear(kelvinRgb(tA).split(',').map(Number)),
+  lampB:   toLinear(kelvinRgb(tB).split(',').map(Number)),
+  lamp:    toLinear(kelvinRgb(tA).split(',').map(Number))
+             .map((v, i) => (v + toLinear(kelvinRgb(tB).split(',').map(Number))[i]) * 0.5),
+}));
+
+/* THE MOULDING'S COLOURS COME FROM crt-bezel, given the same state shape it expects. fcol/ftint/fglow/fwid are
+ * that module's own control names, so the numbers on this panel drive the same model the DOM lab's frame does
+ * rather than a lookalike. hexRgb parses the rgb() strings it returns -- it already handles that form. */
+/* FIXED IN CODE, NOT CONTROLLED -- crt/README.md records the scan pattern's inks as the one thing the
+ * plotting does not leave to the component: black for the horizontal pass, warm #2a1608 for the vertical. */
+const GRILLE_INK = toLinear(hexRgb('#2a1608'));
+
+/* THE MOULDING TAKES THE FAULT'S TEMPERATURE TOO, for the same reason the palette does: it is plastic lit by the
+ * fixture, so when the arc goes cold the surround it is lighting goes with it. Same argument as pal above -- the
+ * pair arrives as an argument and stays in the key, so the cache is unaffected while nothing is happening. */
+const bez = memo(
+  (tA, tB) => state.power + '|' + state.lightOn + '|' + (tA + tB) + '|' +
+        state.frameCol + '|' + state.frameW,
+  (tA, tB) => {
+  /* fcol AND fwid COME FROM THE PANEL NOW, and both were hardcoded here.
+   *
+   * fcol was pinned to '#4a2c22', so the FRAME section could change the moulding's tint and its lit edge but not
+   * the plastic itself -- the one thing "customisable frame colour" actually means.
+   *
+   * fwid was pinned to 13 while the shader drew the moulding at state.frameW, which is the failure crt/README.md
+   * is about: two numbers describing one width, free to disagree. bezelCols only uses it as a RATIO -- wInner is
+   * 0.42w and wOuter is w + 7, so the lit lip's share of the frame moves with its thickness -- and pinning it at
+   * 13 meant a frame dragged to four times that width kept a lip proportioned for the old one. frameW is a
+   * fraction of the aperture radius; scaling by the glass half-height puts it back in the px bezelCols expects. */
+  /* crt-bezel models the room's light as a single colour, which is the right abstraction for a moulding
+   * lit by the whole fitting -- so it gets the pair's MEAN rather than either lamp's own. */
+  const b = bezelCols({ power: state.power ? 'on' : 'off', lightOn: !!state.lightOn,
+                        temp: (tA + tB) * 0.5,
+                        fcol: state.frameCol, ftint: 0,   // the flat tint is gone -- see crt-gl
+                        /* FRAME LIGHT's slider is gone -- SCREEN GLOW and LIGHT FIXTURE now say where
+                         * the moulding's light comes FROM, which is what that control was reaching for
+                         * without a direction. 50 is bezelCols' own neutral: the 0.28 lift it always
+                         * applied, so removing the control changes nothing it was not asked to. */
+                        fglow: 50,
+                        fwid: Math.max(1, Math.round(state.frameW)),
+                        ldim: 1 }, ph);
+  return {
+    bzBase: toLinear(hexRgb(b.base)), bzLo: toLinear(hexRgb(b.lo)), bzHi: toLinear(hexRgb(b.hi)),
+    bzTint: toLinear(hexRgb(b.tint === 'rgba(0,0,0,0)' ? '#000000' : b.tint)),
+    bzTintOp: parseFloat(b.tintOp) || 0,
+    /* THE LIT LIP IS A FIXED PHYSICAL SIZE, not a fixed share of the frame.
+     *
+     * bezelCols derives it as wInner/wOuter = 0.42w / (w + 7), which RISES with the width -- 12.6% of a 3px frame,
+     * 27.3% of a 13px one, 34.0% of a 30px one. That says a deeper surround has a proportionally bigger chamfer,
+     * and a moulded part does not work that way: the chamfer is a feature of the tooling, a couple of millimetres
+     * whatever the surround behind it is. Left alone, a wide frame came out mostly lit lip and read washed out.
+     *
+     * LIP_PX is that fixed size, and 3.5 is chosen so a 13px frame -- the reference's own fwid -- lands on 0.269,
+     * which is where bezelCols already had it. So the shipped look is unchanged and only the ends of the range
+     * move: narrow frames become all chamfer (correct -- a 3px surround IS the chamfer), wide ones gain body. */
+    bzInner: Math.min(0.6, Math.max(0.06, 3.5 / Math.max(1, state.frameW))),
+  };
+});
+
+const state = defaultPreset(R.gpu);
+
+/* SETTINGS PERSIST, which they did not: this page had no storage of any kind, so every reload started from the
+ * literal above and any tuning was lost. The DOM lab keeps its state under `crtlab` with its own schema version;
+ * this is the same shape under `crtgl`, kept separate so the two builds cannot overwrite each other's tuning.
+ *
+ * MERGED OVER THE DEFAULTS, KEY BY KEY, and type-checked -- not assigned wholesale. Controls have come and gone
+ * this session (CONVERGE became six per-gun offsets, EDGE GLASS and FRAME LIGHT were deleted), so a stored
+ * blob will generally disagree with the current shape. Taking only keys that still exist AND still hold the same
+ * type means a removed control is ignored, a new one takes its default, and a corrupted value cannot boot the
+ * page into a state its own panel cannot represent.
+ *
+ * A VERSION MISMATCH DISCARDS rather than migrates. The lab carries migration fallbacks because it has years of
+ * stored configurations worth keeping; this page has none yet, and a migration path written before there is
+ * anything to migrate is a guess that has to be maintained.
+ */
+// v2: FRAME WIDTH changed from a fraction of the half-height to CSS px, so v1 blobs would read 0.03px.
+// v3: frameInner/frameLamp renamed, frameGlow removed.
+// v10: HALATION removed.
+// v11: the text is measured in raster cells -- tsize/tlh (px % and a multiplier) became tcell/tgap/tcols
+//      (scanlines and grille columns), and tw/tht/tjust/type arrived with them. A v10 blob's tsize would be
+//      read as a 2.08-SCANLINE row height, which is legal and wrong, so the whole blob is retired.
+const MM_PER_UNIT = 900;   // mm of room across one glass half-height -- see the note in state
+const SAVE_KEY = 'crtgl', SAVE_V = 11;
+try {
+  const raw = localStorage.getItem(SAVE_KEY);
+  const s = raw ? JSON.parse(raw) : null;
+  if (s && s.v === SAVE_V) {
+    for (const k in state) {
+      if (s[k] != null && typeof s[k] === typeof state[k]) state[k] = s[k];
+    }
+  }
+} catch (e) { /* private mode, quota, corrupt JSON -- none of them are a reason to fail to boot */ }
+
+let saveT = 0;
+function saveState() {
+  try { localStorage.setItem(SAVE_KEY, JSON.stringify(Object.assign({}, state, { v: SAVE_V }))); } catch (e) {}
+}
+/* DEBOUNCED ON CHANGE, FLUSHED ON THE WAY OUT. Writing on every input event means a localStorage round trip per
+ * pixel of slider travel; pagehide and the hidden visibilitychange are the two events that actually fire when a
+ * tab goes away, and unload is not reliable. */
+const queueSave = () => { clearTimeout(saveT); saveT = setTimeout(saveState, 400); };
+window.addEventListener('pagehide', saveState);
+document.addEventListener('visibilitychange', () => { if (document.hidden) saveState(); });
+
+/* ============================================================================ THE POWER SEQUENCE
+ *
+ * PORTED FROM THE DOM LAB'S KEYFRAMES RATHER THAN REINVENTED, because those poses are the whole effect and a
+ * second set of numbers describing the same animation is two descriptions free to drift apart. crt.css holds
+ * @keyframes clCrtOn and clCrtOff; the tables below are those rules, stop for stop, and the beziers are the ones
+ * the lab declares beside them in aScreen.
+ *
+ * OFF IS ON MIRRORED IN TIME. clCrtOn's 100% is clCrtOff's 0%, its 34% is the other's 66%, and the two beziers are
+ * each other's reversal -- reverse(x1,y1,x2,y2) = (1-x2,1-y2,1-x1,1-y1) -- which is what makes the collapse read
+ * as the strike backwards rather than as the same poses at the wrong speeds. crt.css says the same thing in its
+ * own comment. Change one and recompute the other, in BOTH files.
+ *
+ * WHAT EACH COLUMN DRIVES HERE: sx/sy become uPwr, the picture's surviving extent. bright and op are multiplied
+ * together into the level that rides on uFlicker -- the shader already spends that on everything the tube emits
+ * and nothing it reflects, which is the exact boundary the lab gets by nesting its layers inside #clPower. */
+const PWR_ON = [
+  [0.00, 0.015, 0.004, 4.4, 1],
+  [0.34, 1.020, 0.006, 3.0, 1],
+  [0.70, 1.000, 1.000, 1.5, 1],
+  [1.00, 1.000, 1.000, 1.0, 1],
+];
+const PWR_OFF = [
+  [0.00, 1.000, 1.000, 1.0, 1],
+  [0.30, 1.000, 1.000, 1.5, 1],
+  [0.66, 1.020, 0.006, 3.0, 1],
+  [1.00, 0.015, 0.004, 4.4, 0],
+];
+
+/* CSS EASES EACH INTERVAL, NOT THE WHOLE RUN, and getting that wrong is what makes a hand-rolled port of a
+ * keyframe animation look almost right. animation-timing-function applies BETWEEN adjacent keyframes: the bezier
+ * is re-applied from 0 to 1 across 0->34%, then again across 34->70%, then again across 70->100%. Easing the
+ * global progress instead and interpolating the table linearly puts every pose at the wrong time except the ends.
+ *
+ * Newton on x, because a cubic-bezier timing function is a parametric curve and t is not its input -- the
+ * progress is x and what is wanted is y. Four iterations from a linear seed is well inside a pixel for the two
+ * curves here; the bisection fallback is for the flat-derivative case, where Newton cannot converge at all.
+ *
+ * THE POLYNOMIAL FORM, NOT THE BERNSTEIN ONE, and writing it out by hand is how this got its first bug. With the
+ * endpoints pinned at 0 and 1 the curve expands to (1+3a-3b)t^3 + (3b-6a)t^2 + 3a*t, and the version here before
+ * it carried a 6 where the middle term wants a 3 -- so it evaluated to 3 at t=1 instead of 1. Every pose still
+ * landed on its keyframe, because those are the interval ENDS and are read off the table; only the motion
+ * between them was wrong, which is exactly the kind of error that survives a look and not a measurement.
+ * Verified against the identities: cubic-bezier(.5,0,.7,0) must reduce to y = t^3 and (.3,1,.5,1) to 1-(1-t)^3. */
+function bezier(x1, y1, x2, y2) {
+  const curve = (t, a, b) => (((1 + 3 * a - 3 * b) * t + (3 * b - 6 * a)) * t + 3 * a) * t;
+  const slope = (t, a, b) => 3 * (1 + 3 * a - 3 * b) * t * t + 2 * (3 * b - 6 * a) * t + 3 * a;
+  return (x) => {
+    if (x <= 0) return 0;
+    if (x >= 1) return 1;
+    let t = x;
+    for (let i = 0; i < 4; i++) {
+      const e = curve(t, x1, x2) - x;
+      if (Math.abs(e) < 1e-5) return curve(t, y1, y2);
+      const d = slope(t, x1, x2);
+      if (Math.abs(d) < 1e-6) break;
+      t -= e / d;
+    }
+    let lo = 0, hi = 1; t = x;
+    for (let i = 0; i < 20; i++) { t = (lo + hi) * 0.5; if (curve(t, x1, x2) < x) lo = t; else hi = t; }
+    return curve(t, y1, y2);
+  };
+}
+const EASE_ON  = bezier(0.3, 1, 0.5, 1);
+const EASE_OFF = bezier(0.5, 0, 0.7, 0);
+
+// The pose at progress u, with the interval's own easing applied inside it -- see the note above.
+function poseAt(track, u, ease) {
+  let i = 0;
+  while (i < track.length - 2 && u > track[i + 1][0]) i++;
+  const a = track[i], b = track[i + 1];
+  const e = ease(Math.min(1, Math.max(0, (u - a[0]) / Math.max(1e-6, b[0] - a[0]))));
+  const at = (j) => a[j] + (b[j] - a[j]) * e;
+  return { sx: at(1), sy: at(2), lvl: at(3) * at(4) };
+}
+
+/* THE PHASE IS NOT state.power. The switch is a setting and is saved; where the animation has got to is neither,
+ * and persisting it would restore a page mid-collapse. state.power flips the instant the button is pressed --
+ * which is also what feeds crt-bezel, so the moulding's own tone changes with the switch rather than with the
+ * picture, exactly as the lab has it -- and the phase runs the picture down or up afterwards. */
+let pwrPhase = state.power ? 'on' : 'off';
+let pwrT0 = 0;
+/* TWO DEADLINES, READ IN THE FRAME LOOP RATHER THAN SET AS TIMERS.
+ *
+ * The lab uses setTimeout because its picture is DOM and has to be erased imperatively. Here the typewriter is
+ * already a frame-driven counter, so a deadline it compares against is one mechanism instead of two -- and a
+ * timer that fires in a backgrounded tab, where this page renders nothing at all, would advance the boot text
+ * against a screen that is not being drawn. Both are absolute performance.now() stamps; 0 means no deadline. */
+let typeAt = 0, wipeAt = 0;
+
+/* TYPING STARTS HALF A SECOND AFTER THE TUBE HAS FINISHED OPENING, and the delay is derived from WARM-UP rather
+ * than being a flat number that happens to land after it at one setting and mid-strike at every other. */
+function powerOn() {
+  const now = performance.now();
+  state.power = 1; pwrPhase = 'ignite'; pwrT0 = now;
+  /* WIPED ON THE WAY UP AS WELL AS ON THE WAY DOWN, for the case where the switch comes back before the collapse's
+   * own wipe was due. Without it the tube strikes with the previous screen already on it. */
+  typed = 0; wipeAt = 0;
+  typeAt = now + state.ignite * 1000 + 500;
+  syncMode();
+}
+/* THE TEXT IS WIPED AFTER THE COLLAPSE, NOT WITH THE SWITCH. The text falling in with the rest of the picture IS
+ * the power-off animation -- clearing it on the click would drop the content a frame before the tube does
+ * anything and the collapse would play over nothing. */
+function powerOff() {
+  const now = performance.now();
+  state.power = 0; pwrPhase = 'collapse'; pwrT0 = now;
+  typeAt = 0; wipeAt = now + state.collapse * 1000 + 60;
+  syncMode();
+}
+function togglePower() { if (state.power) powerOff(); else powerOn(); }
+
+// Where the animation has got to this frame. Both settled phases return exact constants, so a tube that is simply
+// on pays nothing for the machinery and hands the shader the 1,1 its uniform branch tests for.
+/* PURE: it reads the phase and never writes it, so a measurement can sample the whole run without driving it.
+ * The version before this ended the transition itself, which meant asking what the pose WOULD be past the end
+ * silently switched the tube off -- a reading that changes what it is reading. Retiring the phase is the frame
+ * loop's job, one line below, because that is the thing whose job is to move time forward. */
+function poseFor(now) {
+  if (pwrPhase === 'on')  return { sx: 1, sy: 1, lvl: 1 };
+  if (pwrPhase === 'off') return { sx: 1, sy: 1, lvl: 0 };
+  const on = pwrPhase === 'ignite';
+  const u  = (now - pwrT0) / (Math.max(0.05, on ? state.ignite : state.collapse) * 1000);
+  if (u >= 1) return on ? { sx: 1, sy: 1, lvl: 1 } : { sx: 1, sy: 1, lvl: 0 };
+  return poseAt(on ? PWR_ON : PWR_OFF, u, on ? EASE_ON : EASE_OFF);
+}
+function powerNow(now) {
+  if (pwrPhase === 'ignite' || pwrPhase === 'collapse') {
+    const dur = Math.max(0.05, pwrPhase === 'ignite' ? state.ignite : state.collapse) * 1000;
+    if (now - pwrT0 >= dur) pwrPhase = pwrPhase === 'ignite' ? 'on' : 'off';
+  }
+  return poseFor(now);
+}
+
+/* ============================================================================ THE MAGNET
+ *
+ * WHAT THE REFERENCE DOES, AND WHY THIS IS NOT A PORT OF IT.
+ *
+ * crt-warp.js animates a CSS transform -- translate, rotate, skew, scale -- on #clContent, which is the element
+ * holding the TEXT. Its own doc block is explicit that the layers describing the glass "must stay still, or the
+ * tube wobbles rather than the picture in it", so the scanlines, the phosphor wash and the grid deliberately do
+ * NOT move. That was the correct call for a stack of composited DOM layers: there is no way to bend one of them
+ * without re-rastering all of them, and a rigid sheet is the only transform CSS can apply to a live subtree.
+ *
+ * It is the wrong call for what a magnet actually does. A magnet bends the BEAM. The scanline is the beam's own
+ * path across the faceplate, so it bends too -- so does the mask the beam writes through, so does the grid, so
+ * does the bloom that light casts. The one thing that does NOT move is the glass. This build can say that
+ * directly, because every one of those is a function of one coordinate, and the shader displaces that coordinate.
+ *
+ * WHAT IS LEFT HERE IS THE TIMELINE. The reference's was a single left-to-right crossing at a fixed height --
+ * mag = -0.2 + 1.4t for x, a small oscillation for y -- and carried straight over it read as A WAVE ACROSS THE
+ * MIDDLE rather than as a magnet. Two reasons, and both are fixed below rather than tuned around:
+ *
+ *   THE POLE NEVER LEFT THE MIDDLE. Its y stayed within a tenth of centre, so the top and bottom of the tube
+ *   never saw the near field at all and the disturbance could only ever be a horizontal band. It now roams the
+ *   whole face on two incommensurate rates, so it visits the corners and passes the middle at an angle.
+ *
+ *   THE FIELD WAS TOO WIDE TO HAVE A PLACE. At REACH 0.45 the pole's gaussian covered most of the picture, which
+ *   is a global breathing and not something you can point at. A magnet you can SEE is a local one: the field has
+ *   to fall off inside the picture so there is somewhere it is not.
+ */
+/* AND IT IS A SPRING, NOT A SINE, which is the other half of "pully rather than twisty".
+ *
+ * A raster under a magnet is not a soft body being kneaded -- it is a deflection circuit being fought. The beam
+ * is yanked, the supply resists, and when the field passes the picture springs back THROUGH its rest position
+ * and rings down. A sine has none of that: it is symmetric, it has no sense of being released, and every part of
+ * the cycle looks like every other part. So the amplitude carries a damped oscillator whose ringing rides on top
+ * of the envelope -- fast to grab, slow to let go, overshooting on the way back.
+ *
+ * SPRING is how much of the motion is that ringing. At 0 this is the smooth sweep it was.
+ */
+let warpT0 = null, warpSeed = 0;
+function triggerWarp(now) {
+  warpT0 = (now == null ? performance.now() : now);
+  // A different path every press -- see the surge's note on the same idea. The SHAPE is authored; where the pole
+  // happens to wander is not, and a magnet arriving on exactly the same track twice is the tell that it is canned.
+  warpSeed = Math.random() * 1000;
+}
+const WARP_REST = { k: [0, 0, 0, 0], pos: [0.5, 0.5], r: [0.5, 0.55], d: [0, 0] };
+function warpAt(now) {
+  if (warpT0 == null) return WARP_REST;
+  const dur = Math.max(0.05, state.warpSec) * 1000;
+  const t = (now - warpT0) / dur;
+  if (t < 0 || t >= 1) return WARP_REST;
+  const TAU = Math.PI * 2;
+  const env = Math.sin(Math.PI * t);
+  const w   = 0.6 + state.wwig * 1.6;             // WIGGLE, as the rate the pole roams at
+  /* THE SPRING. exp(-d u) sin(w u) is the classic under-damped response: it overshoots, comes back past rest and
+   * rings down. Centred on 1 so it MODULATES the pull rather than replacing it, and floored at 0.15 so a hard
+   * ring cannot invert the field -- a magnet does not repel on the rebound; the picture does. */
+  const ring = Math.exp(-t * 3.2) * Math.sin(t * TAU * (1.4 + state.wwig * 2.2));
+  const spr  = Math.max(0.15, 1 + ring * state.warpSpring * 1.6);
+  const amp  = state.wint * env * spr;
+  /* THE DOME TRADES THE SWEEP FOR THE SQUEEZE, and this argument is the reference's, kept because it is right.
+   *
+   * A picture painted on the inside of a bowl cannot slide sideways as freely as one on a flat sheet -- the walls
+   * are in the way -- so the same magnet that shoves a flat raster across pushes a domed one into the middle. So
+   * the travelling pole's authority is scaled DOWN by the dome and handed to the pinch, rather than added to it:
+   * total displacement stays in the same range and a deep FACE cannot throw the picture off the tube. Flat face,
+   * flat trade, and the warp is exactly the sweep it always was. */
+  const dome  = Math.min(1, Math.abs(state.face));
+  const slide = 1 - dome * 0.55;
+  /* THE POLE ORBITS, AND THAT IS THE THIRD GO AT THIS PATH.
+   *
+   * First it was the reference's straight left-to-right crossing, which read as a wave because a pole that only
+   * ever occupies one height can only disturb one band. Then it was two incommensurate sines -- which does cover
+   * the face, but a Lissajous figure spends most of its time reversing at the ends of its travel, and a thing
+   * that keeps stopping and turning around still reads as oscillation. It was a wave in two axes instead of one.
+   *
+   * A magnet being walked around a screen does not oscillate. It GOES ROUND, continuously, in one direction, and
+   * what makes it feel physical is that it does not go round at a constant rate -- a hand swings faster through
+   * the bottom of an arc than the top. So: a real orbit, its direction drawn per press, its angular rate varying
+   * within the run, and its radius breathing so it swings wide and then cuts close.
+   *
+   * The x radius carries the aspect, or a circular orbit in suv is an ellipse on a 16:9 tube -- squashed on the
+   * axis with more room, which is precisely backwards. */
+  const s    = warpSeed;
+  const spin = (s % 2 < 1) ? 1 : -1;                        // clockwise or anticlockwise, drawn at the press
+  const laps = 1 + (s % 1.7);                               // how far round it gets in one run
+  /* THE RATE VARIES WITHIN THE LAP. t + k sin(2pi t) is a time warp, not a second oscillator: the pole never
+   * reverses, it just covers some of the circle faster than the rest. WIGGLE drives how uneven that is. */
+  const tw   = t + Math.min(0.4, state.wwig * 0.13) * Math.sin(t * TAU);
+  const ang  = spin * TAU * laps * tw + s;
+  const rad  = 0.30 + 0.20 * Math.sin(t * TAU * 1.3 + s * 2.1);   // swinging wide, then cutting close
+  const asp  = Math.max(0.2, cssPx.w / Math.max(1, cssPx.h));
+  const px   = 0.5 + rad * Math.cos(ang) * Math.min(1.6, asp * 0.85);
+  const py   = 0.5 + rad * Math.sin(ang);
+  /* THE DRAG IS POINTED HERE, because which way the picture leans is a fact about where the pole is, and that is
+   * this function's business rather than the shader's. Toward the pole, so the whole raster follows it round --
+   * which is what turns an orbiting disturbance into an orbiting PICTURE. */
+  const dl = Math.hypot(px - 0.5, py - 0.5) || 1;
+  const drag = amp * state.warpDrag * slide;
+  return {
+    // The squeeze toward the middle, breathing with the spring rather than with a second oscillator.
+    k: [amp * state.warpPinch * (0.45 + 0.55 * dome),
+        amp * state.warpPull * slide,
+        amp * state.warpSwirl,
+        // PX -> the picture's own 0..1, here and nowhere else. Same conversion, same reason, as the beam tip's
+        // radii and the frame's width: the panel speaks pixels and the shader speaks picture widths.
+        amp * state.warpRGB / Math.max(1, cssPx.w)],
+    pos: [px, py],
+    r: [Math.max(0.02, state.warpR), state.warpRim],
+    d: [(px - 0.5) / dl * drag, (py - 0.5) / dl * drag],
+  };
+}
+
+/* ============================================================================ THE MAINS FAULT
+ *
+ * THE TIMELINE IS NOT REIMPLEMENTED. crt-flicker owns it -- seven phases over 4.6s, deterministic, the same fault
+ * every run -- and it owns it because it already owns the two things a supply failure has to move together: the
+ * bulbs' output and their colour temperature. This fires it and decides how hard each channel is spent.
+ *
+ * SAMPLED AT A SCALED TIME so RATE can stretch or compress the whole event without the module needing to know.
+ * surgeAt is pure, so sampling it off its own clock is safe; a rate of 2 simply runs out of timeline in half the
+ * wall-clock, which is what "twice as fast" means.
+ *
+ * WHY THE FIXTURE AND THE TUBE MOVE TOGETHER: they are handed the SAME sample. A mains fault is upstream of both,
+ * so the room dimming while the screen holds steady -- or either one leading the other -- would be the giveaway
+ * that they are two effects rather than one event. The reference's note on triggerSurge makes exactly this point,
+ * and it is the reason the surge is shared state inside the flicker module rather than a property of either. */
+let surgeT0 = null, surgeSeed = 0;
+function triggerSurge(now) {
+  surgeT0 = (now == null ? performance.now() : now);
+  /* A NEW FAULT EVERY PRESS, AND THE REFERENCE DELIBERATELY HAS THE OPPOSITE. crt-flicker's note is explicit --
+   * "the same fault every time, because the shape is the point", hashed off the step index rather than drawn
+   * from Math.random. That is right for the thing it protects: the ORDER of the levels is authored, and a
+   * timeline that reshuffles itself is a timeline nobody can tune.
+   *
+   * What it does not protect is the GRAIN. Where the guttering happens to chop, and whether the supply makes two
+   * failed attempts at restriking in the dark or four, carry no authored meaning at all -- and being identical
+   * every press is exactly what makes the fourth press stop being alarming. So the shape stays fixed and comes
+   * from the module; the grain is seeded here and is different every time. */
+  surgeSeed = Math.random() * 4096;
+  FLK.triggerSurge(surgeT0);
+}
+// Deterministic given the seed, so one fault plays the same way from any sampled time -- which is what lets the
+// whole event be stepped through and measured. New press, new seed, new grain.
+const sNoise = (n) => {
+  const v = Math.sin(n * 12.9898 + surgeSeed * 78.233) * 43758.5453;
+  return v - Math.floor(v);
+};
+// Null when nothing is running. `bite` is how far from normal the fault has pushed the supply, which is what the
+// extra guttering rides on: worst at the collapse and the cut, quiet through the build.
+function surgeNow(now) {
+  if (surgeT0 == null) return null;
+  const dt = now - surgeT0;
+  const sg = FLK.surgeAt(surgeT0 + dt * Math.max(0.05, state.surgeRate));
+  if (!sg) { if (dt > 0) surgeT0 = null; return null; }
+  // The gains scale the DEPARTURE from normal, so 0 removes the channel and 1 is the reference's own fault.
+  const g = (v, gain) => 1 + (v - 1) * gain;
+  let screen = Math.max(0, g(sg.screen, state.surgeScreen));
+  let lamp   = Math.max(0, g(sg.lamp,   state.surgeLamp));
+  const bite = Math.min(1, Math.abs(1 - sg.screen));
+
+  /* THE CHOP -- hard-edged steps, not a dip, and this is most of "more flicker".
+   *
+   * screenFlicker is a smooth sin() dip, which is the right model for a phosphor wandering on a healthy supply
+   * and the wrong one for an arc losing its strike: that is a SWITCH, and it reads as one. crt-flicker's own
+   * guttering inside the STRUGGLE phase is hard-edged for exactly this reason. So the fault carries its own
+   * square chop on top, at GUTTER RATE, biting hardest where the supply is furthest from normal.
+   *
+   * The lamps take a shallower share of the same chop. A fluorescent has a metre of ionised gas with some
+   * thermal inertia in it; a phosphor dot has none, so the screen snaps where the tubes sag. */
+  let chop = 1;
+  if (state.surgeChaos > 0.001 && state.surgeStr > 0.001) {
+    const step  = Math.floor(dt / (1000 / Math.max(0.5, state.surgeHz)));
+    const h     = sNoise(step);
+    const pDrop = (0.05 + 0.55 * bite) * state.surgeChaos;
+    if (h < pDrop) chop = 1 - state.surgeStr * (0.35 + 0.65 * (1 - h / Math.max(1e-6, pDrop)));
+  }
+  screen *= chop;
+  lamp   *= 1 - (1 - chop) * 0.55;
+
+  /* THE FAILED RESTRIKES, and this is the suspense.
+   *
+   * The dark phase is 900ms of authored nothing, and its own note says it is "long enough to stop waiting, which
+   * is what makes the recovery a surprise". That works once. What it does not have is the thing a real supply
+   * does while it is down: TRY. A breaker that has tripped on a fault does not sit politely dark -- the arc
+   * attempts to restrike, gets a fraction of a second of light, and loses it again, and each attempt makes the
+   * next silence longer rather than shorter.
+   *
+   * So where the timeline is AT ZERO -- and only there, so this can never brighten a phase that is already lit
+   * or argue with the flash -- a seeded cell can produce a brief partial strike that dies. Different count and
+   * placement every press, which is the whole point: you cannot learn when they are coming. */
+  if (state.surgeChaos > 0.001 && sg.screen < 0.03) {
+    const cell = Math.floor(dt / 80);
+    const sh   = sNoise(cell + 977);
+    /* 0.20 rather than 0.13, and the reason is measured: at the lower rate two presses in four produced NO
+     * attempt at all, and a suspense device that is absent half the time is not one. This puts the expected
+     * count at three or four across the dark, so a silent one is rare rather than routine. */
+    if (sh < 0.20 * state.surgeChaos) {
+      const strike = 0.10 + sh * 2.6;
+      screen = Math.max(screen, strike);
+      lamp   = Math.max(lamp,   strike * 0.75);
+    }
+  }
+  return {
+    screen, lamp, bite,
+    warm: sg.warm,
+    /* HEALTH, NOT JUST BRIGHTNESS -- the reference's own correction, and worth carrying over verbatim. Dimming a
+     * fluorescent uniformly is not how one starves: the arc collapses toward the cathodes, so the ENDS stay lit
+     * and orange while the middle dies. crt-fixture already draws that as low HEALTH, so the fault only has to
+     * ask for less of it. Floored at 0.22 because below that the ends go too, and the ends are the point. */
+    health: 1 - (1 - Math.max(0.22, Math.min(1, sg.lamp))) * state.surgeHealth,
+  };
+}
+
+// The masthead's second line, naming the mode rather than a setting -- the lab's own modeName.
+const modeEl = document.querySelector('#mast .s');
+function syncMode() { if (modeEl) modeEl.textContent = state.power ? 'TERMINAL' : 'POWERED DOWN'; }
+syncMode();   // a session restored with the switch off has to say so before anything is pressed
+
+document.getElementById('gpu').innerHTML =
+  (R.gpu.integrated ? 'INTEGRATED' : 'DISCRETE') + ' · ' +
+  String(R.gpu.name || '?').replace(/^ANGLE \(|\)$/g, '').slice(0, 44);
+
+/* THE CONTENT LAYER, on a 2D canvas that becomes one texture. In the DOM build this was live SVG text INSIDE the
+ * blend stack, so every typed character invalidated thirteen surfaces. Here it re-rasters only when the text
+ * changes. Drawn in WHITE -- the phosphor colour is applied in the shader, so one texture serves any phosphor. */
+const cc = document.createElement('canvas');
+const ctx = cc.getContext('2d');
+/* THE BOOT TEXT IS crt-terminal's, not mine. bootLines() builds the masthead, the four self-test rows with their
+ * dot leaders sized to the column, and the ENTER prompt -- and it decides which segments are labels (ph.fg) and
+ * which are values (ph.hi). The fourteen lines invented here before were a pastiche of that. */
+let LINES = [], typed = 0, lastType = 0, FULL = 0, lastCols = 0;
+
+/* THE FONT'S ADVANCE AS A FRACTION OF THE EM, MEASURED -- and deliberately not cached until the webfont is in.
+ *
+ * A monospace face advances some fixed ratio of its em per character; JetBrains Mono's is 0.6. AUTO char width
+ * needs that number to know how many grille columns a cell-tall glyph naturally wants. Measured before the font
+ * loads the canvas answers for the fallback instead -- 0.535 here -- and caching that pins every character 3%
+ * off the column grid for the rest of the session, so check() gates the cache but not the answer. */
+let _adv = 0, _advCx = null;
+function advRatio() {
+  if (_adv) return _adv;
+  try {
+    const ready = !document.fonts || document.fonts.check('100px "JetBrains Mono"');
+    const cx = (_advCx || (_advCx = document.createElement('canvas').getContext('2d')));
+    cx.font = '100px "JetBrains Mono", monospace';
+    const w = cx.measureText('MMMMMMMMMM').width / 1000;
+    if (w > 0.2 && w < 2) { if (ready) _adv = w; return w; }
+  } catch (e) {}
+  return 0.6;
+}
+
+/* THE CELL GRID, IN CONTENT PIXELS. One place computes it and every reader below uses it, so the wrap, the glyph
+ * placement and the AUTO block size cannot disagree about what a row is.
+ *
+ * THE POINT OF THIS FUNCTION IS THE UNITS. Row height is in SCANLINES and char width is in GRILLE COLUMNS,
+ * exactly as the reference's textGrid does it, so the text sits on the same lattice the scan pattern draws and
+ * changing the raster density resizes the type with it. The previous version sized the font as a percentage of
+ * the render height and spaced it with a bare multiplier -- a type scale that knew nothing about the surface it
+ * was drawn on, so SCANLINES H moved the raster and left the glyphs where they were.
+ *
+ * nSL and nCOL are the SAME counts the shader rasters with. crt-gl lays the pattern out as `ny = suv.y * uScanN`
+ * over the content texture, so in this space one scanline is exactly contentPx.h / nSL tall and one grille column
+ * is contentPx.w / nCOL wide. Both are computed from cssPx for the reason given where scanN is handed to the
+ * renderer: a density is a statement about the tube, not about the buffer it is rasterised into. */
+function textGrid() {
+  const W = contentPx.w, H = contentPx.h;
+  const nSL  = Math.max(1, cssPx.h * state.scan   / 100);
+  const nCOL = Math.max(1, cssPx.w * state.grille / 100);
+  const cell = Math.min(nSL, state.tcell);
+  const gap  = Math.max(0, Math.min(nSL - cell, state.tgap));
+  const colW = W / nCOL;
+  const em    = cell / nSL * H;             // the glyph's em box: `cell` scanlines tall
+  const pitch = (cell + gap) / nSL * H;     // row to row -- a whole number of scanlines, so every row shares a phase
+  const cols  = state.tcols < 1 ? Math.max(1, Math.round(advRatio() * em / colW)) : state.tcols;
+  return { W: W, H: H, em: em, pitch: pitch, colW: colW, slPx: H / nSL, charW: cols * colW, nSL: nSL, nCOL: nCOL };
+}
+
+/* WRAPPED ON WHITESPACE, THEN ON THE CELL GRID AS A LAST RESORT -- the reference's wrapLines, which this is a
+ * port of. The block's width is a column count now, so how many cells fit is the whole answer.
+ *
+ * Breaking at the column limit full stop splits words across rows and restarts their tails at the left margin --
+ * the tube reads "PA" / "SS". Segments survive the wrap so a row can still change colour mid-way, which the boot
+ * text needs: it puts a label and its value in one line and would otherwise flatten to a single colour. Words
+ * longer than the whole column count are hard-broken, because the alternative is a row wider than the block.
+ *
+ * Every token is emitted in full including its trailing space, so the wrapped rows hold exactly the characters
+ * the source did, in order -- which is what lets the flat `typed` counter walk them without a mapping. */
+function wrapLines(lines, cols) {
+  const out = [], per = Math.max(1, cols);
+  lines.forEach((segs) => {
+    let row = [], used = 0;
+    // A flush with nothing in it is not a row: two can fire back to back when a token lands exactly on the
+    // boundary, and the second pushes a blank line that the AUTO height then pays a whole pitch for.
+    const flush = () => { if (!row.length) return; out.push(row); row = []; used = 0; };
+    const put = (t, c) => { row.push({ t: t, c: c }); used += t.length; };
+    if (!segs.length) { out.push([]); return; }   // a deliberately empty line is content, and keeps its row
+    segs.forEach((sg) => {
+      const toks = sg.t.match(/\S+\s*|\s+/g) || [];
+      toks.forEach((tok) => {
+        if (used + tok.replace(/\s+$/, '').length > per && used > 0) flush();
+        let t = tok;
+        /* THE HARD BREAK, WITH THE TAKE CAPTURED BEFORE IT IS SPENT -- and that ordering is the whole bug this
+         * replaces. It used to read:
+         *
+         *     while (t.length > per) { put(t.slice(0, per - used), sg.c); t = t.slice(per - used); flush(); }
+         *
+         * `put` adds what it wrote to `used`, so the SECOND `per - used` is evaluated after the first has already
+         * been paid for and always comes out zero. `t.slice(0)` is `t`, the token never shortens, the condition
+         * never goes false: an infinite loop that hangs the tab with no error and no frame.
+         *
+         * It only fires when a token is longer than the whole column budget, so at normal widths nothing reaches
+         * it -- the longest word in the boot text is nine characters. Dragging TEXT WIDTH below about 6% takes
+         * the budget under that, and the page stops dead mid-drag.
+         *
+         * Floored at one character so the loop cannot fail to advance even if `used` ever equals `per` on entry.
+         * A step of zero is the failure mode; making one impossible is worth a character of overflow in a case
+         * that cannot currently arise. */
+        while (t.length > per) {
+          const take = Math.max(1, per - used);
+          put(t.slice(0, take), sg.c); t = t.slice(take); flush();
+        }
+        if (t.length) put(t, sg.c);
+        if (used >= per) flush();
+      });
+    });
+    flush();
+  });
+  return out;
+}
+
+/* UPLOADED ONLY WHEN IT CHANGED, and the unconditional version cost half the frame rate.
+ *
+ * texImage2D of a 1600x1100 RGBA canvas is ~7MB. Called every frame that is 420MB/s of upload for text that moves
+ * once every 26ms, and on a shared-memory GPU that traffic competes with the rendering itself. Measured: 30.1fps
+ * with 55% dropped frames uploading every frame.
+ *
+ * The key is what is actually ON the texture -- the typed count and the caret's blink phase. Nothing else in the
+ * content changes, so nothing else can require a re-raster. */
+let lastContentKey = '';
+let textRect = [-1, -1, -1, -1];   // the active block, in content-canvas fractions
+/* THE TUBE IS LIT AND THE BOOT HAS NOT BEGUN -- a terminal waiting, which is a cursor and nothing else.
+ *
+ * A real set does not come up blank and then start writing half a second later with no sign of life in between.
+ * It comes up with a cursor sitting there, and that cursor is the first thing the strike reveals. So the gap
+ * WARM-UP opens between the raster arriving and the first character is not dead air; it is the machine idling. */
+const caretWaiting = () => !!(state.power && typed === 0 && typeAt && performance.now() < typeAt);
+function drawContent(force) {
+  const g = textGrid();
+  /* THE COLUMN BUDGET IS THE BLOCK'S, AND bootLines WANTS IT. It sets where the dot leaders stop and the value
+   * column starts, so the boot text re-lays itself when the block or the grille changes -- the old build passed a
+   * hardcoded 44 and the masthead never reflowed with the tube. Rebuilt only when the count actually moves;
+   * `typed` is a flat index into it, so it is clamped rather than left pointing past the end. */
+  const blockW = state.tw < 1 ? g.W : g.W * state.tw / 100;
+  const cols = Math.max(1, Math.floor(blockW / g.charW));
+  if (cols !== lastCols) {
+    lastCols = cols;
+    LINES = bootLines(ph, cols);
+    FULL = LINES.reduce((a, segs) => a + segs.reduce((b, s) => b + s.t.length, 0), 0);
+    typed = Math.min(typed, FULL);
+  }
+  /* THE BLINK ONLY ENTERS THE KEY WHEN THERE IS A CARET TO BLINK, and that is a saving as well as a correctness
+   * fix. The phase flips twice a second whether or not anything is drawing a cursor, so a tube sitting switched
+   * off -- nothing typed, nothing waiting -- was re-rastering and re-uploading a black 7MB texture on every flip
+   * for a caret that does not exist. Constant key, no upload. */
+  const waiting  = caretWaiting();
+  const caretOn  = typed > 0 || waiting;
+  const key = typed + '|' + (waiting ? 'w' : '') +
+              (caretOn ? Math.floor(performance.now() / 420) % 2 : 0) + '|' +
+              state.tox + '|' + state.toy + '|' + state.tvert + '|' + state.tjust + '|' +
+              state.tw + '|' + state.tht + '|' + cols + '|' +
+              g.em.toFixed(3) + '|' + g.pitch.toFixed(3) + '|' + g.charW.toFixed(3) + '|' +
+              contentPx.w + 'x' + contentPx.h;
+  if (!force && key === lastContentKey) return;
+  lastContentKey = key;
+  /* SIZED FROM THE RENDER TARGET, not fixed. See the note where contentPx is computed. */
+  const w = g.W, h = g.H;
+  if (cc.width !== w || cc.height !== h) { cc.width = w; cc.height = h; }
+  ctx.fillStyle = '#000'; ctx.fillRect(0, 0, w, h);
+  ctx.font = '500 ' + g.em.toFixed(2) + 'px "JetBrains Mono", monospace';
+  ctx.textBaseline = 'alphabetic';
+
+  /* ONLY THE ROWS THAT HAVE BEEN REVEALED, which is what makes it a terminal rather than a paragraph filling in.
+   * Reserving the finished block's height from the first character on nails the top edge and fills downward;
+   * counting only what has been typed puts the newest row at the anchor and lifts everything above it by a
+   * pitch. Built once here so the height, the draw loop and the bounds all walk the same list. */
+  const rows = wrapLines(LINES, cols);
+  const shown = [];
+  for (let r = 0, n = typed; r < rows.length && n > 0; r++) {
+    const len = rows[r].reduce((a, sg) => a + sg.t.length, 0);
+    shown.push({ segs: rows[r], n: Math.min(len, n), len: len, part: n < len });
+    n -= len;
+  }
+  /* THE WAITING CURSOR IS A ROW WITH NOTHING TYPED IN IT YET, and saying it that way is the whole implementation.
+   *
+   * Everything below -- the block's height, which edge ANCHOR nails, where ALIGN puts the ragged edge, and the
+   * caret's own "wherever the next character would go" -- already answers correctly for a row that is zero
+   * characters in. Positioning a cursor separately would mean a second copy of that geometry, free to disagree
+   * with the first, and the disagreement would show as the cursor jumping the instant the first character landed.
+   * n = 0 with part = true puts it exactly on the cell that character is about to occupy. */
+  if (!shown.length && waiting && rows.length) {
+    shown.push({ segs: rows[0], n: 0, part: true,
+                 len: rows[0].reduce((a, sg) => a + sg.t.length, 0) });
+  }
+
+  /* THE BLOCK IS CENTRED ON TEXT X / TEXT Y, as the reference's is: #crt_term sits at 50%+tox / 50%+toy and is
+   * pulled back by half its own size. A centre anchor is what lets ALIGN be only the ragged edge of the lines
+   * INSIDE the block -- with a corner anchor the two cannot be separated, which is why the reference's ALIGN
+   * used to jump TEXT X to a side and re-anchor. AUTO width is the widest row of the FINISHED text, not of what
+   * has been typed, or the block would slide sideways as the longest line arrived. */
+  const wide = rows.reduce((m, r) => Math.max(m, r.reduce((a, sg) => a + sg.t.length, 0)), 0);
+  // A WHOLE NUMBER OF CELLS EITHER WAY: `cols` is already the budget floor(tw / charW), so reusing it makes the
+  // block exactly the columns it wraps to. Sizing it from the raw percentage instead leaves a partial cell on
+  // the right that CENTER and RIGHT then align against -- half a character of drift for no reason.
+  const bw = (state.tw  < 1 ? wide : cols) * g.charW;
+  const bh =  state.tht < 1 ? shown.length * g.pitch : g.H * state.tht / 100;
+  const bx = g.W * (0.5 + state.tox / 100) - bw / 2;
+  const by = g.H * (0.5 + state.toy / 100) - bh / 2;
+
+  /* ANCHOR picks which edge of the block is nailed down -- the axis ALIGN does not speak for. BOTTOM stands the
+   * text on the block's last row and grows up; TOP hangs it from the first and grows down.
+   *
+   * THEN SNAPPED TO THE LATTICE, which is the whole point of measuring in cells. pitch is already a whole number
+   * of scanlines and charW a whole number of grille columns, so once the ORIGIN lands on a cell boundary every
+   * glyph in the block does too. Without the snap the block floats at an arbitrary sub-scanline phase and picks
+   * a new one on every resize -- rows consistent with each other, but cutting the scan pattern differently each
+   * time the window moves. */
+  const align = state.tjust === 2 ? 1 : state.tjust === 1 ? 0.5 : 0;
+  let y0 = state.tvert ? by : by + Math.max(0, bh - shown.length * g.pitch);
+  y0 = Math.round(y0 / g.slPx) * g.slPx;
+
+  /* THE BLOCK'S OWN BOUNDS, measured while it is drawn. The phosphor glow is a statement about the AREA of
+   * coating that is being driven, and that area is this rectangle -- so it is recorded here, where the true extent
+   * is already known from the text metrics, rather than recovered later by blurring the pixels and hoping. */
+  let bx0 = 1e9, by0 = 1e9, bx1 = -1e9, by1 = -1e9;
+  for (let k = 0; k < shown.length; k++) {
+    const row = shown[k];
+    const y = y0 + k * g.pitch, yb = y + g.em * 0.78;    // the baseline, inside the cell
+    let x0 = bx + (bw - row.len * g.charW) * align;
+    x0 = Math.round(x0 / g.colW) * g.colW;
+    /* ONE CHARACTER PER CELL, PLACED -- not one fillText per run. A run drawn in a single call advances by the
+     * font's own metrics, which is exactly what this element is moving away from: the cell width is a count of
+     * grille columns, and the glyphs have to land ON it rather than near it. Colour still comes segment by
+     * segment, because the label/value two-tone is the thing bootLines computes. */
+    let col = 0, left = row.n, caretC = '#fff';
+    for (const sg of row.segs) {
+      if (left <= 0) break;
+      const t = sg.t.slice(0, Math.min(sg.t.length, left));
+      ctx.fillStyle = caretC = sg.c;
+      for (let i = 0; i < t.length; i++) {
+        if (t[i] !== ' ') ctx.fillText(t[i], x0 + (col + i) * g.charW, yb);
+      }
+      col += sg.t.length; left -= t.length;
+    }
+    if (row.len) {
+      bx0 = Math.min(bx0, x0); bx1 = Math.max(bx1, x0 + (row.part ? row.n : row.len) * g.charW);
+      by0 = Math.min(by0, y);  by1 = Math.max(by1, y + g.em);
+    }
+    /* THE CARET SITS WHEREVER THE NEXT CHARACTER WOULD GO, on the same 420ms phase the memo key is keyed on --
+     * and that includes AFTER THE LAST ONE, which is where it lives for all the time the boot is not running.
+     *
+     * This used to be gated on `row.part` alone, so the caret existed only while a row was half-typed. The
+     * moment the script finished, no row was partial any more and it vanished -- exactly when a terminal is
+     * most obviously waiting for you. A prompt with no cursor is a screenshot of a terminal, not a terminal.
+     *
+     * Two cases, one position: mid-line it goes at the typing point, and at the end it goes one cell past the
+     * final character of the last revealed row. */
+    const lastRow  = (k === shown.length - 1);
+    /* A CELL PAST THE END WHEN IT IS RESTING, on the typing point when it is not. The gap is the difference
+     * between a prompt and a half-drawn line: "...|" reads as the machine still writing, "... |" as the machine
+     * waiting for you, and waiting is what it is doing once the script has run out. */
+    const caretCol = row.part ? row.n : row.len + 1;
+    if ((row.part || (lastRow && typed >= FULL)) && Math.floor(performance.now() / 420) % 2) {
+      /* THE HIGHLIGHT COLOUR, NOT THE RUN IT FOLLOWS. `caretC` was whatever segment happened to be painted last,
+       * so the caret inherited the DIM label colour after any line ending in one -- a cursor dimmer than the
+       * text it sits beside. It is the one thing on screen that is always live, so it takes ph.hi outright.
+       *
+       * HALF A CELL WIDE: a full cell is a filled block the width of a character, which reads as a selected
+       * glyph rather than as a bar waiting for the next one. */
+      ctx.fillStyle = ph.hi;
+      ctx.fillRect(x0 + caretCol * g.charW, y, g.charW * 0.5, g.em);
+    }
+  }
+  /* NORMALISED TO THE CONTENT CANVAS, which is the space the shader samples in. Empty until something has been
+   * typed, in which case the glow has nothing to describe and collapses to a point off-screen. */
+  /* Y IS FLIPPED, because the two spaces disagree about which way is up. These bounds come from canvas
+   * coordinates, where y grows DOWNWARD from the top; the shader samples in texture coordinates, and
+   * uploadContent sets UNPACK_FLIP_Y_WEBGL so v = 0 is the canvas's BOTTOM. Handing the canvas figures over
+   * unflipped put the glow at the top of the tube while the text sat at the bottom -- measured, the field read 55
+   * on the top row and 6 on the bottom one, exactly upside down. */
+  if (bx1 > bx0) textRect = [bx0 / w, 1 - by1 / h, bx1 / w, 1 - by0 / h];
+  else textRect = [-1, -1, -1, -1];
+  R.uploadContent(cc);
+}
+
+let faceKey = '', outKey = '';
+function syncLUT() {
+  const fk = [state.face, state.grings, state.fexp, state.famp].join('|');
+  if (fk !== faceKey) {
+    faceKey = fk;
+    // THE PROJECTION STAYS THE AUTHORITY — crt-projection's faceProfile, unmodified. This only tabulates it.
+    // fadeSpan = grings * (2/GRIDN) with GRIDN 40, exactly as the DC computes it: FULL is 1.0, not 0.85.
+    faceProf = faceProfile(state.face * 90, state.grings * 0.05, state.fexp, state.famp);
+    faceLUT = buildFaceLUT(faceProf, 1024);
+    R.setFaceLUT(faceLUT);
+  }
+  /* THE OUTLINE LIKEWISE, and it depends on the ASPECT as well as the shape -- guideOutline is handed the real
+   * box, so its radii come back in the same units the shader measures in. Rebuilt only when one of those three
+   * moves, all of which are settle-time events. */
+  const asp = (canvas.width || 1) / (canvas.height || 1);
+  const ok = state.corner + '|' + state.bend + '|' + asp.toFixed(4);
+  if (ok !== outKey) {
+    outKey = ok;
+    R.setOutlineLUT(buildOutlineLUT(guideOutline(2 * asp, 2, state.corner / 0.9, state.bend), 1024));
+  }
+}
+
+/* THE INSTRUMENT, REBUILT ONLY WHEN ITS INPUTS MOVE.
+ *
+ * Every path here comes from the same modules the DOM lab plots with -- guideOutline for the rim, ringLadder for
+ * the ring ladder and its heat, curvedGridPaths for the calibration grid -- walked through the SAME faceShaped the
+ * face LUT was built from. That is the whole point of keeping it: an instrument that derived its own geometry
+ * could agree with itself while disagreeing with the tube, which is the failure crt/README.md is about.
+ *
+ * HEAT IS A NUMBER, COLOUR IS PRESENTATION. ringLadder returns bands; the ramp from gap to colour is decided here,
+ * exactly as the DOM build decides it in renderVals rather than in the module.
+ */
+const calSvg = document.getElementById('cal');
+let calKey = '';
+function syncCal() {
+  const asp = (canvas.width || 1) / (canvas.height || 1);
+  const k = [state.face, state.corner, state.bend, state.grings, state.fexp, state.guidesOn,
+             state.gridOn, state.debugOn, state.famp, state.frameOn, state.frameW, cssPx.h,
+             asp.toFixed(4)].join('|');
+  if (k === calKey) return;
+  calKey = k;
+
+  const w = 2 * asp, H = 2;
+  const prof = guideOutline(w, H, state.corner / 0.9, state.bend);
+  /* faceShaped, not faceF: the projection reads the face's SHAPE, so the instrument must ask the same question.
+   *
+   * AND PINNED, which it was not, and that is why the grid stopped short of the glass. The picture is gathered
+   * through a pinned map -- F(u)/F(1) -- because that is what the lab does; this overlay was plotted through the
+   * raw one, so at OUT 90 it ended at F(1) = 82.7% of the radius while the picture filled to 100%. An instrument
+   * that disagrees with the tube it is measuring is worse than no instrument, and it is the exact drift
+   * crt/README.md exists to prevent.
+   *
+   * Pinned on .pin -- the UN-bowed axis value faceShaped publishes -- not on f(1, 0). crt-projection's note says
+   * why: dividing by the bowed value would normalise BEND's bow away at precisely the ray where it is strongest.
+   * This is character-for-character what CRT Lab.dc.html does at its own pin. */
+  /* FOLDED INTO THE FIRST QUADRANT, and passing the raw accessors instead was the bug behind "three of the four
+   * corners are wrong".
+   *
+   * prof.rhoQ and prof.wQ are tables over [0, PI/2] only -- guideOutline samples one quadrant because the outline
+   * is symmetric in both axes by construction. faceShaped hands them a RAW theta, which is negative below the x
+   * axis and past PI/2 to the left of the y axis, so in three quadrants out of four the lookup ran off the end of
+   * the table. Measured: the mapper's four-fold asymmetry was 77.8%, i.e. the same ray could come back with a
+   * radius nearly twice another's depending only on which corner it pointed at.
+   *
+   * crt-geometry publishes shapeRatio and axisWeight for exactly this -- both apply foldQuad first -- and the DOM
+   * lab uses them: `{ rho: (th) => G.shapeRatio(p, th), bow: (th) => G.axisWeight(p, th) }`. This is that, so the
+   * two builds cannot disagree about which ray is a corner.
+   *
+   * The SHADER was never affected: aperture() folds with abs() before it indexes, which is why the picture looked
+   * right while the calibration grid drawn over it did not. */
+  const fRaw = faceShaped(state.face * 90, state.grings * 0.05,
+                          { rho: (th) => shapeRatio(prof, th), bow: (th) => axisWeight(prof, th),
+                            bend: state.bend / 100 }, state.fexp, state.famp);
+  const pinK = fRaw ? (fRaw.pin == null ? fRaw(1, 0) : fRaw.pin) : 1;
+  const kk = pinK > 0.01 ? pinK : 1;
+  const fF = fRaw ? ((u, th) => fRaw(u, th) / kk) : null;
+
+  /* THE OVERLAY LIVES IN THE SAME SCALED SPACE AS THE SHADER, and it did not -- which is why the grid stopped
+   * matching the tube the moment the frame started fitting.
+   *
+   * The moulding shrinks the glass so glass + frame fills the box: the shader multiplies its aperture by
+   * 1 + WIDTH, so the rim lands at 1/(1 + WIDTH) of the outline. This SVG is drawn into a fixed 0-100 viewBox
+   * over the whole stage and knew nothing about that, so it kept plotting the tube at its unshrunken size --
+   * an instrument measuring a surface the renderer is no longer drawing.
+   *
+   * Scaling about the viewBox centre by the same factor is the whole fix. It has to be the SAME expression the
+   * shader uses, not a second one that happens to agree today. */
+  // MUST MATCH THE SHADER'S uFrameFit exactly -- see the note where it is uploaded.
+  const fitW = state.frameW / Math.max(1, cssPx.h / 2);
+  const fit = state.frameOn ? 1 / Math.max(0.35, 1 - fitW) : 1;
+  const toVB = ([x, y]) => (50 + x / w * 100).toFixed(3) + ',' + (50 + y / H * 100).toFixed(3);
+  /* THE GLASS, AS A CLIP PATH, from the same guideOutline points the guide is drawn from and the shader's own
+   * aperture table is built from. One description of the rim, used by all three. */
+  const glassD = 'M' + prof.pts.map(toVB).join('L') + 'Z';
+  let out = '';
+
+  if (state.debugOn && state.guidesOn) {
+    /* THE REFERENCE'S OWN GUIDE COLOURS, not an amber hairline. CRT Lab.dc.html's guide layer is a dashed BLUE
+     * edge -- #7fd0ff, 1.2 wide, 6/4 dash, 0.9 opacity -- with dashed RED centre crosshairs at #ff3c3c, 1 wide,
+     * 4/4 dash. Blue for the measured edge and red for the axes reads as an instrument rather than as part of the
+     * picture, which a dim amber line at 28% did not: it looked like a rim highlight the tube was drawing. */
+    out += '<path d="' + glassD + '" fill="none" stroke="#7fd0ff" ' +
+           'stroke-width="1.2" stroke-dasharray="6 4" opacity="0.9" vector-effect="non-scaling-stroke"/>';
+    // The axes are a property of the GLASS, so they stop at its rim rather than running out over the moulding.
+    out += '<defs><clipPath id="glassclipx" clipPathUnits="userSpaceOnUse">' +
+           '<path d="' + glassD + '"/></clipPath></defs>' +
+           '<path clip-path="url(#glassclipx)" d="M0,50H100M50,0V100" fill="none" stroke="#ff3c3c" ' +
+           'stroke-width="1" stroke-dasharray="4 4" vector-effect="non-scaling-stroke"/>';
+  }
+  /* NO RING BANDS. ringLadder samples twenty annuli and reports the worst gap in each -- twenty numbers standing
+   * in for a continuous field, which is the best the DOM build can do because it PLOTS geometry rather than
+   * gathering it. This shader holds the inverse map as a lookup, so it can read the surface directly at every
+   * pixel; see the elevation note in crt-gl.js. Removed rather than kept as a second, coarser opinion about the
+   * same quantity -- which is exactly the drift crt/README.md exists to prevent. */
+
+  if (state.debugOn && state.gridOn) {
+    /* 192 SAMPLES PER LINE, NOT 48, and the corners are why.
+     *
+     * A polyline chords a convex curve, cutting INSIDE it, and the error goes as the square of the step -- so it
+     * concentrates wherever curvature is highest, which is the corners. Measured against the true mapper at OUT
+     * 81: 2.47px of chord error at the corners against 0.24px on the axes at 48 samples, halving each time the
+     * count doubles (2.47 / 0.90 / 0.40 / 0.25 at 48 / 96 / 192 / 384). That is the grid failing to round its own
+     * corners, not the projection failing to bend them.
+     *
+     * 192 puts the corner error at 0.40px -- under half a pixel, and level with what the axes already had. The DOM
+     * lab needs a draft tier here because it rebuilds this while a slider is moving; this page does not, because
+     * syncCal is memoised on the geometry controls and only runs when one of them settles. */
+    /* CLIPPED TO THE GLASS, because the grid measures the PICTURE and the picture stops at the rim.
+     *
+     * The lattice is rectangular and the glass is a squircle, so the grid's corners fall outside it -- and with
+     * nothing clipping them they were drawn over the moulding, an instrument reporting on a surface that is not
+     * there. The reference does not have this problem because its scan and grid layers live inside the screen
+     * wrapper and inherit crtFaceClip; this SVG was a bare sibling of the canvas and inherited nothing.
+     *
+     * The clip is guideOutline's own points -- the same path the blue guide is stroked from and the same outline
+     * the shader's aperture table is sampled from -- so the grid cannot end anywhere the tube does not. */
+    const g = curvedGridPaths(w, H, 40, fF, 192);
+    out += '<defs><clipPath id="glassclip" clipPathUnits="userSpaceOnUse">' +
+           '<path d="' + glassD + '"/></clipPath></defs><g clip-path="url(#glassclip)">';
+    g.lines.forEach((d) => {
+      out += '<path d="' + d + '" fill="none" stroke="#ffb454" stroke-opacity="0.12" ' +
+             'stroke-width="1" vector-effect="non-scaling-stroke"/>';
+    });
+    out += '</g>';
+  }
+    /* ONE TRANSFORM ON THE WHOLE OVERLAY, not a scale factor threaded through every path.
+   *
+   * The frame shrinks the glass -- the shader multiplies its aperture by 1 + WIDTH -- so every instrument drawn
+   * over the tube has to shrink with it or it is measuring a surface the renderer is not drawing. A first attempt
+   * put the factor inside toVB, which reached the guide outline but NOT the grid: curvedGridPaths emits viewBox
+   * coordinates straight from radialMap and never passes through toVB, so the grid carried on covering the whole
+   * stage while the guide sat correctly on the rim. Two scaling mechanisms, one of which the grid did not use.
+   *
+   * A group transform catches everything by construction, including anything added later. Scaled about the
+   * viewBox centre, and vector-effect="non-scaling-stroke" on the paths keeps the stroke widths honest through
+   * it. Identity when the frame is off. */
+  calSvg.innerHTML = fit === 1 ? out
+    : '<g transform="translate(50,50) scale(' + (1 / fit).toFixed(5) + ') translate(-50,-50)">' + out + '</g>';
+}
+
+/* THE UNITS EACH CONTROL IS ACTUALLY IN. crt-controls does this with a fmt() per row and it is worth copying:
+ * a slider that reads "27" is ambiguous, and one that reads "27 deg" is not. SQUIRCLE runs to 90 because that is
+ * where guideOutline's exponent reaches exactly 2 -- a circle, in a square box. */
+/* THE ARC A BOWED EDGE SWEEPS, measured off the real outline. Sagitta is how far the edge midpoint stands proud
+ * of the straight line joining its two corners; the half chord is the run from midpoint to corner. */
+/* BEND STAYS A PERCENTAGE, and the attempt to make it degrees is worth recording so it is not repeated.
+ *
+ * SQUIRCLE has an absolute landmark -- at 90 the superellipse exponent is exactly 2, which IS a circle -- so
+ * degrees there mean something no other control can move. BEND has no such point. It is a bow depth, and the ARC
+ * that bow describes depends on the shape being bowed: the same 6% sweeps a different angle on a rectangle than
+ * on a rounded face, and on a wider glass than a narrower one.
+ *
+ * So a degree-labelled BEND made itself a function of SQUIRCLE and of the window size -- the number moved when
+ * you touched a different control, which is exactly the confusion it was meant to remove. And past what 15% can
+ * produce the request is unreachable, so the panel would have read 18 degrees while the glass delivered less: a
+ * readout that lies is worse than one that is merely abstract.
+ *
+ * A percentage is guideOutline's own parameter, it is stable under every other control, and it never overstates
+ * what it got.
+ */
+
+let faceLUT = { u: null, r1: 1, rimK: 1 };
+let faceProf = null;   // the profile itself: the elevation overlay reports its sag   // kept so the content canvas can size against the pin
+/* THE STAGE IN CSS PIXELS, kept because the mask's density is defined against it -- see the PPI note
+ * where scanN is computed. Device pixels are the wrong ruler for a control the reference specifies in
+ * CSS pixels, and using them made the pattern 1.5x finer than the reference's at the same PPI. */
+const cssPx = { w: 1600, h: 1100 };
+// Render-target pixels per CSS pixel: dpr * renderScale. The mask's width is specified in CSS px.
+let pxScale = 1;
+/* THE CONTENT LAYER'S SIZE, DECLARED UP HERE WITH cssPx AND FOR THE SAME REASON: the panel's readouts now report
+ * derived quantities -- how many columns a TEXT WIDTH buys, how many rows fit -- and to do that a formatter has to
+ * call textGrid(), which reads this. Left at its natural home next to resize() it sits 90 lines BELOW the loop that
+ * builds the panel, and a const is in its temporal dead zone until then: the whole page fails to boot with
+ * "Cannot access 'contentPx' before initialization". Exactly the trap the px formatter hit with cssPx. */
+const contentPx = { w: 1600, h: 1100 };
+
+const FMT = makeFmt({ state, cssPx, textGrid });
+const host = document.getElementById('controls');
+/* THE PANEL, AS FOUR SMALL BUILDERS RATHER THAN ONE NESTED LOOP.
+ *
+ * This was a single forEach doing four unrelated jobs at three levels of indentation: fold state, master toggles,
+ * three row types and the stepper's auto-repeat, all interleaved. Adding a row type meant editing the middle of
+ * it, and the collapse behaviour had to be threaded through by hand.
+ *
+ * Split by what each piece IS. Each builder returns its element and knows nothing about the others, so a new row
+ * type is a new function plus one line in dispatch, and the section machinery never has to be touched again.
+ */
+
+/* THE PANEL IS THE SHARED KIT'S, not this page's. The builders lived here as 236 lines and 54 CSS rules,
+ * duplicated in two other panels; they are ../ui/panel.js and ../ui/panel.css now.
+ *
+ * THE TWO THINGS THE BUILDERS USED TO REACH IN FOR arrive here as (key, kind) instead. A colour is always a
+ * bezel colour, so it invalidates that memo; RENDER SCALE is the one control that reallocates the buffer. The
+ * kit stays ignorant of both.
+ *
+ * THE FOLD MAP IS NOT PASSED, so the kit resolves state.secClosed on every read. Handing it the object was a
+ * real bug: the merge above replaces whole keys, so the panel folded on screen while nothing reached storage. */
+createPanel({
+  host, state, sections: SECTIONS, fmt: FMT,
+  onChange(key, kind) {
+    if (kind === 'colour') bez.box.k = null;
+    queueSave();
+    if (key === 'renderScale') resize();
+  },
+});
+
+/* LIGHT IS NOT UP HERE ANY MORE -- it is FIXTURE's own master, the same treatment DEBUG and FRAME already get.
+ *
+ * It sat beside POWER and REBOOT, which put a control for one section's contents several sections above them
+ * and grouped it with two things that genuinely are global. It is not: state.lightOn feeds exactly one uniform,
+ * the fixture gate, and with it off every row under FIXTURE describes something that is not being drawn.
+ * Moving it makes the section collapse with it, which is the point -- twenty-seven dead rows is a lot of panel
+ * to scroll past. FRAME's note says the same thing about frameOn.
+ *
+ * POWER and REBOOT stay: one is the tube itself, the other is not a state at all. */
+/* THE LIT STATE IS ASKED FOR, NOT TOGGLED. Third element is a predicate, and an action without one is not a
+ * state and never lights. POWER answers from state.power, which is the only place that knows; WARP and SURGE are
+ * things that HAPPEN and are never lit -- the reference's own distinction, and the reason REBOOT is gone: it was
+ * neither a state nor an event anyone needed a button for once the power switch retypes on its own.
+ *
+ * WARP AND SURGE DIFFER ON ONE POINT, and it is not arbitrary. The warp is the BEAM being bent, so it needs a
+ * beam: with the tube dark there is nothing to deflect and the button does nothing, exactly as the reference
+ * guards it. The surge is the ROOM's supply failing, so it fires whether or not the monitor is switched on --
+ * the fixture and the moulding carry the event on their own. */
+const ACTIONS = [
+  ['\u23fb POWER', togglePower, () => !!state.power],
+  ['\u223f WARP',  () => { if (state.power) triggerWarp(performance.now()); }],
+  ['\u2301 SURGE', () => triggerSurge(performance.now())],
+];
+const abox = document.getElementById('actions');
+buildActions(abox, ACTIONS, queueSave);
+
+/* THE PHOSPHOR SELECTOR. Switching it re-resolves the palette, rebuilds the boot text (its two-tone is derived
+ * from fg/hi, so it has to be rebuilt rather than recoloured) and invalidates the memoised palette. */
+const phosRow = document.getElementById('phosrow');
+function buildPhosRow() {
+  phosRow.innerHTML = '';
+  ['amber', 'green', 'white'].forEach((name) => {
+    const b = document.createElement('button');
+    b.textContent = PH[name].name;
+    if (name === phName) b.classList.add('on');
+    b.onclick = () => {
+      phName = name; ph = PH[name]; state.phName = name; queueSave();
+      lastCols = 0;                   // drawContent owns the rebuild; this just invalidates its column memo
+      lastContentKey = '';            // force a re-raster: the glyph colours changed
+      pal.box.k = null;               // and the palette the shader is handed
+      buildPhosRow();
+    };
+    phosRow.appendChild(b);
+  });
+  const sw = document.createElement('input');
+  sw.type = 'color'; sw.className = 'sw'; sw.value = ph.fg;
+  sw.title = 'custom phosphor';
+  sw.oninput = () => {
+    ph = { fg: sw.value, hi: sw.value, glow: hexRgb(sw.value).join(','), name: 'CUSTOM' };
+    phName = 'custom'; state.phName = 'custom'; state.phCustom = sw.value; queueSave();
+    lastCols = 0;
+    lastContentKey = ''; pal.box.k = null;
+    [...phosRow.querySelectorAll('button')].forEach((b) => b.classList.remove('on'));
+  };
+  phosRow.appendChild(sw);
+}
+/* THE PHOSPHOR RESTORED HERE, not in the load block above: the boot text is coloured by it, and `ph` is not in
+ * scope yet at the point the rest of the state is merged. The text itself is built by drawContent, on the column
+ * count only it knows -- so all this has to do is invalidate the memo. */
+if (state.phName === 'custom' && typeof state.phCustom === 'string') {
+  ph = { fg: state.phCustom, hi: state.phCustom, glow: hexRgb(state.phCustom).join(','), name: 'CUSTOM' };
+  phName = 'custom';
+} else if (PH[state.phName]) {
+  phName = state.phName; ph = PH[phName];
+}
+lastCols = 0;
+lastContentKey = ''; pal.box.k = null;
+
+buildPhosRow();
+
+let rzT = 0;
+function resize() {
+  const r = document.getElementById('stage').getBoundingClientRect();
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  cssPx.w = Math.max(2, Math.round(r.width));
+  cssPx.h = Math.max(2, Math.round(r.height));
+  const w = Math.max(2, Math.round(r.width * dpr * state.renderScale));
+  const h = Math.max(2, Math.round(r.height * dpr * state.renderScale));
+  pxScale = Math.max(0.1, h / Math.max(1, Math.round(r.height)));
+  R.size(w, h);
+  /* THE CONTENT BUFFER FOLLOWS THE RENDER TARGET. A fixed 1600x1100 meant the glyphs were minified to the render
+   * size by the sampler and then magnified back up to the display -- two resamples the text never needed, which
+   * is what made it look like a blur was being applied to it. 1.08 of the target because the projection magnifies
+   * the middle of the picture slightly, so a margin keeps that from sampling under 1:1. */
+  /* AND BY THE PIN, because the projection is pinned at the rim and this build GATHERS rather than plots. The lab
+   * can magnify for free -- it regenerates its geometry at the new scale. Sampling a texture cannot: magnifying by
+   * 1/F(1) with a 1:1 canvas means fewer than one source texel per output pixel and the middle goes soft, which is
+   * precisely the "middle is being stretched" failure crt-projection warns about. Sizing the canvas by 1/F(1)
+   * keeps the sampling above 1:1 at every FACE. Never below the old 1.08 -- a concave face has F(1) > 1 and would
+   * otherwise shrink the canvas below the target. */
+  const pinScale = Math.max(1.08, 1 / Math.max(0.35, faceLUT.r1 || 1));
+  contentPx.w = Math.max(256, Math.round(w * pinScale));
+  contentPx.h = Math.max(256, Math.round(h * pinScale));
+  document.getElementById('scaleinfo').textContent =
+    w + '×' + h + ' · ' + (w * h / 1e6).toFixed(2) + ' MP · scale ' + state.renderScale.toFixed(2);
+}
+// SETTLE, DON'T TRACK -- the same lesson the DOM build learned. Every resize event would reallocate four buffers.
+window.addEventListener('resize', () => { clearTimeout(rzT); rzT = setTimeout(resize, 120); });
+resize();
+
+/* A LOST CONTEXT IS A NORMAL EVENT ON THIS HARDWARE, AND NOTHING HERE USED TO HANDLE IT.
+ *
+ * The page drives an integrated adapter hard enough that Windows can reset the display driver under it (TDR).
+ * When that happens Chrome kills the WebGL context: every program, texture and framebuffer this file holds is
+ * gone, and every gl call becomes a silent no-op. The rAF loop carried on calling them sixty times a second
+ * against a dead context, so the canvas kept whatever pixels it died with and the instrument read as frozen or
+ * garbage with no indication of why. Closing the tab was the only recovery, which is exactly how it was found.
+ *
+ * THREE THINGS ARE REQUIRED AND EACH ONE WAS GOT WRONG FIRST.
+ *
+ *   preventDefault() on the lost event is what tells Chrome to attempt a restore at all. Without it
+ *     'webglcontextrestored' never fires and everything below is dead code.
+ *   Restoring is a REBUILD, not a resume: createRenderer allocates fresh, so every memo that remembers having
+ *     uploaded something has to be cleared or the new context is left with no LUTs, no content texture and
+ *     buffers of the wrong size.
+ *   The status message goes in its OWN span. Writing textContent on #hud replaces its children -- #fps,
+ *     #scaleinfo, #gpu and #heatread all vanish -- and resize() then throws on the missing #scaleinfo, which
+ *     aborted this handler before it could clear glLost and parked the instrument for good. The recovery
+ *     bricking itself on its own status message is the same trap the DOM build records about the FPS readout.
+ *
+ * Verified by driving WEBGL_lose_context: the fingerprint returns to within 0.5 parts per million of the
+ * pre-loss render, which is render-probe.js's own documented noise floor for a content raster settling.
+ */
+let glLost = false;
+const glState = document.getElementById('glstate');
+canvas.addEventListener('webglcontextlost', (e) => {
+  e.preventDefault();
+  glLost = true;
+  glState.textContent = 'GPU CONTEXT LOST — the display driver reset. Restoring…';
+});
+canvas.addEventListener('webglcontextrestored', () => {
+  R = createRenderer(canvas);
+  if (!R) {
+    glState.textContent = 'GPU CONTEXT LOST — could not restore. Reload the page.';
+    return;
+  }
+  // Every upload the old context held is gone with it, so each memo that gates one is cleared.
+  faceKey = ''; outKey = ''; calKey = ''; lastContentKey = ''; pal.box.k = null;
+  resize();
+  drawContent(true);
+  glLost = false;
+  glState.textContent = '';
+});
+
+let frames = 0, fpsT = 0;
+const fpsEl = document.getElementById('fps');
+
+function frame(now) {
+  /* NOTHING IS DRAWN WHILE THE CONTEXT IS GONE, but the loop stays alive so the restore needs no restart.
+   * Every gl call against a lost context is a no-op, so the work below would be spent building uniforms for
+   * a draw that cannot happen -- and drawContent would re-raster the text canvas to upload it nowhere. */
+  if (glLost) { requestAnimationFrame(frame); return; }
+  const t = now / 1000;
+  /* THE POWER SEQUENCE, EVALUATED FIRST, because both deadlines below are read against it and the picture it
+   * hands out is what everything after this draws. See the note where PWR_ON is declared. */
+  const pwr = powerNow(now);
+  const wp  = warpAt(now);
+  if (wipeAt && now >= wipeAt) { typed = 0; wipeAt = 0; }
+  /* TYPE SPEED IN WORDS PER MINUTE, which is what the readout says and what the reference's `type` means: the
+   * control is a multiplier on 350 WPM. A word is five characters by the usual convention, so 350 WPM is 1750
+   * characters a minute and one character every 34.3ms -- close enough to the 26ms this was hardcoded at that the
+   * boot reads the same, and now it is a number with a unit rather than a constant nobody could explain. */
+  /* HELD UNTIL THE TUBE HAS STRUCK, AND WHILE IT IS OFF. lastType tracks forward while either hold stands, so the
+   * first character lands at the deadline rather than a full interval after it -- and, more to the point, the
+   * counter cannot bank the whole warm-up as owed time and dump a dozen characters onto the screen in one frame.
+   *
+   * The power guard is the lab's: a switched-off tube is not typing. Without it the sequence kept running behind
+   * a dark screen after the wipe, so the switch coming back found a boot half-finished -- invisible, because
+   * powerOn wipes anyway, and wrong in the way a thing that is only invisible by luck is wrong. */
+  if (!state.power || (typeAt && now < typeAt)) lastType = now;
+  else if (now - lastType > 60000 / (350 * 5 * state.type) && typed < FULL) { typed++; lastType = now; }
+  drawContent();   // no-ops unless the typed count or the caret phase moved
+  syncLUT();
+  syncCal();       // likewise: rebuilds only when a geometry control or the aspect moved
+
+  /* THE REAL FLICKER ENGINE, not a sine.
+   *
+   * crt-flicker is a factory of pure functions: screenFlicker is a stochastic DIP -- a random depth and duration,
+   * then a gap scaled by the rate -- and bulbFlick is a per-bulb flux model with jitter, chaos and a health-driven
+   * colour strike. What was here instead was sin(t*11.3)*sin(t*2.7) cubed: periodic, so it read as a wobble rather
+   * than a tube guttering, and its control was a depth where the lab's is a RATE in Hz.
+   *
+   * These are the same functions the DOM lab drives its lamps with, so FLICKER A/B mean here what they mean there.
+   * And they arrive as uniforms, which is the point: crt-flicker's own profiling records frames that wrote these
+   * values running 100.1ms against 16.7ms for frames that did not, because every write invalidated a group under a
+   * reference filter. Here the number changes and nothing is invalidated. */
+  /* THE POWER LEVEL RIDES ON THE FLICKER, and that is not a shortcut -- it is the same quantity.
+   *
+   * uFlicker is what the phosphor is putting out this frame, spent in the shader on everything the tube emits and
+   * on nothing it reflects. A tube striking is putting out four times its settled output for a moment; a tube
+   * collapsing is putting out nothing by the end. Both are statements about the same number, so the animation's
+   * level multiplies into it rather than arriving as a second gate the shader would have to spend in the same
+   * place. It is also why the moulding's screen-lit terms flash with the strike without being wired for it: they
+   * already read uFlicker.
+   *
+   * pwr.lvl > 0 is the flicker engine's own gate -- a dead tube does not gutter. */
+  /* THE FAULT IS SAMPLED ONCE AND SPENT EVERYWHERE, which is the whole reason it reads as the room rather than as
+   * an effect on the screen. One `sg` feeds the tube's output, both lamps' output, both lamps' HEALTH and the
+   * colour temperature the palette is built from -- so nothing in the picture can be half a frame out of step
+   * with anything else in it. */
+  const sg = surgeNow(now);
+  /* THE GUTTERING RIDES ON HOW HARD THE FAULT IS BITING, not on a flat rate for the duration. bite is the
+   * distance from normal, so the tube chops hardest through the collapse and the cut and goes quiet through the
+   * BUILD -- which is the phase crt-flicker's own note says exists to buy the flash its impact. A constant rate
+   * across the event would fill that silence in and take the flash with it. */
+  const bite  = sg ? sg.bite : 0;
+  const fHz   = state.flickHz + (state.surgeHz  - state.flickHz) * bite;
+  const fStr  = state.fstr    + (state.surgeStr - state.fstr)    * bite;
+  const flk = pwr.lvl * FLK.screenFlicker(now, fHz, fStr, pwr.lvl > 0) * (sg ? sg.screen : 1);
+  /* THE LAMPS ARE GATED ON THE FITTING'S SWITCH AND NOTHING ELSE, and the second gate that used to be here was
+   * a dead end you could not get out of.
+   *
+   * It was `state.lightOn && state.flickerOn`. flickerOn has a default of 1 and NO ROW ANYWHERE ON THE PANEL --
+   * it is a leftover from when the fixture's flicker had its own master -- so any session that ever stored it as
+   * 0 had FLICKER A, FLICK STR A, FLICKER B and FLICK STR B permanently doing nothing, with no control on screen
+   * capable of turning them back on. Found exactly that way: measured over 90 frames, both lamps returned 1.000
+   * with one distinct value between them while the screen's own flicker moved across 25.
+   *
+   * A per-lamp rate of 0 Hz is already the off switch, and bulbFlick's own guard is `hz > 0.05 && flux > 0.001`.
+   * A tube that is not flickering is a tube whose FLICKER is set to zero -- that is the control, it is visible,
+   * and it cannot strand anyone. */
+  const lampOn = !!state.lightOn;
+  /* THE LAMPS GUTTER FASTER UNDER THE FAULT TOO, and their own FLICKER rate is the floor rather than the answer:
+   * a tube whose supply is collapsing does not keep failing at the leisurely rate its ballast manages on a good
+   * day. Same bite, so the fixture and the screen chop in step. */
+  const lampHz = (hz) => hz + (state.surgeLampHz - hz) * bite;
+  const lamp = (id, hz, str, health) =>
+    FLK.bulbFlick(now, id, lampHz(hz), str, lampOn, state.lfjit, state.lfchaos, health);
+  /* THE BULBS ARE ADVANCED FIRST, because the two things below are read out of the machine they advance.
+   *
+   * This build was using ONLY bulbFlick's return value -- the brightness multiplier -- and never called
+   * bulbState at all. That is the whole reason the fixture read as a lamp being dimmed rather than a lamp that
+   * is broken: two thirds of what crt-flicker models per cycle was being computed and thrown away.
+   *
+   * HEALTH IS THE SLIDER, NOT THE LIVE VALUE, on the way IN. The reference's own note: the colour strike leans
+   * warm on a dying tube, and the right signal for that is the tube's CONDITION -- the sag is this cycle's
+   * weather, and feeding it back in would compound. */
+  const mA = lamp('A', state.lflickA, state.lfstrA, state.healthA);
+  const mB = lamp('B', state.lflickB, state.lfstrB, state.healthB);
+  const bA = FLK.bulbState('A') || {}, bB = FLK.bulbState('B') || {};
+
+  /* THE COLOUR STRIKE -- the thing that makes a failing tube read as failing rather than as dimming.
+   *
+   * crt-flicker picks warmTarget on a re-ignition and SNAPS to it ("an eased colour shift reads as a fade, not
+   * a strike"), so the tube changes colour between one frame and the next and then holds there. It is signed on
+   * purpose: positive drops kelvin for the tired pinkish cast of an old tube, negative RAISES it for the cold
+   * blue-green of an arc that has struck before its phosphor caught up. A hard strike reaches 2.5 units, which
+   * at 1500K each drives straight into the 2200K floor or the 9000K ceiling -- so it reads as a lamp misfiring
+   * rather than as a slightly different white. FLICK CHAOS governs how often that happens.
+   *
+   * 1500K per unit is the reference's own constant. The surge's share keeps its own control, because that is a
+   * mains fault rather than this tube's chemistry, and the two add.
+   *
+   * QUANTISED TO 20K, the reference's grid, so the palette memo holds still for runs of frames rather than
+   * rebuilding the whole phosphor and bezel model every time a strike nudges the average. */
+  /* COLOUR STRIKE is the kelvin a strike is worth, and it is a control rather than the reference's fixed 1500.
+   *
+   * 1500 is right for a lab where the fixture is one of a dozen things being tuned: a strike lands a few hundred
+   * kelvin off nominal, which is a real drift and reads as one. It is not enough when the fitting is the thing
+   * you are watching -- the machine picks strikes as large as 2.5 units, and at 1500 even those only reach the
+   * rails on the hardest of them. At 2600 an ordinary strike is plainly a different colour of light and a hard
+   * one drives into the 2200K floor or the 9000K ceiling, which is what "this lamp is broken" looks like. The
+   * clamp is what keeps it legible however far this is pushed. */
+  const kelvin = (t, warm) => {
+    const dK = warm * state.lfwarmK + (sg ? sg.warm * state.surgeWarm : 0);
+    return Math.round(Math.min(9000, Math.max(2200, t - dK)) / 20) * 20;
+  };
+  const tA = kelvin(state.tempA, bA.warm || 0), tB = kelvin(state.tempB, bB.warm || 0);
+  /* AND THE HEALTH MOVES WITH IT. hmod is an instant drop to a new condition on about a fifth of cycles, then a
+   * recovery halfway back on each cycle after -- so the tube loses a chunk of its coating, limps, and claws some
+   * of it back, at intervals nobody can predict. It reaches the shader as uHealthA, which is what tubeSurface
+   * draws its zonal pattern from, so the ENDS and the middle change independently instead of the whole tube
+   * dimming together. That is the difference between a lamp on a dimmer and a lamp that is going. */
+  /* HEALTH DIP deepens the excursion rather than replacing it, so WHEN the tube stumbles is still the machine's
+   * decision and only HOW FAR is this panel's. hmod comes back as, say, 0.85; a gain of 2 reads that as a drop
+   * to 0.70. At 1 it is the reference's own depth, which is a lamp losing a little coating and getting most of
+   * it back -- true, and too subtle to see on a fitting this size. */
+  const lim = (v) => Math.max(0, Math.min(1, v));
+  const dip = (m) => 1 - (1 - (m == null ? 1 : m)) * state.lfhdip;
+  const hA = lim(state.healthA * dip(bA.hmod) * (sg ? sg.health : 1));
+  const hB = lim(state.healthB * dip(bB.hmod) * (sg ? sg.health : 1));
+  const p = pal(tA, tB);
+
+  R.draw({
+    /* FIT: OVERSCAN COMPUTED SO THE PICTURE'S RIM STAYS ON THE GLASS, whatever FACE, DEPTH, CURVE AREA and
+     * FALLOFF do to the projection.
+     *
+     * The rim is pinned, so at the reference's own depth the raster already lands exactly on the glass and there
+     * is nothing to correct. Push DEPTH up and the amplitude passes what the fold test bounded: at 6x the rim
+     * magnifies 1.319, so the outer third of the picture is driven past the aperture and clipped. Reaching for
+     * OVERSCAN by hand every time another control moves is busywork the panel can do itself.
+     *
+     * The number is the face LUT's own last sample -- the scale factor at s = 1, which is where the raster edge
+     * lands -- so it comes from the same table the shader gathers through rather than from a second derivation of
+     * the same quantity. Clamped to the slider's own range so FIT can never ask for something OVERSCAN could not
+     * have been set to by hand. */
+    time: t,
+    overscan: state.overscan,
+    face: state.face, corner: state.corner, bend: state.bend,
+    /* THE PPI RULE IS crt-controls': round(span * density / 100), the picture's HEIGHT for the horizontal pass
+     * and its WIDTH for the vertical one -- MEASURED IN CSS PIXELS, which is the whole point of this note.
+     *
+     * This used to divide the canvas's DEVICE height, so on a 1.74x display 25 PPI produced 423 lines where the
+     * reference produces 276 -- its own comment records "276 horizontal and 390 vertical subpaths" at that
+     * setting. Same number on the slider, a pattern half again as fine, and because it was finer it sat closer to
+     * the pixel grid and got averaged away: the mask measured about a third of the reference's amplitude and
+     * looked like it only appeared where there was content to darken.
+     *
+     * The reference takes its span from picSizePx(), i.e. offsetWidth/offsetHeight -- CSS pixels, independent of
+     * both devicePixelRatio and renderScale. A density is a statement about the tube, not about the buffer it is
+     * being rasterised into, so neither of those may enter. Computed on the CPU and handed in as a line count;
+     * the shader should not be deciding what a density means. */
+    /* PITCH IN CSS PIXELS, NOT A DENSITY -- the same geometry, said directly.
+     *
+     * The old rule was crt-controls': count = round(span * density / 100), which makes pitch = span/count. Work
+     * that through and pitch = 100/density exactly -- 25 PPI IS a 4px pitch, and always was, independent of the
+     * window. The density was the reciprocal of the thing anyone actually wants to set, and the round() made it
+     * not-quite-exact as the stage resized: a 1060px stage gives 265 lines and a 4.000px pitch, a 1063px one
+     * gives 266 and 3.997px.
+     *
+     * WHAT IS KEPT FROM THAT IS THE MISSING round(). crt-controls rounds the count to a whole number, which makes
+     * the true pitch span/round(...) rather than 100/density -- a 967px stage gives 242 lines and a 3.996px pitch,
+     * a 970px one gives 243 and 3.992px. Dropping the round leaves the density meaning exactly 100/density at
+     * every size. The control is the density again because a pitch and a density are the same setting said two
+     * ways, and this is the way the reference says it. */
+    scanN: Math.max(1, cssPx.h * state.scan / 100),
+    /* WIDTH IS IN CSS PIXELS TOO, for the same reason the density is -- and it was the other half of the same bug.
+     * The reference strokes with vector-effect="non-scaling-stroke" at stroke-width 1.0, and a non-scaling stroke
+     * is measured in CSS pixels, so on a 1.74x display its line is 1.74 device pixels of ink. This handed the raw
+     * number to a shader that measures dyPx in RENDER-TARGET pixels, so the same "1.00px" on the panel drew a line
+     * 1.74x thinner and carried that much less ink. Modulation per unit brightness measured 0.033 against the
+     * reference's 0.096. Converted here, once, so the readout keeps meaning CSS pixels the way the reference's
+     * does. */
+    scanW: state.scanw * pxScale, scanA: state.scanop / 100,
+    grilleN: Math.max(1, cssPx.w * state.grille / 100),
+    grilleW: state.grillew * pxScale, grilleA: state.grilleop / 100,
+    phos: state.phos, bloom: state.bloom, bloomThresh: state.bloomThresh,
+    /* PX -> TAP SPACING, converted here because only this side knows the ratios. The blur buffer is a
+     * quarter of the render target (w >> 2), so one of its texels spans 4 render-target pixels, and the
+     * thirteen taps carry a sigma of 3 -- one texel of spacing is therefore a 12-render-pixel blur. The
+     * control is specified in CSS px like FRAME WIDTH and the scanline width, so pxScale converts it. */
+    bloomSpread: state.bloomSize * pxScale / 12,
+    /* NOT MULTIPLIED BY THE SWITCH ANY MORE. It was `state.beam * state.power`, which zeroed the content on the
+     * frame the button was pressed -- so the collapse had nothing left to play over and the picture simply
+     * vanished. What the beam is worth is a setting; whether the tube is emitting is the power level, and that is
+     * spent once, on the flicker, where the shader already separates emission from reflection. */
+    bright: state.bright, beam: state.beam,
+    // THE PICTURE'S SURVIVING EXTENT. 1,1 at rest, and the shader's uniform branch tests for exactly that.
+    pwr: [pwr.sx, pwr.sy],
+    /* THE MAGNET'S FIELD THIS FRAME. A zero k skips the whole branch, so a tube nobody is holding a magnet
+     * against pays nothing -- the same discipline the collapse follows. */
+    warpK: wp.k, warpPos: wp.pos, warpR: wp.r, warpD: wp.d,
+    vig: state.vig, vigFall: state.vigFall, heat: state.debugOn ? state.heat : 0,
+    // GATED ON DEBUG like the guides and the heat map: an inspection view, not a setting.
+    fixSolo: state.debugOn ? state.fixSolo : 0,
+    /* THE SAG, SIGNED, straight from crt-projection -- the overlay must not re-derive it. */
+    sagA: faceProf ? faceProf.sg * faceProf.A : 0,
+    sagU0: faceProf ? faceProf.u0 : 0, sagP: faceProf ? faceProf.p : 2,
+    // SECONDS -> RATE, here and nowhere else. 0s is parked, which is a period the shader cannot express.
+    sweep: state.sweepSec > 0 ? 1 / state.sweepSec : 0,
+    /* GATED ON THE PHASE, NOT THE LEVEL. The sweeps are additive emission, so the level already dims them with
+     * everything else -- but zero here also SKIPS the tip's whole per-pixel branch, which is worth having on a
+     * tube that is off and is not worth losing mid-collapse while the beam is still visibly writing. */
+    sweepOn: state.beamOn && pwr.lvl > 0 ? state.sweepOn : 0,
+    /* SCANLINES AND COLUMNS -> suv, converted once here. nSL and nCOL are the SAME counts handed to the shader
+     * as scanN/grilleN a few lines up, so the beam cannot disagree with the pattern it is drawing: one scanline
+     * is 1/nSL of the picture's height by construction, one grille column 1/nCOL of its width. */
+    sweepH: state.sweepSL / Math.max(1, cssPx.h * state.scan / 100),
+    dotRY:  state.dotH    / Math.max(1, cssPx.h * state.scan / 100),
+    dotRX:  state.dotW    / Math.max(1, cssPx.w * state.grille / 100),
+    /* PX -> suv, ONCE, HERE. The three tip distances are specified in CSS pixels because that is the only unit
+     * a radius or a displacement means anything in; suv runs 0..1 over the picture, so a CSS pixel is
+     * 1/cssPx.h of it. Same conversion, same reason, as the scanline width and the frame's own width. */
+    hsweep: state.hsweepSec > 0 ? 1 / state.hsweepSec : 0,
+    sweepSol: state.sweepSol,
+    sweepDip: state.sweepDip, dipFall: state.dipFall, sweepWhite: state.sweepWhite,
+    sweepRGB: state.sweepRGB / Math.max(1, cssPx.h),
+    dotR:     state.dotR     / Math.max(1, cssPx.h),
+    dotLvl:   state.dotNits / 100,                       // nits -> the emission scale uBright is on
+    sweepStep: state.sweepStep / Math.max(1, cssPx.h * state.scan / 100),
+    dotHalo:   state.dotHaloNits / 100,
+    /* COLUMNS -> suv x and SCANLINES -> suv y, the units TIP WIDTH and TIP HEIGHT are in -- so a split of
+     * one is one cell of misconvergence on that axis, whichever axis you are reading. */
+    tipRGBX:   state.tipRGBc / Math.max(1, cssPx.w * state.grille / 100),
+    tipRGBY:   state.tipRGBr / Math.max(1, cssPx.h * state.scan   / 100),
+    // COLUMNS -> suv x, the unit the CONVERGENCE section's own error would be in if it were raster-based.
+    beamConv:  state.beamConvC / Math.max(1, cssPx.w * state.grille / 100),
+    dipNoise:  state.dipNoise, pullInk: state.pullInk,
+    /* THE TUBES' SURFACE AND THEIR SUPPLY. The mains phase is wrapped HERE, in doubles, because the
+     * shader cannot: a 100Hz cosine of wall-clock seconds is an argument in the millions by the time
+     * anyone has left the page open, and float32 freezes it solid. */
+    boxVis: state.boxVis, railVis: state.railVis, glowA: state.glowA, glowB: state.glowB, ripple: state.ripple,
+    /* PARKED WHEN NOTHING IS MODULATED BY IT. Both readers -- the fitting's own trace and the main pass --
+     * spend this as `1.0 - uRipple * 0.5 * (0.5 - 0.5*cos(uMainsPh*TAU))`, so at RIPPLE 0 the phase cannot
+     * reach a pixel. Sending it live anyway made it a uniform that CHANGES EVERY FRAME for no visible reason,
+     * which is enough on its own to defeat the fixture pass's input key and re-trace the whole fitting sixty
+     * times a second at a setting where it is provably identical. A phase nothing modulates is not a phase. */
+    mainsPh: state.ripple > 0 ? (t * 100) % 1 : 0,
+    beamPull: state.beamPull / Math.max(1, cssPx.h),
+    flicker: flk, /* px -> content uv, against the stage rather than the render target: the control is a screen distance,
+     * so it must not change meaning when RENDER SCALE does. */
+    /* CONVERGENCE, PER GUN, px -> content uv. Against cssPx rather than the render target: these are screen
+     * distances, so they must not change meaning when RENDER SCALE moves. The master is a bypass -- off hands
+     * over an empty object and the renderer's ||0 puts all three guns on the same raster. */
+    conv: !state.convOn ? {} : {
+      rx: state.convRX / Math.max(1, cssPx.w), ry: state.convRY / Math.max(1, cssPx.h),
+      gx: state.convGX / Math.max(1, cssPx.w), gy: state.convGY / Math.max(1, cssPx.h),
+      bx: state.convBX / Math.max(1, cssPx.w), by: state.convBY / Math.max(1, cssPx.h),
+    },
+    persist: state.persist,
+    /* MILLIMETRES -> GLASS HALF-HEIGHTS, here and nowhere else. The shader keeps working in the units it
+     * always did; this is the only place that knows a millimetre exists. uAspect is folded in for the two
+     * x-extents because the shader compares them against an already aspect-scaled coordinate. */
+    ...(function(){
+      const U = 1 / MM_PER_UNIT;                            // units per mm -- fixed, see the note in state
+      const asp = Math.max(0.01, cssPx.w / Math.max(1, cssPx.h));
+      const tubeLenMM = Math.max(50, state.fixWmm - 2 * state.tubeInsetMM);   // DERIVED, not chosen
+      return {
+        openW:  (state.fixWmm * 0.5) * U / asp,
+        openH:  (state.fixHmm * 0.5) * U,
+        recess: Math.max(0.002, state.recessMM * U),
+        fixW:   (tubeLenMM * 0.5) * U / asp,
+        fixH:   (state.tubeDiaMM * 0.5) * U,
+        fixGap: (state.tubeGapMM * 0.5) * U,
+        /* NO ASPECT DIVISION HERE, and that was a bug. halfLen comes out of uFixW * uAspect, so the aspect
+         * cancels and it is a plain length in units -- and fromEnd is measured against it. Dividing the cap by
+         * the aspect put it in a different space from the thing it is compared to, so CAP LENGTH moved the cap
+         * by 5px across its whole 5-80mm range instead of by about 45. */
+        // AS A FRACTION OF THE TUBE'S OWN HALF-LENGTH, so it is dimensionless by the time the shader sees
+        // it and cannot disagree with a coordinate about units. Still a real 25mm of moulded part.
+        capLen: state.capMM / Math.max(25, tubeLenMM * 0.5),
+        /* DIVIDED BY THE DISTANCE, because sp2 is an ANGLE and these are lengths.
+         *
+         * The ray is normalize(vec3(sp2, -1)) and the fitting sits fixDist away, so a point at sp2 lands at
+         * sp2 * fixDist on the fitting's plane -- which makes sp2 a tangent, not a distance. Feeding it a plain
+         * length meant POS X moved the fitting by centimetres-times-distance: the same 80cm shifted it twice as
+         * far with the fitting twice as far away, when a real fitting 80cm to the left looks LESS displaced the
+         * further off it is. One divide puts it in the space it is being compared against. */
+        railW:  state.railMM * U,
+        fixX:   (state.fixXmm * U) / Math.max(0.05, state.distMM * U),
+        fixY:   (state.fixYmm * U) / Math.max(0.05, state.distMM * U),
+        // A REAL DISTANCE NOW, in the same units as everything else -- the ray builder places the fitting
+        // at it rather than dividing the eye's cone by it. See the note where rd is built.
+        fixDist: Math.max(0.05, state.distMM * U),
+        frost: state.frost, diffuse: state.diffuse, prism: state.prism, prismN: state.prismN,
+      };
+    })(),
+    /* NOTE THE ABSENCE. fixY / fixW / fixH / fixGap / fixDepth / openW / openH used to be set from state HERE,
+     * and because that was after the millimetre block above, they silently overwrote every one of its answers --
+     * HOUSING W measured byte-identical at 1200mm and 600mm, and FROST was dead, for the same reason. A later
+     * key in an object literal wins, so a conversion is only a conversion if nothing restates its output. */
+    /* uFixture IS A GATE NOW, not a level. Each lamp carries its own output in its flux below, and how much
+     * of it comes back off the glass is GLARE's job -- so a third multiplier in the middle was one scale too
+     * many and made LIGHT and GLARE fight over the same result. */
+    fixture: state.lightOn ? 1 : 0, fixTilt: state.fixTilt,
+    /* THE LAMPS TAKE THE FAULT'S LEVEL ON TOP OF THEIR OWN FLICKER, multiplied rather than substituted -- the
+     * reference's rule, and the reason a dying tube still reads as the sicker of the two right through the event.
+     * A surge that REPLACED each bulb's state would make both tubes identical for four seconds and hand the
+     * fixture's whole character back at the end, which reads as two lamps being swapped out mid-fault. */
+    flkA: mA * state.lightA * (sg ? sg.lamp : 1),
+    flkB: mB * state.lightB * (sg ? sg.lamp : 1),
+    // The STARVED health, so the arc collapses toward the cathodes instead of the tube just dimming.
+    healthA: hA, healthB: hB,
+    sheen: state.sheen, matte: state.matte, glare: state.glare,
+    // cm -> the fixture's units, by the same SCALE everything else uses.
+    sheenR: Math.max(0.005, state.scatterCM * 10 / MM_PER_UNIT),
+    glow: state.glow / 100, glowFall: state.glowFall, textRect: textRect, spot: state.spot,
+    tubeDead: state.tubeDead,
+    frame: state.frame,
+    /* PX -> THE SHADER'S UNITS, where 1 is the glass half-height. The stage is cssPx.h CSS pixels tall
+     * and maps to c in [-1, 1], so one unit is cssPx.h/2 px. Converted here, once, at the boundary --
+     * the panel speaks px and the shader speaks half-heights, and neither has to know about the other. */
+    frameW: state.frameW / Math.max(1, cssPx.h / 2),
+    frameOn: state.frameOn, bzLocal: state.frameBleed, bzPhos: state.frameScreen, bzLamp: state.frameFixture,
+    ink: p.ink, hi: p.hi, halo: p.halo, lamp: p.lamp, lampA: p.lampA, lampB: p.lampB,
+    grilleInk: GRILLE_INK, ...bez(tA, tB),
+  });
+
+  frames++;
+  if (!fpsT) fpsT = now;
+  /* 250ms, and the FLICKER RATE RIDES ALONG. The DOM build's note on this is worth keeping: the window is short
+   * so a cause and its cost land in the same sample, and the rate is always shown as a number because a label
+   * that appears and vanishes with each burst reads as a glitch in the instrument rather than a measurement of
+   * it. Zero is a reading; absent is not.
+   *
+   * The number is vsync-capped: it counts frames DELIVERED, and the compositor will not deliver more than 60.
+   * Reading 60 means "not dropping", not "could not go faster". */
+  if (now - fpsT >= 250) {
+    const hz = Math.max(state.lflickA, state.lflickB, state.flickHz);
+    fpsEl.textContent = Math.round(frames * 1000 / (now - fpsT)) + ' FPS \u00b7 FLK ' +
+                        (hz < 0.05 ? '0' : hz.toFixed(1)) + 'Hz';
+    frames = 0; fpsT = now;
+  }
+  if (!oneShot) requestAnimationFrame(frame);
+}
+/* RENDER ONE FRAME ON DEMAND, WITHOUT THE ANIMATION LOOP -- the thing this project has never been able to do.
+ *
+ * Chrome runs ZERO animation frames in a tab that is not front-most, so every measurement of the rendered image
+ * has had to wait for a human to bring the window forward. Nothing about the renderer needs rAF though: the draw
+ * is a plain function of the state, and a caller can invoke it directly and read the pixels straight back out.
+ *
+ * The flag suppresses the re-queue, or a hundred measurements would leave a hundred callbacks parked to fire all
+ * at once the moment the tab becomes visible. */
+let oneShot = false;
+function renderNow(t) { oneShot = true; try { frame(t == null ? performance.now() : t); } finally { oneShot = false; } }
+requestAnimationFrame(frame);
+/* THE INSTRUMENT HANDLE. `textGrid` and the content canvas are here for the same reason state and the renderer
+ * are: this is a measuring tool, and the text layout is the part of it whose answers most need checking against
+ * the reference. `drawContent(true)` forces a re-raster, which is what makes the layout measurable in a tab that
+ * is not front-most -- Chrome runs no animation frames there, so nothing else would redraw it. */
+/* R IS A GETTER, because it is no longer the same object for the life of the page. A lost context is
+ * recovered by REBUILDING the renderer, so a handle that captured the original by value would hand every
+ * consumer -- render-probe.js reads G.R.gl -- a dead context that silently returns zeros for everything. */
+window.CRTGL = { state, get R() { return R; }, resize, textGrid, drawContent, renderNow, content: cc, contentPx, cssPx,
+  // A WINDOW ONTO THE TYPEWRITER, so a finished block can be inspected without waiting out the boot -- and so a
+  // measurement is not at the mercy of when it happens to be taken. Writing it is what REBOOT does.
+  get typed() { return typed; }, set typed(v) { typed = Math.max(0, Math.min(FULL, v | 0)); },
+  get full() { return FULL; },
+  /* AND ONTO THE POWER SEQUENCE, for the same reason. renderNow() draws one frame at a timestamp of the caller's
+   * choosing, so with these the whole collapse can be stepped through and measured in a tab that is not
+   * front-most -- which is the only place this project has ever been able to measure anything reliably. powerAt()
+   * is the pose the shader is being handed, so a reading can be checked against what was asked for -- and it is
+   * the PURE one, so sampling past the end of a run reports where the animation lands without ending it. */
+  powerOn, powerOff, togglePower, powerAt: poseFor,
+  get powerPhase() { return pwrPhase; }, get powerT0() { return pwrT0; },
+  /* THE TWO EVENTS, AND THE POSE EACH IS HANDING THE SHADER. Both samplers are pure, so a whole run can be
+   * stepped through and read off without driving it -- which is the only way anything here has ever been
+   * measured, since Chrome runs no animation frames in a tab that is not front-most. */
+  triggerWarp, warpAt, get warpT0() { return warpT0; },
+  triggerSurge, surgeAt: surgeNow, get surgeT0() { return surgeT0; },
+  surgeMs: () => FLK.surgeMs() };
+</script>
+</body>
+</html>

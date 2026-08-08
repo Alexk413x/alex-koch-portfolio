@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{background:#0c0c0e;color:#fff;font-family:'Space Grotesk',system-ui,sans-serif;-webkit-font-smoothing:antialiased;overflow-x:hidden;scrollbar-width:none;-ms-overflow-style:none}
+  body::-webkit-scrollbar{display:none;width:0;height:0}
+  a{color:#dd6a20;text-decoration:none}
+  a:hover{color:#f0894f}
+  @keyframes akMarq{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+  @keyframes akBounce{0%,100%{transform:translateY(0)}50%{transform:translateY(9px)}}
+  @keyframes heroIn{0%{opacity:0;transform:translateY(46px)}100%{opacity:1;transform:none}}
+  @keyframes heroFade{0%{opacity:0}100%{opacity:1}}
+  @keyframes scanReveal{0%{clip-path:inset(0 100% 0 0)}100%{clip-path:inset(0 0 0 0)}}
+  @keyframes scanBar{0%{opacity:0;transform:translateX(-16%)}12%{opacity:1}88%{opacity:1}100%{opacity:0;transform:translateX(122%)}}
+  @keyframes ringIn{0%{opacity:0;transform:translate(-50%,-50%) scale(.5)}22%{opacity:.9}72%{opacity:.85}100%{opacity:0;transform:translate(-50%,-50%) scale(1.2)}}
+  @keyframes ringSpin{to{transform:rotate(360deg)}}
+  @keyframes ringSpinR{to{transform:rotate(-360deg)}}
+  @keyframes ringTumble{from{transform:rotateX(66deg) rotateZ(-15deg) rotateY(0deg)}to{transform:rotateX(66deg) rotateZ(-15deg) rotateY(360deg)}}
+  @keyframes ringArc{0%{stroke-dashoffset:1759}100%{stroke-dashoffset:250}}
+</style>
+</helmet>
+
+<div style="position:relative;width:100%">
+
+  <sc-if value="{{ showIntro }}" hint-placeholder-val="{{ true }}">
+    <div onClick="{{ skip }}" style="position:fixed;inset:0;z-index:999;background:#07060f;overflow:hidden;cursor:pointer;transition:opacity .9s ease;opacity: {{ introOpacity }}">
+      <canvas id="ak_cv" style="position:absolute;inset:0;width:100%;height:100%;display:block"></canvas>
+      <div id="ak_lbTop" style="position:absolute;top:0;left:0;width:100%;height:0;background:#000;z-index:3"></div>
+      <div id="ak_lbBot" style="position:absolute;bottom:0;left:0;width:100%;height:0;background:#000;z-index:3"></div>
+      <div style="position:absolute;bottom:22px;left:50%;transform:translateX(-50%);z-index:4;font-family:'JetBrains Mono';font-size:11px;color:rgba(255,255,255,.35);letter-spacing:2px">click to skip</div>
+    </div>
+  </sc-if>
+
+  <button onClick="{{ restart }}" style="position:fixed;bottom:20px;right:20px;z-index:50;font-family:'JetBrains Mono';font-size:11px;letter-spacing:1px;color:rgba(255,255,255,.65);background:rgba(20,18,26,.72);border:1px solid rgba(221,106,32,.45);border-radius:8px;padding:9px 13px;cursor:pointer;backdrop-filter:blur(6px)" style-hover="color:#fff;border-color:#dd6a20;background:rgba(221,106,32,.18)">↻ REPLAY INTRO</button>
+
+  <section style="position:relative;min-height:100vh;width:100%;background:#0c0c0e;overflow:hidden;display:flex;flex-direction:column">
+    <div style="position:absolute;top:50%;left:50%;width:min(82vh,760px);height:min(82vh,760px);transform:translate(-50%,-50%);z-index:1;pointer-events:none;opacity:0;filter:drop-shadow(0 0 16px rgba(221,106,32,.5));animation: {{ heroA_ring }}">
+      <svg viewBox="0 0 700 700" style="width:100%;height:100%">
+        <circle cx="350" cy="350" r="300" fill="none" stroke="rgba(221,106,32,.16)" stroke-width="1.5"></circle>
+        <circle cx="350" cy="350" r="250" fill="none" stroke="rgba(221,106,32,.5)" stroke-width="2" stroke-dasharray="3 15" style="transform-origin:350px 350px;animation:ringSpin 7s linear infinite"></circle>
+        <circle cx="350" cy="350" r="218" fill="none" stroke="rgba(240,168,120,.22)" stroke-width="1" stroke-dasharray="1 9" style="transform-origin:350px 350px;animation:ringSpinR 11s linear infinite"></circle>
+        <circle cx="350" cy="350" r="280" fill="none" stroke="#dd6a20" stroke-width="3" stroke-linecap="round" stroke-dasharray="1759" stroke-dashoffset="1759" style="transform-origin:350px 350px;transform:rotate(-90deg);animation: {{ heroA_arc }}"></circle>
+      </svg>
+    </div>
+
+    <nav style="display:flex;justify-content:space-between;align-items:center;padding:26px 40px;font-family:'JetBrains Mono';font-size:13px;letter-spacing:1px;z-index:5;opacity:0;animation: {{ heroA_nav }}">
+      <span style="color:#fff;font-weight:700">ALEXK413X</span>
+      <div style="display:flex;gap:26px;color:rgba(255,255,255,.55)">
+        <a href="#work" style="color:rgba(255,255,255,.55)">WORK</a>
+        <a href="#skills" style="color:rgba(255,255,255,.55)">SKILLS</a>
+        <a href="#app" style="color:rgba(255,255,255,.55)">THE APP</a>
+        <a href="#edu" style="color:rgba(255,255,255,.55)">EDU</a>
+        <a href="https://www.linkedin.com/in/alexk413x/" target="_blank" rel="noopener" style="color:#dd6a20">LINKEDIN ↗</a>
+      </div>
+    </nav>
+
+    <div style="flex:1;position:relative;display:flex;align-items:center;padding:0 30px;z-index:2">
+      <div style="width:100%;max-width:1400px;margin:0 auto;position:relative">
+        <div style="font-family:'Space Grotesk';font-weight:600;font-size:clamp(16px,2vw,26px);color:#dd6a20;letter-spacing:2px;opacity:0;animation: {{ heroA_label }}">AGENTIC ENGINEER</div>
+        <h1 style="position:relative;margin:6px 0 0;font-family:'Archivo';font-weight:900;font-size:clamp(70px,15vw,190px);line-height:.82;letter-spacing:-5px;color:#fff">
+          <span style="display:block;clip-path:inset(0 100% 0 0);animation: {{ heroA_alex }}">ALEX</span>
+          <span style="display:block;color:#dd6a20;clip-path:inset(0 100% 0 0);animation: {{ heroA_koch }}">KOCH</span>
+          <div style="position:absolute;left:0;top:-3%;height:106%;width:7px;background:linear-gradient(180deg,transparent,#ffd9b3,#dd6a20,#ffd9b3,transparent);box-shadow:0 0 30px 7px rgba(221,106,32,.75);opacity:0;animation: {{ heroA_scan }}"></div>
+        </h1>
+        <div style="position:absolute;top:20%;right:0;width:min(300px,32vw);color:rgba(255,255,255,.6);font-size:clamp(13px,1.4vw,16px);line-height:1.6;opacity:0;animation: {{ heroA_desc }}">
+          11+ years shipping mobile at scale — Target myDay, Kohl's &amp; Yahoo. Now architecting multi-agent QA platforms that generate, execute &amp; self-heal 500+ tests.
+          <div style="margin-top:20px;display:flex;flex-direction:column;gap:10px">
+            <a href="#work" style="display:inline-block;background:#dd6a20;color:#0c0c0e;font-family:'Archivo';font-weight:800;font-size:14px;padding:12px 18px;border-radius:3px;text-align:center">SEE THE WORK ↓</a>
+            <a href="mailto:Alexk413x@gmail.com" style="display:inline-block;border:1px solid rgba(255,255,255,.2);color:#fff;font-family:'Archivo';font-weight:700;font-size:14px;padding:12px 18px;border-radius:3px;text-align:center">GET IN TOUCH</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="position:absolute;bottom:40px;left:40px;font-family:'JetBrains Mono';font-size:12px;color:rgba(255,255,255,.4);display:flex;align-items:center;gap:10px;z-index:2;opacity:0;animation: {{ heroA_scroll }}">
+      <span style="display:inline-block;animation:akBounce 1.6s ease-in-out infinite">↓</span> scroll
+    </div>
+  </section>
+
+  <section id="work" style="min-height:60vh;background:#0c0c0e;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.3);font-family:'JetBrains Mono';font-size:14px">
+    experience reveals coming next ↓
+  </section>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { reveal: false, done: false };
+
+  componentDidMount() {
+    this.buildIco(); this.buildStars(); this.buildPlanets();
+    this.L = this.norm([-0.45, -0.72, 0.5]);
+    this.PAL = [[150, 92, 212], [58, 160, 150], [72, 182, 202], [208, 90, 150], [226, 150, 72], [221, 106, 32]];
+    this.run();
+  }
+  componentWillUnmount() { this.stop(); document.body.style.overflow = ''; window.removeEventListener('resize', this._resize); }
+
+  run() {
+    this.stop();
+    document.body.style.overflow = 'hidden';
+    try { window.scrollTo(0, 0); } catch (e) {}
+    for (const p of this.planets) { p.rx = p.rx0; p.ry = p.ry0; }
+    this.cv = document.getElementById('ak_cv');
+    if (!this.cv) { this._retry = setTimeout(() => this.run(), 40); return; }
+    this.ctx = this.cv.getContext('2d');
+    this.resize();
+    if (!this._resize) { this._resize = () => this.resize(); window.addEventListener('resize', this._resize); }
+    this.camZ = 0; this.start = performance.now(); this.last = this.start;
+    this.revealTimer = setTimeout(() => this.doReveal(), 9550);
+    this.doneTimer = setTimeout(() => this.finish(), 11400);
+    this.raf = requestAnimationFrame(this.frame);
+  }
+  stop() { cancelAnimationFrame(this.raf); clearTimeout(this.revealTimer); clearTimeout(this.doneTimer); clearTimeout(this.skipTimer); clearTimeout(this._retry); }
+
+  resize() {
+    const dpr = Math.min(1.5, window.devicePixelRatio || 1);
+    this.W = Math.floor(window.innerWidth * dpr);
+    this.H = Math.floor(window.innerHeight * dpr);
+    if (this.cv) { this.cv.width = this.W; this.cv.height = this.H; }
+    this.cx = this.W / 2; this.cy = this.H / 2; this.FOCAL = this.W * 0.52;
+    if (this.ctx) {
+      this.bgGrad = this.ctx.createLinearGradient(0, 0, 0, this.H);
+      this.bgGrad.addColorStop(0, 'rgb(20,15,44)'); this.bgGrad.addColorStop(1, 'rgb(6,5,12)');
+      this.vgGrad = this.ctx.createRadialGradient(this.cx, this.cy, this.H * 0.15, this.cx, this.cy, this.H * 0.82);
+      this.vgGrad.addColorStop(0, 'rgba(0,0,0,0)'); this.vgGrad.addColorStop(1, 'rgba(4,3,8,0.62)');
+    }
+  }
+
+  norm(v) { const m = Math.hypot(v[0], v[1], v[2]) || 1; return [v[0] / m, v[1] / m, v[2] / m]; }
+  ease(t) { return t < 0 ? 0 : t > 1 ? 1 : t * t * (3 - 2 * t); }
+  easeIn(t) { return t < 0 ? 0 : t > 1 ? 1 : t * t * t; }
+  easeOutQ(t) { return t < 0 ? 0 : t > 1 ? 1 : 1 - Math.pow(1 - t, 5); }
+  lerp(a, b, t) { return a + (b - a) * t; }
+
+  buildIco() {
+    const g = 1.618;
+    let iv = [[-1, g, 0], [1, g, 0], [-1, -g, 0], [1, -g, 0], [0, -1, g], [0, 1, g],
+      [0, -1, -g], [0, 1, -g], [g, 0, -1], [g, 0, 1], [-g, 0, -1], [-g, 0, 1]];
+    const m = Math.hypot(1, g, 0);
+    this.icoV = iv.map(v => [v[0] / m, v[1] / m, v[2] / m]);
+    this.icoF = [[0, 11, 5], [0, 5, 1], [0, 1, 7], [0, 7, 10], [0, 10, 11], [1, 5, 9], [5, 11, 4],
+      [11, 10, 2], [10, 7, 6], [7, 1, 8], [3, 9, 4], [3, 4, 2], [3, 2, 6], [3, 6, 8], [3, 8, 9],
+      [4, 9, 5], [2, 4, 11], [6, 2, 10], [8, 6, 7], [9, 8, 1]];
+  }
+  buildPlanets() {
+    this.planets = [
+      { pos: [-880, -150, 2900], scale: 250, color: [120, 92, 200], rx0: 0.4, ry0: 0.2, spin: 0.0003 },
+      { pos: [920, 100, 3350], scale: 330, color: [46, 160, 150], rx0: 1.1, ry0: 0.6, spin: -0.00022 },
+      { pos: [260, -470, 3800], scale: 150, color: [214, 120, 66], rx0: 0.7, ry0: 1.2, spin: 0.0005 },
+    ];
+    for (const p of this.planets) { p.rx = p.rx0; p.ry = p.ry0; }
+  }
+  buildStars() {
+    const cols = [[255, 240, 225], [140, 220, 225], [180, 160, 235], [255, 210, 170]];
+    this.stars = [];
+    for (let i = 0; i < 460; i++) this.stars.push({ x: (Math.random() * 2 - 1) * 2600, y: (Math.random() * 2 - 1) * 2000, z: 30 + Math.random() * 4200, s: 0.6 + Math.random() * 2, c: cols[i % cols.length] });
+    this.ZSPAN = 4400;
+  }
+
+  cX(z) { return 300 * Math.sin(z * 0.00135) + 150 * Math.sin(z * 0.00058 + 1); }
+  cY(z) { return 230 * Math.sin(z * 0.00102 + 1.2) + 110 * Math.cos(z * 0.00076); }
+  tw(z) { return z * 0.0016; }
+  palAt(z) { const p = this.PAL; let f = ((z * 0.0006) % p.length + p.length) % p.length; let i = Math.floor(f), k = f - i, a = p[i], b = p[(i + 1) % p.length]; return [a[0] + (b[0] - a[0]) * k, a[1] + (b[1] - a[1]) * k, a[2] + (b[2] - a[2]) * k]; }
+
+  cam(rx0, ry0, rz0, cR, sR, cP, sP) {
+    const rx = rx0 * cR - ry0 * sR, ry = rx0 * sR + ry0 * cR;
+    const py = ry * cP - rz0 * sP, pz = ry * sP + rz0 * cP;
+    return { px: rx, py: py, cz: pz };
+  }
+
+  drawObj(o, approachD, camX, camY, cR, sR, cP, sP, dt) {
+    const ctx = this.ctx, F = this.FOCAL, cx = this.cx, cy = this.cy, NEAR = 1;
+    o.rx += (o.spin || 0) * dt; o.ry += (o.spin || 0) * dt * 0.7;
+    const crx = Math.cos(o.rx), srx = Math.sin(o.rx), cry = Math.cos(o.ry), sry = Math.sin(o.ry);
+    const world = this.icoV.map(v => {
+      let x = v[0] * o.scale, y = v[1] * o.scale, z = v[2] * o.scale;
+      let x1 = x * cry + z * sry, z1 = -x * sry + z * cry;
+      let y1 = y * crx - z1 * srx, z2 = y * srx + z1 * crx;
+      return [x1 + o.pos[0], y1 + o.pos[1], z2 + o.pos[2] - approachD];
+    });
+    const cv = world.map(w => this.cam(w[0] - camX, w[1] - camY, w[2], cR, sR, cP, sP));
+    const faces = [];
+    for (const fc of this.icoF) {
+      if (cv[fc[0]].cz < NEAR || cv[fc[1]].cz < NEAR || cv[fc[2]].cz < NEAR) continue;
+      const cz = (cv[fc[0]].cz + cv[fc[1]].cz + cv[fc[2]].cz) / 3;
+      const a = world[fc[0]], b = world[fc[1]], c = world[fc[2]];
+      const nx = (b[1] - a[1]) * (c[2] - a[2]) - (b[2] - a[2]) * (c[1] - a[1]);
+      const ny = (b[2] - a[2]) * (c[0] - a[0]) - (b[0] - a[0]) * (c[2] - a[2]);
+      const nz = (b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0]);
+      const nm = Math.hypot(nx, ny, nz) || 1;
+      let sh = Math.abs((nx / nm) * this.L[0] + (ny / nm) * this.L[1] + (nz / nm) * this.L[2]);
+      const lit = 0.28 + 0.72 * sh, fog = Math.min(1, cz / 4200) * 0.85;
+      const r = this.lerp(o.color[0] * lit + sh * 26, 12, fog);
+      const gg = this.lerp(o.color[1] * lit + sh * 12, 11, fog);
+      const bl = this.lerp(o.color[2] * lit, 20, fog);
+      const poly = fc.map(i => { const f = F / cv[i].cz; return [cx + cv[i].px * f, cy + cv[i].py * f]; });
+      faces.push({ poly, cz, col: 'rgb(' + (r | 0) + ',' + (gg | 0) + ',' + (bl | 0) + ')' });
+    }
+    faces.sort((p, q) => q.cz - p.cz);
+    for (const fa of faces) {
+      ctx.beginPath(); ctx.moveTo(fa.poly[0][0], fa.poly[0][1]);
+      for (let i = 1; i < fa.poly.length; i++) ctx.lineTo(fa.poly[i][0], fa.poly[i][1]);
+      ctx.closePath(); ctx.fillStyle = fa.col; ctx.fill();
+      ctx.strokeStyle = 'rgba(255,255,255,0.06)'; ctx.lineWidth = 1; ctx.stroke();
+    }
+  }
+
+  doReveal() { if (!this.state.reveal) this.setState({ reveal: true }); }
+  finish = () => { if (this.state.done) return; cancelAnimationFrame(this.raf); document.body.style.overflow = ''; this.setState({ done: true }); };
+  skip = () => { this.doReveal(); clearTimeout(this.doneTimer); this.skipTimer = setTimeout(this.finish, 1100); };
+  restart = () => { this.stop(); this.setState({ reveal: false, done: false }); setTimeout(() => this.run(), 50); };
+
+  frame = (now) => {
+    const t = now - this.start;
+    let dt = now - this.last; this.last = now; if (dt > 60) dt = 60;
+    const ctx = this.ctx, W = this.W, H = this.H, cx = this.cx, cy = this.cy, F = this.FOCAL, NEAR = 1, TAU = 6.28318;
+
+    let v;
+    if (t < 1450) v = 0;
+    else if (t < 2400) v = this.easeIn((t - 1450) / 950) * 2.9;
+    else if (t < 5200) v = 2.9;
+    else if (t < 7000) v = this.lerp(2.9, 2.0, (t - 5200) / 1800);
+    else v = this.lerp(2.0, 0.08, this.easeOutQ((t - 7000) / 2000));
+    this.camZ += v * dt;
+
+    const tb = Math.max(0, Math.min(1, (t - 6500) / 900));
+    const aP = this.ease((t - 6500) / 2500);
+    const camTunX = this.cX(this.camZ), camTunY = this.cY(this.camZ);
+    const camX = camTunX * (1 - tb);
+    const camY = camTunY * (1 - tb) + this.lerp(-160, 30, aP) * tb;
+    const pitch = 0.04 + 0.2 * tb * (1 - this.ease((t - 8300) / 1100));
+    let roll = (t > 2400 && t < 6400) ? Math.sin((t - 2400) / 4000 * TAU) * 0.24 : 0;
+    roll *= (1 - tb);
+    const cR = Math.cos(roll), sR = Math.sin(roll), cP = Math.cos(pitch), sP = Math.sin(pitch);
+
+    ctx.fillStyle = this.bgGrad; ctx.fillRect(0, 0, W, H);
+    const glowY = cy + H * (0.28 - this.ease((t - 3000) / 5000) * 0.24);
+    const gg = ctx.createRadialGradient(cx, glowY, 0, cx, glowY, H * 0.75);
+    gg.addColorStop(0, 'rgba(221,106,32,' + (0.16 + aP * 0.18) + ')'); gg.addColorStop(0.45, 'rgba(200,80,60,0.1)'); gg.addColorStop(1, 'rgba(221,106,32,0)');
+    ctx.fillStyle = gg; ctx.fillRect(0, 0, W, H);
+
+    // OPEN: spinning ring
+    if (t < 2700) {
+      let scale = 1, alpha = 1;
+      if (t > 1450) { const d = (t - 1450) / 950; scale = 1 + d * d * 2.4; alpha = Math.max(0, 1 - d); }
+      const R0 = Math.min(W, H) * 0.17;
+      ctx.save(); ctx.translate(cx, cy); ctx.scale(scale, scale); ctx.globalAlpha = alpha;
+      ctx.strokeStyle = 'rgba(221,106,32,.22)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(0, 0, R0, 0, TAU); ctx.stroke();
+      ctx.save(); ctx.rotate(t * 0.0022); ctx.strokeStyle = 'rgba(221,106,32,.6)'; ctx.lineWidth = 3;
+      for (let i = 0; i < 48; i++) { const a = i / 48 * TAU; ctx.beginPath(); ctx.moveTo(Math.cos(a) * R0 * 0.86, Math.sin(a) * R0 * 0.86); ctx.lineTo(Math.cos(a) * R0 * 0.97, Math.sin(a) * R0 * 0.97); ctx.stroke(); }
+      ctx.restore();
+      ctx.save(); ctx.rotate(-t * 0.0012); ctx.strokeStyle = 'rgba(240,168,120,.3)'; ctx.lineWidth = 1;
+      for (let i = 0; i < 90; i++) { const a = i / 90 * TAU; ctx.beginPath(); ctx.moveTo(Math.cos(a) * R0 * 0.72, Math.sin(a) * R0 * 0.72); ctx.lineTo(Math.cos(a) * R0 * 0.77, Math.sin(a) * R0 * 0.77); ctx.stroke(); }
+      ctx.restore();
+      const prog = Math.min(1, t / 1450);
+      ctx.strokeStyle = '#dd6a20'; ctx.lineWidth = 5; ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.arc(0, 0, R0 * 1.08, -Math.PI / 2, -Math.PI / 2 + prog * TAU); ctx.stroke();
+      if (prog >= 1) { const gc = ctx.createRadialGradient(0, 0, 0, 0, 0, R0 * 1.2); gc.addColorStop(0, 'rgba(255,232,204,' + (alpha * 0.55) + ')'); gc.addColorStop(1, 'rgba(221,106,32,0)'); ctx.fillStyle = gc; ctx.beginPath(); ctx.arc(0, 0, R0 * 1.2, 0, TAU); ctx.fill(); }
+      ctx.restore(); ctx.globalAlpha = 1;
+    }
+
+    // stars
+    const starA = Math.max(0, Math.min(1, (t - 1300) / 800));
+    const dz = v * dt;
+    ctx.lineCap = 'round';
+    for (const st of this.stars) {
+      let zEff = st.z - (this.camZ % this.ZSPAN); if (zEff < NEAR) zEff += this.ZSPAN;
+      const rel = this.cam(st.x - camX, st.y - camY, zEff, cR, sR, cP, sP); if (rel.cz < NEAR) continue;
+      const f = F / rel.cz, sx = cx + rel.px * f, sy = cy + rel.py * f;
+      const a = Math.max(0, Math.min(1, (1 - zEff / this.ZSPAN) * 1.2)) * starA;
+      if (dz > 4) {
+        const rel2 = this.cam(st.x - camX, st.y - camY, zEff + dz * 1.2, cR, sR, cP, sP);
+        if (rel2.cz > NEAR) { const f2 = F / rel2.cz; ctx.strokeStyle = 'rgba(' + st.c[0] + ',' + st.c[1] + ',' + st.c[2] + ',' + a + ')'; ctx.lineWidth = Math.max(0.5, f * st.s); ctx.beginPath(); ctx.moveTo(cx + rel2.px * f2, cy + rel2.py * f2); ctx.lineTo(sx, sy); ctx.stroke(); continue; }
+      }
+      ctx.globalAlpha = a; ctx.fillStyle = 'rgb(' + st.c[0] + ',' + st.c[1] + ',' + st.c[2] + ')'; ctx.beginPath(); ctx.arc(sx, sy, Math.max(0.5, f * st.s), 0, TAU); ctx.fill(); ctx.globalAlpha = 1;
+    }
+
+    // wormhole
+    const tunA = Math.max(0, Math.min(1, (t - 1450) / 700)) * Math.max(0, Math.min(1, (7000 - t) / 650));
+    if (tunA > 0.01) {
+      const S = 16, N = 50, sp = 96, len = N * sp, R = 140 + 160 * Math.max(0, Math.min(1, (t - 1450) / 1000));
+      const startI = Math.floor(this.camZ / sp);
+      let prev = null;
+      for (let k = 1; k <= N; k++) {
+        const wz = (startI + k) * sp; const relZ = wz - this.camZ; if (relZ < NEAR) { prev = null; continue; }
+        const cXt = this.cX(wz), cYt = this.cY(wz), twz = this.tw(wz);
+        const pts = new Array(S);
+        for (let s = 0; s < S; s++) {
+          const a = s / S * TAU + twz;
+          const rel = this.cam(cXt + R * Math.cos(a) - camTunX, cYt + R * Math.sin(a) - camTunY, relZ, cR, sR, cP, sP);
+          pts[s] = rel.cz < NEAR ? null : [cx + rel.px * (F / rel.cz), cy + rel.py * (F / rel.cz)];
+        }
+        const depth = relZ / len, near = relZ < 240 ? relZ / 240 : 1;
+        const alpha = Math.max(0, (1 - depth)) * near * tunA;
+        if (alpha > 0.01) {
+          const col = this.palAt(wz);
+          ctx.lineWidth = Math.max(0.5, 5.5 * (1 - depth));
+          ctx.strokeStyle = 'rgba(' + (col[0] | 0) + ',' + (col[1] | 0) + ',' + (col[2] | 0) + ',' + alpha + ')';
+          ctx.beginPath();
+          for (let s = 0; s < S; s++) {
+            const a = pts[s], b = pts[(s + 1) % S];
+            if (a && b) { ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); }
+            if (prev && pts[s] && prev[s]) { ctx.moveTo(pts[s][0], pts[s][1]); ctx.lineTo(prev[s][0], prev[s][1]); }
+          }
+          ctx.stroke();
+        }
+        prev = pts;
+      }
+    }
+
+    // ARRIVAL: a real 3D halo ring sitting with the planets; camera orbits it, then flies through
+    if (t > 6300) {
+      const oT = Math.max(0, Math.min(1, (t - 6900) / 2200));
+      const orbit = Math.sin(oT * Math.PI * 0.85);
+      const camXA = camX + orbit * 320;
+      const camYA = camY - (1 - Math.cos(oT * Math.PI * 0.85)) * 80;
+      const approachD = this.lerp(0, 3050, this.ease((t - 6900) / 2500));
+      for (const pl of this.planets) this.drawObj(pl, approachD, camXA, camYA, cR, sR, cP, sP, dt);
+      const RR = 560, rr = 478, M = 84, tilt = 0.52;
+      const spin = t * 0.0004;
+      const cs = Math.cos(spin), ss = Math.sin(spin), ct = Math.cos(tilt), st2 = Math.sin(tilt);
+      const ringZ = 2650, ringWY = 40;
+      const rp = (rad, th) => {
+        let x = rad * Math.cos(th), y = rad * Math.sin(th);
+        let x1 = x * cs - y * ss, y1 = x * ss + y * cs;
+        let y2 = y1 * ct, z2 = y1 * st2;
+        return this.cam(x1 - camXA, (y2 + ringWY) - camYA, ringZ - approachD + z2, cR, sR, cP, sP);
+      };
+      const ringA = this.ease((t - 6700) / 1300);
+      for (let pass = 0; pass < 2; pass++) {
+        const rad = pass ? rr : RR;
+        for (let glow = 0; glow < 2; glow++) {
+          ctx.lineWidth = Math.max(1, (glow ? 10 : 3) * ringA);
+          ctx.strokeStyle = 'rgba(' + (pass ? '240,168,120,' : '221,106,32,') + ((glow ? 0.12 : 0.72) * ringA) + ')';
+          ctx.beginPath(); let started = false;
+          for (let i = 0; i <= M; i++) {
+            const p = rp(rad, i / M * TAU); if (p.cz < NEAR) { started = false; continue; }
+            const f = F / p.cz, sx = cx + p.px * f, sy = cy + p.py * f;
+            if (started) ctx.lineTo(sx, sy); else { ctx.moveTo(sx, sy); started = true; }
+          }
+          ctx.stroke();
+        }
+      }
+      ctx.strokeStyle = 'rgba(221,106,32,' + (0.3 * ringA) + ')'; ctx.lineWidth = 1;
+      for (let i = 0; i < M; i += 2) {
+        const th = i / M * TAU, a = rp(RR, th), b = rp(rr, th);
+        if (a.cz < NEAR || b.cz < NEAR) continue;
+        const fa = F / a.cz, fb = F / b.cz;
+        ctx.beginPath(); ctx.moveTo(cx + a.px * fa, cy + a.py * fa); ctx.lineTo(cx + b.px * fb, cy + b.py * fb); ctx.stroke();
+      }
+      for (let i = 0; i < M; i += 4) {
+        const p = rp((RR + rr) / 2, i / M * TAU); if (p.cz < NEAR) continue;
+        const f = F / p.cz; ctx.fillStyle = 'rgba(255,222,184,' + (0.55 * ringA) + ')'; ctx.beginPath(); ctx.arc(cx + p.px * f, cy + p.py * f, Math.max(1, f * 3.2), 0, TAU); ctx.fill();
+      }
+      const fl = this.ease((t - 8700) / 700);
+      if (fl > 0) { const fg = ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.hypot(W, H) * 0.5); fg.addColorStop(0, 'rgba(255,240,220,' + (fl * 0.95) + ')'); fg.addColorStop(0.45, 'rgba(240,150,70,' + (fl * 0.45) + ')'); fg.addColorStop(1, 'rgba(221,106,32,0)'); ctx.fillStyle = fg; ctx.fillRect(0, 0, W, H); }
+      const fw = this.ease((t - 9100) / 550);   // clean full-screen whiteout for the cut into the site
+      if (fw > 0) { ctx.fillStyle = 'rgba(255,247,235,' + (fw * 0.97) + ')'; ctx.fillRect(0, 0, W, H); }
+    }
+
+    ctx.fillStyle = this.vgGrad; ctx.fillRect(0, 0, W, H);
+
+    let lb;
+    if (t < 1400) lb = this.ease(t / 1400) * 8.5;
+    else if (t < 8800) lb = 8.5;
+    else lb = Math.max(0, 8.5 * (1 - (t - 8800) / 900));
+    const top = document.getElementById('ak_lbTop'), bot = document.getElementById('ak_lbBot');
+    if (top) top.style.height = lb + 'vh';
+    if (bot) bot.style.height = lb + 'vh';
+
+    this.raf = requestAnimationFrame(this.frame);
+  };
+
+  renderVals() {
+    const rv = this.state.reveal;
+    return {
+      showIntro: !this.state.done,
+      introOpacity: rv ? 0 : 1,
+      skip: this.skip,
+      restart: this.restart,
+      heroA_ring: rv ? 'ringIn 2s .05s ease-out both' : '',
+      heroA_arc: rv ? 'ringArc 1.4s .1s cubic-bezier(.3,0,.2,1) both, ringSpin 7s linear infinite' : '',
+      heroA_scan: rv ? 'scanBar 1.1s .4s ease-in-out both' : '',
+      heroA_alex: rv ? 'scanReveal .6s .5s cubic-bezier(.4,0,.2,1) both' : '',
+      heroA_koch: rv ? 'scanReveal .6s .8s cubic-bezier(.4,0,.2,1) both' : '',
+      heroA_nav: rv ? 'heroFade .8s 1.2s both' : '',
+      heroA_label: rv ? 'heroIn .9s 1.1s both' : '',
+      heroA_desc: rv ? 'heroIn .9s 1.5s both' : '',
+      heroA_scroll: rv ? 'heroFade .9s 1.8s both' : '',
+    };
+  }
+}
+</script>
+</body>
+</html>
