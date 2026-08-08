@@ -144,14 +144,14 @@ const GRILLE_INK = toLinear(hexRgb('#2a1608'));
  * pair arrives as an argument and stays in the key, so the cache is unaffected while nothing is happening. */
 const bez = memo(
   (tA, tB) => state.power + '|' + state.lightOn + '|' + (tA + tB) + '|' +
-        state.frameCol + '|' + state.frameW,
+        state.frameCol + '|' + view.frameW,
   (tA, tB) => {
   /* fcol AND fwid COME FROM THE PANEL NOW, and both were hardcoded here.
    *
    * fcol was pinned to '#4a2c22', so the FRAME section could change the moulding's tint and its lit edge but not
    * the plastic itself -- the one thing "customisable frame colour" actually means.
    *
-   * fwid was pinned to 13 while the shader drew the moulding at state.frameW, which is the failure crt/README.md
+   * fwid was pinned to 13 while the shader drew the moulding at view.frameW, which is the failure crt/README.md
    * is about: two numbers describing one width, free to disagree. bezelCols only uses it as a RATIO -- wInner is
    * 0.42w and wOuter is w + 7, so the lit lip's share of the frame moves with its thickness -- and pinning it at
    * 13 meant a frame dragged to four times that width kept a lip proportioned for the old one. frameW is a
@@ -166,7 +166,7 @@ const bez = memo(
                          * without a direction. 50 is bezelCols' own neutral: the 0.28 lift it always
                          * applied, so removing the control changes nothing it was not asked to. */
                         fglow: 50,
-                        fwid: Math.max(1, Math.round(state.frameW)),
+                        fwid: Math.max(1, Math.round(view.frameW)),
                         ldim: 1 }, ph);
   return {
     bzBase: toLinear(hexRgb(b.base)), bzLo: toLinear(hexRgb(b.lo)), bzHi: toLinear(hexRgb(b.hi)),
@@ -182,7 +182,7 @@ const bez = memo(
      * LIP_PX is that fixed size, and 3.5 is chosen so a 13px frame -- the reference's own fwid -- lands on 0.269,
      * which is where bezelCols already had it. So the shipped look is unchanged and only the ends of the range
      * move: narrow frames become all chamfer (correct -- a 3px surround IS the chamfer), wide ones gain body. */
-    bzInner: Math.min(0.6, Math.max(0.06, 3.5 / Math.max(1, state.frameW))),
+    bzInner: Math.min(0.6, Math.max(0.06, 3.5 / Math.max(1, view.frameW))),
   };
 });
 
@@ -430,7 +430,7 @@ function warpAt(now) {
    * the travelling pole's authority is scaled DOWN by the dome and handed to the pinch, rather than added to it:
    * total displacement stays in the same range and a deep FACE cannot throw the picture off the tube. Flat face,
    * flat trade, and the warp is exactly the sweep it always was. */
-  const dome  = Math.min(1, Math.abs(state.face));
+  const dome  = Math.min(1, Math.abs(view.face));
   const slide = 1 - dome * 0.55;
   /* THE POLE ORBITS, AND THAT IS THE THIRD GO AT THIS PATH.
    *
@@ -643,6 +643,44 @@ const RASTER_K_MAX = 6;         // a pathologically narrow viewport must not ask
  * for: it is an accommodation for displays that cannot fit the text, not an opinion about legibility. */
 const NARROW_W = 820;
 
+/* WHAT A NARROW DISPLAY RENDERS INSTEAD, as a table rather than as more special cases scattered through the
+ * frame. The raster scale above, the convergence divisor and the spot divisor are all narrow-display
+ * accommodations too; they are computed rather than tabulated because they are RATIOS of whatever is
+ * authored, while these are flat replacements.
+ *
+ *   frameOn  the moulding is a fixed CSS-pixel border, so on a 390px screen it eats a far larger share of the
+ *            picture than it does on a desktop. Off, and uFrameFit falls to 1, which gives the glass the whole
+ *            box -- the full-bleed the small screen needs.
+ *   famp     DEPTH, the dome's amplitude. A deep face spends its outer radius compressing the picture into the
+ *            rim, which is a luxury a big screen can afford and a small one cannot; flattening it puts that
+ *            area back. Not zero -- a flat tube is a monitor, and the curve is the subject.
+ *
+ * EVERY KEY LISTED HERE MUST BE READ THROUGH `view`, NEVER THROUGH `state`. That is the whole contract, and it
+ * is not decorative: `face`/`famp`/`frameOn`/`frameW` appear in THREE memo keys -- the face LUT's, the
+ * calibration overlay's and the bezel's -- and a key that still reads `state` would leave the memo believing
+ * nothing had changed while the value driving it had. The tube would then keep a dome it is no longer being
+ * drawn with, which is the stale-geometry failure this project keeps paying for. */
+const NARROW_OVERRIDES = { frameOn: 0, famp: 1.4 };
+
+/* THE SETTINGS THE RENDERER READS, as opposed to the ones the PANEL EDITS.
+ *
+ * state stays the operator's own configuration and is what persistence writes -- so a session tuned on a
+ * desktop is not quietly overwritten by having been opened once on a phone, and resizing back restores it
+ * with nothing lost. view is state on any roomy display, by identity, so the desktop path allocates nothing
+ * and compares equal.
+ *
+ * Rebuilt in place rather than spread fresh each frame: the object carries ~150 keys and this is on the frame
+ * path, where the memo comment a few hundred lines up records what per-frame garbage cost the last time.
+ */
+const _view = {};
+let view = state;
+function syncView() {
+  if (cssPx.w > NARROW_W) { view = state; return; }
+  for (const k in state) _view[k] = state[k];
+  Object.assign(_view, NARROW_OVERRIDES);
+  view = _view;
+}
+
 /* THE SMALL-DISPLAY RASTER SCALE, and the reason it exists is that the glyph was pinned to an ABSOLUTE size.
  *
  * Work em through to screen pixels and the viewport cancels out: em_css = tcell * 100 / scan, which is 30px
@@ -685,7 +723,8 @@ function rasterScale() {
  */
 function rasterN() {
   const k = rasterScale();
-  return { sl:  Math.max(1, cssPx.h * state.scan   * k / 100),
+  return { k: k,
+           sl:  Math.max(1, cssPx.h * state.scan   * k / 100),
            col: Math.max(1, cssPx.w * state.grille * k / 100) };
 }
 
@@ -921,12 +960,12 @@ function drawContent(force) {
 
 let faceKey = '', outKey = '';
 function syncLUT() {
-  const fk = [state.face, state.grings, state.fexp, state.famp].join('|');
+  const fk = [view.face, state.grings, state.fexp, view.famp].join('|');
   if (fk !== faceKey) {
     faceKey = fk;
     // THE PROJECTION STAYS THE AUTHORITY — crt-projection's faceProfile, unmodified. This only tabulates it.
     // fadeSpan = grings * (2/GRIDN) with GRIDN 40, exactly as the DC computes it: FULL is 1.0, not 0.85.
-    faceProf = faceProfile(state.face * 90, state.grings * 0.05, state.fexp, state.famp);
+    faceProf = faceProfile(view.face * 90, state.grings * 0.05, state.fexp, view.famp);
     faceLUT = buildFaceLUT(faceProf, 1024);
     R.setFaceLUT(faceLUT);
   }
@@ -955,8 +994,8 @@ const calSvg = document.getElementById('cal');
 let calKey = '';
 function syncCal() {
   const asp = (canvas.width || 1) / (canvas.height || 1);
-  const k = [state.face, state.corner, state.bend, state.grings, state.fexp, state.guidesOn,
-             state.gridOn, state.debugOn, state.famp, state.frameOn, state.frameW, cssPx.h,
+  const k = [view.face, state.corner, state.bend, state.grings, state.fexp, state.guidesOn,
+             state.gridOn, state.debugOn, view.famp, view.frameOn, view.frameW, cssPx.h,
              asp.toFixed(4)].join('|');
   if (k === calKey) return;
   calKey = k;
@@ -989,9 +1028,9 @@ function syncCal() {
    *
    * The SHADER was never affected: aperture() folds with abs() before it indexes, which is why the picture looked
    * right while the calibration grid drawn over it did not. */
-  const fRaw = faceShaped(state.face * 90, state.grings * 0.05,
+  const fRaw = faceShaped(view.face * 90, state.grings * 0.05,
                           { rho: (th) => shapeRatio(prof, th), bow: (th) => axisWeight(prof, th),
-                            bend: state.bend / 100 }, state.fexp, state.famp);
+                            bend: state.bend / 100 }, state.fexp, view.famp);
   const pinK = fRaw ? (fRaw.pin == null ? fRaw(1, 0) : fRaw.pin) : 1;
   const kk = pinK > 0.01 ? pinK : 1;
   const fF = fRaw ? ((u, th) => fRaw(u, th) / kk) : null;
@@ -1007,8 +1046,8 @@ function syncCal() {
    * Scaling about the viewBox centre by the same factor is the whole fix. It has to be the SAME expression the
    * shader uses, not a second one that happens to agree today. */
   // MUST MATCH THE SHADER'S uFrameFit exactly -- see the note where it is uploaded.
-  const fitW = state.frameW / Math.max(1, cssPx.h / 2);
-  const fit = state.frameOn ? 1 / Math.max(0.35, 1 - fitW) : 1;
+  const fitW = view.frameW / Math.max(1, cssPx.h / 2);
+  const fit = view.frameOn ? 1 / Math.max(0.35, 1 - fitW) : 1;
   const toVB = ([x, y]) => (50 + x / w * 100).toFixed(3) + ',' + (50 + y / H * 100).toFixed(3);
   /* THE GLASS, AS A CLIP PATH, from the same guideOutline points the guide is drawn from and the shader's own
    * aperture table is built from. One description of the rim, used by all three. */
@@ -1221,6 +1260,9 @@ function resize() {
   const dpr = Math.min(window.devicePixelRatio || 1, 2);
   cssPx.w = Math.max(2, Math.round(r.width));
   cssPx.h = Math.max(2, Math.round(r.height));
+  // BEFORE anything below reads a setting: crossing the breakpoint is exactly what changes which set applies,
+  // and R.size and the content buffer are both sized from values the overrides can move.
+  syncView();
   const w = Math.max(2, Math.round(r.width * dpr * state.renderScale));
   const h = Math.max(2, Math.round(r.height * dpr * state.renderScale));
   pxScale = Math.max(0.1, h / Math.max(1, Math.round(r.height)));
@@ -1309,6 +1351,10 @@ function frame(now) {
    * Every gl call against a lost context is a no-op, so the work below would be spent building uniforms for
    * a draw that cannot happen -- and drawContent would re-raster the text canvas to upload it nowhere. */
   if (glLost) { requestAnimationFrame(frame); return; }
+  /* THE VIEW IS REFRESHED PER FRAME, not only on resize, because the PANEL writes to state and the overrides
+   * are laid over a copy of it -- without this a slider moved on a phone would edit state and never reach the
+   * copy the renderer reads. On a roomy display this is a width comparison and an assignment. */
+  syncView();
   const t = now / 1000;
   /* THE POWER SEQUENCE, EVALUATED FIRST, because both deadlines below are read against it and the picture it
    * hands out is what everything after this draws. See the note where PWR_ON is declared. */
@@ -1459,7 +1505,7 @@ function frame(now) {
      * have been set to by hand. */
     time: t,
     overscan: state.overscan,
-    face: state.face, corner: state.corner, bend: state.bend,
+    face: view.face, corner: state.corner, bend: state.bend,
     /* THE PPI RULE IS crt-controls': round(span * density / 100), the picture's HEIGHT for the horizontal pass
      * and its WIDTH for the vertical one -- MEASURED IN CSS PIXELS, which is the whole point of this note.
      *
@@ -1565,10 +1611,21 @@ function frame(now) {
     /* CONVERGENCE, PER GUN, px -> content uv. Against cssPx rather than the render target: these are screen
      * distances, so they must not change meaning when RENDER SCALE moves. The master is a bypass -- off hands
      * over an empty object and the renderer's ||0 puts all three guns on the same raster. */
+    /* AND DIVIDED BY THE RASTER SCALE, so a misconvergence stays the same fraction of a GLYPH rather than the
+     * same number of screen pixels.
+     *
+     * These are authored in CSS px because that is the unit a service manual would use, and on a desktop
+     * 1-3px against a 30px glyph is the couple of percent that reads as a well-set-up tube. The type is 12px
+     * on a phone now, and 3px of green displacement against a 12px glyph is a quarter of its width -- the
+     * text stopped being readable, which is not a subtler version of the same effect but a different one.
+     *
+     * So the error follows the raster like everything else that shrank with it: 1/k. At k = 2.44 the shipped
+     * split becomes 0.4-1.2px, still a visible fringe on a 3x display and no longer a legibility problem.
+     * Above 820px k is 1 and these are byte-for-byte the values they always were. */
     conv: !state.convOn ? {} : {
-      rx: state.convRX / Math.max(1, cssPx.w), ry: state.convRY / Math.max(1, cssPx.h),
-      gx: state.convGX / Math.max(1, cssPx.w), gy: state.convGY / Math.max(1, cssPx.h),
-      bx: state.convBX / Math.max(1, cssPx.w), by: state.convBY / Math.max(1, cssPx.h),
+      rx: state.convRX / RN.k / Math.max(1, cssPx.w), ry: state.convRY / RN.k / Math.max(1, cssPx.h),
+      gx: state.convGX / RN.k / Math.max(1, cssPx.w), gy: state.convGY / RN.k / Math.max(1, cssPx.h),
+      bx: state.convBX / RN.k / Math.max(1, cssPx.w), by: state.convBY / RN.k / Math.max(1, cssPx.h),
     },
     persist: state.persist,
     /* MILLIMETRES -> GLASS HALF-HEIGHTS, here and nowhere else. The shader keeps working in the units it
@@ -1627,14 +1684,20 @@ function frame(now) {
     sheen: state.sheen, matte: state.matte, glare: state.glare,
     // cm -> the fixture's units, by the same SCALE everything else uses.
     sheenR: Math.max(0.005, state.scatterCM * 10 / MM_PER_UNIT),
-    glow: state.glow / 100, glowFall: state.glowFall, textRect: textRect, spot: state.spot,
+    glow: state.glow / 100, glowFall: state.glowFall, textRect: textRect,
+    /* THE BEAM'S SPOT FOLLOWS THE RASTER TOO, for the same reason the convergence does. It spreads each gun
+     * by a fixed number of content texels -- so, once the two scale factors cancel, a near-constant ~1.3 CSS
+     * px whatever the display. That is 4% of a desktop glyph and 10% of a phone's, and it is the other half
+     * of why the small text read as out of focus rather than merely small. Divided by k, it is the same
+     * fraction of a glyph at every size; at k = 1 it is untouched. */
+    spot: state.spot / RN.k,
     tubeDead: state.tubeDead,
     frame: state.frame,
     /* PX -> THE SHADER'S UNITS, where 1 is the glass half-height. The stage is cssPx.h CSS pixels tall
      * and maps to c in [-1, 1], so one unit is cssPx.h/2 px. Converted here, once, at the boundary --
      * the panel speaks px and the shader speaks half-heights, and neither has to know about the other. */
-    frameW: state.frameW / Math.max(1, cssPx.h / 2),
-    frameOn: state.frameOn, bzLocal: state.frameBleed, bzPhos: state.frameScreen, bzLamp: state.frameFixture,
+    frameW: view.frameW / Math.max(1, cssPx.h / 2),
+    frameOn: view.frameOn, bzLocal: state.frameBleed, bzPhos: state.frameScreen, bzLamp: state.frameFixture,
     ink: p.ink, hi: p.hi, halo: p.halo, lamp: p.lamp, lampA: p.lampA, lampB: p.lampB,
     grilleInk: GRILLE_INK, ...bez(tA, tB),
   });
@@ -1680,6 +1743,10 @@ window.CRTGL = { state, get R() { return R; }, resize, textGrid, drawContent, re
    * moment a narrow display could scale the density. rasterScale() === 1 is also the check that a change is
    * inert at a given size -- which is how the render fingerprint was shown to be unaffected by it. */
   rasterN, rasterScale,
+  /* THE SETTINGS THE RENDERER ACTUALLY READ, which on a narrow display are not the ones the panel is showing.
+   * A getter, because `view` is reassigned between state and the override copy -- capturing it by value would
+   * hand a caller whichever one happened to be current at load. */
+  get view() { return view; },
   // A WINDOW ONTO THE TYPEWRITER, so a finished block can be inspected without waiting out the boot -- and so a
   // measurement is not at the mercy of when it happens to be taken. Writing it is what REBOOT does.
   get typed() { return typed; }, set typed(v) { typed = Math.max(0, Math.min(FULL, v | 0)); },
