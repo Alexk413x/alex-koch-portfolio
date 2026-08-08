@@ -26,7 +26,7 @@
    * The wrapper exists so the browser's HTML parser does not build live SVG elements out of markup that is still
    * full of {{ }} placeholders. Without it every `d="{{ guidePath }}"` reaches a real SVGPathElement, which
    * rejects the value and logs -- the CRT lab produced 25 such errors per load. Template contents are parsed but
-   * never rendered, so nothing validates them. See the note in CRT Lab.dc.html.
+   * never rendered, so nothing validates them.
    *
    * BOTH PARSE PATHS NEED IT, AND THEY SEE DIFFERENT TEXT FOR THE SAME MARKUP. parseDcText slices the raw file
    * and gets `<template data-dc-body>`; parseDcDocument reads innerHTML off the live DOM, where serialisation

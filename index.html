@@ -77,25 +77,24 @@
       <p>The tube as a fragment shader: face curvature, shadow mask, beam, phosphor persistence and a
          ray-traced light fitting reflected in the glass, solved per pixel.</p>
     </a>
-    <a class="card" href="labs/crt/CRT%20Lab.dc.html">
-      <span class="tag">DOM / SVG</span>
-      <div class="name">CRT Lab</div>
-      <p>The original. Thirteen blended layers, the curve plotted into SVG paths rather than resampled,
-         CSS custom properties driven every frame.</p>
-    </a>
   </div>
   <p class="sub" style="font-size:12.5px;margin-top:12px">
-    Two independent renderers, one description of the surface — both walk the same pure geometry modules,
-    so they cannot disagree about the shape of the glass.
+    The curve is <em>plotted</em>, not resampled: the shader walks the same pure geometry modules that describe
+    the glass, so nothing on screen can disagree about its shape.
   </p>
 
   <h2>Other labs</h2>
   <div class="grid">
-    <a class="card" href="labs/reactor/Reactor%20Lab.dc.html"><div class="name">Reactor Lab</div></a>
-    <a class="card" href="labs/wormhole/Wormhole%20Lab.dc.html"><div class="name">Wormhole Lab</div></a>
-    <a class="card" href="lab/Lab%20Shell.dc.html">
-      <div class="name">Lab Shell</div>
-      <p>The reference lab — every control type the shared sidebar offers, wired correctly.</p>
+    <a class="card" href="labs/reactor/Reactor.html">
+      <span class="tag">WebGL</span>
+      <div class="name">Reactor Lab</div>
+      <p>A containment core, sphere-traced: a goo core with sub-cores torn out of it by a pulse, nine alloy
+         ring fragments, and a shield that fails on a schedule.</p>
+    </a>
+    <a class="card" href="labs/wormhole/Wormhole.html">
+      <span class="tag">WebGL</span>
+      <div class="name">Wormhole Lab</div>
+      <p>A domain-warped noise tunnel down the throat of a wormhole, in three flavours.</p>
     </a>
   </div>
 
@@ -115,10 +114,10 @@
 
   <div class="note">
     <strong>Best on desktop.</strong> These are instruments laid out at around 1560&times;1100. On a narrow
-    screen the control panel folds away behind a <strong>CONTROLS</strong> button so the tube gets the screen
-    to itself, but the control density is still built for a large window. The WebGL build is demanding; if it
-    struggles, <strong>RENDER SCALE</strong> in its panel is the lever. First load pulls React and Babel
-    from a CDN, so give it a moment.
+    screen the control panel folds away behind a chevron so the picture gets the screen to itself, but the
+    control density is still built for a large window. Every lab is WebGL and demanding; if one struggles,
+    <strong>RENDER SCALE</strong> in its panel is the lever, and it already starts lower on integrated graphics.
+    No framework and no build step — the labs load nothing at runtime but their own modules and the fonts.
   </div>
 
   <footer>

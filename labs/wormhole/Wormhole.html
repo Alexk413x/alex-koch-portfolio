@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Wormhole Lab</title>
+<!-- AN INLINE FAVICON, because a browser asks for /favicon.ico whether or not one exists and logs a 404 when it
+     does not. A data URI answers the question in the document rather than needing a file beside it. -->
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%23070707'/%3E%3Ccircle cx='8' cy='8' r='6' fill='none' stroke='%23ffb454' stroke-width='1'/%3E%3Ccircle cx='8' cy='8' r='3' fill='none' stroke='%23ffb454' stroke-width='1' opacity='.6'/%3E%3Ccircle cx='8' cy='8' r='1' fill='%23fff'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Archivo:wght@700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../kit/panel.css">
+<link rel="stylesheet" href="../kit/lab.css">
+<!-- Only what is true of this lab; the page shell is lab.css and the panel is panel.css. -->
+<style>
+  #panel h1{font-size:12px}
+</style>
+</head>
+<body>
+<div id="stage">
+  <canvas id="field"></canvas>
+  <div id="mast"><div class="t">WORMHOLE&nbsp;LAB</div><div class="s" id="modename">WebGL shader</div></div>
+  <div id="hud"><b id="fps">-- FPS</b> <span id="scaleinfo"></span> <span id="glstate"></span><br><span class="dim" id="gpu"></span></div>
+</div>
+<div id="panel">
+  <h1>WORMHOLE FIELD</h1>
+  <div id="controls"></div>
+</div>
+
+<script type="module">
+import { createQuad } from '../kit/glquad.js';
+import { createPanel, mountPanelToggle } from '../kit/panel.js';
+import { persist, fitCanvas, runLoop, textOut, reportNoGL } from '../kit/lab.js';
+import { FRAG, UNIFORMS } from './wormhole-shader.js';
+import { SECTIONS, FMT } from './wormhole-sidebar.js';
+import { MODES, defaultPreset } from './wormhole-presets.js';
+
+const stage = document.getElementById('stage');
+const R = createQuad(document.getElementById('field'),
+                     { frag: FRAG, uniforms: UNIFORMS, onRestore: () => fit(true) });
+if (!R) { reportNoGL(); throw new Error('WebGL unavailable'); }
+
+const state = defaultPreset(R.gpu);
+const store = persist({ key: 'wormhole', version: 1, state, sections: SECTIONS });
+store.restore();
+
+const modeEl = document.getElementById('modename');
+const syncMode = () => textOut(modeEl, 'WebGL shader · ' + MODES[state.mode]);
+syncMode();
+
+// panel.js has already written the value and the next frame reads state directly, so nothing needs propagating.
+// RENDER SCALE is the exception: it changes the size of the buffer, not a number inside it.
+createPanel({
+  host: document.getElementById('controls'),
+  state, sections: SECTIONS, fmt: FMT,
+  onChange: (key) => {
+    if (key === 'renderScale') fit(true);
+    if (key === 'mode') syncMode();
+    store.queueSave();
+  },
+});
+
+const scaleEl = document.getElementById('scaleinfo');
+const fit = fitCanvas({
+  stage, R, scale: () => state.renderScale,
+  onFit: (w, h) => textOut(scaleEl, w + '×' + h + ' @ ' + Math.round(state.renderScale * 100) + '%'),
+});
+fit(true);
+
+mountPanelToggle({ panel: document.getElementById('panel'), onToggle: () => fit(true) });
+
+textOut(document.getElementById('gpu'),
+        (R.gpu.integrated ? 'INTEGRATED' : 'DISCRETE') + ' · ' +
+        String(R.gpu.name || '?').replace(/^ANGLE \(|\)$/g, '').slice(0, 44));
+
+const fpsEl = document.getElementById('fps'), glEl = document.getElementById('glstate');
+
+function draw(dt, sec) {
+  if (R.lost) { textOut(glEl, 'GL CONTEXT LOST'); return; }
+  textOut(glEl, '');
+  R.f2('uRes', R.w, R.h);
+  R.f('uTime', sec);
+  R.f('uSpeed', state.speed); R.f('uTurb', state.turb); R.f('uTwist', state.twist); R.f('uRot', state.rot);
+  R.f('uChroma', state.chroma); R.f('uGlow', state.glow); R.f('uHue', state.hue); R.f('uMode', state.mode);
+  R.draw();
+}
+
+const loop = runLoop({ draw, onTick: (fps) => textOut(fpsEl, fps + ' FPS') });
+
+// The handle bench.py and the console reach for. Read pixels in the same task as renderNow — the context is
+// preserveDrawingBuffer:false, so a later readPixels returns a cleared buffer.
+window.WORMHOLE = { state, R, fit, saveState: store.save,
+                    renderNow: (sec) => loop.renderNow(1 / 60, sec),
+                    get time() { return loop.time; } };
+</script>
+</body>
+</html>

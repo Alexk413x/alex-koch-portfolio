@@ -1,7 +1,7 @@
 /* render-probe.js — a deterministic render fingerprint for CRT GL.
  *
- * NOTHING IN THE LAB LOADS THIS, and nothing should -- it is an instrument that attaches on demand, the same
- * arrangement fps-probe.js has and for the same reason: it costs nothing when it is not in use.
+ * NOTHING IN THE LAB LOADS THIS, and nothing should -- it is an instrument that attaches on demand, so it costs
+ * nothing when it is not in use.
  *
  *     <script src="/labs/crt/render-probe.js"></script>   // or paste this file into the console
  *

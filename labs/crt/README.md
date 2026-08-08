@@ -1,28 +1,41 @@
-# CRT Lab modules
+# CRT GL modules
 
-`CRT Lab.dc.html` is the view: measuring the glass, plotting the curved layers, assigning CSS variables, driving the
-panel. Everything below is logic, and none of it can reach the component — **no DOM, no component state**. That is the
-rule the instrument is built on: there is one surface, described once, and geometry that can read the component is
-geometry that can disagree with it.
+`CRT GL.html` is the view: sizing the glass, driving the panel, composing the boot text, running the frame loop.
+Everything below is logic, and none of it can reach the page — **no DOM, no component state**. That is the rule the
+instrument is built on: there is one surface, described once, and geometry that can read the renderer is geometry
+that can disagree with it.
 
 ```
-crt-geometry.js    guideOutline (the guide + its shape ratio), radiusAt / shapeRatio / axisWeight (lookups),
-                   foldQuad (a ray into the first quadrant, by arithmetic), fixed (the one coordinate formatter every
-                   path emitter here and in crt-grid uses), ringLadder (rings + heat), edgeGather (the corner band
-                   inside the rim)
-crt-projection.js  fieldFolds (fold test), faceAmax (the amplitude ceiling), faceProfile / faceF / faceShaped (the
-                   projection, radial and shape-aware)
-crt-phosphor.js    PH palette, blackbody KELVIN table, hexRgb / mix / kelvinRgb / resolvePhosphor
-crt-fixture.js     createFixture() -> { ignite, tubeHealth, portalPolygon }
-crt-flicker.js     createFlicker() -> { screenFlicker, bulbFlick, bulbState, frameVars }
-crt-grid.js        curvedScanPath (scanlines + grille), curvedGridPaths (grid lines + cell dots)
-crt-controls.js    createMeta (the control table: ranges, units, fmt/parse), SECTIONS (panel layout)
-crt-vars.js        screenVars (every CSS custom property the tube reads: settings in, one string out)
-crt-bezel.js       bezelCols (the frame's plastic: base + a little phosphor and room light)
-crt-warp.js        runWarp (the magnet warp over the text layer, owning its own frame loop)
-crt-terminal.js    bootLines (the boot text), typeInto (the typewriter)
-crt.css            keyframes, slider thumbs, document reset
+crt-geometry.js     guideOutline (the guide + its shape ratio), radiusAt / shapeRatio / axisWeight (lookups),
+                    foldQuad (a ray into the first quadrant, by arithmetic), fixed (the one coordinate formatter
+                    every path emitter here and in crt-grid uses), ringLadder (rings + heat), edgeGather (the
+                    corner band inside the rim)
+crt-projection.js   fieldFolds (fold test), faceAmax (the amplitude ceiling), faceProfile / faceF / faceShaped
+                    (the projection, radial and shape-aware)
+crt-phosphor.js     PH palette, blackbody KELVIN table, hexRgb / mix / kelvinRgb / resolvePhosphor
+crt-flicker.js      createFlicker() -> { screenFlicker, bulbFlick, bulbState, frameVars }
+crt-grid.js         curvedScanPath (scanlines + grille), curvedGridPaths (grid lines + cell dots)
+crt-bezel.js        bezelCols (the frame's plastic: base + a little phosphor and room light)
+crt-terminal.js     bootLines (the boot text), typeInto (the typewriter)
+crt-sidebar.js      makeFmt (how each value reads), SECTIONS (panel layout)
+crt-presets.js      defaultPreset and the stored configurations
+crt-gl.js           createRenderer, buildFaceLUT, buildOutlineLUT, toLinear, detectGPU — four programs, the
+                    half-float ping-pong, and the LUTs the shader reads the geometry through
+crt-fixture-gl.js   the light fitting, ray-traced in the shader
+crt-glsl-common.js  GLSL shared between those two
+render-probe.js     CRTPROBE.hash() / .selfTest() — a deterministic render fingerprint over seven fixed scenes
 ```
+
+**The DOM/SVG build is gone.** `CRT Lab.dc.html` rendered the same tube thirteen blended layers deep, and the two
+builds agreeing was how a geometry change got verified. It was deleted deliberately on 2026-08-08: the GL build
+looks and performs better, and one renderer that is right beats two that must be kept in step. Deleted with it,
+because nothing else reached them — `crt-controls.js`, `crt-fixture.js`, `crt-vars.js`, `crt-warp.js`,
+`crt-glow.js`, `crt.css`, `fps-probe.js`. All of it is in the history if the cross-check is wanted back.
+
+The panel is [`../kit/panel.js`](../kit/README.md), shared with the other labs. CRT GL uses **only** that much of
+the kit: it predates the rest and keeps its own persistence, sizing and frame loop, wound through a power
+sequence, a warp and a surge the generic helpers have no notion of. Stretching `lab.js` over both would produce an
+abstraction fitting neither — the same judgement `glquad.js` records about not wrapping this renderer.
 
 ## The curve is plotted, not resampled
 
@@ -64,64 +77,50 @@ it as `F(u, theta)`. A one-argument `F` ignores it. Three consequences worth kno
   is less sagged than the pin), and OVERSCAN multiplies the whole thing. Anything that assumed "the rim maps to itself"
   everywhere needs re-reading.
 
-Loaded by a `<script type="module">` in the DC's helmet and published on `window` (`CRT_GEOM`, `CRT_PROJ`, `CRT_PHOS`,
-`CRT_FIXTURE`, `CRT_FLICKER`, `CRT_GRID`, `CRT_CONTROLS`, `CRT_VARS`, `CRT_BEZEL`, `CRT_WARP`, `CRT_TERM`) because a DC
-logic class is not itself a module. Module scripts are deferred, so the first render can land before they do: everything
-geometric returns empty until then and `componentDidMount` rebuilds once the `crt-math` event fires. `META` is a lazy
-getter for the same reason — an empty table renders an empty panel instead of throwing.
+Imported directly by `CRT GL.html`'s single `<script type="module">`. The DOM build could not do that — a DC logic
+class is not a module, so these were published on `window` as `CRT_GEOM`, `CRT_PROJ` and so on, and everything
+geometric returned empty until a `crt-math` event fired because module scripts are deferred. All of that machinery
+went with it; a module page just imports.
 
-`crt-fixture` and `crt-flicker` are **factories** (`createFixture()`, `createFlicker()`) — they hold memo caches and
-machine phase, so two instruments on one page cannot share each other's state. `crt-controls` exports a factory too, for
-a different reason: exactly one formatter has to reach outside itself (FACE reports the *effective* cap, which the
-projection computes), so the ceiling is injected as an accessor rather than read off the component.
+`crt-flicker` is a **factory** (`createFlicker()`) — it holds memo caches and machine phase, so two instruments on
+one page cannot share each other's state.
 
-Dependency order, and it is a line, not a graph: `crt-phosphor` <- `crt-fixture`, `crt-phosphor` <- `crt-vars`,
-`crt-phosphor` <- `crt-bezel`. Nothing else imports anything.
+Dependency order, and it is a line, not a graph: `crt-phosphor` <- `crt-bezel`, and `crt-glsl-common` <-
+`crt-gl` / `crt-fixture-gl`. Nothing else imports anything.
 
-`crt.css` holds only what cannot be an inline style: the document reset, the slider thumb pseudo-elements, and the eight
-keyframes. Timing is NOT in there — renderVals composes each animation's full shorthand from the POWER controls, so the
-duration lives with the state and only the motion lives in CSS.
+## One live finding
 
-## Two live findings from the simplification pass
-
-- **`--glare` has no reader.** The GLARE slider drives `--glarelight`, which the fixture reads; the comment claiming
-  "five glass references" was stale, and the dead write is gone. So GLARE currently affects the fixture only — if it is
-  meant to reach the glass layers too, that is a wiring job, not a value.
-- **`cabs` was a hard-coded 0** standing in for the removed CURVATURE control, and `--curve` (the vignette's
-  border-radius) was its only consumer. Both removed; the reader falls back to 0, which is what it already computed.
+- **GLARE reaches the fitting only.** The slider drives the fixture's own light term; the old claim that it also
+  fed "five glass references" was stale and the dead write is gone. If it is meant to reach the glass too, that is
+  a wiring job, not a value.
 
 ## What is deliberately NOT in here
 
-The rendering that these feed. Splitting it out would mean a second description of the same surface, which is the bug
+The rendering these feed. Splitting it out would mean a second description of the same surface, which is the bug
 this whole structure exists to prevent:
 
-- **Plotting the curved layers into SVG paths.** `crt-grid` returns path strings; deciding what stroke, ink and blend
-  mode they get is rendering. The scan pattern is the clearest case — `curvedScanPath` places N lines and nothing more,
-  while the DC supplies each axis's width, alpha and ink from six independent controls (density, width and level, per
-  axis). The only thing fixed in code is the INK: black for the horizontal pass, warm `#2a1608` for the vertical one.
-- **Heat -> colour** (`guideRings` in the DC). `ringLadder` returns heat as a number; the ramp is presentation.
-- **The fixture and phosphor MARKUP.** The logic moved; the markup did not. It reads ~40 CSS custom properties inherited
-  from `#crt_monitor`, and a child component would either break that inheritance or need all 40 as props.
+- **Turning geometry into a path or a LUT.** `crt-grid` returns path strings and `crt-gl`'s `buildFaceLUT` /
+  `buildOutlineLUT` turn the same functions into textures the shader samples; deciding what stroke, ink and blend
+  each gets is rendering. `curvedScanPath` places N lines and nothing more — the page supplies each axis's width,
+  alpha and ink from six independent controls.
+- **Heat → colour.** `ringLadder` returns heat as a number; the ramp is presentation.
 
 ## Verifying a change here
 
-**Measure, don't look.** A refactor that claims to preserve behaviour is checked by hashing the outputs against a
-pre-change backup at identical settings — the displacement PNG's full data URL, every ring band's `d` string, the grid
-canvas pixels, and the whole `--var` block on `#crt_monitor`. The module split was verified exactly that way against
-`CRT Lab (backup post-cleanup).dc.html`: all four hashes equal, including the 95,646-character map byte for byte.
+**Measure, don't look.** `render-probe.js` is the instrument: `CRTPROBE.hash()` pins the clock, the full state and
+the render scale, then fingerprints seven fixed scenes. A refactor that claims to preserve behaviour is checked by
+hashing before and after and comparing. Run `CRTPROBE.selfTest()` first — it proves the harness is deterministic
+on this machine before you trust a comparison.
+
+Editing `crt-presets.js` invalidates every stored reference hash, because the probe renders from the preset
+defaults. That is not a regression; re-baseline.
 
 Also worth knowing:
 
-- Ring quadrant maxima must be equal in all four quadrants — the outline is one quadrant mirrored, so any spread means
-  something is measuring the mirror rather than the shape. Sample with `getPointAtLength`, and remember the 0-100 viewBox
-  is stretched to the glass, so measure in the same space you compare in.
-- Decode the map's PNG header (IHDR at bytes 16-23) and check its aspect against the glass.
-- **A 616x540 preview cannot reproduce the >1024 map bug.** Check geometry at the real size (1561x1103).
-- **On a COLD load the overlay can lag the picture.** The first render lands before these deferred modules, so the
-  `crt-math` rebuild runs against the un-inset stage (924 here) and the sidebar's width arrives afterwards. `map` and
-  `grid` re-measure themselves and come out right; the rings and heat bands are built in `renderVals` from a measured
-  width, so they only correct if something re-renders. `syncScreenAspect` therefore keys its re-render on the measured
-  GLASS WIDTH, not on the inset — at ASPECT FULL the inset is identically 0 at every stage width, so an inset-only guard
-  sees nothing and leaves the reference describing a different glass than the picture. Warm modules reorder it and hide
-  the bug, which is what makes it intermittent: test it on a cold load, and the bands must hash `19c80928:210984` with
-  no interaction at all.
+- Ring quadrant maxima must be equal in all four quadrants — the outline is one quadrant mirrored, so any spread
+  means something is measuring the mirror rather than the shape. Remember the 0-100 viewBox is stretched to the
+  glass, so measure in the same space you compare in.
+- **A small preview cannot reproduce the >1024 geometry bug.** Check at the real size (~1561x1103).
+- **Gate per-pass GPU timing to inside the `renderNow` call.** The page's own rAF loop keeps drawing throughout,
+  and its draws otherwise land in whatever slot the counter has reached — a 5-slot bucket once collected 4663
+  samples for 120 frames.

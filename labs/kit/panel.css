@@ -1,16 +1,11 @@
-/* panel.css — THE CONTROL PANEL, FOR EVERY LAB.
+/* panel.css — the control panel, for every lab. Pairs with panel.js: that decides structure and behaviour, this
+ * decides appearance.
  *
- * ONE COPY. This markup existed three times: as 54 inline rules in CRT GL, again in lab/Sidebar.dc.html and a
- * third time in components/ControlPanel.dc.html. Three implementations of a slider drift, and a fix applied to
- * the one you happened to open does not reach the other two.
+ * Only what is generic lives here: the panel shell, section headers, rows, the four controls a row can hold
+ * (range, toggle, choice, colour) and the action strip. Anything that knows what a lab MEASURES belongs to that
+ * lab's own stylesheet.
  *
- * WHAT IS HERE IS ONLY WHAT IS GENERIC: the panel shell, section headers, rows, and the four controls a row can
- * hold -- range, toggle, choice and colour -- plus the action button strip. Anything that knows what a lab
- * MEASURES belongs to that lab's own stylesheet, not here.
- *
- * THEMED THROUGH CUSTOM PROPERTIES so a lab can retint the kit without forking it. The defaults are CRT GL's
- * amber, unchanged, because it was the first caller and matching it exactly is what made the extraction
- * verifiable -- a computed-style fingerprint of twenty elements has to come out identical.
+ * Retint through the custom properties below rather than forking — Reactor overrides seven of them to go green.
  */
 :root {
   --panel-w:      340px;

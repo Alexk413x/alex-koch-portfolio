@@ -1076,7 +1076,7 @@ void main(){
    * no width of its own, only a period, so it can only ever produce soft bands where the reference has hairlines
    * with gaps between them.
    *
-   * N comes from crt-controls' PPI rule -- round(span * density / 100), the picture's height for H and its width
+   * N comes from the panel's PPI rule -- round(span * density / 100), the picture's height for H and its width
    * for V -- computed on the CPU and handed in, so the density means here what the panel says it means.
    *
    * WIDTH IN SCREEN PIXELS THROUGH A WARPED COORDINATE is what fwidth is for: it reports how much the line index

@@ -1,10 +1,24 @@
-"""bench.py — measure the CRT lab's true frame rate, start to finish, in one command.
+"""bench.py — measure a lab's true frame rate, start to finish, in one command.
 
-    python bench.py                 # everything animated on, 12 samples, verdict
-    python bench.py --attribute     # ranked per-layer cost in ms/frame
-    python bench.py --uncapped      # frame COST, not frame RATE — see below
-    python bench.py --high-perf-gpu # render on the discrete adapter instead of the default one
-    python bench.py --port 8000     # if you already have a server running
+    python bench.py                     # CRT GL, 12 samples, verdict
+    python bench.py --page reactor      # any lab: crtgl | reactor | wormhole | shell, or a literal path
+    python bench.py --uncapped          # frame COST, not frame RATE — see below
+    python bench.py --inject "<js>"     # change something in the page before sampling it
+    python bench.py --high-perf-gpu     # render on the discrete adapter instead of the default one
+    python bench.py --port 8000         # if you already have a server running
+
+EVERY LAB IS MEASURED BY THE SAMPLER ALONE, which needs nothing from the page. `--attribute` and `--state` are
+gone with the DOM build they served: `fps-probe.js` knew that lab's thirteen layers by name, and nothing else has
+layers to attribute cost to.
+
+What the sampler cannot do is FIX the page's state, so a run measures whatever the page restored -- and on a fresh
+bench profile that is the shipped default. Two numbers are only comparable when they were taken at the same
+settings, so the run prints which page it measured, and `--inject` is how you pin a setting before sampling:
+
+    python bench.py --page reactor --uncapped --inject "REACTOR.state.renderScale=0.62; REACTOR.fit(true); 1"
+
+Each lab publishes a handle for exactly this -- CRTGL, REACTOR, WORMHOLE, SHELL -- carrying `state`, `R`, `fit`
+and a `renderNow` that draws one frame synchronously.
 
 ONCE THE PAGE HITS 60 THIS TOOL GOES BLIND, AND `--uncapped` IS THE ANSWER. rAF is delivered on the vsync, so a
 page comfortably inside budget and a page exactly at budget both report 16.67ms and nothing distinguishes them.
@@ -37,11 +51,20 @@ WHY IT EXISTS, and why the obvious approach fails:
 Close other tabs and applications before trusting the number.
 """
 import argparse, base64, json, os, socket, struct, subprocess, sys, tempfile, threading, time
-import http.server, socketserver, urllib.request
+import http.server, socketserver, urllib.parse, urllib.request
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
-PAGE = 'labs/crt/CRT%20Lab.dc.html'
 TARGET_MS = 1000.0 / 60
+
+# THE LAB UNDER TEST, BY NAME. CRT GL has a space in its filename, so the alternative at the command line is
+# `--page 'labs/crt/CRT GL.html'` with the escaping to match -- a quoting problem to solve before taking a
+# measurement. A literal path is still accepted for anything not on this list.
+PAGES = {
+    'crtgl':    'labs/crt/CRT%20GL.html',
+    'reactor':  'labs/reactor/Reactor.html',
+    'wormhole': 'labs/wormhole/Wormhole.html',
+    'shell':    'labs/shell/Shell.html',
+}
 
 
 # ---------------------------------------------------------------- server
@@ -167,20 +190,18 @@ SAMPLER = '''(async()=>{
 
 def main():
     ap = argparse.ArgumentParser()
+    ap.add_argument('--page', default='crtgl',
+                    help='which lab to measure: ' + ' | '.join(PAGES) + ', or a literal path from the repo root')
     ap.add_argument('--port', type=int, default=8791)
     ap.add_argument('--samples', type=int, default=12)
     ap.add_argument('--width', type=int, default=1600)
     ap.add_argument('--height', type=int, default=1000)
-    ap.add_argument('--attribute', action='store_true', help='ranked per-layer cost instead of one number')
     ap.add_argument('--uncapped', action='store_true',
                     help='unthrottle rAF so frame COST is measurable below the 16.67ms vsync floor')
     ap.add_argument('--high-perf-gpu', action='store_true',
                     help='force the discrete adapter')
     ap.add_argument('--low-power-gpu', action='store_true',
                     help='force the integrated adapter — the honest target, and what the handoff tables were measured on')
-    ap.add_argument('--state', default=None,
-                    help='JSON applied ON TOP of stress() — for comparing two environments on the SAME '
-                         'configuration instead of two different ones. Example: --state "{\\"lflickA\\":0.9}"')
     ap.add_argument('--dpr', type=float, default=None,
                     help='force the device scale factor, e.g. 1.0. The lab renders at the window DPR (1.75 on this '
                          'display), so this answers what capping render resolution would buy before anything in '
@@ -190,13 +211,19 @@ def main():
                          'harness is ~4x pessimistic cold (see the note in the verdict); run once to warm, then '
                          'again with --warm for a number comparable to a real browser.')
     ap.add_argument('--inject', default=None,
-                    help='JS evaluated in the page after stress/--state, before the samples. For trying a '
-                         'change without editing the lab -- the experiment and the build stay separate.')
+                    help='JS evaluated in the page before the samples. This is how a setting is PINNED so two runs '
+                         'are comparable, and how a change is tried without editing the lab.')
     ap.add_argument('--keep-open', action='store_true')
     a = ap.parse_args()
 
+    a.path = PAGES.get(a.page, a.page).replace('\\', '/').lstrip('/')
+    # FAIL HERE, NOT AFTER LAUNCHING A BROWSER AND SLEEPING 48 SECONDS. A mistyped page name otherwise surfaces
+    # as "could not reach the page over CDP", which reads as a harness fault rather than a typo.
+    if not os.path.exists(os.path.join(ROOT, urllib.parse.unquote(a.path))):
+        sys.exit('no such page: %s\n  names: %s' % (a.path, ' | '.join(PAGES)))
+
     serve(a.port)
-    base = 'http://127.0.0.1:%d/%s' % (a.port, PAGE)
+    base = 'http://127.0.0.1:%d/%s' % (a.port, a.path)
     prof = os.path.join(tempfile.gettempdir(), 'crt-bench-run')
     # KEPT ON PURPOSE UNDER --warm. A wiped profile has no GPU shader cache, which is the single biggest
     # systematic error this harness has: every shader the compositor needs is recompiled on the first frames.
@@ -235,11 +262,11 @@ def main():
     proc = subprocess.Popen(args)
     # THE BROWSER IS CLOSED ON EVERY PATH OUT, and it used to be closed on exactly one.
     #
-    # proc.terminate() was the last statement of this function, so it ran only when the run reached the end.
-    # `--attribute` returns before it (every attribution run leaked a browser), both sys.exit calls skip it, and
-    # so does any exception or Ctrl-C. A harness that leaks on the unhappy path leaks hardest while it is being
-    # debugged, which is when it is run most: four aborted runs in one session left four full browsers and two
-    # profile trees behind, and thirteen blended layers' worth of compositor memory with them.
+    # proc.terminate() was the last statement of this function, so it ran only when the run reached the end. An
+    # early return skipped it, both sys.exit calls skipped it, and so did any exception or Ctrl-C. A harness that
+    # leaks on the unhappy path leaks hardest while it is being debugged, which is when it is run most: four
+    # aborted runs in one session left four full browsers and two profile trees behind, and a lab's worth of
+    # compositor memory with each.
     #
     # Everything below therefore raises rather than sys.exit-ing, and the close lives in the finally.
     try:
@@ -297,11 +324,18 @@ def _run(a, c_args):
     print('warming the profile cache (React/Babel/fonts come off the network on a fresh profile)...')
     time.sleep(28)
 
+    # MATCHED ON THE PAGE'S OWN FILENAME, escaped or not. This was `'CRT' in url`, which was true of exactly one
+    # page and is now true of three; Chrome also reports the URL back with its own idea of escaping, so both forms
+    # are tried rather than assuming which one comes back.
+    leaf = a.path.rsplit('/', 1)[-1]
+    wanted = {leaf, urllib.parse.unquote(leaf)}
     tgt = None
     for _ in range(20):
         try:
             with urllib.request.urlopen('http://127.0.0.1:%d/json' % dbg, timeout=5) as r:
-                pages = [t for t in json.load(r) if t.get('type') == 'page' and 'CRT' in t.get('url', '')]
+                pages = [t for t in json.load(r) if t.get('type') == 'page'
+                         and any(w in urllib.parse.unquote(t.get('url', '')) or w in t.get('url', '')
+                                 for w in wanted)]
             if pages:
                 tgt = pages[0]
                 break
@@ -309,20 +343,15 @@ def _run(a, c_args):
             pass
         time.sleep(2)
     if not tgt:
-        raise RuntimeError('could not reach the page over CDP')
+        raise RuntimeError('could not reach %s over CDP' % a.path)
 
     c = CDP(tgt['webSocketDebuggerUrl'])
     c.call('Runtime.enable')
     c.call('Page.bringToFront')
-    c.js("new Promise((res,rej)=>{var s=document.createElement('script');"
-         "s.src='/labs/crt/fps-probe.js?v='+Date.now();s.onload=()=>res(1);s.onerror=rej;document.head.appendChild(s);})", 60)
-    c.js('CRTFPS.rebind() && CRTFPS.stress() && 1')
-    # ON TOP OF STRESS, so one variable moves and the rest of the worst case is unchanged.
-    if a.state:
-        json.loads(a.state)          # fail here, not in the page, if it is not valid JSON
-        c.js('JSON.stringify(CRTFPS.set(%s))' % a.state)
-        print('state override applied: %s' % a.state)
-    print('everything animated is ON; settling 20s...')
+    # WHAT IS MEASURED IS WHATEVER THE PAGE RESTORED, which on a fresh bench profile is the shipped default. Say so,
+    # because a number is only comparable to another taken at the same settings -- and --inject is how you pin them.
+    print('measuring the restored state of "%s" (a fresh profile means the shipped default)' % a.page)
+    print('settling 20s...')
     time.sleep(20)
 
     if c.js('document.visibilityState') != 'visible':
@@ -330,6 +359,7 @@ def _run(a, c_args):
 
     gpu_name, gpu_feats = gpu_report(dbg, c)
     print()
+    print('page:    %s' % a.path)
     forced = ('  (--force-high-performance-gpu)' if a.high_perf_gpu else
               '  (--force-low-power-gpu)' if a.low_power_gpu else '  (Chrome default — VERIFY, it is not always the iGPU)')
     print('adapter: %s%s' % (gpu_name or 'UNKNOWN', forced))
@@ -338,22 +368,26 @@ def _run(a, c_args):
     print('vsync:   %s' % ('DISABLED — this is frame COST, not frame rate; not comparable to a capped run'
                            if a.uncapped else 'on — floor is %.2f ms, cost below it is invisible' % TARGET_MS))
 
-    if a.attribute:
-        print(c.js('CRTFPS.attribute(3).then(r=>JSON.stringify(r.layers,null,1))', 600))
-        return
-
     if a.inject:
         print('injected:', a.inject[:90] + ('...' if len(a.inject) > 90 else ''))
         print('  ->', c.js(a.inject, 60))
         time.sleep(6)                 # let the change settle before sampling it
     d = json.loads(c.js(SAMPLER % a.samples, 400))
-    r = sorted(d['reps'])
+    # The first window is a warm-up, not a measurement: uncapped with an idle compositor it retires a burst of
+    # near-empty frames and comes back well under 1ms where every later window sits at 4-6ms. Left in the output so
+    # a genuinely slow first window is still visible, but excluded from the min, the median and the verdict — the
+    # guard below compares min against median, and that one sample defeated it.
+    reps = d['reps']
+    warm, kept = (reps[0], reps[1:]) if len(reps) > 2 else (None, reps)
+    r = sorted(kept)
     lo, med = r[0], r[len(r) // 2]
     w, h, dpr = d['size']
     mp = w * h * dpr * dpr / 1e6
     print()
     print('window %dx%d @ dpr %s = %.1f device megapixels' % (w, h, dpr, mp))
-    print('samples:', d['reps'])
+    if warm is not None:
+        print('warm-up window (excluded): %.2f ms' % warm)
+    print('samples:', kept)
     print('  min %.1f ms (%.0f fps)   median %.1f ms (%.0f fps)   max %.1f ms' % (lo, 1000 / lo, med, 1000 / med, r[-1]))
     print('  %.2f ms per megapixel' % (lo / mp))
     print()

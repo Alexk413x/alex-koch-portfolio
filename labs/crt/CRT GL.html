@@ -22,7 +22,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Archivo:wght@700;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../../ui/panel.css">
+<link rel="stylesheet" href="../kit/panel.css">
 <style>
   *{box-sizing:border-box}
   /* dvh, NOT %, AND THIS IS WHERE MOBILE LOSES ITS SPACE. A percentage height resolves against the initial
@@ -95,7 +95,7 @@ import { createFlicker } from './crt-flicker.js';
 import { createRenderer, buildFaceLUT, buildOutlineLUT, toLinear } from './crt-gl.js';
 import { defaultPreset } from './crt-presets.js';
 import { makeFmt, SECTIONS } from './crt-sidebar.js';
-import { createPanel, buildActions, mountPanelToggle } from '../../ui/panel.js';
+import { createPanel, buildActions, mountPanelToggle } from '../kit/panel.js';
 
 const canvas = document.getElementById('tube');
 // A FACTORY, because it holds machine phase -- two instruments on one page cannot share each other's state.
@@ -384,7 +384,7 @@ function powerNow(now) {
  *
  * WHAT THE REFERENCE DOES, AND WHY THIS IS NOT A PORT OF IT.
  *
- * crt-warp.js animates a CSS transform -- translate, rotate, skew, scale -- on #clContent, which is the element
+ * The DOM build animated a CSS transform -- translate, rotate, skew, scale -- on the element
  * holding the TEXT. Its own doc block is explicit that the layers describing the glass "must stay still, or the
  * tube wobbles rather than the picture in it", so the scanlines, the phosphor wash and the grid deliberately do
  * NOT move. That was the correct call for a stack of composited DOM layers: there is no way to bend one of them
@@ -1039,7 +1039,7 @@ function syncCal() {
    *
    * Pinned on .pin -- the UN-bowed axis value faceShaped publishes -- not on f(1, 0). crt-projection's note says
    * why: dividing by the bowed value would normalise BEND's bow away at precisely the ray where it is strongest.
-   * This is character-for-character what CRT Lab.dc.html does at its own pin. */
+   * This was character-for-character what the DOM build did at its own pin. */
   /* FOLDED INTO THE FIRST QUADRANT, and passing the raw accessors instead was the bug behind "three of the four
    * corners are wrong".
    *
@@ -1145,7 +1145,7 @@ function syncCal() {
     : '<g transform="translate(50,50) scale(' + (1 / fit).toFixed(5) + ') translate(-50,-50)">' + out + '</g>';
 }
 
-/* THE UNITS EACH CONTROL IS ACTUALLY IN. crt-controls does this with a fmt() per row and it is worth copying:
+/* THE UNITS EACH CONTROL IS ACTUALLY IN, one fmt() per row:
  * a slider that reads "27" is ambiguous, and one that reads "27 deg" is not. SQUIRCLE runs to 90 because that is
  * where guideOutline's exponent reaches exactly 2 -- a circle, in a square box. */
 /* THE ARC A BOWED EDGE SWEEPS, measured off the real outline. Sagitta is how far the edge midpoint stands proud
@@ -1194,7 +1194,7 @@ const host = document.getElementById('controls');
  */
 
 /* THE PANEL IS THE SHARED KIT'S, not this page's. The builders lived here as 236 lines and 54 CSS rules,
- * duplicated in two other panels; they are ../ui/panel.js and ../ui/panel.css now.
+ * duplicated in two other panels; they are ../kit/panel.js and ../kit/panel.css now.
  *
  * THE TWO THINGS THE BUILDERS USED TO REACH IN FOR arrive here as (key, kind) instead. A colour is always a
  * bezel colour, so it invalidates that memo; RENDER SCALE is the one control that reallocates the buffer. The
@@ -1565,7 +1565,7 @@ function frame(now) {
     time: t,
     overscan: state.overscan,
     face: view.face, corner: state.corner, bend: state.bend,
-    /* THE PPI RULE IS crt-controls': round(span * density / 100), the picture's HEIGHT for the horizontal pass
+    /* THE PPI RULE, INHERITED FROM THE DOM BUILD: round(span * density / 100), the picture's HEIGHT for the horizontal pass
      * and its WIDTH for the vertical one -- MEASURED IN CSS PIXELS, which is the whole point of this note.
      *
      * This used to divide the canvas's DEVICE height, so on a 1.74x display 25 PPI produced 423 lines where the
@@ -1580,13 +1580,13 @@ function frame(now) {
      * the shader should not be deciding what a density means. */
     /* PITCH IN CSS PIXELS, NOT A DENSITY -- the same geometry, said directly.
      *
-     * The old rule was crt-controls': count = round(span * density / 100), which makes pitch = span/count. Work
+     * The old rule was the DOM build's: count = round(span * density / 100), which makes pitch = span/count. Work
      * that through and pitch = 100/density exactly -- 25 PPI IS a 4px pitch, and always was, independent of the
      * window. The density was the reciprocal of the thing anyone actually wants to set, and the round() made it
      * not-quite-exact as the stage resized: a 1060px stage gives 265 lines and a 4.000px pitch, a 1063px one
      * gives 266 and 3.997px.
      *
-     * WHAT IS KEPT FROM THAT IS THE MISSING round(). crt-controls rounds the count to a whole number, which makes
+     * WHAT IS KEPT FROM THAT IS THE MISSING round(). the DOM build rounded the count to a whole number, which makes
      * the true pitch span/round(...) rather than 100/density -- a 967px stage gives 242 lines and a 3.996px pitch,
      * a 970px one gives 243 and 3.992px. Dropping the round leaves the density meaning exactly 100/density at
      * every size. The control is the density again because a pitch and a density are the same setting said two

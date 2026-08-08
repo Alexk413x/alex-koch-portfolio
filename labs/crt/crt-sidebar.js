@@ -66,7 +66,7 @@ export function makeFmt({ state, cssPx, textGrid }) {
   scatterCM:(v) => (v / 10).toFixed(1) + 'cm',
   matte:   (v) => Math.round(v * 100) + '%',
   renderScale: (v) => Math.round(v * 100) + '%',
-  // crt-controls' own formatter: OFF below 1, FULL at 20, and each step is one grid cell (5%).
+  // OFF below 1, FULL at 20, and each step is one grid cell (5%).
   grings:  (v) => { const n = Math.round(v); return n < 1 ? 'OFF' : n >= 20 ? 'FULL' : (n * 5) + '%'; },
   /* EVEN at 1, ^N above it -- the lab's format -- with the KNEE beside it: the fraction of the band, in from the
    * rim, inside which half the sag has happened. 0.5^(1/p), so 50% at EVEN and 13% at ^5. */
@@ -103,10 +103,10 @@ export function makeFmt({ state, cssPx, textGrid }) {
    * same number said again (WPM x 5 / 60), not a second fact, and "350WPM/29cps" measured 12 characters in a
    * field that holds about ten. A real unit on its own beats a real unit plus its own restatement, clipped. */
   type:    (v) => Math.round(v * 350) + ' WPM',
-  // Seconds, two places -- crt-controls' own format for the same two controls.
+  // Seconds, two places -- the DOM build's own format for the same two controls.
   collapse:(v) => v.toFixed(2) + 's',
   ignite:  (v) => v.toFixed(2) + 's',
-  /* GAUSS AND HERTZ, crt-controls' own formulas for FIELD and WIGGLE -- 250 G per unit and 8 Hz per unit. The
+  /* GAUSS AND HERTZ, the DOM build's own formulas for FIELD and WIGGLE -- 250 G per unit and 8 Hz per unit. The
    * ranges here are wider than the reference's, so the numbers run past what its panel could show; that is the
    * point of the wider range and not a reason to renormalise the unit underneath it. */
   wint:    (v) => v < 0.001 ? 'OFF' : Math.round(v * 250) + ' G',
@@ -414,7 +414,7 @@ export const SECTIONS = [
   /* LAST, AS THE REFERENCE FILES IT. Two durations: how long the raster takes to fall in, and how long it takes
    * to open back up. WARM-UP is the one that also sets when the boot text starts, because typing begins half a
    * second after the tube has finished striking -- derived from this rather than being a flat delay that only
-   * lands correctly at one setting. The ranges and the labels are crt-controls' own. */
+   * lands correctly at one setting. The ranges and the labels are the DOM build's own. */
   ['POWER', [['collapse','COLLAPSE',0.3,2,0.05],['ignite','WARM-UP',0.3,2,0.05]]],
 
   /* THE MAGNET. FIELD, WIGGLE and DURATION are the reference's three, at its ranges; the rest describe the SHAPE

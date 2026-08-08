@@ -5,16 +5,21 @@
 A CRT terminal calibration instrument: an amber CRT with a curved glass face, a measurement grid, and a
 heat-map overlay reporting how hard the surface is being compressed. It is a finished, working desktop tool.
 
-## The first rule: this is working code, not a draft to port
+## The first rule: this is working code, not a draft to rewrite
 
-`labs/crt/CRT Lab.dc.html` is an authored component file — markup, logic class, and inline styles in one document, run
-by the `support.js` runtime. **This is intentional. Do not convert it to JSX/Vite/a build step, do not extract
-the inline styles into CSS classes, and do not "modernize" `support.js`.** A port is a real option later, but
-it is a separate decision with a separate plan — not something to do incidentally while fixing a bug.
+Every page under `labs/` is finished, measured, working software. **Do not convert one to JSX/Vite/a build step,
+do not extract the inline `<style>` blocks into a framework's idea of components, and do not "modernize" what is
+already plain.** There is no build step here and that is the point.
 
-Likewise `labs/crt/` is eleven **pure** ES modules: no DOM, no component state. That is load-bearing, not
-stylistic — see `labs/crt/README.md`. Geometry that can read the component is geometry that can disagree with it,
-and every serious bug in this project's history has been two descriptions of the same surface drifting apart.
+`labs/crt/` is twelve **pure** ES modules: no DOM, no component state. That is load-bearing, not stylistic — see
+`labs/crt/README.md`. Geometry that can read the renderer is geometry that can disagree with it, and every serious
+bug in this project's history has been two descriptions of the same surface drifting apart.
+
+**The DOM/SVG CRT build is gone.** `CRT Lab.dc.html` rendered the same tube thirteen blended layers deep, and the
+two builds agreeing was the verification story. It was deleted deliberately on 2026-08-08: the GL build looks and
+performs better, and one renderer that is right beats two that must be kept in step. Deleted with it, because
+nothing else reached them: `crt-controls.js`, `crt-fixture.js`, `crt-vars.js`, `crt-warp.js`, `crt-glow.js`,
+`crt.css`, `fps-probe.js`. It is all in the history if the cross-check is ever wanted back.
 
 ## There is ONE copy of everything
 
@@ -24,6 +29,26 @@ repo** and it was maintained by hand, which meant every edit had to be made twic
 site that silently disagreed with its source. That is the same failure this project's one rule is about, one
 level up from the geometry. It is deleted. If Pages is wanted again, serve the repo ROOT — it already works
 as-is — or add a script that copies; do not reintroduce a hand-kept mirror.
+
+The same rule caught the **control panel**, which existed three times: inline in CRT GL, again in the DC
+`Sidebar.dc.html`, and a third time in `components/ControlPanel.dc.html`. All that survives is
+`labs/kit/panel.js` + `panel.css`, and every lab uses it, tinted through custom properties. **Do not add a
+second.** It caught the **host scaffolding** too: Reactor and Wormhole came out 113 lines identical — 58% of one
+of them — and that is now `labs/kit/lab.js`.
+
+## Everything under labs/ is plain HTML, and that direction is settled
+
+There is no framework, no CDN and no build step in any lab. `labs/kit/` is the shared kit; a lab is a thin host
+page plus pure modules for its shader, its sim, its control table and its values.
+
+**Start a new lab from `labs/shell/Shell.html`.** It is the base lab — a live catalogue of every control type and
+every formatter, annotated with why each is the kind it is, built on the same scaffold the real labs use. It is
+not linked from the index and is not meant for users.
+
+Five `.dc.html` pages remain **at the repository root** — the portfolio, the console, the intro and two notes.
+They still run on `support.js` (React + Babel from unpkg). They are on their way out, and `support.js` goes with
+the last of them. Migrating one is a deliberate job with measurements either side, not something to do
+incidentally.
 
 ## Running it
 
@@ -39,27 +64,32 @@ First load needs network: React + Babel from unpkg, fonts from Google.
 serve the modules from cache while the HTML is fresh, which looks exactly like a maths bug. Either hard-reload
 with the cache disabled, or serve with `Cache-Control: no-store`.
 
-## Measuring frame rate: `labs/crt/fps-probe.js`
+## Measuring frame rate
 
-**Nothing in the lab loads this**, and nothing should — it is an instrument that attaches on demand, so it costs
-nothing when it is not in use.
-
-```
-<script src="/labs/crt/fps-probe.js"></script>      // or paste the file into the console
-
-CRTFPS.live()          live readout: fps, median, p95, worst, dropped %
-CRTFPS.stress()        switch ON everything that animates — the worst case as a STATE, not an opinion
-CRTFPS.attribute()     ranked cost per layer, in ms/frame, measured by switching each one off in turn
-CRTFPS.arm()           fire as soon as the tab becomes visible, park the answer in localStorage
-CRTFPS.report()        read the last stored result
-```
+`fps-probe.js` and its `CRTFPS.stress()` / `CRTFPS.attribute()` went with the DOM build — they knew that lab's
+thirteen layers by name, and nothing else has layers to attribute cost to. What remains is the harness and each
+lab's own handle.
 
 ### `python bench.py` — the whole measurement in one command
 
 ```
-python bench.py               # everything animated on, 12 samples, verdict
-python bench.py --attribute   # ranked per-layer cost in ms/frame
+python bench.py                     # CRT GL, 12 samples, verdict
+python bench.py --page reactor      # any lab: crtgl | reactor | wormhole | shell, or a literal path
+python bench.py --uncapped          # frame COST, not frame rate
+python bench.py --inject "<js>"     # pin a setting first, so two runs are comparable
 ```
+
+The sampler needs nothing from the page, but it also cannot fix the page's state — a run measures whatever was
+restored, which on a fresh bench profile is the shipped default. **`--inject` is how you pin one**, and it is
+required for any before/after comparison:
+
+```
+python bench.py --page reactor --uncapped --inject "REACTOR.state.renderScale=0.62; REACTOR.fit(true); 1"
+```
+
+The **first sampling window is excluded as a warm-up**: uncapped with an idle compositor it comes back at well
+under 1 ms where every later window sits at 4–6 ms, and it was making the tool refuse a verdict on runs whose
+remaining samples agreed to within 5%.
 
 It serves the repo, launches an isolated Chrome with the flags below, warms the profile's cache, drives the page
 over CDP and prints the **distribution**, not a single number. It refuses a verdict when `median > 2.5 × min`,
@@ -93,29 +123,23 @@ The debugging port then lets you drive the page without a human at the keyboard 
 HTTP CACHE, so load the page once to pull React/Babel/fonts before measuring anything.
 
 **Measure on an IDLE machine, in ONE tab.** This is not fussiness — it is the difference between a number and a
-mood. During the session that built this probe, an *unchanged* build measured 33ms early and 71ms late, and the
-per-second curve degraded 36 → 53 → 70 → 88ms *within a single 60s run*, because a dozen lab instances had
-accumulated across tabs. Every lab tab holds compositor memory for thirteen blended layers, four blurs and two SVG
-reference filters, whether or not it is rendering. Close them all, then measure. Interleaved `attribute()` results
-survive this; absolute `record()`/`curve` numbers do not.
+mood. During one session an *unchanged* build measured 33ms early and 71ms late, and the per-second curve degraded
+36 → 53 → 70 → 88ms *within a single 60s run*, because a dozen lab instances had accumulated across tabs. Every lab
+tab holds a live WebGL context and its buffers whether or not it is rendering. Close them all, then measure.
+Interleaved A/B results survive this; absolute numbers do not.
 
-A throwaway profile (`chrome --user-data-dir=...`) is the clean room, with one catch: **its HTTP cache is empty**,
-so the lab has to pull React, Babel and the fonts off the network before it mounts. Load the page once to warm the
-cache, then load it again with `?fps=`. The probe waits 60s for the lab to appear and posts an `error` record if it
-never does, rather than failing silently — an earlier 8s budget lost several runs to exactly this.
+A throwaway profile (`chrome --user-data-dir=...`) is the clean room, with one catch: **its HTTP cache and its GPU
+shader cache are both empty**, so the first run recompiles every shader. `bench.py` warms the profile for you, and
+`--warm` reuses it. The harness measured ~4x pessimistic cold against the same page in a warm everyday profile.
 
-**A backgrounded tab reports nothing, and the probe refuses to pretend otherwise.** Chrome runs no animation
-frames in a tab that is not visible, so the FPS readout in the corner, `window.__crtProf` and every wall-clock
-frame measurement read 0–1 there — and a CDP screenshot forces one frame, which moves the number just enough to
-look alive. Every measurement in the probe is gated on `document.visibilityState`. That is what `arm()` is for:
-a tool driving the tab cannot make the tab visible, so it arms the run, a human brings the window to the front,
-and the result is read back from storage afterwards.
+**A backgrounded tab reports nothing.** Chrome runs no animation frames in a tab that is not visible, so every
+wall-clock frame measurement reads 0–1 there — and a CDP screenshot forces one frame, which moves the number just
+enough to look alive. Each lab pauses its loop on `visibilitychange` deliberately, so a frozen clock in a hidden
+tab is correct behaviour and not a fault. **`renderNow()` is the way round it**: it draws synchronously and needs
+no animation frame at all.
 
 Costs are reported in **ms per frame, not fps**. fps deltas are not additive and mislead near the target — a
-layer costing 2ms reads as “−25 fps” at 60 and “−3 fps” at 20, for identical work.
-
-JS-side cost *is* measurable in a hidden tab: null the memo keys and time `renderVals()` in a loop. That is
-rebuild cost (what a control drag pays), which is a different budget from the per-frame one.
+layer costing 2ms reads as "−25 fps" at 60 and "−3 fps" at 20, for identical work.
 
 ## What local testing is actually for
 
@@ -124,45 +148,51 @@ These are the checks a small embedded preview cannot perform. They are the reaso
 1. **Geometry above 1024px.** There was a long-running "bottom-left corner is messed up" bug that only
    reproduces when the glass exceeds 1024px on both axes. Open the window wide — target ~1560x1100 — and
    inspect the corners at high FACE and high CURVE AREA.
-2. **Cold load.** Hard-reload (empty cache) and take no action at all. The first render can land before the
-   deferred modules do; the overlay is built from a measured width and only self-corrects if something
-   re-renders. On a correct cold load the heat bands hash `19c80928:210984` with zero interaction. Warm
-   modules reorder this and hide the bug — that is what makes it intermittent, so test cold.
-3. **Resize behaviour.** Drag the window across the 1024px boundary and watch the grid stay aligned to the
-   rings. A grid line and its ring must coincide on every ray, by construction.
-4. **Settings persistence.** State saves to localStorage under **`crtlab`**, carrying its own `v` (schema 8); the
-   versioned keys `crtlab.v1`/`.v4`/`.v5`/`.v6`/`.v7` are read-only migration fallbacks. Confirm a reload restores it.
-   The shipped defaults in `state = { … }` are a real saved configuration, not a neutral baseline — to see them you
-   need an origin with no stored state, and clearing localStorage then calling `location.reload()` does NOT give you
-   one (the unload flush writes the in-memory state straight back). Clear it from a page on the same origin that is
-   not the app, then navigate in.
+2. **Resize behaviour.** Drag the window across the 1024px boundary and watch the grid stay aligned to the
+   rings. A grid line and its ring must coincide on every ray, by construction. Then hide the panel with the
+   chevron: the stage grows without the window changing, and a buffer sized from `innerWidth` instead of the
+   stage would stretch here.
+3. **Settings persistence.** Each lab stores under its own key — `crtgl`, `reactor`, `wormhole`, `labshell` —
+   carrying a `v` that is checked on the way in. The shipped defaults are a real saved configuration, not a
+   neutral baseline, so to see them you need an origin with no stored state; clearing localStorage and calling
+   `location.reload()` does NOT give you one, because the flush on hide writes the in-memory state straight back.
+   Clear it from a page on the same origin that is not the app, then navigate in.
+4. **Context loss.** `WEBGL_lose_context` on the canvas, then restore. The page must rebuild rather than stay
+   black — and every uniform must be re-sent, which is why `glquad` clears its dirty cache on relink.
 
-Verify by **measuring, not looking.** `d.split('M').length - 1` counts scan lines. Ring quadrant maxima
-sampled with `getPointAtLength` must be equal in all four quadrants — any spread means something is
-measuring the mirror rather than the shape.
+Verify by **measuring, not looking.** Ring quadrant maxima must be equal in all four quadrants — any spread means
+something is measuring the mirror rather than the shape.
 
-**Editing anything in `labs/crt/` requires a full page reload before you measure.** The modules do not hot-reload
-with the logic class, and a stale module looks exactly like a maths bug.
+**Editing any module requires a full page reload before you measure.** A stale cached module looks exactly like a
+maths bug.
 
 ## Known, deliberate, not bugs
 
 - **SQUIRCLE shapes the guide outline and the clip, not the picture's warp.** Known gap; wiring it to the
   frame toggle is the fix if you want it.
-- **CORNER (`state.gn`) is fully dead** — audited: its only appearance in the whole codebase is the `state` literal. It no longer enters `guideKey` either, whatever older notes say.
-- **GLARE reaches the fixture only** via `--glarelight`. The stored default is `0`, so a reading of 0 is
-  correct, not broken.
+- **GLARE reaches the fixture only.** The stored default is `0`, so a reading of 0 is correct, not broken.
 - **The rim is unpinned** — the picture sits inside the glass and that gap is real.
+- **Reactor's `uFragFly` and `uSnap` are read by the shader but never move.** The auto-fling they drive was
+  disabled behind a literal `if (false)` in the DC build and superseded by the manual break-scatter. Left at 0
+  and 1 rather than cut, because cutting them changes what that shader can express. Cutting them is a real
+  follow-up, not a bug.
 - **The corners are cut, not warped.** Settled; the picture ends on the squircle by clip.
 - **`fieldFolds`'s 2x threshold no longer bounds anything physical** (it predates the removal of the
   displacement lens) but it still sets how deep FACE bends, and every stored setting is calibrated against
   it. Change it knowingly or not at all.
 
-`labs/crt/CRT Lab HANDOFF.md` has the full "settled decisions — please don't relitigate" list. Read it before
-touching projection or geometry.
+`labs/crt/CRT Lab HANDOFF.md` has the full "settled decisions — please don't relitigate" list. **It is named for
+a build that no longer exists, and most of it still binds**: the projection, the outline and the geometry it
+argues about are the shared modules CRT GL walks. Read it before touching either. Its companion
+`CRT Lab LAYER HANDOFF.md` is more mixed — the thirteen-layer model is gone with the DOM build, but the sections
+on the face's shape and the rim's pinning are still current.
 
 ## Not yet done
 
-- No mobile layout. It is a desktop instrument at ~1560x1100; phones get a cramped version of the same page.
-  A "best on desktop" gate would be honest, and is not written.
-- No vendored React. Offline use would need unpkg's React/ReactDOM/Babel copied in and the `<script>` tags
-  in `support.js` repointed at local files.
+- **The root pages are still `.dc.html`.** Portfolio, Console OS, Cinematic Intro and the two notes. They are the
+  last users of `support.js`, React and Babel; migrating them retires all three.
+- **Reactor's two frozen uniforms** (above) are uncut.
+- **Reactor's `renderNow` is not reproducible**, because `sim.step` carries phase forward — so that lab has no
+  render fingerprint of the kind `render-probe.js` gives CRT GL. Resetting the sim would be the way in.
+- **Mobile is a fold-away panel, not a layout.** Below 820px each lab hides its panel behind a chevron and CRT GL
+  applies a narrow-display override table; the control density is still built for a large window.

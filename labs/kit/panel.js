@@ -4,14 +4,15 @@
  * implementations drift. Pairs with panel.css -- this file decides STRUCTURE and BEHAVIOUR, that one decides
  * appearance, and neither should start doing the other's job.
  *
- * PLAIN DOM AND NO FRAMEWORK, because the labs do not agree on one. CRT GL is an ES module page and the others
- * run on the .dc.html component runtime; a kit written against either could only ever serve half of them.
- * Everything here takes a host element and returns elements.
+ * PLAIN DOM AND NO FRAMEWORK. Everything here takes a host element and returns elements.
+ *
+ * A ROW READS STATE ONCE and owns its DOM afterwards, so a drag writes one number and one text node. The price is
+ * that a value changed from OUTSIDE the panel leaves its row stale: a caller that writes state itself (applying a
+ * preset, say) must rebuild the panel.
  *
  * IT KNOWS NOTHING ABOUT ANY LAB. It is handed a state object, a table of formatters and one callback, and it
- * has no other way to reach the page. The two places the CRT lab used to reach through the builders -- nulling
- * a bezel memo when a colour changed, and resizing when RENDER SCALE moved -- arrive as (key, kind) on
- * onChange, so the lab keeps its own knowledge and the kit stays generic.
+ * has no other way to reach the page. Anything a lab needs to do on a change -- invalidate a memo, resize --
+ * arrives as (key, kind) on onChange.
  *
  * WHAT IS DELIBERATELY NOT HERE: anything a single lab needs. CRT GL's phosphor selector and its POWER / WARP /
  * SURGE actions live in CRT GL, because a kit that grows a special case per caller is three implementations
@@ -199,14 +200,23 @@ export function attachKeyNav(host) {
 
 /* A STRIP OF ACTION BUTTONS. `lit` is a PREDICATE, not a flag, and an action without one is not a state and
  * never lights -- asking the page rather than remembering is what stops a restored session showing POWER lit
- * over a dark tube. */
+ * over a dark tube.
+ *
+ * Returns its own sync(), because a predicate can go false without anyone pressing the button that owns it: which
+ * preset is lit is derived from the values, so moving any slider can extinguish one. Callers with no such
+ * coupling can ignore the return.
+ */
 export function buildActions(host, actions, after) {
+  const lamps = [];
   actions.forEach(([label, fn, lit]) => {
     const b = document.createElement('button'); b.textContent = label;
-    b.onclick = () => { fn(); if (lit) b.classList.toggle('on', lit()); if (after) after(); };
-    if (lit) b.classList.toggle('on', lit());
+    if (lit) lamps.push([b, lit]);
+    b.onclick = () => { fn(); sync(); if (after) after(); };
     host.appendChild(b);
   });
+  const sync = () => lamps.forEach(([b, lit]) => b.classList.toggle('on', !!lit()));
+  sync();
+  return sync;
 }
 
 /* THE SWITCH THAT HIDES THE PANEL, because 340px of controls is a sidebar on a desktop and most of the screen

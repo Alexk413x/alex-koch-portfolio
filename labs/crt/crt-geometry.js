@@ -66,7 +66,7 @@ export function guideOutline(w, H, sq, bend) {
    * diamond with its points at the edge midpoints, which is not a CRT but is a legitimate thing to want to draw.
    *
    * BACKWARDS COMPATIBLE: the parameter is unchanged in meaning, so every stored setting still measures the same.
-   * crt-controls still caps its own slider at 15, so the DOM lab is untouched by this.
+   * (The DOM build capped its own slider at 15 and so never reached this; that build is gone.)
    *
    * NOT MIRRORED IN crt-projection. faceShaped's bow clamps at 0.15 separately and deliberately -- its note
    * records that BEND's whole range is meant to be a few percent there, against rho's ~20% at the diagonal. That

@@ -5,34 +5,47 @@ measurable rather than merely to look like it. The largest of them simulates an 
 
 **Live:** https://alexk413x.github.io/alex-koch-portfolio/
 
-Everything here is hand-authored — no build step, no bundler, no framework scaffolding. Pages are plain
-HTML that pull React and Babel from a CDN at runtime; the geometry and physics are plain ES modules.
+Everything here is hand-authored — no build step, no bundler, no framework scaffolding. The geometry and
+physics are plain ES modules. Pages come in two kinds: `.dc.html` component files, which pull React and Babel
+from a CDN at runtime, and plain module pages, which have no runtime dependency but the fonts.
 
 ---
 
 ## The CRT lab
 
-The centrepiece, and the reason most of this code exists. An amber CRT with a curved glass face, a
-measurement grid, and a heat-map overlay reporting how hard the surface is being compressed. It exists in
-two independent builds that render the same tube by different means:
+The centrepiece, and the reason most of this code exists.
+**[CRT GL](labs/crt/CRT%20GL.html)** is an amber CRT solved per pixel in a WebGL2 fragment shader — the face's
+curvature, the shadow mask, the beam, the phosphor's persistence and a ray-traced light fitting reflected in the
+glass — with a measurement grid and a heat-map overlay reporting how hard the surface is being compressed.
 
-| | | |
-|---|---|---|
-| **[CRT GL](labs/crt/CRT%20GL.html)** | WebGL2 | The tube as a fragment shader — the face, the shadow mask, the beam, the phosphor's persistence and a ray-traced light fitting reflected in the glass, all solved per pixel. |
-| **[CRT Lab](labs/crt/CRT%20Lab.dc.html)** | DOM / SVG | The original. Thirteen blended layers, the curve *plotted* into SVG paths rather than resampled, and CSS custom properties driven per frame. |
+`labs/crt/` is a set of **pure** ES modules: no DOM, no component state. That constraint is load-bearing rather
+than stylistic — geometry that can read the renderer is geometry that can disagree with it, and two descriptions
+of one surface drifting apart is the failure this project keeps having. See
+[`labs/crt/README.md`](labs/crt/README.md).
 
-The two agree because they share their maths. `labs/crt/` is a set of **pure** ES modules — no DOM, no
-component state — and both builds walk the same `faceShaped` projection, the same `guideOutline`, the same
-flicker state machines. That constraint is load-bearing rather than stylistic: geometry that can read the
-renderer is geometry that can disagree with it, and two descriptions of one surface drifting apart is the
-failure this project keeps having. See [`labs/crt/README.md`](labs/crt/README.md).
+> There used to be a second, independent DOM/SVG build of the same tube, and the two agreeing was the
+> verification story. It is deleted: the GL build looks and performs better, and one renderer that is right beats
+> two that have to be kept in step. It is in the history if the cross-check is ever wanted back.
 
 ### The other labs
 
-- **[Reactor Lab](labs/reactor/Reactor%20Lab.dc.html)**
-- **[Wormhole Lab](labs/wormhole/Wormhole%20Lab.dc.html)**
-- **[Lab Shell](lab/Lab%20Shell.dc.html)** — the reference lab: every control type the shared sidebar
-  offers, wired correctly. Start here if you want to see how a lab is put together.
+Each is a single fragment shader over a full-screen triangle, decomposed the same way the CRT is: a thin host
+page, and pure modules for the shader, the control table and the values.
+
+- **[Reactor Lab](labs/reactor/Reactor.html)** — a containment core, sphere-traced. A goo core with sub-cores torn
+  out of it by a pulse, nine alloy ring fragments, and a shield that fails on a schedule.
+  See [`labs/reactor/README.md`](labs/reactor/README.md).
+- **[Wormhole Lab](labs/wormhole/Wormhole.html)** — a domain-warped noise tunnel, in three flavours.
+  See [`labs/wormhole/README.md`](labs/wormhole/README.md).
+- **Lab Shell** (`labs/shell/Shell.html`) — not a user-facing page. It is the **base lab**: a live catalogue of
+  every control type and every formatter the kit offers, annotated, built on the same scaffold the others use.
+  Start there when writing a new lab. Deliberately not linked from the site index.
+
+### One kit, shared
+
+[`labs/kit/`](labs/kit/README.md) holds everything a lab needs that is not about the lab — the panel, the shader
+host, the page shell, persistence, the frame loop and the units. Reactor and Wormhole were 113 lines identical
+before it existed, which is the same drift the geometry rule above is about, one level up.
 
 ---
 
@@ -48,48 +61,62 @@ Then open http://localhost:8000/ and pick a page.
 
 Two things worth knowing:
 
-- **The first load needs network** — React, ReactDOM and Babel come from unpkg, and the fonts from Google.
-- **Editing anything in `labs/crt/` needs a hard reload**, and a plain reload is not always enough: the
-  browser will serve the modules from cache while the HTML is fresh, which looks exactly like a maths bug.
-  Serve with `Cache-Control: no-store` if you are working on them.
+- **The labs need no network** beyond the fonts. There is no framework, no CDN and no build step — they load
+  their own ES modules and nothing else. The remaining `.dc.html` pages at the repository root still pull React,
+  ReactDOM and Babel from unpkg.
+- **Editing a module needs a hard reload**, and a plain reload is not always enough: the browser will serve the
+  modules from cache while the HTML is fresh, which looks exactly like a maths bug. Serve with
+  `Cache-Control: no-store` if you are working on them — `bench.py`'s own server already does.
 
 ---
 
 ## Measuring
 
-The CRT lab ships its own instruments, because on this subject looking at the screen is not evidence.
-None of them are loaded by the page — they attach on demand, so they cost nothing when unused.
+Looking at the screen is not evidence here, so the labs ship the means to measure themselves. Nothing is loaded
+by any page — it all attaches on demand, so it costs nothing when unused.
 
 ```
-python bench.py               # frame rate, as a distribution, with a verdict
-python bench.py --attribute   # ranked per-layer cost in ms/frame
+python bench.py                       # CRT GL: frame rate as a distribution, with a verdict
+python bench.py --page reactor        # any lab: crtgl | reactor | wormhole | shell, or a literal path
+python bench.py --uncapped            # frame COST, not frame rate — needed once a page holds 60
+python bench.py --inject "<js>"       # pin a setting first, so two runs are comparable
 ```
 
 `bench.py` serves the repo, launches an isolated Chrome with the flags that stop it from halting rendering
 in a window that is not front-most, warms the profile's cache, and drives the page over the DevTools
-protocol. It refuses a verdict when the machine is too loaded to measure on.
+protocol. It refuses a verdict when the machine is too loaded to measure on, and reports the first sampling
+window separately as a warm-up rather than letting it poison that judgement.
 
-- `labs/crt/fps-probe.js` — live readout, stress state, and per-layer attribution for the DOM build.
-- `labs/crt/render-probe.js` — a deterministic render fingerprint for the GL build. Hashes seven fixed
-  scenes, which is how a refactor proves it changed nothing.
+- `labs/crt/render-probe.js` — a deterministic render fingerprint for CRT GL. Hashes seven fixed scenes, which
+  is how a refactor proves it changed nothing.
+- `window.CRTGL`, `window.REACTOR`, `window.WORMHOLE`, `window.SHELL` — every lab publishes a handle carrying
+  `state`, `R`, `fit()` and a `renderNow()` that draws **synchronously**, so a frame can be taken from a tab
+  that is not front-most, where Chrome delivers no animation frames at all. Read pixels back in the **same
+  task** as the call, or a working shader reports as black.
+- **Not every `renderNow` is reproducible.** CRT GL's, Wormhole's and Shell's are functions of `(state, time)`
+  and give the same frame twice. Reactor's is not — `sim.step` carries phase forward — so a pixel fingerprint
+  of that lab means nothing unless the sim is fresh.
+
+**Absolute numbers on a hybrid-GPU machine drift further than most changes being measured.** Compare ratios,
+and prefer interleaved A/B or per-pass GPU timer queries to two sequential runs.
 
 ---
 
 ## Layout
 
 ```
-labs/crt/       the CRT instrument: eleven pure modules, two renderers, two probes
-labs/reactor/   reactor lab
-labs/wormhole/  wormhole lab
-lab/            shared lab kit — sidebar, control plumbing, visual defaults
-ui/             the panel used by the WebGL build
-components/     shared components
-support.js      the runtime that renders the .dc.html component files
+labs/crt/       the CRT instrument: twelve pure modules, the GL renderer, a render probe
+labs/reactor/   reactor lab:  host page + shader, sim, sidebar, presets
+labs/wormhole/  wormhole lab: host page + shader, sidebar, presets
+labs/shell/     the BASE LAB — start here when writing a new one
+labs/kit/       everything shared: panel, page shell, shader host, persistence, loop, units
+support.js      the runtime for the remaining .dc.html pages at the root
 bench.py        the frame-rate harness
 ```
 
-`.dc.html` files are single-document components — markup, logic class and inline styles in one file, run by
-`support.js`. They are standalone pages: open one directly and it bootstraps itself.
+**Every page under `labs/` is plain HTML plus ES modules.** The `.dc.html` files left at the repository root —
+the portfolio, the console, the intro and two notes — are single-document components run by `support.js`, which
+pulls React and Babel from a CDN. They are on their way out; `support.js` goes with the last of them.
 
 ---
 
@@ -103,9 +130,10 @@ bench.py        the frame-rate harness
   ratios, applied to a *view* of the settings — the stored configuration is never touched, so a session
   tuned on a desktop survives being opened on a phone. Above 820px nothing is adjusted at all. The panel's
   own control density is still built for a large window.
-- **No vendored dependencies.** Offline use would need React, ReactDOM and Babel copied in locally.
-- The WebGL build is demanding. It defaults to a reduced render scale on integrated graphics, and
-  **RENDER SCALE** in the panel is the lever if your machine struggles.
+- **The labs work offline; the root pages do not.** Nothing under `labs/` loads anything but its own modules and
+  the fonts. The remaining root `.dc.html` pages would need React, ReactDOM and Babel vendored in.
+- **The WebGL labs are demanding.** All three default to a reduced render scale on integrated graphics, and
+  **RENDER SCALE** at the top of each panel is the lever if your machine struggles.
 
 ## Licence
 
