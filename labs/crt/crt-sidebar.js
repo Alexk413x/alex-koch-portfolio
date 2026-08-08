@@ -31,7 +31,6 @@ export function makeFmt({ state, cssPx, textGrid }) {
   // Signed, so -20% and +20% cannot be confused at a glance.
   overscan:(v) => (v >= 1 ? '+' : '') + ((v - 1) * 100).toFixed(1) + '%',
   vig:     (v) => Math.round(v * 100) + '%',
-  scanOLD: (v) => v < 0.5 ? 'OFF' : Math.round(v) + ' PPI',
   grille:  (v) => v < 0.5 ? 'OFF' : Math.round(v) + ' PPI',
   scanw:   (v) => v.toFixed(2) + 'px',
   grillew: (v) => v.toFixed(2) + 'px',
@@ -176,7 +175,6 @@ export function makeFmt({ state, cssPx, textGrid }) {
   glowB:    (v) => v < 0.005 ? 'OFF' : Math.round(v * 100) + '%',
   boxVis:   (v) => v < 0.005 ? 'HIDDEN' : Math.round(v * 100) + '%',
   railVis:  (v) => v < 0.005 ? 'HIDDEN' : Math.round(v * 100) + '%',
-  fixDepth:(v) => Math.round(v * 100) + '%',
   // AN ABSOLUTE LENGTH like the rest of the fixture's geometry, so it reads in the same percent they do.
   ripple:  (v) => v < 0.005 ? 'OFF' : Math.round(v * 100) + '%',
   glowFall:(v) => Math.round(v * 100) + '%',
@@ -216,7 +214,6 @@ export function makeFmt({ state, cssPx, textGrid }) {
   // IN SWEEP HEIGHTS, because that is what it is measured against -- a taller beam casts a longer shadow.
   dipFall: (v) => v.toFixed(1) + 'h',
   sweepRGB:(v) => v < 0.05 ? 'OFF' : v.toFixed(1) + 'px',
-  dotR:    (v) => v < 0.05 ? 'OFF' : v.toFixed(1) + 'px',
   dotNits: (v) => Math.round(v) + ' nt',
   sweepStep:(v) => v < 0.01 ? 'OFF' : v.toFixed(2) + ' SL',
   dotHaloNits:(v) => v < 0.5 ? 'OFF' : Math.round(v) + ' nt',
@@ -231,7 +228,6 @@ export function makeFmt({ state, cssPx, textGrid }) {
   // A RADIUS, so it reads in the CSS pixels it is specified in -- the same unit the reference's BLOOM uses.
   bloomSize:(v) => Math.round(v) + 'px',
   persist: (v) => Math.round(v * 100) + '%',
-  fixture: (v) => Math.round(v * 100) + '%',
   frame:   (v) => Math.round(v * 100) + '%',
   /* THE THREE LIGHTS ON THE MOULDING ARE FRACTIONS, SO THEY READ AS PERCENTAGES. They were falling through to the
    * default formatter, which prints two decimals for any range at or under 40 -- so a 0..1 amount read "0.35". A
