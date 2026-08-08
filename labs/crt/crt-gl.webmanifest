@@ -1,0 +1,16 @@
+{
+  "name": "CRT GL",
+  "short_name": "CRT GL",
+  "description": "An amber CRT in one fragment pass — face curvature, shadow mask, beam, phosphor persistence and a ray-traced light fitting reflected in the glass.",
+  "start_url": "./CRT%20GL.html",
+  "scope": "./",
+  "display": "fullscreen",
+  "display_override": ["fullscreen", "standalone"],
+  "orientation": "any",
+  "background_color": "#050505",
+  "theme_color": "#050505",
+  "icons": [
+    { "src": "./icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "./icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+  ]
+}
