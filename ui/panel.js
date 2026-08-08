@@ -209,6 +209,50 @@ export function buildActions(host, actions, after) {
   });
 }
 
+/* THE SWITCH THAT HIDES THE PANEL, because 340px of controls is a sidebar on a desktop and most of the screen
+ * on a phone. panel.css owns what hiding LOOKS like at each width -- removed from the flow when wide, slid over
+ * the stage when narrow -- and this owns only the state and the button.
+ *
+ * IT REPORTS THE CHANGE RATHER THAN ACTING ON IT, for the reason the file header gives: this kit cannot reach
+ * the page. Hiding the panel on a wide screen grows the stage, and a renderer sized to the old box will stretch
+ * until something else resizes it -- so `onToggle(hidden)` fires AFTER the class lands, with layout already
+ * settled, and the lab does whatever re-sizing it needs. On a narrow screen the panel is out of the flow and
+ * nothing moves, so the same callback is harmless there.
+ *
+ * THE DEFAULT IS PER-WIDTH AND NOT REMEMBERED. A phone opens with the tube visible and the controls put away;
+ * a desktop opens as it always has. Persisting it was considered and dropped -- a stored "hidden" restored onto
+ * a desktop is a lab that opens looking broken, and the state is one button away either direction.
+ */
+export function mountPanelToggle({ panel, host = document.body, breakpoint = 820, onToggle = () => {} } = {}) {
+  const b = document.createElement('button');
+  b.id = 'paneltgl';
+  b.type = 'button';
+  if (panel && panel.id) b.setAttribute('aria-controls', panel.id);
+
+  const apply = (hidden, notify) => {
+    document.body.classList.toggle('panel-hidden', hidden);
+    b.textContent = hidden ? 'CONTROLS' : 'CLOSE';
+    b.setAttribute('aria-expanded', String(!hidden));
+    b.setAttribute('aria-label', hidden ? 'Show controls' : 'Hide controls');
+    // AFTER the class, so a caller measuring the stage measures the layout it is about to render into.
+    if (notify) onToggle(hidden);
+  };
+
+  /* THE OPENING STATE IS PAINTED, NOT ANIMATED -- see the note on .panel-boot in panel.css. The class is
+   * dropped after two frames rather than one: the first commits the style, and only from the second is a
+   * later change a transition from something already on screen. */
+  document.body.classList.add('panel-boot');
+  apply(window.matchMedia(`(max-width: ${breakpoint}px)`).matches, false);
+  requestAnimationFrame(() => requestAnimationFrame(() => document.body.classList.remove('panel-boot')));
+
+  b.addEventListener('click', () => apply(!document.body.classList.contains('panel-hidden'), true));
+  host.appendChild(b);
+
+  return { el: b, toggle: () => b.click(),
+           set: (hidden) => apply(!!hidden, true),
+           get hidden() { return document.body.classList.contains('panel-hidden'); } };
+}
+
 /* THE WHOLE PANEL, from a SECTIONS table. The only entry point most callers need.
  *
  * `folds` IS A FUNCTION, NOT AN OBJECT, and that is load-bearing rather than fussy. A lab's persistence merge

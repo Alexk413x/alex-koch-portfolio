@@ -99,6 +99,68 @@
 .row .csw::-webkit-color-swatch-wrapper { padding: 0 }
 .row .csw::-webkit-color-swatch { border: none; border-radius: 3px }
 
+/* ---------------------------------------------------------------- the panel's own switch
+ *
+ * A 340px panel is a sidebar on a desktop and most of the screen on a phone, so it needs to get out of the
+ * way. Two behaviours, one state class (`panel-hidden` on <body>), because two independent states would be
+ * two things to get out of step:
+ *
+ *   WIDE   the panel is in the flex flow and hiding it REMOVES it, so the stage grows into the space. That
+ *          changes the stage's size, which is why the toggle tells its caller -- a renderer sized to the old
+ *          box would letterbox or stretch until the next window resize.
+ *   NARROW the panel is lifted out of the flow entirely and slides over the stage. Nothing reflows, so the
+ *          stage keeps its size and no re-render is needed; the state class only moves the transform.
+ *
+ * The button is fixed rather than in either box, so it cannot be scrolled away from or covered by the panel
+ * it controls -- and on wide screens it tucks against the panel's outer edge rather than sitting on top of
+ * its scrollbar. */
+#paneltgl {
+  position: fixed; z-index: 60;
+  top: calc(10px + env(safe-area-inset-top, 0px));
+  right: calc(var(--panel-w) + 10px + env(safe-area-inset-right, 0px));
+  background: var(--panel-bg); border: 1px solid var(--panel-edge); color: var(--panel-accent);
+  font-family: inherit; font-size: 10px; letter-spacing: .14em; font-weight: 700;
+  padding: 8px 12px; border-radius: 3px; cursor: pointer; line-height: 1;
+  transition: right .22s ease, border-color .15s, background .15s;
+}
+#paneltgl:hover { border-color: var(--panel-accent); background: var(--panel-hover) }
+#paneltgl:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--panel-accent-soft) }
+body.panel-hidden #paneltgl { right: calc(10px + env(safe-area-inset-right, 0px)) }
+body.panel-hidden #panel { display: none }
+
+@media (max-width: 820px) {
+  /* OUT OF THE FLOW, so showing and hiding it costs the stage nothing. inset pins all four edges except the
+     left, which the width then sets -- 88vw so a narrow phone still shows a sliver of the tube behind it and
+     the panel never becomes the whole screen. */
+  #panel {
+    position: fixed; top: 0; right: 0; bottom: 0; left: auto;
+    width: min(var(--panel-w), 88vw); z-index: 50;
+    padding-top: calc(14px + env(safe-area-inset-top, 0px));
+    box-shadow: -18px 0 40px rgba(0, 0, 0, .55);
+    transition: transform .22s ease;
+  }
+  /* `display:none` is NOT reused here. It would skip the transition, and more to the point a display-toggled
+     element cannot animate at all -- so the narrow case slides and the wide case simply goes. */
+  body.panel-hidden #panel { display: block; transform: translateX(100%) }
+  #paneltgl, body.panel-hidden #paneltgl { right: calc(10px + env(safe-area-inset-right, 0px)) }
+  /* Above the panel it opens, or the button it has to be dismissed with sits underneath it. */
+  #paneltgl { z-index: 60 }
+}
+
+/* NO ANIMATION ON THE FIRST PAINT, and this is a correction rather than a polish. The starting state is a
+ * STATE, not a transition: without this a phone loads with the panel across the screen and then visibly slides
+ * it away, which reads as the page fixing a mistake it just made. Measured at 390x844 -- the panel sat at its
+ * open position on the first frame and animated out over 220ms.
+ *
+ * Higher specificity than the rules it suppresses (`body.panel-boot #panel` beats `#panel`), so no !important
+ * is needed; mountPanelToggle drops the class once the opening state has been painted. */
+body.panel-boot #panel, body.panel-boot #paneltgl { transition: none }
+
+/* A reader who has asked for less motion gets the state change without the slide. */
+@media (prefers-reduced-motion: reduce) {
+  #panel, #paneltgl { transition: none }
+}
+
 .btns { display: flex; gap: 6px; flex-wrap: wrap; margin: 8px 0 2px }
 .btns button { flex: 1 1 auto; background: var(--panel-fill-2); border: 1px solid var(--panel-focus-edge);
   color: var(--panel-accent); padding: 7px 8px;

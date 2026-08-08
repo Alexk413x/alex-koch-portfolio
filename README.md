@@ -95,8 +95,10 @@ bench.py        the frame-rate harness
 
 ## Known limits
 
-- **Desktop only.** These are instruments designed at around 1560x1100. There is no mobile layout, and a
-  phone gets a cramped version of the same page rather than an adapted one.
+- **Designed for desktop.** These are instruments laid out at around 1560x1100. Below 820px the control
+  panel folds away behind a **CONTROLS** button so the tube gets the screen to itself, and it slides over
+  the picture rather than reflowing it — but the readouts and the control density are still built for a
+  large window.
 - **No vendored dependencies.** Offline use would need React, ReactDOM and Babel copied in locally.
 - The WebGL build is demanding. It defaults to a reduced render scale on integrated graphics, and
   **RENDER SCALE** in the panel is the lever if your machine struggles.

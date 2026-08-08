@@ -80,7 +80,7 @@ import { createFlicker } from './crt-flicker.js';
 import { createRenderer, buildFaceLUT, buildOutlineLUT, toLinear } from './crt-gl.js';
 import { defaultPreset } from './crt-presets.js';
 import { makeFmt, SECTIONS } from './crt-sidebar.js';
-import { createPanel, buildActions } from '../../ui/panel.js';
+import { createPanel, buildActions, mountPanelToggle } from '../../ui/panel.js';
 
 const canvas = document.getElementById('tube');
 // A FACTORY, because it holds machine phase -- two instruments on one page cannot share each other's state.
@@ -1184,6 +1184,16 @@ function resize() {
 // SETTLE, DON'T TRACK -- the same lesson the DOM build learned. Every resize event would reallocate four buffers.
 window.addEventListener('resize', () => { clearTimeout(rzT); rzT = setTimeout(resize, 120); });
 resize();
+
+/* THE PANEL'S SWITCH. Mounted after the first resize deliberately: on a narrow screen panel.css has already
+ * lifted the panel out of the flow, so the stage was measured at full width whichever way the toggle starts.
+ *
+ * Re-sized on every toggle because the WIDE case genuinely changes the stage -- hiding a 340px sidebar grows
+ * the canvas by 340px, and a renderer still sized to the old box stretches until the next window resize. The
+ * narrow case moves nothing, and R.size returns immediately when the buffer dimensions are unchanged, so
+ * calling it there costs a bounding-rect read and nothing else. Not debounced: a click is one event, and the
+ * 120ms settle above exists for resize STREAMS. */
+mountPanelToggle({ panel: document.getElementById('panel'), onToggle: () => resize() });
 
 /* A LOST CONTEXT IS A NORMAL EVENT ON THIS HARDWARE, AND NOTHING HERE USED TO HANDLE IT.
  *
