@@ -1,0 +1,45 @@
+# Deploy the site to GitHub Pages.
+#
+# WHY THIS EXISTS RATHER THAN THE BUILT-IN BRANCH DEPLOY. Pages was originally set to its `legacy` build
+# type, which serves a branch directly and needs no workflow. That worked once, in 39 seconds, and then
+# wedged: two consecutive runs sat in `queued` for 46 minutes and nearly four hours with no runner ever
+# assigned, and GitHub's own API reported the same run as `completed` and `queued` at the same time.
+# Nothing was wrong with the content -- the identical tree had already deployed.
+#
+# There is no build step here and there is not meant to be one. The site is hand-authored static files that
+# run straight from the repository root, which is the arrangement the project's "there is ONE copy of
+# everything" rule requires: no generated mirror of the source to be kept in step by hand.
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  # So a stuck or missed deploy can be re-fired from the Actions tab without an empty commit.
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One deploy at a time. NOT cancel-in-progress: a half-finished Pages deploy that is cancelled can leave the
+# site serving a partial tree, and these deploys take seconds, so queueing is cheaper than the risk.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      # The repository root, exactly as served locally by `python -m http.server`.
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: '.'
+      - id: deployment
+        uses: actions/deploy-pages@v4
