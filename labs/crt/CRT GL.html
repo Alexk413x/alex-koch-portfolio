@@ -467,9 +467,15 @@ function warpAt(now) {
     k: [amp * state.warpPinch * (0.45 + 0.55 * dome),
         amp * state.warpPull * slide,
         amp * state.warpSwirl,
-        // PX -> the picture's own 0..1, here and nowhere else. Same conversion, same reason, as the beam tip's
-        // radii and the frame's width: the panel speaks pixels and the shader speaks picture widths.
-        amp * state.warpRGB / Math.max(1, cssPx.w)],
+        /* PX -> the picture's own 0..1, here and nowhere else. Same conversion, same reason, as the beam tip's
+         * radii and the frame's width: the panel speaks pixels and the shader speaks picture widths.
+         *
+         * AND OVER THE RASTER SCALE, like the static convergence. This one is deliberately violent -- 31.5px
+         * is a radius chosen so the three rasters land a full glyph apart and the text genuinely comes to
+         * pieces. A full glyph is 30px on a desktop and 12px on a phone, so leaving it fixed would not make
+         * the phone's warp more dramatic, it would make it a different effect: the text is not pulled apart,
+         * it is gone. Scaling keeps "a glyph apart" meaning a glyph. */
+        amp * state.warpRGB / rasterScale() / Math.max(1, cssPx.w)],
     pos: [px, py],
     r: [Math.max(0.02, state.warpR), state.warpRim],
     d: [(px - 0.5) / dl * drag, (py - 0.5) / dl * drag],
@@ -654,13 +660,18 @@ const NARROW_W = 820;
  *   famp     DEPTH, the dome's amplitude. A deep face spends its outer radius compressing the picture into the
  *            rim, which is a luxury a big screen can afford and a small one cannot; flattening it puts that
  *            area back. Not zero -- a flat tube is a monitor, and the curve is the subject.
+ *   grings   CURVE AREA, which sets the BAND the sag lives in rather than how deep it is: u0 = 1 - grings*0.05
+ *            and the profile is identically zero below u0. At the shipped 20 the span is 1.0, so u0 is 0 and
+ *            there is no flat section anywhere -- every pixel is being bent by something. 14 puts u0 at 0.30,
+ *            which leaves the middle 30% of the radius genuinely flat for the text to sit on and confines the
+ *            bend to the outer band where it still reads as a dome.
  *
  * EVERY KEY LISTED HERE MUST BE READ THROUGH `view`, NEVER THROUGH `state`. That is the whole contract, and it
  * is not decorative: `face`/`famp`/`frameOn`/`frameW` appear in THREE memo keys -- the face LUT's, the
  * calibration overlay's and the bezel's -- and a key that still reads `state` would leave the memo believing
  * nothing had changed while the value driving it had. The tube would then keep a dome it is no longer being
  * drawn with, which is the stale-geometry failure this project keeps paying for. */
-const NARROW_OVERRIDES = { frameOn: 0, famp: 1.4 };
+const NARROW_OVERRIDES = { frameOn: 0, famp: 1.4, grings: 14 };
 
 /* THE SETTINGS THE RENDERER READS, as opposed to the ones the PANEL EDITS.
  *
@@ -960,12 +971,12 @@ function drawContent(force) {
 
 let faceKey = '', outKey = '';
 function syncLUT() {
-  const fk = [view.face, state.grings, state.fexp, view.famp].join('|');
+  const fk = [view.face, view.grings, state.fexp, view.famp].join('|');
   if (fk !== faceKey) {
     faceKey = fk;
     // THE PROJECTION STAYS THE AUTHORITY — crt-projection's faceProfile, unmodified. This only tabulates it.
     // fadeSpan = grings * (2/GRIDN) with GRIDN 40, exactly as the DC computes it: FULL is 1.0, not 0.85.
-    faceProf = faceProfile(view.face * 90, state.grings * 0.05, state.fexp, view.famp);
+    faceProf = faceProfile(view.face * 90, view.grings * 0.05, state.fexp, view.famp);
     faceLUT = buildFaceLUT(faceProf, 1024);
     R.setFaceLUT(faceLUT);
   }
@@ -994,7 +1005,7 @@ const calSvg = document.getElementById('cal');
 let calKey = '';
 function syncCal() {
   const asp = (canvas.width || 1) / (canvas.height || 1);
-  const k = [view.face, state.corner, state.bend, state.grings, state.fexp, state.guidesOn,
+  const k = [view.face, state.corner, state.bend, view.grings, state.fexp, state.guidesOn,
              state.gridOn, state.debugOn, view.famp, view.frameOn, view.frameW, cssPx.h,
              asp.toFixed(4)].join('|');
   if (k === calKey) return;
@@ -1028,7 +1039,7 @@ function syncCal() {
    *
    * The SHADER was never affected: aperture() folds with abs() before it indexes, which is why the picture looked
    * right while the calibration grid drawn over it did not. */
-  const fRaw = faceShaped(view.face * 90, state.grings * 0.05,
+  const fRaw = faceShaped(view.face * 90, view.grings * 0.05,
                           { rho: (th) => shapeRatio(prof, th), bow: (th) => axisWeight(prof, th),
                             bend: state.bend / 100 }, state.fexp, view.famp);
   const pinK = fRaw ? (fRaw.pin == null ? fRaw(1, 0) : fRaw.pin) : 1;
@@ -1583,8 +1594,16 @@ function frame(now) {
     hsweep: state.hsweepSec > 0 ? 1 / state.hsweepSec : 0,
     sweepSol: state.sweepSol,
     sweepDip: state.sweepDip, dipFall: state.dipFall, sweepWhite: state.sweepWhite,
-    sweepRGB: state.sweepRGB / Math.max(1, cssPx.h),
-    dotR:     state.dotR     / Math.max(1, cssPx.h),
+    /* THE BEAM'S OWN MISCONVERGENCE, OVER THE RASTER SCALE. The tip's split (uTipRGBX/Y) and the beam's
+     * convergence error are already measured in grille columns and scanlines, so they followed the raster the
+     * moment it started scaling; this one was still a flat screen distance and was the last RGB fringe on the
+     * picture that did not shrink with the type it sits across. */
+    sweepRGB: state.sweepRGB / RN.k / Math.max(1, cssPx.h),
+    /* NO dotR. It was `state.dotR / cssPx.h` -- and there is no dotR: not in defaultPreset, not a row on the
+     * panel, and no uDotR for it to arrive at (the shader declares uDotRX and uDotRY, which are fed from dotH
+     * and dotW in raster units). So this computed undefined/height = NaN, every frame, into a bag entry
+     * nothing reads. Harmless only because the uniform it was aimed at does not exist. crt-sidebar.js still
+     * carries a `dotR` formatter with no row to format; left alone, since it is that file's to remove. */
     dotLvl:   state.dotNits / 100,                       // nits -> the emission scale uBright is on
     sweepStep: state.sweepStep / RN.sl,
     dotHalo:   state.dotHaloNits / 100,
@@ -1747,6 +1766,11 @@ window.CRTGL = { state, get R() { return R; }, resize, textGrid, drawContent, re
    * A getter, because `view` is reassigned between state and the override copy -- capturing it by value would
    * hand a caller whichever one happened to be current at load. */
   get view() { return view; },
+  /* THE FACE PROFILE THE LUT WAS LAST BUILT FROM. Published because it is the only way to see whether a memo
+   * actually re-ran: u0 and A are what CURVE AREA and DEPTH resolve to, so a stale face LUT shows up here as
+   * the old numbers while `view` reports the new ones -- which is exactly the failure the override contract
+   * is written to prevent, and otherwise invisible until someone looks at the glass. */
+  get faceProf() { return faceProf; },
   // A WINDOW ONTO THE TYPEWRITER, so a finished block can be inspected without waiting out the boot -- and so a
   // measurement is not at the mercy of when it happens to be taken. Writing it is what REBOOT does.
   get typed() { return typed; }, set typed(v) { typed = Math.max(0, Math.min(FULL, v | 0)); },
