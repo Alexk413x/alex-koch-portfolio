@@ -96,7 +96,7 @@ vec2 nebula(vec3 p, float sec){
  * the axis, with its own phase, length and brightness. LENGTH is a fraction of the streak's repeat period, so
  * taking it to zero turns the lanes into passing dots through the same code rather than a second branch.
  */
-vec2 lightspeed(vec3 p, float sec, float footprint){
+vec2 lightspeed(vec3 p, float sec, float footprint, float lateral){
   vec2 sxy = spin(p.xy, uLsSpin * sec + uLsTwist * p.z * 0.05);
   float z = p.z + sec * uLsSpeed * 0.55;
 
@@ -121,8 +121,14 @@ vec2 lightspeed(vec3 p, float sec, float footprint){
    * the march either lands on it or does not. Widening the kernel fixes that, but a wider kernel that keeps its
    * amplitude is adding light that was never there, and the far half of the tunnel merges into a wash. Scaling
    * by the area ratio conserves the streak's cross-section, so distance makes it fainter rather than fatter. */
+  /* ...AND AT LEAST AS WIDE AS THE RAY MOVES SIDEWAYS IN ONE STEP.
+   *
+   * Near the axis a ray runs almost parallel to the streaks and follows one for a long way. Further out it cuts
+   * ACROSS them, and with the steps growing at depth each crossing gets one or two samples — which draws the
+   * streak as a row of beads. The lateral term is how far the ray travels perpendicular per step, so a kernel that wide
+   * guarantees consecutive samples overlap. Same energy correction: wider means fainter, not brighter. */
   float wMin = max(uLsThick * 0.09, 0.0015);
-  float w = max(wMin, footprint * 1.3);
+  float w = max(wMin, max(footprint * 1.3, lateral * 0.6));
   float across = exp(-dot(rel, rel) / (w * w)) * (wMin * wMin) / (w * w);
 
   /* THE PERIOD IS LONGER THAN THE VISIBLE TUNNEL, and that is what makes a streak a line instead of a dashed
@@ -181,15 +187,36 @@ void main(){
   float pxWorld = 2.0 / uRes.y;
   int steps = int(uSteps);
 
+  /* THE MARCH STARTS WHERE THE RAY ENTERS THE SHELL, NOT AT THE EYE.
+   *
+   * Nothing exists inside the clear throat, and every layer's density begins at its own radius: wallProfile is
+   * identically zero below 1 - COVERAGE. A ray's radial distance is |rd.xy| * t, so the depth at which it first
+   * reaches the innermost enabled layer solves exactly — and every step before that was integrating vacuum.
+   *
+   * This is most of the cost of this shader. Measured with all layers OFF the loop still took two thirds of the
+   * frame, because a ray down the middle of the screen never reaches the wall at all and was marching the full
+   * range regardless. Rays that never enter now skip the loop entirely rather than stepping through nothing.
+   */
+  float innerMin = 1.0;
+  if (uNebOn > 0.5) innerMin = min(innerMin, 1.0 - clamp(uNebCov, 0.0, 1.0));
+  if (uLsOn  > 0.5) innerMin = min(innerMin, 1.0 - clamp(uLsCov,  0.0, 1.0));
+  if (uPlOn  > 0.5) innerMin = min(innerMin, 1.0 - clamp(uPlCov,  0.0, 1.0));
+  bool anyLayer = (uNebOn + uLsOn + uPlOn) > 0.5;
+
+  float k = length(rd.xy);
+  float tEnter = max(0.3, innerMin * TUBE / max(k, 1e-5));
+
   /* THE STEPS GROW WITH DEPTH. A uniform march spends as much on the far half of the tunnel — where everything is
    * small, dim and already half-occluded — as on the near half that fills the screen. Growing the step by a fixed
    * ratio covers the same range in far fewer samples and puts the detail where it is visible. GROWTH is solved
-   * from the step count so QUALITY still means "how many samples", and the range covered stays FAR either way. */
+   * from the step count so QUALITY still means "how many samples", and the span covered is whatever is left
+   * between the shell entry and FAR. */
+  float span = max(FAR - tEnter, 0.0);
   float growth = 1.055;
   float gp = pow(growth, float(steps));
-  float dt0 = FAR * (growth - 1.0) / (gp - 1.0);
-  float dt = dt0;
-  float t = 0.3 + dt * dither(gl_FragCoord.xy);
+  float dt = span * (growth - 1.0) / (gp - 1.0);
+  float t = tEnter + dt * dither(gl_FragCoord.xy);
+  if (!anyLayer || span <= 0.0) steps = 0;
 
   vec3 col = vec3(0.0);
   float trans = 1.0;
@@ -229,7 +256,7 @@ void main(){
 
     float lProf = wallProfile(s01, uLsCov);
     if (uLsOn > 0.5 && lProf > 0.003){
-      vec2 ls = lightspeed(p, sec, t * pxWorld);
+      vec2 ls = lightspeed(p, sec, t * pxWorld, dt * k);
       float a = ls.x * lProf;
       emit += ramp(ls.y, uLsCol, uLsColB, uLsMode, uLsHue) * a * 2.2;
       dens += a * 0.6;
