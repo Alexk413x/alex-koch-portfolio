@@ -30,6 +30,41 @@ function stage(gl, type, src) {
 
 const VERT = 'attribute vec2 p; void main(){ gl_Position = vec4(p, 0.0, 1.0); }';
 
+/* A LOOKUP TABLE FOR 3D VALUE NOISE, PACKED INTO ONE 2D TEXTURE.
+ *
+ * Computing value noise in the shader costs eight hashes and seven interpolations per sample. A shader that wants
+ * ten samples per march step spends its entire budget there. This is the standard answer: put the lattice in a
+ * texture and let the sampler do the work — one filtered fetch, and the hardware's bilinear unit performs the x
+ * and y interpolation for free.
+ *
+ * THE THIRD DIMENSION IS THE TRICK. The two channels hold the SAME field offset by (37, 17) texels, and the
+ * shader addresses slice z at `xy + vec2(37,17)*z`. So the red channel at a texel is slice z and the green
+ * channel is slice z+1 of that same address, and one fetch returns both — the caller only has to mix them by the
+ * fractional z. The offset is coprime with the size, so slices decorrelate rather than repeating.
+ *
+ * 256 is a power of two, which WebGL1 requires for REPEAT wrapping.
+ */
+export function valueNoiseTexture(size = 256, seed = 1) {
+  const n = size * size;
+  const base = new Uint8Array(n);
+  let s = seed >>> 0;
+  for (let i = 0; i < n; i++) {
+    s = (Math.imul(s, 1664525) + 1013904223) >>> 0;
+    base[i] = (s >>> 24) & 255;
+  }
+  const data = new Uint8Array(n * 4);
+  for (let y = 0; y < size; y++) {
+    for (let x = 0; x < size; x++) {
+      const i = y * size + x;
+      const j = ((y + 17) % size) * size + ((x + 37) % size);
+      data[i * 4] = base[i];          // slice z
+      data[i * 4 + 1] = base[j];      // slice z + 1, at the address the shader will read
+      data[i * 4 + 3] = 255;
+    }
+  }
+  return { data, w: size, h: size };
+}
+
 /* Builds the renderer, or returns null if WebGL is unavailable or the shader will not compile.
  *
  *   const R = createQuad(canvas, { frag: FRAG, uniforms: ['uRes'], ext: ['OES_standard_derivatives'] });
@@ -38,8 +73,11 @@ const VERT = 'attribute vec2 p; void main(){ gl_Position = vec4(p, 0.0, 1.0); }'
  * `onRestore` fires after a lost context is rebuilt, so the caller can re-send anything it only sets on change.
  * A shader using `fwidth` must pass `ext: ['OES_standard_derivatives']` AND carry the matching `#extension`
  * directive as its first line, or it compiles to nothing and this returns null.
+ *
+ * `textures` maps a sampler name to { data, w, h } — see valueNoiseTexture. They are uploaded on build, so a
+ * restored context recreates them along with everything else.
  */
-export function createQuad(canvas, { frag, uniforms = [], ext = [], onRestore = null } = {}) {
+export function createQuad(canvas, { frag, uniforms = [], ext = [], textures = {}, onRestore = null } = {}) {
   const gl = canvas.getContext('webgl', { alpha: false, antialias: false, depth: false, stencil: false,
                                           premultipliedAlpha: false, preserveDrawingBuffer: false,
                                           powerPreference: 'high-performance' })
@@ -66,6 +104,22 @@ export function createQuad(canvas, { frag, uniforms = [], ext = [], onRestore = 
     const loc = gl.getAttribLocation(prog, 'p');
     gl.enableVertexAttribArray(loc);
     gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+
+    // Uploaded here rather than at construction so a restored context gets them back: the old texture objects
+    // died with the old context, and a shader sampling a dead one renders black.
+    Object.keys(textures).forEach((name, unit) => {
+      const spec = textures[name];
+      const tex = gl.createTexture();
+      gl.activeTexture(gl.TEXTURE0 + unit);
+      gl.bindTexture(gl.TEXTURE_2D, tex);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, spec.w, spec.h, 0, gl.RGBA, gl.UNSIGNED_BYTE, spec.data);
+      // LINEAR so the sampler does the lattice interpolation; REPEAT so the field tiles without a seam.
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
+      gl.uniform1i(gl.getUniformLocation(prog, name), unit);
+    });
 
     U = {};
     uniforms.forEach((n) => { U[n] = gl.getUniformLocation(prog, n); });
