@@ -104,12 +104,13 @@ vec2 lightspeed(vec3 p, float sec, float footprint, float lateral){
   vec2 gi = floor(sxy / cell);
   vec2 gf = fract(sxy / cell) - 0.5;
 
+  // SPREAD thins out which cells carry a streak at all, so they do not tile the whole cross-section. Tested on
+  // its own hash BEFORE the other two are computed — most cells are rejected, and they need no randoms.
+  float r3 = hash11(dot(gi, vec2(13.3, 61.7)) + 4.2);
+  if (r3 > mix(0.30, 1.0, uLsRadial)) return vec2(0.0);
+
   float r1 = hash11(dot(gi, vec2(1.7, 91.3)) + 0.5);
   float r2 = hash11(dot(gi, vec2(37.1, 5.9)) + 11.0);
-  float r3 = hash11(dot(gi, vec2(13.3, 61.7)) + 4.2);
-
-  // SPREAD thins out which cells carry a streak at all, so they do not tile the whole cross-section.
-  if (r3 > mix(0.30, 1.0, uLsRadial)) return vec2(0.0);
 
   // Jitter inside the cell, or every streak sits on a lattice and the grid shows.
   vec2 off = (vec2(r1, r2) - 0.5) * cell * 0.7;
@@ -129,7 +130,7 @@ vec2 lightspeed(vec3 p, float sec, float footprint, float lateral){
    * guarantees consecutive samples overlap. Same energy correction: wider means fainter, not brighter. */
   float wMin = max(uLsThick * 0.09, 0.0015);
   float w = max(wMin, max(footprint * 1.3, lateral * 0.6));
-  float across = exp(-dot(rel, rel) / (w * w)) * (wMin * wMin) / (w * w);
+  float across = bump(dot(rel, rel), w * w * 2.6) * (wMin * wMin) / (w * w);
 
   /* THE PERIOD IS LONGER THAN THE VISIBLE TUNNEL, and that is what makes a streak a line instead of a dashed
    * row of dots. At a period of 5 a ray covering 13 units crosses the SAME cell's streak two or three times, so
