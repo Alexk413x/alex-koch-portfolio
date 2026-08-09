@@ -10,6 +10,18 @@ export const NOISE = `
 
 float hash11(float p){ p = fract(p * 0.1031); p *= p + 33.33; p *= p + p; return fract(p); }
 
+/* A COMPACT BUMP WHERE A GAUSSIAN WOULD DO.
+ *
+ * exp() runs on the special-function unit, which on integrated hardware issues at a fraction of the ALU rate.
+ * This is a squared falloff with the same shape over the range that matters and none of the cost, and its
+ * SUPPORT IS FINITE, so it reaches zero instead of trailing a faint tail forever — which is the better property
+ * for something summed over a hundred samples.
+ */
+float bump(float d2, float w2){
+  float x = clamp(1.0 - d2 / w2, 0.0, 1.0);
+  return x * x;
+}
+
 /* 3D VALUE NOISE IN ONE TEXTURE FETCH.
  *
  * Computed in the shader this is eight hashes and seven interpolations; here the sampler's bilinear unit does x
@@ -58,11 +70,11 @@ float fbm(vec3 p, int oct, float gain){
  */
 float filament(vec3 p, float sharp){
   // ONE OCTAVE EACH, not two. A second octave doubles the fetches to roughen a field that is then squeezed
-  // through an exponential anyway — the roughness barely survives the kernel, and the smoother crossing gives a
-  // cleaner line for half the cost.
+  // through the kernel anyway — the roughness barely survives it, and the smoother crossing gives a cleaner
+  // line for half the cost.
   float a = noise3(p) - 0.5;
   float b = noise3(p * 1.31 + vec3(19.3, 7.1, 3.7)) - 0.5;
-  return exp(-(a * a + b * b) * sharp);
+  return bump(a * a + b * b, 2.6 / sharp);
 }
 `;
 
@@ -115,11 +127,15 @@ vec2 spin(vec2 xy, float ang){
 
 /* Jitter for the march start, so a fixed step count does not band into rings.
  *
- * A HASH, NOT INTERLEAVED GRADIENT NOISE. IGN is cheaper and better distributed, but its structure is a regular
- * lattice — at these step counts it prints a visible cross-hatch over the whole image. White noise is worse per
- * sample and much less noticeable, because the eye finds the pattern and not the noise.
+ * BLUE NOISE, READ FROM THE TEXTURE'S SPARE CHANNEL. What limits how few steps this shader can take is not
+ * banding but the LOOK of the leftover error: white noise puts energy at the low frequencies the eye is most
+ * sensitive to and reads as clumpy grain, while blue noise pushes it high where the eye averages it away.
+ * Interleaved gradient noise is cheaper still but its lattice prints a visible cross-hatch at these step counts.
+ *
+ * gl_FragCoord lands on pixel centres, so dividing by the texture size hits texel centres exactly and the LINEAR
+ * filter returns the stored value rather than a blend of four. The tile repeats every 64 pixels.
  */
 float dither(vec2 fc){
-  return fract(sin(dot(fc, vec2(12.9898, 78.233))) * 43758.5453);
+  return texture2D(uNoise, fc / 256.0).b;
 }
 `;
