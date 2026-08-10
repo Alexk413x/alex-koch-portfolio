@@ -38,7 +38,12 @@ const colour = (p) => [
 export const SECTIONS = [
   /* RENDER FIRST: both rows are cost, not look. QUALITY is the march's step count and is the biggest single lever
    * in this lab — every enabled layer is evaluated once per step. */
-  ['RENDER', [['renderScale', 'RENDER SCALE', 0.35, 1, 0.01],
+  /* RENDER SCALE REACHES PAST 100%, and on a hi-dpi screen it has to. glquad sizes the buffer from the CSS box
+   * with dpr pinned to 1, so 100% is one buffer pixel per CSS pixel — 57% of native on a 1.75 display, and the
+   * browser stretches the rest. What that magnifies is the march's dither, which is tuned to be invisible at one
+   * sample per screen pixel and reads as coarse grain at one per three. Set this to the display's dpr for native.
+   */
+  ['RENDER', [['renderScale', 'RENDER SCALE', 0.35, 2, 0.01],
               ['steps', 'QUALITY', 12, 88, 1]]],
 
   ['NEBULA', colour('neb').concat([
@@ -69,10 +74,27 @@ export const SECTIONS = [
     ['plLight', 'LIGHTS CLOUD', 0, 1, 0.01],
   ], flow('pl'))],
 
-  ['IMAGE', [['glow', 'THROAT', 0, 3, 0.02],
-             ['throatTint', 'THROAT TINT', 0, 1, 0.01],
-             ['throatRays', 'THROAT RAYS', 0, 1, 0.01],
-             ['exposure', 'EXPOSURE', 0.2, 3, 0.01],
+  /* CORE is the far end of the tunnel — the bright centre the layers are wrapped around. It is drawn after the
+   * march rather than inside it, so its rows are about one object and none of them cost a sample.
+   *
+   * SPIN turns the rays and nothing else, so it reads as doing nothing while RAYS is 0. PULSE and FADE are both
+   * breaths and are separate controls because they are different ones: PULSE brightens and dims around full,
+   * FADE takes the whole core away and brings it back. Each carries its own rate for the same reason every layer
+   * carries its own flow — a shared rate forces the slow one to compromise. */
+  ['CORE', [['glow', 'CORE', 0, 3, 0.02],
+            ['coreCol', 'COLOUR', '#'],
+            ['coreAuto', 'SOURCE', 0, 1, 0.01],
+            ['throatTint', 'TINT', 0, 1, 0.01],
+            ['throatRays', 'RAYS', 0, 1, 0.01],
+            ['coreSpin', 'SPIN', -2, 2, 0.01],
+            ['corePulse', 'PULSE', 0, 1, 0.01],
+            ['corePulseRate', 'PULSE RATE', 0.05, 4, 0.05],
+            ['coreFade', 'FADE', 0, 1, 0.01],
+            ['coreFadeRate', 'FADE RATE', 0.05, 4, 0.05]]],
+
+  // Whole-frame post, which is why it is not in CORE: these three are the last thing applied and they apply to
+  // everything the march produced.
+  ['IMAGE', [['exposure', 'EXPOSURE', 0.2, 3, 0.01],
              ['chroma', 'CHROMA', 0, 3, 0.05],
              ['vignette', 'VIGNETTE', 0, 1, 0.01]]],
 ];
@@ -116,9 +138,16 @@ export const FMT = {
   plLight:     as.off(as.pct()),
   plSpeed: SPEED, plTwist: DEG, plSpin: SPIN, plCov: as.pct(),
 
-  glow:        as.ofRange(3),
-  throatTint:  as.ends(as.pct(), 'WHITE', 'LAYERS', 1),
-  throatRays:  as.off(as.pct()),
+  glow:          as.ofRange(3),
+  coreAuto:      as.ends(as.pct(), 'CUSTOM', 'LAYERS', 1),
+  throatTint:    as.ends(as.pct(), 'WHITE', 'COLOUR', 1),
+  throatRays:    as.off(as.pct()),
+  coreSpin:      SPIN,
+  corePulse:     as.off(as.pct()),
+  corePulseRate: as.mult(1),
+  coreFade:      as.off(as.pct()),
+  coreFadeRate:  as.mult(1),
+
   exposure:    as.mult(2),
   chroma:      as.ofRange(3),
   vignette:    as.pct(),

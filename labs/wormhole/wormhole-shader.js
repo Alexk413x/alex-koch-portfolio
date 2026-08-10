@@ -22,6 +22,7 @@ import { NOISE, PALETTE, TUNNEL } from './wormhole-glsl.js';
 export const UNIFORMS = [
   'uRes', 'uTime', 'uSteps',
   'uGlow', 'uChroma', 'uVignette', 'uExposure', 'uThroatTint', 'uThroatRays',
+  'uCoreCol', 'uCoreAuto', 'uCoreSpin', 'uCorePulse', 'uCorePulseRate', 'uCoreFade', 'uCoreFadeRate',
   'uNebOn', 'uNebCol', 'uNebColB', 'uNebMode', 'uNebHue',
   'uNebDensity', 'uNebFill', 'uNebFluff', 'uNebStreak', 'uNebVar', 'uNebScale', 'uNebOct',
   'uNebSpeed', 'uNebTwist', 'uNebSpin', 'uNebCov',
@@ -39,6 +40,8 @@ precision highp float;
 uniform vec2 uRes;
 uniform float uTime, uSteps;
 uniform float uGlow, uChroma, uVignette, uExposure, uThroatTint, uThroatRays;
+uniform float uCoreAuto, uCoreSpin, uCorePulse, uCorePulseRate, uCoreFade, uCoreFadeRate;
+uniform vec3  uCoreCol;
 
 uniform float uNebOn, uNebMode, uNebHue, uNebDensity, uNebFill, uNebFluff, uNebStreak, uNebVar, uNebScale, uNebOct;
 uniform float uNebSpeed, uNebTwist, uNebSpin, uNebCov;
@@ -225,7 +228,7 @@ void main(){
   vec3 plCol = ramp(1.0, uPlCol, uPlColB, uPlMode, uPlHue);
 
   for (int i = 0; i < 96; i++){
-    if (i >= steps || trans < 0.004) break;
+    if (i >= steps || trans < 0.02) break;
 
     vec3 p = rd * t;
 
@@ -271,11 +274,13 @@ void main(){
     dt *= growth;
   }
 
-  /* THE THROAT TAKES ITS COLOUR FROM WHATEVER IS LIT, so the far end of the tunnel belongs to the scene instead
-   * of being a white dot pasted over it. Averaging the enabled layers' ramps is what makes it follow a colour
-   * change without a control of its own.
+  /* THE CORE CAN TAKE ITS COLOUR FROM WHATEVER IS LIT, so the far end of the tunnel belongs to the scene instead
+   * of being a white dot pasted over it. SOURCE blends between the swatch and the average of the enabled layers'
+   * ramps, which is why it is one slider and not a mode: the useful settings are the ends AND between them.
    *
-   * The CORE stays near-white and only the CORONA takes the tint, which is how an actual bright source reads:
+   * With no layer lit there is nothing to average, so the swatch is the only answer and SOURCE has no effect.
+   *
+   * The centre stays near-white and only the CORONA takes the tint, which is how an actual bright source reads:
    * hot enough to clip in the middle, coloured at the edges. TINT at 0 restores the plain white source.
    *
    * Added AFTER the march and multiplied by the surviving transmittance, so cloud in front of it occludes it
@@ -287,19 +292,26 @@ void main(){
   if (uNebOn > 0.5){ tc += ramp(0.5, uNebCol, uNebColB, uNebMode, uNebHue); tw += 1.0; }
   if (uLsOn  > 0.5){ tc += ramp(0.5, uLsCol,  uLsColB,  uLsMode,  uLsHue ); tw += 1.0; }
   if (uPlOn  > 0.5){ tc += ramp(0.5, uPlCol,  uPlColB,  uPlMode,  uPlHue ); tw += 1.0; }
-  tc = tw > 0.0 ? tc / tw : vec3(1.0, 0.93, 0.80);
+  tc = mix(uCoreCol, tw > 0.0 ? tc / tw : uCoreCol, uCoreAuto);
   tc = mix(vec3(1.0, 0.93, 0.80), tc, uThroatTint);
 
-  // A slow breath, and rays that wander rather than spin at a fixed rate — a rigid pinwheel reads as a loading
-  // spinner, which is the one thing the far end of a wormhole should not look like.
-  float pulse = 1.0 + 0.14 * sin(sec * 1.7) + 0.06 * sin(sec * 4.3);
-  float a = atan(uv.y, uv.x);
-  float rays = 0.5 + 0.5 * sin(a * 7.0 + sec * 0.5 + sin(a * 3.0 - sec * 0.37) * 1.6);
+  /* PULSE breathes around full brightness; FADE takes the core away entirely and brings it back. Two
+   * incommensurate sines in the pulse so the breath does not settle into a countable beat, and a cosine for the
+   * fade so it starts at full rather than mid-dip. */
+  float pulse = 1.0 + uCorePulse * (0.28 * sin(sec * uCorePulseRate * 1.7)
+                                  + 0.12 * sin(sec * uCorePulseRate * 4.3));
+  float fade = 1.0 - uCoreFade * (0.5 - 0.5 * cos(sec * uCoreFadeRate * 0.42));
+
+  // SPIN rotates the ray fan; the wander term keeps it from reading as a rigid pinwheel, which is the one thing
+  // the far end of a wormhole should not look like. Rotating the ANGLE rather than the phase is what makes SPIN
+  // an angular rate the same way every layer's is, instead of a rate divided by the fan's count.
+  float a = atan(uv.y, uv.x) + uCoreSpin * sec;
+  float rays = 0.5 + 0.5 * sin(a * 7.0 + sin(a * 3.0 - sec * 0.37) * 1.6);
   float corona = smoothstep(0.34, 0.0, r) * mix(1.0, 0.30 + 0.70 * rays, uThroatRays);
 
   vec3 throat = vec3(1.0, 0.97, 0.92) * smoothstep(0.045, 0.0, r) * 2.6 * pulse
               + tc * corona * 0.55 * pulse;
-  col += throat * uGlow * trans;
+  col += throat * uGlow * fade * trans;
 
   float ca2 = uChroma * 0.2 * r;
   col.r *= 1.0 + ca2;

@@ -52,7 +52,7 @@ if (!R) { reportNoGL(); throw new Error('WebGL unavailable'); }
 
 // The colour swatches and the three layer flags are not slider rows, so persist() cannot find them from the
 // panel layout.
-const SWATCHES = ['nebCol', 'nebColB', 'lsCol', 'lsColB', 'plCol', 'plColB'];
+const SWATCHES = ['nebCol', 'nebColB', 'lsCol', 'lsColB', 'plCol', 'plColB', 'coreCol'];
 const state = defaultPreset(R.gpu);
 const store = persist({ key: 'wormhole', version: 3, state, sections: SECTIONS,
                         extra: EFFECTS.map((e) => e.key).concat(SWATCHES) });
@@ -133,6 +133,10 @@ function draw(dt, sec) {
   R.f('uSteps', s.steps);
   R.f('uGlow', s.glow); R.f('uChroma', s.chroma); R.f('uVignette', s.vignette); R.f('uExposure', s.exposure);
   R.f('uThroatTint', s.throatTint); R.f('uThroatRays', s.throatRays);
+  R.f('uCoreAuto', s.coreAuto); R.f('uCoreSpin', s.coreSpin);
+  R.f('uCorePulse', s.corePulse); R.f('uCorePulseRate', s.corePulseRate);
+  R.f('uCoreFade', s.coreFade); R.f('uCoreFadeRate', s.coreFadeRate);
+  col3('uCoreCol', s.coreCol);
 
   R.f('uNebOn', s.nebOn ? 1 : 0);
   R.f('uNebMode', s.nebMode); R.f('uNebHue', s.nebHue);
