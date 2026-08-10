@@ -1,8 +1,7 @@
 /* What the field is set to. Pure data, kept apart from the panel layout.
  *
- * The three layers are independent toggles rather than one-of-three: any combination can run, the march mixes
- * them by depth, and each carries its own speed, twist, spin and coverage. The presets below are starting points,
- * not modes — each names only the keys it changes.
+ * The four sections that can be switched off — the three layers and the core — are independent masters rather than
+ * one-of-N: any combination can run, and the march mixes whichever layers are enabled by depth.
  */
 
 /* The shipped configuration — a tuned scene, not a neutral baseline. Renders below native by default because the
@@ -23,15 +22,17 @@ export function defaultPreset(gpu) {
     renderScale: weak ? 0.45 : 0.75,
     steps: weak ? 32 : 56,
 
-    nebOn: 1,
+    /* TEMPORARY WORKING DEFAULT — LIGHTSPEED alone, everything else off, while that layer is being reworked.
+     * REVERT BEFORE SHIPPING: nebOn 1, lsOn 0, plOn 0, coreOn 1 is the tuned scene. */
+    nebOn: 0,
     nebMode: 2, nebCol: '#ffb454', nebColB: '#6a3cff', nebHue: 0.02,
     nebDensity: 1.15, nebFill: 0.46, nebFluff: 0.5, nebStreak: 0.55, nebVar: 0.45,
     nebScale: 2.6, nebOct: 3,
     nebSpeed: 5.0, nebTwist: 1.4, nebSpin: 0.3, nebCov: 0.62,
 
-    lsOn: 0,
+    lsOn: 1,
     lsMode: 1, lsCol: '#ffffff', lsColB: '#8ecbff', lsHue: 0.0,
-    lsDensity: 1.6, lsCount: 110, lsLen: 0.42, lsThick: 0.15, lsVar: 0.6, lsRadial: 0.45,
+    lsDensity: 1.6, lsCount: 110, lsShells: 3, lsLen: 0.42, lsThick: 0.15, lsVar: 0.6, lsRadial: 0.45,
     lsSpeed: 16.0, lsTwist: 0.8, lsSpin: 0.1, lsCov: 0.85,
 
     plOn: 0,
@@ -42,6 +43,7 @@ export function defaultPreset(gpu) {
     /* coreSpin and corePulse are set to the rates the core was drawn at before either was a control, so the
      * shipped scene is unchanged by their arrival. FADE ships OFF for the same reason — it is motion nothing
      * asked for until someone turns it up. */
+    coreOn: 0,                                            // TEMPORARY, with the block above
     glow: 1.0, throatTint: 0.85, throatRays: 0.6,
     coreCol: '#ffedcc', coreAuto: 1.0,
     coreSpin: 0.07, corePulse: 0.5, corePulseRate: 1.0, coreFade: 0.0, coreFadeRate: 1.0,
@@ -51,31 +53,3 @@ export function defaultPreset(gpu) {
   };
 }
 
-/* A preset names only what it changes, so anything absent is left as you had it. They set the toggles too — that
- * is most of what distinguishes them. Each also sets the layers' speeds AGAINST each other, which is the point of
- * per-layer flow: JUMP has streaks tearing past clouds that are barely moving.
- */
-export const PRESETS = [
-  { label: 'NEBULA', values: {
-      nebOn: 1, lsOn: 0, plOn: 0,
-      nebSpeed: 5.0, nebSpin: 0.3, nebCov: 0.62,
-      nebDensity: 1.15, nebFill: 0.46, nebFluff: 0.5, nebStreak: 0.55, nebScale: 2.6 } },
-  { label: 'JUMP', values: {
-      nebOn: 1, lsOn: 1, plOn: 0,
-      nebSpeed: 3.0, nebDensity: 0.45, nebFill: 0.2, nebStreak: 0.1, nebScale: 1.8, nebCov: 0.95,
-      lsSpeed: 26.0, lsDensity: 2.2, lsCount: 150, lsLen: 0.55, lsThick: 0.1, lsCov: 0.95 } },
-  { label: 'STORM', values: {
-      nebOn: 1, lsOn: 0, plOn: 1,
-      nebSpeed: 2.5, nebDensity: 1.5, nebFill: 0.62, nebFluff: 0.38, nebStreak: 0.9, nebCov: 0.85,
-      plSpeed: 6.0, plSpin: -0.5, plDensity: 1.3, plCrackle: 0.8, plCrawl: 0.9, plFlash: 0.6, plLight: 0.8 } },
-];
-
-// Which preset these values are, or -1 for none. Derived from the values rather than remembered, so editing a
-// slider unlights the preset it no longer matches.
-export function matchIdx(state) {
-  for (let i = 0; i < PRESETS.length; i++) {
-    const v = PRESETS[i].values;
-    if (Object.keys(v).every((k) => Math.abs((state[k] ?? 0) - v[k]) < 1e-4)) return i;
-  }
-  return -1;
-}

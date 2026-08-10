@@ -6,12 +6,14 @@
  * streaks tear past and bolts crawl the other way. The three colour rows repeat for the same reason: one thing
  * meaning one thing in three places beats a shared control that has to compromise.
  *
- * Their on/off flags are NOT rows — they live in the strip above the panel, because any combination can run at
- * once and the strip is where you reach for that.
+ * Their on/off flags are SECTION MASTERS — the third entry in a section's tuple — not rows and not a strip above
+ * the panel. A master sits in the header it governs, so "is NEBULA on" and "what is NEBULA set to" are answered in
+ * the same place, and panel.js already hides a disabled section's rows. Any combination can still run at once:
+ * masters are independent flags, not a radio group.
  */
 import { as } from '../kit/units.js';
 
-// Named here rather than inline so the host builds the toggle strip from the same list the sections use.
+// Named here so the mast line and the sections read the same list. The keys are the masters used below.
 export const EFFECTS = [
   { key: 'nebOn', label: 'NEBULA' },
   { key: 'lsOn',  label: 'LIGHTSPEED' },
@@ -46,6 +48,13 @@ export const SECTIONS = [
   ['RENDER', [['renderScale', 'RENDER SCALE', 0.35, 2, 0.01],
               ['steps', 'QUALITY', 12, 88, 1]]],
 
+  /* IMAGE SITS SECOND BECAUSE IT APPLIES TO EVERYTHING BELOW IT. These three are whole-frame post — the last thing
+   * done to whatever the march produced — so reading the panel top to bottom now matches the order the pixels are
+   * actually built in: how much is drawn, what is done to the finished frame, then each thing that draws. */
+  ['IMAGE', [['exposure', 'EXPOSURE', 0.2, 3, 0.01],
+             ['chroma', 'CHROMA', 0, 3, 0.05],
+             ['vignette', 'VIGNETTE', 0, 1, 0.01]]],
+
   ['NEBULA', colour('neb').concat([
     ['nebDensity', 'DENSITY', 0, 3, 0.02],
     ['nebFill', 'FILL', 0, 1, 0.01],
@@ -54,16 +63,21 @@ export const SECTIONS = [
     ['nebVar', 'VARIANCE', 0, 1, 0.01],
     ['nebScale', 'SCALE', 0.5, 8, 0.05],
     ['nebOct', 'DETAIL', 1, 5, 1],
-  ], flow('neb'))],
+  ], flow('neb')), 'nebOn'],
 
+  /* LIGHTSPEED is capsules solved per pixel, not density marched — so THICKNESS is the streak's real radius and
+   * LENGTH its real length, both in world units, rather than a kernel that had to widen with the sampling rate.
+   * SHELLS is the new one: concentric rings of streaks at increasing radius, which is what gives the tube depth
+   * at its edges instead of one flat sleeve. It is the only row here that multiplies the work. */
   ['LIGHTSPEED', colour('ls').concat([
     ['lsDensity', 'BRIGHTNESS', 0, 4, 0.02],
     ['lsCount', 'STREAKS', 8, 260, 1],
-    ['lsLen', 'LENGTH', 0.004, 1, 0.004],
+    ['lsShells', 'SHELLS', 1, 4, 1],
+    ['lsLen', 'LENGTH', 0.02, 1, 0.01],
     ['lsThick', 'THICKNESS', 0.04, 0.6, 0.005],
     ['lsVar', 'VARIANCE', 0, 1, 0.01],
     ['lsRadial', 'SPREAD', 0, 1, 0.01],
-  ], flow('ls'))],
+  ], flow('ls')), 'lsOn'],
 
   ['PLASMA', colour('pl').concat([
     ['plDensity', 'BRIGHTNESS', 0, 3, 0.02],
@@ -72,7 +86,7 @@ export const SECTIONS = [
     ['plStrike', 'STRIKE', 0, 2, 0.01],
     ['plFlash', 'FLASH', 0, 1, 0.01],
     ['plLight', 'LIGHTS CLOUD', 0, 1, 0.01],
-  ], flow('pl'))],
+  ], flow('pl')), 'plOn'],
 
   /* CORE is the far end of the tunnel — the bright centre the layers are wrapped around. It is drawn after the
    * march rather than inside it, so its rows are about one object and none of them cost a sample.
@@ -90,13 +104,7 @@ export const SECTIONS = [
             ['corePulse', 'PULSE', 0, 1, 0.01],
             ['corePulseRate', 'PULSE RATE', 0.05, 4, 0.05],
             ['coreFade', 'FADE', 0, 1, 0.01],
-            ['coreFadeRate', 'FADE RATE', 0.05, 4, 0.05]]],
-
-  // Whole-frame post, which is why it is not in CORE: these three are the last thing applied and they apply to
-  // everything the march produced.
-  ['IMAGE', [['exposure', 'EXPOSURE', 0.2, 3, 0.01],
-             ['chroma', 'CHROMA', 0, 3, 0.05],
-             ['vignette', 'VIGNETTE', 0, 1, 0.01]]],
+            ['coreFadeRate', 'FADE RATE', 0.05, 4, 0.05]], 'coreOn'],
 ];
 
 const DEG = as.scaled(90, 0, '°');
@@ -123,6 +131,7 @@ export const FMT = {
   lsHue:       as.scaled(360, 0, '°'),
   lsDensity:   as.ofRange(4),
   lsCount:     as.raw(0),
+  lsShells:    as.raw(0, ' shells'),
   lsLen:       as.ends(as.pct(), 'DOTS', 'SOLID', 1),
   lsThick:     as.pct(),
   lsVar:       as.off(as.pct()),

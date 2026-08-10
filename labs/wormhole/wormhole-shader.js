@@ -27,7 +27,7 @@ export const UNIFORMS = [
   'uNebDensity', 'uNebFill', 'uNebFluff', 'uNebStreak', 'uNebVar', 'uNebScale', 'uNebOct',
   'uNebSpeed', 'uNebTwist', 'uNebSpin', 'uNebCov',
   'uLsOn', 'uLsCol', 'uLsColB', 'uLsMode', 'uLsHue',
-  'uLsDensity', 'uLsCount', 'uLsLen', 'uLsThick', 'uLsVar', 'uLsRadial',
+  'uLsDensity', 'uLsCount', 'uLsLen', 'uLsThick', 'uLsVar', 'uLsRadial', 'uLsShells',
   'uLsSpeed', 'uLsTwist', 'uLsSpin', 'uLsCov',
   'uPlOn', 'uPlCol', 'uPlColB', 'uPlMode', 'uPlHue',
   'uPlDensity', 'uPlCrackle', 'uPlCrawl', 'uPlFlash', 'uPlStrike', 'uPlLight',
@@ -47,7 +47,7 @@ uniform float uNebOn, uNebMode, uNebHue, uNebDensity, uNebFill, uNebFluff, uNebS
 uniform float uNebSpeed, uNebTwist, uNebSpin, uNebCov;
 uniform vec3  uNebCol, uNebColB;
 
-uniform float uLsOn, uLsMode, uLsHue, uLsDensity, uLsCount, uLsLen, uLsThick, uLsVar, uLsRadial;
+uniform float uLsOn, uLsMode, uLsHue, uLsDensity, uLsCount, uLsLen, uLsThick, uLsVar, uLsRadial, uLsShells;
 uniform float uLsSpeed, uLsTwist, uLsSpin, uLsCov;
 uniform vec3  uLsCol, uLsColB;
 
@@ -93,59 +93,110 @@ vec2 nebula(vec3 p, float sec){
   return vec2(dens * uNebDensity, g);
 }
 
-/* LIGHTSPEED — streaks, not clouds.
+/* LIGHTSPEED — SOLVED, NOT MARCHED.
  *
- * The volume is cut into cells across the tube's cross-section; each cell holds one streak running parallel to
- * the axis, with its own phase, length and brightness. LENGTH is a fraction of the streak's repeat period, so
- * taking it to zero turns the lanes into passing dots through the same code rather than a second branch.
+ * A streak is a CAPSULE: a segment running parallel to the tunnel axis with a radius, so its ends are round by
+ * construction rather than faded by a window function.
+ *
+ * THE MARCH COULD NOT DRAW THIS, and that is why the layer was rebuilt rather than tuned. A marched ray either
+ * lands on a thin line or misses it, so the kernel has to be widened to the sampling rate and then dimmed to
+ * conserve energy — measured at 18x too wide and 0.3% of intended brightness at the far end, and still 9x too
+ * wide at maximum QUALITY. Distance to a shape has no such floor: the width here is the width asked for, at any
+ * step count and any resolution.
+ *
+ * WHY IT CLOSES: the camera sits ON the axis and the capsules run parallel to it, so a ray's xy direction never
+ * changes — in cross-section it sweeps ONE radial line out from the centre. Only streaks near that angle can ever
+ * be hit, so bucketing by angle turns "which of two hundred streaks does this pixel see" into three candidates
+ * per shell. No traversal, no marching, no step count.
  */
-vec2 lightspeed(vec3 p, float sec, float footprint, float lateral){
-  vec2 sxy = spin(p.xy, uLsSpin * sec + uLsTwist * p.z * 0.05);
-  float z = p.z + sec * uLsSpeed * 0.55;
 
-  float cell = mix(0.5, 0.055, clamp((uLsCount - 8.0) / 252.0, 0.0, 1.0));
-  vec2 gi = floor(sxy / cell);
-  vec2 gf = fract(sxy / cell) - 0.5;
+// Ray-to-capsule distance for a segment parallel to z, and the depth it happens at. Exact: the closest approach
+// to the infinite line solves directly, and falling outside the segment's span reduces to a ray-to-endpoint
+// projection — which is what rounds the caps.
+float capsuleDist(vec3 rd, vec2 c, float z1, float z2, out float tHit){
+  float tA = dot(rd.xy, c) / max(dot(rd.xy, rd.xy), 1e-6);
+  float zA = rd.z * tA;
+  float t = tA;
+  if (zA < z1)      t = dot(rd, vec3(c, z1));
+  else if (zA > z2) t = dot(rd, vec3(c, z2));
+  t = max(t, 0.0);
+  vec3 P = rd * t;
+  tHit = t;
+  return length(P - vec3(c, clamp(P.z, z1, z2)));
+}
 
-  // SPREAD thins out which cells carry a streak at all, so they do not tile the whole cross-section. Tested on
-  // its own hash BEFORE the other two are computed — most cells are rejected, and they need no randoms.
-  float r3 = hash11(dot(gi, vec2(13.3, 61.7)) + 4.2);
-  if (r3 > mix(0.30, 1.0, uLsRadial)) return vec2(0.0);
+/* Returns the layer's emission in rgb, and through hitT the depth of its nearest contributor — which is what lets
+ * a solved layer still be occluded by a marched one. */
+vec3 lightspeed(vec3 rd, float sec, out float hitT){
+  hitT = FAR;
+  vec3 acc = vec3(0.0);
 
-  float r1 = hash11(dot(gi, vec2(1.7, 91.3)) + 0.5);
-  float r2 = hash11(dot(gi, vec2(37.1, 5.9)) + 11.0);
+  float slots = max(8.0, floor(uLsCount));
+  float aScreen = atan(rd.y, rd.x);
+  float k = max(length(rd.xy), 1e-5);
 
-  // Jitter inside the cell, or every streak sits on a lattice and the grid shows.
-  vec2 off = (vec2(r1, r2) - 0.5) * cell * 0.7;
-  vec2 rel = gf * cell - off;
+  float inner = (1.0 - clamp(uLsCov, 0.0, 1.0)) * TUBE;
+  float shells = max(1.0, floor(uLsShells));
+  float halfLen = max(uLsLen, 0.02) * (FAR * 0.5);
+  float span = FAR + 2.0 * halfLen;
 
-  /* THICKNESS IS IN WORLD UNITS, never narrower than one pixel covers at this depth, and DIMMED IN PROPORTION.
-   *
-   * A streak core thinner than its footprint is sampled at one point per pixel and comes back as a dotted line —
-   * the march either lands on it or does not. Widening the kernel fixes that, but a wider kernel that keeps its
-   * amplitude is adding light that was never there, and the far half of the tunnel merges into a wash. Scaling
-   * by the area ratio conserves the streak's cross-section, so distance makes it fainter rather than fatter. */
-  /* ...AND AT LEAST AS WIDE AS THE RAY MOVES SIDEWAYS IN ONE STEP.
-   *
-   * Near the axis a ray runs almost parallel to the streaks and follows one for a long way. Further out it cuts
-   * ACROSS them, and with the steps growing at depth each crossing gets one or two samples — which draws the
-   * streak as a row of beads. The lateral term is how far the ray travels perpendicular per step, so a kernel that wide
-   * guarantees consecutive samples overlap. Same energy correction: wider means fainter, not brighter. */
-  float wMin = max(uLsThick * 0.09, 0.0015);
-  float w = max(wMin, max(footprint * 1.3, lateral * 0.6));
-  float across = bump(dot(rel, rel), w * w * 2.6) * (wMin * wMin) / (w * w);
+  for (int s = 0; s < 4; s++){
+    if (float(s) >= shells) break;
+    float shellF = (float(s) + 0.5) / shells;
+    float rr = mix(inner, TUBE, shellF);
 
-  /* THE PERIOD IS LONGER THAN THE VISIBLE TUNNEL, and that is what makes a streak a line instead of a dashed
-   * row of dots. At a period of 5 a ray covering 13 units crosses the SAME cell's streak two or three times, so
-   * one streak was drawn repeatedly down its own length. One repeat per ray means one streak. */
-  float period = 42.0;
-  float len = max(uLsLen * mix(1.0, 0.3 + 1.5 * r2, uLsVar), 0.004);
-  float f = fract(z / period + r1);
-  float along = smoothstep(0.0, 0.02, f) * (1.0 - smoothstep(len, len + 0.05, f));
+    /* ROTATION IS RESOLVED PER SHELL, BEFORE THE BUCKET IS CHOSEN, and it has to be. The bucket is picked from
+     * the ray's screen angle, so a capsule rotated AFTER that lands outside the bucket that was searched for it
+     * and is never found — which is a black screen, not a subtle error.
+     *
+     * SPIN is rigid and needs no depth. TWIST does, and this is the approximation: the ray crosses THIS shell at
+     * one known radius, so the depth it happens at solves directly (rr * rd.z / k), and the shell is rotated by
+     * the twist at exactly that depth. A helix has no closed form, but a capsule only has to be in the right
+     * place where the ray actually meets it. */
+    float zMeet = clamp(rr * rd.z / k, 0.0, FAR);
+    float rot = uLsSpin * sec + uLsTwist * zMeet * 0.05;
+    float base = floor((aScreen - rot) / TAU * slots);
 
-  float bright = mix(1.0, 0.3 + 1.6 * r1, uLsVar);
-  // Constant per streak, so a streak is one colour end to end rather than a smear of the whole ramp.
-  return vec2(along * across * bright * uLsDensity, r2);
+    for (int j = 0; j < 3; j++){
+      // Wrapped before hashing so the ring CLOSES — the seam at atan's cut would otherwise be one visible lane
+      // where slot -n and slot +n disagree about which streak lives there.
+      float slot = mod(base + float(j) - 1.0, slots);
+      float id = slot + float(s) * 977.0;
+
+      // SPREAD thins the slots that carry a streak at all. Tested first, so a rejected slot costs one hash.
+      if (hash11(id * 1.7 + 0.3) > mix(0.25, 1.0, uLsRadial)) continue;
+
+      float rAng = hash11(id * 3.1 + 5.7);
+      float rRad = hash11(id * 7.3 + 11.1);
+      float rPhase = hash11(id * 2.9 + 19.3);
+      float rBright = hash11(id * 5.3 + 23.7);
+
+      // Back into world space by the same rotation the bucket was chosen in, so the capsule is where the ray
+      // looked for it.
+      float th = (slot + 0.5 + (rAng - 0.5) * 0.8) / slots * TAU + rot;
+      float rad = rr + (rRad - 0.5) * ((TUBE - inner) / shells) * 0.8;
+      vec2 c = rad * vec2(cos(th), sin(th));
+
+      // Toward the camera, wrapping through the visible run so a slot is occupied most of the time.
+      float zc = mod(rPhase * span - sec * uLsSpeed * 0.55, span) - halfLen;
+
+      float tHit;
+      float d = capsuleDist(rd, c, zc - halfLen, zc + halfLen, tHit);
+
+      float R = max(uLsThick * 0.05, 0.002) * mix(1.0, 0.4 + 1.2 * rRad, uLsVar);
+      // A solid core inside a wider halo: a bright line reads as light rather than as paint, and bump reaches
+      // exactly zero so neither term trails a tail across the tube.
+      float amt = (bump(d * d, R * R) + 0.22 * bump(d * d, R * R * 12.0))
+                * mix(1.0, 0.35 + 1.6 * rBright, uLsVar) * uLsDensity;
+      // Fades in at the far end instead of appearing, and never brighter than the tunnel it lives in.
+      amt *= smoothstep(FAR, FAR * 0.7, tHit);
+      if (amt <= 0.0005) continue;
+
+      acc += ramp(rBright, uLsCol, uLsColB, uLsMode, uLsHue) * amt;
+      hitT = min(hitT, tHit);
+    }
+  }
+  return acc;
 }
 
 /* PLASMA — lightning filaments that crawl and crackle.
@@ -187,8 +238,6 @@ void main(){
   vec3 rd = normalize(vec3(uv, 1.3));
   float sec = uTime;
 
-  // World units one pixel covers per unit of depth — the footprint that keeps thin features from aliasing.
-  float pxWorld = 2.0 / uRes.y;
   int steps = int(uSteps);
 
   /* THE MARCH STARTS WHERE THE RAY ENTERS THE SHELL, NOT AT THE EYE.
@@ -201,11 +250,17 @@ void main(){
    * frame, because a ray down the middle of the screen never reaches the wall at all and was marching the full
    * range regardless. Rays that never enter now skip the loop entirely rather than stepping through nothing.
    */
+  /* LIGHTSPEED IS NOT IN THIS TEST any more, and that is most of what it bought. It is solved rather than
+   * marched, so with it lit alone there is no march at all — steps falls to zero and every ray exits before the
+   * loop. It still occludes correctly, by the transmittance captured at its own depth below. */
   float innerMin = 1.0;
   if (uNebOn > 0.5) innerMin = min(innerMin, 1.0 - clamp(uNebCov, 0.0, 1.0));
-  if (uLsOn  > 0.5) innerMin = min(innerMin, 1.0 - clamp(uLsCov,  0.0, 1.0));
   if (uPlOn  > 0.5) innerMin = min(innerMin, 1.0 - clamp(uPlCov,  0.0, 1.0));
-  bool anyLayer = (uNebOn + uLsOn + uPlOn) > 0.5;
+  bool anyLayer = (uNebOn + uPlOn) > 0.5;
+
+  float lsT = FAR;
+  vec3 lsCol = uLsOn > 0.5 ? lightspeed(rd, sec, lsT) : vec3(0.0);
+  float transAtLs = 1.0;
 
   float k = length(rd.xy);
   float tEnter = max(0.3, innerMin * TUBE / max(k, 1e-5));
@@ -258,13 +313,9 @@ void main(){
       dens += a;
     }
 
-    float lProf = wallProfile(s01, uLsCov);
-    if (uLsOn > 0.5 && lProf > 0.003){
-      vec2 ls = lightspeed(p, sec, t * pxWorld, dt * k);
-      float a = ls.x * lProf;
-      emit += ramp(ls.y, uLsCol, uLsColB, uLsMode, uLsHue) * a * 2.2;
-      dens += a * 0.6;
-    }
+    // Captured while the march is still IN FRONT of the streaks, so what is left when it reaches them is exactly
+    // what they should be seen through.
+    if (t <= lsT) transAtLs = trans;
 
     float alpha = clamp(dens * dt, 0.0, 1.0);
     col += trans * emit * dt;
@@ -273,6 +324,8 @@ void main(){
     t += dt;
     dt *= growth;
   }
+
+  col += lsCol * transAtLs;
 
   /* THE CORE CAN TAKE ITS COLOUR FROM WHATEVER IS LIT, so the far end of the tunnel belongs to the scene instead
    * of being a white dot pasted over it. SOURCE blends between the swatch and the average of the enabled layers'

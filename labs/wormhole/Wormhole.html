@@ -15,7 +15,6 @@
 <!-- Only what is true of this lab; the page shell is lab.css and the panel is panel.css. -->
 <style>
   #panel h1{font-size:12px}
-  #layers{margin-bottom:2px}
 </style>
 </head>
 <body>
@@ -26,19 +25,17 @@
 </div>
 <div id="panel">
   <h1>WORMHOLE FIELD</h1>
-  <!-- The layer toggles: any combination may be lit, because the march mixes whatever is enabled by depth. -->
-  <div class="btns" id="layers"></div>
-  <div class="btns" id="presets"></div>
+  <!-- No button strips: each switchable section carries its own master in its header, which panel.js builds. -->
   <div id="controls"></div>
 </div>
 
 <script type="module">
 import { createQuad, valueNoiseTexture } from '../kit/glquad.js';
-import { createPanel, buildActions, mountPanelToggle } from '../kit/panel.js';
+import { createPanel, mountPanelToggle } from '../kit/panel.js';
 import { persist, fitCanvas, runLoop, textOut, reportNoGL } from '../kit/lab.js';
 import { FRAG, UNIFORMS } from './wormhole-shader.js';
 import { SECTIONS, FMT, EFFECTS } from './wormhole-sidebar.js';
-import { PRESETS, defaultPreset, matchIdx } from './wormhole-presets.js';
+import { defaultPreset } from './wormhole-presets.js';
 
 const stage = document.getElementById('stage');
 // The noise lattice lives in a texture rather than being hashed per sample — see valueNoiseTexture. Built once
@@ -50,38 +47,27 @@ const R = createQuad(document.getElementById('field'), {
 });
 if (!R) { reportNoGL(); throw new Error('WebGL unavailable'); }
 
-// The colour swatches and the three layer flags are not slider rows, so persist() cannot find them from the
-// panel layout.
+/* Neither a colour swatch nor a section master is a slider row, so persist() cannot derive either from the panel
+ * layout. The masters are READ BACK OUT OF THE SECTION TABLE rather than listed again — a second list is a second
+ * description of the same set, and the one that gets forgotten is the one that silently stops being saved. */
 const SWATCHES = ['nebCol', 'nebColB', 'lsCol', 'lsColB', 'plCol', 'plColB', 'coreCol'];
+const MASTERS = SECTIONS.map(([, , master]) => master).filter(Boolean);
 const state = defaultPreset(R.gpu);
 const store = persist({ key: 'wormhole', version: 3, state, sections: SECTIONS,
-                        extra: EFFECTS.map((e) => e.key).concat(SWATCHES) });
+                        extra: MASTERS.concat(SWATCHES) });
 store.restore();
 
+/* The mast names the LAYERS that are lit, and only those. CORE has a master too, but it is the far end of the
+ * tunnel rather than something the march mixes — a frame with the core switched off is still whatever layers are
+ * running, not a different scene. */
 const modeEl = document.getElementById('modename');
 function syncMode() {
   const on = EFFECTS.filter((e) => state[e.key]).map((e) => e.label);
-  const i = matchIdx(state);
-  textOut(modeEl, (on.length ? on.join(' + ') : 'ALL LAYERS OFF') + (i < 0 ? '' : ' · ' + PRESETS[i].label));
-  syncLayers(); syncPresets();
+  textOut(modeEl, on.length ? on.join(' + ') : 'ALL LAYERS OFF');
 }
 
-/* The layer strip is multi-select: each button owns one flag and lights off that flag, so any combination can be
- * live at once. buildActions gives exactly this — `lit` is a predicate, not a radio group. */
-const syncLayers = buildActions(document.getElementById('layers'),
-  EFFECTS.map((e) => [e.label, () => { state[e.key] = state[e.key] ? 0 : 1; syncMode(); store.queueSave(); },
-                               () => !!state[e.key]]));
-
-const syncPresets = buildActions(document.getElementById('presets'),
-  PRESETS.map((p, i) => [p.label, () => applyPreset(i), () => matchIdx(state) === i]));
-
-function applyPreset(i) {
-  Object.assign(state, PRESETS[i].values);
-  rebuildPanel(); syncMode(); store.queueSave();
-}
-
-// Rebuilt, not updated, and only when a preset lands: panel.js's rows read state once and own their DOM after,
-// so a value written from outside leaves its row stale. Folds survive because they live in state.
+// Rebuilt, not updated: panel.js's rows read state once and own their DOM after, so a value written from outside
+// leaves its row stale. Folds survive because they live in state.
 const host = document.getElementById('controls');
 function rebuildPanel() {
   host.innerHTML = '';
@@ -131,7 +117,10 @@ function draw(dt, sec) {
   R.f2('uRes', R.w, R.h);
   R.f('uTime', sec);
   R.f('uSteps', s.steps);
-  R.f('uGlow', s.glow); R.f('uChroma', s.chroma); R.f('uVignette', s.vignette); R.f('uExposure', s.exposure);
+  // CORE's master rides on uGlow rather than a uniform of its own: the core is added as throat * uGlow, so a glow
+  // of zero already IS off, and the shader needs nothing it does not already have.
+  R.f('uGlow', s.coreOn ? s.glow : 0);
+  R.f('uChroma', s.chroma); R.f('uVignette', s.vignette); R.f('uExposure', s.exposure);
   R.f('uThroatTint', s.throatTint); R.f('uThroatRays', s.throatRays);
   R.f('uCoreAuto', s.coreAuto); R.f('uCoreSpin', s.coreSpin);
   R.f('uCorePulse', s.corePulse); R.f('uCorePulseRate', s.corePulseRate);
@@ -149,6 +138,7 @@ function draw(dt, sec) {
   R.f('uLsMode', s.lsMode); R.f('uLsHue', s.lsHue);
   R.f('uLsDensity', s.lsDensity); R.f('uLsCount', s.lsCount); R.f('uLsLen', s.lsLen);
   R.f('uLsThick', s.lsThick); R.f('uLsVar', s.lsVar); R.f('uLsRadial', s.lsRadial);
+  R.f('uLsShells', s.lsShells);
   R.f('uLsSpeed', s.lsSpeed); R.f('uLsTwist', s.lsTwist); R.f('uLsSpin', s.lsSpin); R.f('uLsCov', s.lsCov);
   col3('uLsCol', s.lsCol); col3('uLsColB', s.lsColB);
 

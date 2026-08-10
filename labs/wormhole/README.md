@@ -6,21 +6,30 @@ three flavours — nebula, lightspeed, plasma vortex.
 `Wormhole.html` is the view: the canvas, the readouts, the panel, the frame loop. Everything else is logic.
 
 ```
-wormhole-shader.js    the GLSL. Pure source: 10 uniforms in, one colour out
-wormhole-sidebar.js   SECTIONS (panel layout) + FMT (how each value reads)
-wormhole-presets.js   MODES + defaultPreset
+wormhole-shader.js    the GLSL. Pure source: uniforms in, one colour out
+wormhole-sidebar.js   SECTIONS (panel layout) + FMT (how each value reads) + EFFECTS (the layers, for the mast)
+wormhole-presets.js   defaultPreset — the shipped configuration, and nothing else
 ```
 
 Shared, not local: [`../kit/glquad.js`](../kit/glquad.js) hosts the shader, [`../kit/panel.js`](../kit/panel.js)
 and `../kit/panel.css` are the panel. There is no `wormhole-sim.js` — the field is a pure function of
 `(state, seconds)` with nothing accumulating, so there is no machine to hold.
 
-## The three modes are not presets
+## There are no button strips, and no presets
 
-`mode` selects which branch of the shader runs; it carries no configuration, so switching mode leaves every slider
-alone. The DC build called them presets because the sidebar it used had a preset row and no one-of-N control —
-`kit/panel.js` has `choice` for exactly this, so it is now a row like any other, at the top of FIELD because it
-decides which density function the rows below are feeding. **TURBULENCE does nothing at all in LIGHTSPEED.**
+Every section that can be switched off owns a **master in its own header** — the third entry in its `SECTIONS`
+tuple, which `kit/panel.js` has always supported. NEBULA, LIGHTSPEED, PLASMA and CORE each carry one, and they are
+independent flags rather than a radio group, so any combination runs at once.
+
+That replaced a strip of layer buttons above the panel. A strip puts "is this on" in a different place from "what
+is it set to", and the answer to both is the section.
+
+**The JUMP and STORM presets are gone with it.** They were three tuned scenes behind three buttons, and nothing
+else reached `PRESETS` or `matchIdx` once the strip went — dead data behind a deleted control. They are in the
+history if the scenes are ever wanted back.
+
+Sections read top to bottom in the order pixels are built: RENDER decides how much is drawn, IMAGE is the
+whole-frame post applied to the finished result, then each thing that draws.
 
 ## `uPanelPx` is gone, and that was the point
 
