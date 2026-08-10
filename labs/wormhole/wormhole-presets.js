@@ -39,7 +39,14 @@ export function defaultPreset(gpu) {
     plDensity: 1.0, plCrackle: 0.72, plCrawl: 0.6, plStrike: 0.35, plFlash: 0.55, plLight: 0.55,
     plSpeed: 4.0, plTwist: 1.8, plSpin: -0.25, plCov: 0.75,
 
-    glow: 1.0, throatTint: 0.85, throatRays: 0.6, exposure: 1.0, chroma: 1.0, vignette: 1.0,
+    /* coreSpin and corePulse are set to the rates the core was drawn at before either was a control, so the
+     * shipped scene is unchanged by their arrival. FADE ships OFF for the same reason — it is motion nothing
+     * asked for until someone turns it up. */
+    glow: 1.0, throatTint: 0.85, throatRays: 0.6,
+    coreCol: '#ffedcc', coreAuto: 1.0,
+    coreSpin: 0.07, corePulse: 0.5, corePulseRate: 1.0, coreFade: 0.0, coreFadeRate: 1.0,
+
+    exposure: 1.0, chroma: 1.0, vignette: 1.0,
     secClosed: { LIGHTSPEED: true, PLASMA: true, IMAGE: true },
   };
 }
