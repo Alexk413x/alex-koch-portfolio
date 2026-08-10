@@ -653,17 +653,35 @@ function advRatio() {
 /* HOW MANY COLUMNS OF TEXT A NARROW DISPLAY IS HELD TO. Above the width where this is satisfied the raster
  * is left exactly as authored; below it the density is scaled up so the count does not collapse. */
 const TEXT_COLS_MIN = 40;
-const RASTER_K_MAX = 6;         // a pathologically narrow viewport must not ask for a thousand scanlines
-/* WHAT COUNTS AS A NARROW DISPLAY, and the scale applies below this and nowhere else. Shared with the panel's
- * own breakpoint (passed to mountPanelToggle) so "small screen" means one thing here; panel.css carries the
- * same 820 in a media query, which a stylesheet cannot read from here and which must be kept in step.
+/* AND HOW FEW LINES ITS RASTER MAY COLLAPSE TO, which is the same accommodation on the other axis. A glyph is
+ * `tcell` SCANLINES tall, so em/pictureHeight is exactly cell/nSL -- the line count IS the type scale, and a
+ * count left to float with the viewport is a type size left to float with it.
  *
- * THE GATE IS THE CORRECTION. Written as a pure column target with no width test, the rule fired on a DESKTOP
+ * 100 is the shipped raster's own count on a desktop: scan is 10 lines per 100 CSS px and a desktop stage is
+ * about 1000 tall, measured at exactly 100. So this is not a new opinion about size, it is the desktop's own
+ * proportion held onto when the picture gets short. */
+const SCANLINES_MIN = 100;
+const RASTER_K_MAX = 6;         // a pathologically narrow viewport must not ask for a thousand scanlines
+/* WHAT COUNTS AS A DISPLAY WITH ROOM, and both accommodations apply below this and nowhere else. Shared with
+ * the panel's own breakpoint (passed to mountPanelToggle) so "small screen" means one thing here; panel.css
+ * carries the same pair in a media query, which a stylesheet cannot read from here and must be kept in step.
+ *
+ * THE GATE IS THE CORRECTION. Written as a pure column target with no size test, the rule fired on a DESKTOP
  * whenever the authored raster was coarse enough to make text wide -- caught by the fingerprint harness, where
  * the `fineRaster` scene (12 PPI, 5-scanline cells, on a 1247px stage) came out scaled by 1.146 and its hash
  * moved. Overriding a density somebody deliberately set, on a screen with plenty of room, is not what this is
- * for: it is an accommodation for displays that cannot fit the text, not an opinion about legibility. */
+ * for: it is an accommodation for displays that cannot fit the text, not an opinion about legibility.
+ *
+ * TWO NUMBERS, NOT ONE, BECAUSE SCREENS ARE NOT SQUARE. A phone on its side is 852x393: wide enough to pass any
+ * width test and shorter than anything the width test was written for, so a single `min(w, h) > 820` would call
+ * an ordinary 1366x768 laptop a phone. 500 sits in the gap -- phone landscape viewports run 320-430 tall, the
+ * smallest laptop about 600 -- and it is the number the CSS carries too. */
 const NARROW_W = 820;
+const SHORT_H  = 500;
+
+/* Whether the stage has room for what was authored. One expression, because syncView and rasterScale disagreeing
+ * about it is a tube drawn with one set of settings and measured with another. */
+function roomy() { return cssPx.w > NARROW_W && cssPx.h > SHORT_H; }
 
 /* WHAT A NARROW DISPLAY RENDERS INSTEAD, as a table rather than as more special cases scattered through the
  * frame. The raster scale above, the convergence divisor and the spot divisor are all narrow-display
@@ -702,7 +720,7 @@ const NARROW_OVERRIDES = { frameOn: 0, famp: 1.4, grings: 14 };
 const _view = {};
 let view = state;
 function syncView() {
-  if (cssPx.w > NARROW_W) { view = state; return; }
+  if (roomy()) { view = state; return; }
   for (const k in state) _view[k] = state[k];
   Object.assign(_view, NARROW_OVERRIDES);
   view = _view;
@@ -723,21 +741,28 @@ function syncView() {
  * k IS INDEPENDENT OF ITSELF, which is what makes this a closed form rather than a search. A character spans
  * `cpc` grille columns, and cpc = round(advRatio * em / colW) where em carries 1/k and colW carries 1/k too --
  * so the ratio, and therefore cpc, is the same at every scale. Columns across the block then vary linearly
- * with k, and the k that yields TEXT_COLS_MIN can be solved directly.
+ * with k, and the k that yields TEXT_COLS_MIN can be solved directly. `cell` and `gap` are in scanlines and
+ * carry no k either, so the line-count solve below is closed in the same way.
+ *
+ * BOTH AXES, AND THE WIDTH ALONE WAS NOT ENOUGH. A column target is satisfied by a wide box whatever its
+ * height, so a phone ON ITS SIDE passed it at k = 1.86 and drew a 73-line raster: measured at 852x393, a
+ * 16.1px glyph on a 393px-tall screen, 4.1% of the picture against 1.45% for the same phone upright. Rotating
+ * the handset made the type 2.8x larger relative to the screen, which is the complaint this answers.
  *
  * NEVER BELOW 1. This only ever makes a cramped display finer; it cannot coarsen a roomy one, so every
  * desktop-sized window renders exactly what it rendered before this existed.
  */
 function rasterScale() {
   const s = state;
-  if (cssPx.w > NARROW_W) return 1;              // roomy display: exactly what was authored, always
+  if (roomy()) return 1;                         // room for what was authored: exactly that, always
   const scan = Math.max(0.001, s.scan), grille = Math.max(0.001, s.grille);
   const cpc = s.tcols < 1
     ? Math.max(1, Math.round(advRatio() * s.tcell * grille / scan))
     : s.tcols;
   const blockW = s.tw < 1 ? cssPx.w : cssPx.w * s.tw / 100;
-  if (!(blockW > 0)) return 1;
-  return Math.min(RASTER_K_MAX, Math.max(1, TEXT_COLS_MIN * cpc * 100 / (blockW * grille)));
+  const kCols  = blockW > 0 ? TEXT_COLS_MIN * cpc * 100 / (blockW * grille) : 1;
+  const kLines = SCANLINES_MIN * 100 / (cssPx.h * scan);
+  return Math.min(RASTER_K_MAX, Math.max(1, kCols, kLines));
 }
 
 /* THE RASTER'S LINE AND COLUMN COUNTS -- ONE PLACE, ELEVEN CALLERS.
@@ -1354,9 +1379,10 @@ resize();
  * narrow case moves nothing, and R.size returns immediately when the buffer dimensions are unchanged, so
  * calling it there costs a bounding-rect read and nothing else. Not debounced: a click is one event, and the
  * 120ms settle above exists for resize STREAMS. */
-// NARROW_W, not a second 820: the panel folding away and the raster scaling up are the same judgement about
-// the display, and two constants that mean "small screen" would eventually disagree.
-mountPanelToggle({ panel: document.getElementById('panel'), breakpoint: NARROW_W, onToggle: () => resize() });
+// NARROW_W and SHORT_H, not a second pair: the panel folding away and the raster scaling up are the same
+// judgement about the display, and two constants that mean "small screen" would eventually disagree.
+mountPanelToggle({ panel: document.getElementById('panel'), breakpoint: NARROW_W, shortSide: SHORT_H,
+                   onToggle: () => resize() });
 
 /* A LOST CONTEXT IS A NORMAL EVENT ON THIS HARDWARE, AND NOTHING HERE USED TO HANDLE IT.
  *
@@ -1688,7 +1714,7 @@ function frame(now) {
      *
      * So the error follows the raster like everything else that shrank with it: 1/k. At k = 2.44 the shipped
      * split becomes 0.4-1.2px, still a visible fringe on a 3x display and no longer a legibility problem.
-     * Above 820px k is 1 and these are byte-for-byte the values they always were. */
+     * On a stage with room -- see roomy() -- k is 1 and these are byte-for-byte the values they always were. */
     conv: !state.convOn ? {} : {
       rx: state.convRX / RN.k / Math.max(1, cssPx.w), ry: state.convRY / RN.k / Math.max(1, cssPx.h),
       gx: state.convGX / RN.k / Math.max(1, cssPx.w), gy: state.convGY / RN.k / Math.max(1, cssPx.h),

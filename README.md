@@ -122,14 +122,20 @@ pulls React and Babel from a CDN. They are on their way out; `support.js` goes w
 
 ## Known limits
 
-- **Designed for desktop, with a narrow-display mode.** These are instruments laid out at around 1560x1100.
-  Below 820px the CRT lab folds the control panel away behind a chevron, scales the raster up so the terminal
-  text holds its column count (a real set has a fixed line count whatever size the tube is), tightens the
-  convergence and beam spot to stay the same fraction of a glyph, drops the moulding for a full-bleed
-  picture, and flattens the dome a little to put that area back. Those are one override table plus three
-  ratios, applied to a *view* of the settings — the stored configuration is never touched, so a session
-  tuned on a desktop survives being opened on a phone. Above 820px nothing is adjusted at all. The panel's
-  own control density is still built for a large window.
+- **Designed for desktop, with a small-display mode.** These are instruments laid out at around 1560x1100.
+  Below 820px wide **or 500px tall** the CRT lab folds the control panel away behind a chevron, scales the
+  raster up so the terminal text holds both its column count and its line count (a real set has a fixed line
+  count whatever size the tube is), tightens the convergence and beam spot to stay the same fraction of a
+  glyph, drops the moulding for a full-bleed picture, and flattens the dome a little to put that area back.
+  Those are one override table plus three ratios, applied to a *view* of the settings — the stored
+  configuration is never touched, so a session tuned on a desktop survives being opened on a phone. Given
+  both, nothing is adjusted at all. The panel's own control density is still built for a large window.
+
+  **Both dimensions, because a phone on its side is wide and short.** A width test alone called 852x393 a
+  desktop: the panel came back into the flex flow and took 340 of those 852px, and the raster — satisfied on
+  columns by a wide box — collapsed to 73 lines, which drew a 16px glyph on a 393px screen where the same
+  handset upright drew 12px on 852px. The line-count floor and the height half of the breakpoint are what
+  make a rotation stop changing the type size.
 - **The labs work offline; the root pages do not.** Nothing under `labs/` loads anything but its own modules and
   the fonts. The remaining root `.dc.html` pages would need React, ReactDOM and Babel vendored in.
 - **The WebGL labs are demanding.** All three default to a reduced render scale on integrated graphics, and

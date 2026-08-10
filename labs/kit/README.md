@@ -61,11 +61,16 @@ mountPanelToggle({ panel, onToggle: () => fit(true) });
 const loop = runLoop({ draw, onTick: (fps) => textOut(fpsEl, fps + ' FPS') });
 ```
 
-Four things in there are not decoration:
+Five things in there are not decoration:
 
 - **Size the canvas from the STAGE, never from `innerWidth`.** The panel is a flex sibling, so hiding it grows the
   stage without the window changing at all — a window-sized buffer stretches until something else resizes it. It is
   also what lets a shader drop the old panel-width offset: the free area is a real box, not a number to subtract.
+- **`mountPanelToggle`'s small-screen test is `breakpoint` (820 wide) OR `shortSide` (500 tall), and the second is
+  not optional.** A phone on its side is 852x393 — wider than any phone breakpoint — so a width test alone put the
+  panel back in the flex flow and gave 340 of those 852px to controls on a screen 393px tall. The same pair is in
+  `panel.css` and `lab.css` as `(max-width: 820px), (max-height: 500px)`; a stylesheet cannot be read from here, so
+  the numbers must move together or the panel overlays the stage while the script believes it is in the flow.
 - **`extra` names the keys `persist` cannot see.** It derives ranges from the panel layout, so a colour row (no
   range) and a section master (not a row) are invisible to it.
 - **Rebuild the panel when something outside it writes state.** Rows read state once and own their DOM afterwards —

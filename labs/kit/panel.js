@@ -229,11 +229,17 @@ export function buildActions(host, actions, after) {
  * settled, and the lab does whatever re-sizing it needs. On a narrow screen the panel is out of the flow and
  * nothing moves, so the same callback is harmless there.
  *
- * THE DEFAULT IS PER-WIDTH AND NOT REMEMBERED. A phone opens with the tube visible and the controls put away;
+ * THE DEFAULT IS PER-SIZE AND NOT REMEMBERED. A phone opens with the tube visible and the controls put away;
  * a desktop opens as it always has. Persisting it was considered and dropped -- a stored "hidden" restored onto
  * a desktop is a lab that opens looking broken, and the state is one button away either direction.
+ *
+ * `shortSide` IS THE HANDSET ON ITS SIDE, and it is the half that was missing. A width test alone calls a phone
+ * in landscape a desktop -- 852x393 is wider than any phone breakpoint -- so the panel came back into the flex
+ * flow and took 340 of those 852 px, leaving the tube a 512x393 box on a screen that had 852 to give. The
+ * numbers pair with the `(max-width), (max-height)` query in panel.css and must move together with it.
  */
-export function mountPanelToggle({ panel, host = document.body, breakpoint = 820, onToggle = () => {} } = {}) {
+export function mountPanelToggle({ panel, host = document.body, breakpoint = 820, shortSide = 500,
+                                   onToggle = () => {} } = {}) {
   const b = document.createElement('button');
   b.id = 'paneltgl';
   b.type = 'button';
@@ -256,7 +262,7 @@ export function mountPanelToggle({ panel, host = document.body, breakpoint = 820
    * dropped after two frames rather than one: the first commits the style, and only from the second is a
    * later change a transition from something already on screen. */
   document.body.classList.add('panel-boot');
-  apply(window.matchMedia(`(max-width: ${breakpoint}px)`).matches, false);
+  apply(window.matchMedia(`(max-width: ${breakpoint}px), (max-height: ${shortSide}px)`).matches, false);
   requestAnimationFrame(() => requestAnimationFrame(() => document.body.classList.remove('panel-boot')));
 
   b.addEventListener('click', () => apply(!document.body.classList.contains('panel-hidden'), true));

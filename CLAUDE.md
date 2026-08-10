@@ -194,5 +194,10 @@ on the face's shape and the rim's pinning are still current.
 - **Reactor's two frozen uniforms** (above) are uncut.
 - **Reactor's `renderNow` is not reproducible**, because `sim.step` carries phase forward — so that lab has no
   render fingerprint of the kind `render-probe.js` gives CRT GL. Resetting the sim would be the way in.
-- **Mobile is a fold-away panel, not a layout.** Below 820px each lab hides its panel behind a chevron and CRT GL
-  applies a narrow-display override table; the control density is still built for a large window.
+- **Mobile is a fold-away panel, not a layout.** Below 820px wide *or 500px tall* each lab hides its panel behind
+  a chevron and CRT GL applies a small-display override table; the control density is still built for a large
+  window. **Both halves of that test are load-bearing** — a phone on its side is 852x393, wide enough to pass any
+  width test — and the pair lives in three places that must move together: `NARROW_W`/`SHORT_H` in CRT GL, the
+  `breakpoint`/`shortSide` defaults in `labs/kit/panel.js`, and the `(max-width), (max-height)` queries in
+  `panel.css` and `lab.css`. A stylesheet cannot be read from the script; if they disagree the panel overlays the
+  stage while the script still believes it is in the flow.

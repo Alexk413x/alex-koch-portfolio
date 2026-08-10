@@ -42,8 +42,9 @@ body {
 #hud .dim { opacity: .45 }
 #glstate { color: #ff8a3c }
 
-/* THE READOUT MOVES OUT OF THE CORNER ON A PHONE, where the panel toggle lives and where a thumb rests. */
-@media (max-width: 820px) {
+/* THE READOUT MOVES OUT OF THE CORNER ON A PHONE, where the panel toggle lives and where a thumb rests. Narrow
+   OR short, matching panel.css -- a handset on its side is 852x393 and passes any width test. */
+@media (max-width: 820px), (max-height: 500px) {
   #mast { top: calc(12px + env(safe-area-inset-top)); left: calc(14px + env(safe-area-inset-left)) }
   #mast .t { font-size: 15px }
   #hud { bottom: calc(10px + env(safe-area-inset-bottom)); left: calc(14px + env(safe-area-inset-left)); font-size: 9px }
