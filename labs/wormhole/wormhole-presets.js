@@ -4,11 +4,15 @@
  * one-of-N: any combination can run, and the march mixes whichever layers are enabled by depth.
  */
 
-/* The shipped configuration — a tuned scene, not a neutral baseline. Renders below native by default because the
- * soft field hides the upscale; lower again on integrated graphics, where the march is the expensive part.
+/* THE SHIPPED SCENE IS A REAL SAVED CONFIGURATION, not a neutral baseline — these numbers were lifted out of a
+ * session's stored settings rather than picked one at a time. That is what makes them worth keeping together:
+ * they were tuned against each other, and a value moved on its own is likely to disagree with the rest.
  *
- * QUALITY is the march's step count, and it is the one number that scales the whole shader: every enabled layer
- * is evaluated once per step.
+ * It is also the reference every measurement is taken against, so changing it invalidates any stored render
+ * fingerprint. See CLAUDE.md on clearing localStorage from a page on the same origin that is NOT the app — the
+ * flush on hide writes the in-memory state straight back otherwise, and you never see the defaults at all.
+ *
+ * All three layers run at once and the CORE is off: the far end of the tunnel is whatever the layers make of it.
  */
 export function defaultPreset(gpu) {
   const weak = gpu && gpu.integrated;
@@ -17,58 +21,62 @@ export function defaultPreset(gpu) {
      * scene holds 60 at 32 steps on an Intel UHD 630 and drops to 45 fps at 44. The discrete figures are
      * extrapolated — there was no discrete adapter to measure on.
      *
-     * These target the DEFAULT scene, which is nebula alone. Enabling all three costs about three times as much,
-     * and QUALITY is the control to pull back when it does. */
+     * Enabling all three layers used to cost about three times one of them. It no longer does: the shader is
+     * built for the layer set that is on, so the three-layer build is the one this scene compiles to and pays
+     * for nothing it does not run.
+     */
     renderScale: weak ? 0.45 : 0.75,
     steps: weak ? 32 : 56,
-    stepSpread: 8.0,
 
-    /* TEMPORARY WORKING DEFAULT — PLASMA alone, everything else off, while that layer is being worked on.
-     * REVERT BEFORE SHIPPING: nebOn 1, lsOn 0, plOn 0, coreOn 1 is the tuned scene. */
-    nebOn: 0,
-    nebMode: 2, nebCol: '#ffb454', nebColB: '#6a3cff', nebHue: 0.02,
-    nebDensity: 1.15, nebFill: 0.46, nebFluff: 0.5, nebStreak: 0.55, nebVar: 0.45,
-    nebScale: 2.6, nebOct: 3,
-    nebSpeed: 5.0, nebTwist: 1.4, nebSpin: 0.3,
+    /* STEP SPREAD 1 IS AN EVEN MARCH, and it ships that way because this scene is mostly thin structure. The
+     * far half of the tunnel is sampled as finely as the near half; biasing samples toward the eye leaves the
+     * background undersampled, which reads as streaking in the plasma and the clouds. It costs nothing to set —
+     * the sample count is QUALITY, and this only decides where they land. */
+    stepSpread: 1.0,
 
-    lsOn: 0,
-    lsMode: 1, lsCol: '#ffffff', lsColB: '#8ecbff', lsHue: 0.0,
-    lsDensity: 1.6, lsCount: 110, lsLen: 0.42, lsThick: 0.15, lsVar: 0.6, lsRadial: 0.45,
-    lsSpeed: 16.0, lsTwist: 0.8, lsSpin: 0.1,
+    nebOn: 1,
+    nebMode: 1, nebCol: '#611d00', nebColB: '#421e00', nebHue: 0.02,
+    nebDensity: 3.0, nebFill: 0.15, nebFluff: 0.5, nebStreak: 1.0, nebVar: 0.65,
+    nebScale: 2.6, nebOct: 5,
+    nebSpeed: 6.3, nebTwist: 0.0, nebSpin: 0.0,
+
+    lsOn: 1,
+    lsMode: 1, lsCol: '#ff6600', lsColB: '#b80000', lsHue: 1.0,
+    lsDensity: 2.34, lsCount: 150, lsLen: 1.0, lsThick: 0.17, lsVar: 0.21, lsRadial: 0.66,
+    lsSpeed: 30.0, lsTwist: 0.0, lsSpin: 0.0,
 
     plOn: 1,
-    plMode: 1, plCol: '#3aa0ff', plColB: '#c9a6ff', plHue: 0.55,
-    /* FILL 0.45 and FLASH RATE 1.8 are the constants they replaced, to five figures: the window was fixed at
-     * 0.60..0.80 and the gate ran at 0.9 + FLASH * 1.6. OCCLUSION 0.5 likewise. Exposing a constant should not
-     * move the picture. */
+    plMode: 1, plCol: '#ff0000', plColB: '#ff4d00', plHue: 0.55,
+    /* FILL 0.45, FLASH RATE 1.8 and OCCLUSION 0.5 are the constants they replaced, to five figures: the sparsity
+     * window was fixed at 0.60..0.80 and the gate ran at 0.9 + FLASH * 1.6. Exposing a constant should not move
+     * the picture. */
     plDensity: 1.0, plFill: 0.45, plOcclude: 0.5, plCrackle: 0.72,
-    plFlash: 0.55, plFlashRate: 1.8, plLight: 0.55,
+    plFlash: 0.84, plFlashRate: 4.8, plLight: 0.55,
     /* SCALE and STREAK ship at the framing that keeps bolts lengthwise WITHOUT the ribbing: the same 4.2x depth
      * squash the layer always had, at roughly twice the frequency. The old constants were 1.9 and 0.24 — the
      * squash without the frequency, which is what strung visible beads along every bolt. */
     plScale: 3.4, plStreak: 0.238,
-    // SPIN is +0.05 rather than -0.25 because that is the rate the layer was ACTUALLY turning at: CRAWL used to
-    // add a hidden +0.30 on top. The number changed so the motion would not.
-    // SPEED is 5.9 rather than 4.0 for the reason SPIN moved: STRIKE was a SECOND rate along the same axis,
-    // worth 1.05 on top of SPEED's 2.2. Folded in, so removing the control did not slow the layer down.
-    plSpeed: 5.9, plTwist: 1.8, plSpin: 0.05,
+    // SPEED is 5.9 rather than 4.0 because STRIKE was a SECOND rate along the same axis, worth 1.05 on top of
+    // SPEED's 2.2. Folded in when that control went, so removing it did not slow the layer down.
+    plSpeed: 5.9, plTwist: 2.35, plSpin: 1.5,
 
-    /* coreSpin and corePulse are set to the rates the core was drawn at before either was a control, so the
-     * shipped scene is unchanged by their arrival. FADE ships OFF for the same reason — it is motion nothing
-     * asked for until someone turns it up. */
-    coreOn: 1,                                            // TEMPORARY, with the block above
-    glow: 1.0, throatTint: 0.85, throatRays: 0.6,
-    coreCol: '#ffedcc', coreAuto: 1.0,
-    coreSpin: 0.07, corePulse: 0.5, corePulseRate: 1.0, coreFade: 0.0, coreFadeRate: 1.0,
+    // The CORE is off: with all three layers lit there is already something at the far end, and a bright throat
+    // over the top of it washes out the thing it is supposed to be the end of. Its settings are kept so turning
+    // the section on gives something tuned rather than something raw.
+    coreOn: 0,
+    glow: 0.4, throatTint: 1.0, throatRays: 1.0,
+    coreCol: '#ff5900', coreAuto: 0.0,
+    coreSpin: -0.74, corePulse: 0.51, corePulseRate: 4.0, coreFade: 0.0, coreFadeRate: 3.95,
 
-    /* ONE COVERAGE FOR ALL THREE LAYERS. The three it replaced shipped at 0.62, 0.85 and 0.75;
-     * this is the middle of them, and every layer now reaches the same distance in from the wall. */
-    coverage: 0.75,
-    // BEND ships ON, at a lean you can feel without the wall reaching the eye: the offset peaks at 0.75 of
-    // a world unit against a tube radius of 1.25.
-    bend: 0.4, bendFlow: 6.0, bendScale: 1.0,
-    exposure: 1.0, chroma: 1.0, vignette: 1.0,
-    secClosed: { LIGHTSPEED: true, PLASMA: true, IMAGE: true },
+    // ONE COVERAGE FOR ALL THREE LAYERS — how far in from the wall the whole field reaches.
+    coverage: 0.8,
+    /* BEND SHIPS AT FULL. The axis leans 0.75 of a world unit against a tube radius of 1.25, which is as far as
+     * it goes without the wall reaching the eye. TIGHTNESS is low, so corners are long and sweeping rather than
+     * a slalom, and FLOW brings them on at a little above the clouds' own speed. */
+    bend: 1.0, bendFlow: 6.8, bendScale: 0.44,
+    exposure: 1.94, chroma: 1.0, vignette: 1.0,
+    // NEBULA and LIGHTSPEED open folded: the scene is tuned, and the two sections worth reaching first are the
+    // ones that change the whole frame.
+    secClosed: { NEBULA: true, LIGHTSPEED: true, PLASMA: false, IMAGE: false },
   };
 }
-
