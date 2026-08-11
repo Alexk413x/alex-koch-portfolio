@@ -2,9 +2,12 @@
  * text only. A slider's range is in the units the SHADER wants; the formatter is the only place the displayed
  * unit exists.
  *
- * THERE IS NO GLOBAL FLOW. Every layer carries its own SPEED, TWIST, SPIN and COVERAGE, so clouds can drift while
- * streaks tear past and bolts crawl the other way. The three colour rows repeat for the same reason: one thing
- * meaning one thing in three places beats a shared control that has to compromise.
+ * THERE IS NO GLOBAL FLOW. Every layer carries its own SPEED, TWIST and SPIN, so clouds can drift while streaks
+ * tear past and bolts crawl the other way. The colour rows repeat for the same reason: one thing meaning one
+ * thing in three places beats a shared control that has to compromise.
+ *
+ * COVERAGE IS THE EXCEPTION and lives in IMAGE. How far in from the wall the field reaches describes the tunnel
+ * rather than any one layer, and the three copies of it were only ever set to the same value by hand.
  *
  * Their on/off flags are SECTION MASTERS — the third entry in a section's tuple — not rows and not a strip above
  * the panel. A master sits in the header it governs, so "is NEBULA on" and "what is NEBULA set to" are answered in
@@ -22,19 +25,24 @@ export const EFFECTS = [
 
 const COLOUR_MODES = ['SOLID', 'BLEND', 'RAIN'];
 
-// The four every layer has, in the same order each time so the eye finds them in the same place.
+// The three every layer has, in the same order each time so the eye finds them in the same place. COVERAGE used
+// to be a fourth; it is now one value in IMAGE, shared by all three.
 const flow = (p) => [
   [p + 'Speed', 'SPEED', -30, 30, 0.1],
   [p + 'Twist', 'TWIST', -4, 4, 0.05],
   [p + 'Spin', 'SPIN', -2, 2, 0.01],
-  [p + 'Cov', 'COVERAGE', 0, 1, 0.01],
 ];
 
+/* ONLY THE ROWS THE CURRENT MODE USES ARE SHOWN, because the other ones do nothing at all: the ramp returns
+ * COLOUR A alone in SOLID, mixes A to B in BLEND, and ignores both in favour of a hue-shifted cosine palette in
+ * RAIN. Three rows were on screen at all times and never more than two of them were live, with nothing saying
+ * which — a control that does nothing is worse than one that is absent.
+ */
 const colour = (p) => [
   [p + 'Mode', 'COLOUR', COLOUR_MODES],
-  [p + 'Col', 'COLOUR A', '#'],
-  [p + 'ColB', 'COLOUR B', '#'],
-  [p + 'Hue', 'HUE', 0, 1, 0.01],
+  [p + 'Col', 'COLOUR A', '#', { when: [p + 'Mode', [0, 1]] }],
+  [p + 'ColB', 'COLOUR B', '#', { when: [p + 'Mode', [1]] }],
+  [p + 'Hue', 'HUE', 0, 1, 0.01, { when: [p + 'Mode', [2]] }],
 ];
 
 export const SECTIONS = [
@@ -45,13 +53,29 @@ export const SECTIONS = [
    * browser stretches the rest. What that magnifies is the march's dither, which is tuned to be invisible at one
    * sample per screen pixel and reads as coarse grain at one per three. Set this to the display's dpr for native.
    */
+  /* STEP SPREAD decides WHERE the samples go, where QUALITY decides how many. At 1 the march is even and the
+   * far end of the tunnel is sampled as finely as the near end; high concentrates them at the eye, which is
+   * cheaper to look at but leaves the background undersampled and streaking. */
   ['RENDER', [['renderScale', 'RENDER SCALE', 0.35, 2, 0.01],
-              ['steps', 'QUALITY', 12, 88, 1]]],
+              ['steps', 'QUALITY', 12, 88, 1],
+              ['stepSpread', 'STEP SPREAD', 1, 16, 0.1]]],
 
-  /* IMAGE SITS SECOND BECAUSE IT APPLIES TO EVERYTHING BELOW IT. These three are whole-frame post — the last thing
-   * done to whatever the march produced — so reading the panel top to bottom now matches the order the pixels are
-   * actually built in: how much is drawn, what is done to the finished frame, then each thing that draws. */
-  ['IMAGE', [['exposure', 'EXPOSURE', 0.2, 3, 0.01],
+  /* IMAGE SITS SECOND BECAUSE IT APPLIES TO EVERYTHING BELOW IT. EXPOSURE, CHROMA and VIGNETTE are whole-frame
+   * post — the last thing done to whatever the march produced — so reading the panel top to bottom matches the
+   * order the pixels are actually built in: how much is drawn, what is done to the finished frame, then each
+   * thing that draws.
+   *
+   * COVERAGE IS NOT POST, and it is here for the other reason this section exists: it is one value that governs
+   * all three layers. It was three separate rows, one per layer, and they were being kept in step by hand. How
+   * far in from the wall the field reaches is a property of the tunnel rather than of any one layer. */
+  /* BEND makes the tunnel's AXIS a curve instead of a line, and it lives here for the same reason COVERAGE
+   * does: it describes the tunnel, not any one layer, and all three lean into it together. FLOW slides the
+   * curve toward the eye so corners arrive rather than sit still; TIGHTNESS is how close together they come. */
+  ['IMAGE', [['coverage', 'COVERAGE', 0, 1, 0.01],
+             ['bend', 'BEND', 0, 1, 0.01],
+             ['bendFlow', 'BEND FLOW', -20, 20, 0.1],
+             ['bendScale', 'TIGHTNESS', 0.1, 3, 0.01],
+             ['exposure', 'EXPOSURE', 0.2, 3, 0.01],
              ['chroma', 'CHROMA', 0, 3, 0.05],
              ['vignette', 'VIGNETTE', 0, 1, 0.01]]],
 
@@ -67,24 +91,32 @@ export const SECTIONS = [
 
   /* LIGHTSPEED is capsules solved per pixel, not density marched — so THICKNESS is the streak's real radius and
    * LENGTH its real length, both in world units, rather than a kernel that had to widen with the sampling rate.
-   * SHELLS is the new one: concentric rings of streaks at increasing radius, which is what gives the tube depth
-   * at its edges instead of one flat sleeve. It is the only row here that multiplies the work. */
+   * Its streaks scatter through the whole wall at any distance, exactly as the other two layers fill it, and
+   * there is no shell count to set. */
   ['LIGHTSPEED', colour('ls').concat([
     ['lsDensity', 'BRIGHTNESS', 0, 4, 0.02],
     ['lsCount', 'STREAKS', 8, 260, 1],
-    ['lsShells', 'SHELLS', 1, 4, 1],
     ['lsLen', 'LENGTH', 0.02, 1, 0.01],
     ['lsThick', 'THICKNESS', 0.04, 0.6, 0.005],
+    // VARIANCE is how much streaks differ FROM EACH OTHER: length, speed, thickness, brightness, and how far
+    // out from the axis each one sits. At 0 they are clones on a grid; at 1 no two are alike.
     ['lsVar', 'VARIANCE', 0, 1, 0.01],
     ['lsRadial', 'SPREAD', 0, 1, 0.01],
   ], flow('ls')), 'lsOn'],
 
+  /* SCALE and STREAK mean here exactly what they mean in NEBULA, and they are a pair on purpose: STREAK squashes
+   * the depth axis so bolts run lengthwise down the tunnel, and SCALE decides how big the field is. Squashing
+   * alone strings the noise's own features along each bolt as visible beads, so the two have to be set together —
+   * a hard squash wants a small field, or the beads read as rungs. */
   ['PLASMA', colour('pl').concat([
     ['plDensity', 'BRIGHTNESS', 0, 3, 0.02],
+    ['plFill', 'FILL', 0, 1, 0.01],
+    ['plOcclude', 'OCCLUSION', 0, 2, 0.01],
     ['plCrackle', 'CRACKLE', 0, 1, 0.01],
-    ['plCrawl', 'CRAWL', 0, 2, 0.01],
-    ['plStrike', 'STRIKE', 0, 2, 0.01],
+    ['plScale', 'SCALE', 0.5, 8, 0.05],
+    ['plStreak', 'STREAK', 0.05, 1.5, 0.01],
     ['plFlash', 'FLASH', 0, 1, 0.01],
+    ['plFlashRate', 'FLASH RATE', 0.05, 6, 0.05],
     ['plLight', 'LIGHTS CLOUD', 0, 1, 0.01],
   ], flow('pl')), 'plOn'],
 
@@ -117,6 +149,7 @@ const SPEED = as.raw(1, 'c');
 export const FMT = {
   renderScale: as.pct(),
   steps:       as.raw(0, ' steps'),
+  stepSpread:  as.ends(as.mult(1), 'EVEN', '', 16),
 
   nebHue:      as.scaled(360, 0, '°'),
   nebDensity:  as.ofRange(3),
@@ -126,26 +159,28 @@ export const FMT = {
   nebVar:      as.off(as.pct()),
   nebScale:    as.mult(1),
   nebOct:      as.raw(0, ' oct'),
-  nebSpeed: SPEED, nebTwist: DEG, nebSpin: SPIN, nebCov: as.pct(),
+  nebSpeed: SPEED, nebTwist: DEG, nebSpin: SPIN,
 
   lsHue:       as.scaled(360, 0, '°'),
   lsDensity:   as.ofRange(4),
   lsCount:     as.raw(0),
-  lsShells:    as.raw(0, ' shells'),
   lsLen:       as.ends(as.pct(), 'DOTS', 'SOLID', 1),
   lsThick:     as.pct(),
   lsVar:       as.off(as.pct()),
   lsRadial:    as.pct(),
-  lsSpeed: SPEED, lsTwist: DEG, lsSpin: SPIN, lsCov: as.pct(),
+  lsSpeed: SPEED, lsTwist: DEG, lsSpin: SPIN,
 
   plHue:       as.scaled(360, 0, '°'),
   plDensity:   as.ofRange(3),
+  plFill:      as.ends(as.pct(), 'RARE', 'DENSE', 1),
+  plOcclude:   as.ends(as.mult(1), 'GLOW ONLY', 'SOLID', 2),
+  plFlashRate: as.mult(1),
   plCrackle:   as.ends(as.pct(), 'VEINS', 'FORKED', 1),
-  plCrawl:     as.off(as.mult(1)),
-  plStrike:    as.off(as.mult(1)),
+  plScale:     as.mult(1),
+  plStreak:    as.ends(as.mult(2), 'STREAKY', 'ROUND', 1.5),
   plFlash:     as.ends(as.pct(), 'STEADY', 'STUTTER', 1),
   plLight:     as.off(as.pct()),
-  plSpeed: SPEED, plTwist: DEG, plSpin: SPIN, plCov: as.pct(),
+  plSpeed: SPEED, plTwist: DEG, plSpin: SPIN,
 
   glow:          as.ofRange(3),
   coreAuto:      as.ends(as.pct(), 'CUSTOM', 'LAYERS', 1),
@@ -157,6 +192,10 @@ export const FMT = {
   coreFade:      as.off(as.pct()),
   coreFadeRate:  as.mult(1),
 
+  coverage:    as.pct(),
+  bend:        as.off(as.pct()),
+  bendFlow:    as.raw(1, 'c'),
+  bendScale:   as.mult(2),
   exposure:    as.mult(2),
   chroma:      as.ofRange(3),
   vignette:    as.pct(),

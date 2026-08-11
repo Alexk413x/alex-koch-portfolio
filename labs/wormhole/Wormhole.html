@@ -33,16 +33,22 @@
 import { createQuad, valueNoiseTexture } from '../kit/glquad.js';
 import { createPanel, mountPanelToggle } from '../kit/panel.js';
 import { persist, fitCanvas, runLoop, textOut, reportNoGL } from '../kit/lab.js';
-import { FRAG, UNIFORMS } from './wormhole-shader.js';
+import { FRAG, UNIFORMS, fragFor } from './wormhole-shader.js';
 import { SECTIONS, FMT, EFFECTS } from './wormhole-sidebar.js';
 import { defaultPreset } from './wormhole-presets.js';
 
 const stage = document.getElementById('stage');
 // The noise lattice lives in a texture rather than being hashed per sample — see valueNoiseTexture. Built once
 // here; glquad re-uploads it if the context is lost.
+/* THE SHADER IS REBUILT FOR WHICHEVER LAYERS ARE ON, because a layer costs even with its uniform at zero —
+ * plasma alone measured 9.14 ms in the three-layer shader against 4.88 in a plasma-only one, for the same frame.
+ * FRAG is the superset and draws correctly at any setting, so it covers the frames while a narrower build
+ * compiles. The key is DERIVED from the same flags the uniforms are sent from, in layerKey below: a key that
+ * disagrees with the uniforms would silently drop a layer. */
 const R = createQuad(document.getElementById('field'), {
   frag: FRAG, uniforms: UNIFORMS,
   textures: { uNoise: valueNoiseTexture(256) },
+  variant: (key) => fragFor(key.indexOf('N') >= 0, key.indexOf('L') >= 0, key.indexOf('P') >= 0),
   onRestore: () => fit(true),
 });
 if (!R) { reportNoGL(); throw new Error('WebGL unavailable'); }
@@ -53,7 +59,7 @@ if (!R) { reportNoGL(); throw new Error('WebGL unavailable'); }
 const SWATCHES = ['nebCol', 'nebColB', 'lsCol', 'lsColB', 'plCol', 'plColB', 'coreCol'];
 const MASTERS = SECTIONS.map(([, , master]) => master).filter(Boolean);
 const state = defaultPreset(R.gpu);
-const store = persist({ key: 'wormhole', version: 3, state, sections: SECTIONS,
+const store = persist({ key: 'wormhole', version: 8, state, sections: SECTIONS,
                         extra: MASTERS.concat(SWATCHES) });
 store.restore();
 
@@ -109,14 +115,25 @@ function rgb(hex) {
 }
 const col3 = (name, hex) => { const c = rgb(hex || '#ffffff'); R.f3(name, c[0], c[1], c[2]); };
 
+// The layer set as a string, read from the same flags that drive uLsOn and friends below.
+const layerKey = (s) => (s.nebOn ? 'N' : '') + (s.lsOn ? 'L' : '') + (s.plOn ? 'P' : '');
+
 function draw(dt, sec) {
   if (R.lost) { textOut(glEl, 'GL CONTEXT LOST'); return; }
   textOut(glEl, '');
   const s = state;
 
+  // Before the uniforms, not after: a switch lands on a program whose uniforms are all zero, and these sends
+  // are what fill it in.
+  R.use(layerKey(s));
+
   R.f2('uRes', R.w, R.h);
   R.f('uTime', sec);
-  R.f('uSteps', s.steps);
+  R.f('uSteps', s.steps); R.f('uSpread', s.stepSpread);
+  R.f('uBend', s.bend); R.f('uBendFlow', s.bendFlow); R.f('uBendScale', s.bendScale);
+  // ONE COVERAGE, SENT THREE TIMES. The shader keeps a uniform per layer because wallProfile is evaluated per
+  // layer inside the march; what changed is that one control stands behind all three.
+  R.f('uNebCov', s.coverage); R.f('uLsCov', s.coverage); R.f('uPlCov', s.coverage);
   // CORE's master rides on uGlow rather than a uniform of its own: the core is added as throat * uGlow, so a glow
   // of zero already IS off, and the shader needs nothing it does not already have.
   R.f('uGlow', s.coreOn ? s.glow : 0);
@@ -131,22 +148,23 @@ function draw(dt, sec) {
   R.f('uNebMode', s.nebMode); R.f('uNebHue', s.nebHue);
   R.f('uNebDensity', s.nebDensity); R.f('uNebFill', s.nebFill); R.f('uNebFluff', s.nebFluff);
   R.f('uNebStreak', s.nebStreak); R.f('uNebVar', s.nebVar); R.f('uNebScale', s.nebScale); R.f('uNebOct', s.nebOct);
-  R.f('uNebSpeed', s.nebSpeed); R.f('uNebTwist', s.nebTwist); R.f('uNebSpin', s.nebSpin); R.f('uNebCov', s.nebCov);
+  R.f('uNebSpeed', s.nebSpeed); R.f('uNebTwist', s.nebTwist); R.f('uNebSpin', s.nebSpin);
   col3('uNebCol', s.nebCol); col3('uNebColB', s.nebColB);
 
   R.f('uLsOn', s.lsOn ? 1 : 0);
   R.f('uLsMode', s.lsMode); R.f('uLsHue', s.lsHue);
   R.f('uLsDensity', s.lsDensity); R.f('uLsCount', s.lsCount); R.f('uLsLen', s.lsLen);
   R.f('uLsThick', s.lsThick); R.f('uLsVar', s.lsVar); R.f('uLsRadial', s.lsRadial);
-  R.f('uLsShells', s.lsShells);
-  R.f('uLsSpeed', s.lsSpeed); R.f('uLsTwist', s.lsTwist); R.f('uLsSpin', s.lsSpin); R.f('uLsCov', s.lsCov);
+  R.f('uLsSpeed', s.lsSpeed); R.f('uLsTwist', s.lsTwist); R.f('uLsSpin', s.lsSpin);
   col3('uLsCol', s.lsCol); col3('uLsColB', s.lsColB);
 
   R.f('uPlOn', s.plOn ? 1 : 0);
   R.f('uPlMode', s.plMode); R.f('uPlHue', s.plHue);
-  R.f('uPlDensity', s.plDensity); R.f('uPlCrackle', s.plCrackle); R.f('uPlCrawl', s.plCrawl);
-  R.f('uPlFlash', s.plFlash); R.f('uPlStrike', s.plStrike); R.f('uPlLight', s.plLight);
-  R.f('uPlSpeed', s.plSpeed); R.f('uPlTwist', s.plTwist); R.f('uPlSpin', s.plSpin); R.f('uPlCov', s.plCov);
+  R.f('uPlDensity', s.plDensity); R.f('uPlCrackle', s.plCrackle);
+  R.f('uPlScale', s.plScale); R.f('uPlStreak', s.plStreak);
+  R.f('uPlFill', s.plFill); R.f('uPlOcclude', s.plOcclude);
+  R.f('uPlFlash', s.plFlash); R.f('uPlFlashRate', s.plFlashRate); R.f('uPlLight', s.plLight);
+  R.f('uPlSpeed', s.plSpeed); R.f('uPlTwist', s.plTwist); R.f('uPlSpin', s.plSpin);
   col3('uPlCol', s.plCol); col3('uPlColB', s.plColB);
 
   R.draw();

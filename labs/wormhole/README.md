@@ -31,6 +31,41 @@ history if the scenes are ever wanted back.
 Sections read top to bottom in the order pixels are built: RENDER decides how much is drawn, IMAGE is the
 whole-frame post applied to the finished result, then each thing that draws.
 
+## The shader is built for whichever layers are on
+
+A layer costs even with its uniform at zero — the march pays for code it does not run. Measured at 480x360 and
+32 steps on an Intel UHD 630, against a shader carrying all three layers:
+
+| lit | all-three shader | built for that set |
+|---|---|---|
+| plasma | 9.28 ms | **3.38 ms** |
+| lightspeed + plasma | 10.01 ms | **4.97 ms** |
+| lightspeed | 1.83 ms | **1.24 ms** |
+| nebula | 7.36 ms | **5.93 ms** |
+| nebula + lightspeed | 8.17 ms | 7.56 ms |
+| all three | 10.02 ms | no change — it is that shader |
+
+So each layer's functions and its call site sit behind an `#ifdef`, `fragFor(neb, ls, pl)` returns the source for
+a set, and `glquad`'s `R.use(key)` switches between them. **The key is derived from the same flags the uniforms
+are sent from** — a key that disagrees with them silently drops a layer, and two lists would eventually disagree.
+
+Nothing stalls: `FRAG` is the superset and draws correctly at any setting, so it covers the frames while a
+narrower build compiles, and `KHR_parallel_shader_compile` keeps that compile off the main thread. Switching a
+layer therefore costs nothing visible — the frame simply gets cheaper a moment later.
+
+Two shaders compiled separately do not schedule their arithmetic identically. Across 120 whole-frame
+comparisons, seven differed — by **four subpixels out of 691,200, each off by one of 255**. That is rounding, not
+a different picture, and it is the reason a permutation is checked by how far apart it is rather than by a hash.
+
+## PLASMA's early-outs live in the march, not in a function
+
+Written as one function with early returns, they measured **free** — 16% of samples reach the filament and 1.4%
+the flash gate, yet deleting both tests changed nothing, and *adding* two texture fetches behind them made the
+frame 36% faster. The compiler was flattening them and running the filament on every sample.
+
+`plasmaSite` / `plasmaFil` / `plasmaLive` are three functions so the march can decide between them. Same frame,
+half the cost. Do not collapse them back.
+
 ## `uPanelPx` is gone, and that was the point
 
 The canvas used to span the viewport with the sidebar painted over its right-hand 340px, so the shader was handed
