@@ -177,6 +177,10 @@ maths bug.
   and 1 rather than cut, because cutting them changes what that shader can express. Cutting them is a real
   follow-up, not a bug.
 - **The corners are cut, not warped.** Settled; the picture ends on the squircle by clip.
+- **Wormhole compiles a shader per layer set, and two of them do not agree to the last bit.** Separately
+  compiled programs schedule their arithmetic differently. Across 120 whole-frame comparisons, seven differed —
+  four subpixels out of 691,200, each off by one of 255. Compare permutations by how far apart they are, never
+  by a hash.
 - **`fieldFolds`'s 2x threshold no longer bounds anything physical** (it predates the removal of the
   displacement lens) but it still sets how deep FACE bends, and every stored setting is calibrated against
   it. Change it knowingly or not at all.

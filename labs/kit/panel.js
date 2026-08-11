@@ -24,6 +24,9 @@
  *   ['k','LABEL',['A','B']]      one-of-N
  *   ['k','LABEL',0,1,1]          toggle
  *   ['k','LABEL',lo,hi,step]     slider
+ *
+ * Any of them may carry a trailing options object; `{ when: ['otherKey', [1, 2]] }` shows the row only while
+ * that key holds one of those values.
  */
 export function rowKind(spec) {
   const [, , lo, hi, st] = spec;
@@ -31,6 +34,20 @@ export function rowKind(spec) {
   if (Array.isArray(lo)) return 'choice';
   if (lo === 0 && hi === 1 && st === 1) return 'toggle';
   return 'slider';
+}
+
+/* A ROW THAT ONLY APPLIES SOMETIMES SHOULD ONLY BE THERE SOMETIMES.
+ *
+ * A control that does nothing is worse than one that is absent: the wormhole's HUE row moved and changed
+ * nothing in two of its three colour modes, while the two swatches did nothing in the third, and the panel gave
+ * no sign which pair was live. Disabling rather than hiding was considered and dropped — a greyed row still
+ * occupies the place the eye searches, and the panel is already dense.
+ *
+ * Only the LAST element is examined, so a choice row's array of names is never mistaken for one.
+ */
+function rowWhen(spec) {
+  const last = spec[spec.length - 1];
+  return (last && typeof last === 'object' && !Array.isArray(last) && last.when) ? last.when : null;
 }
 
 // A COLOUR: a full-bleed swatch. There is no meaningful min, max or step for one, and a hex string in a numeric
@@ -64,22 +81,49 @@ function rowToggle(ctx, k, label) {
  * The steppers repeat on hold, because a 0.01 step over a 0..2 range is 200 clicks otherwise, and they are
  * tabindex -1: the slider is the focusable thing in a row, and three tab stops per row across seventy rows would
  * make the panel unusable from the keyboard. Arrow keys already do the same job once a row has focus.
+ *
+ * THE READOUT IS AN INPUT, NOT A LABEL, and it is typeable in the unit it displays — see units.js for where the
+ * inverse lives. It was previously a span, which selects like text and so reads as editable while doing nothing;
+ * an affordance that lies is worse than one that is absent. It is tabindex -1 for the reason above: reachable by
+ * click, not another stop between every slider.
  */
 function rowSlider(ctx, k, label, lo, hi, st) {
   const row = document.createElement('div'); row.className = 'row';
   row.innerHTML = '<label>' + label + '</label><input type="range" min="' + lo + '" max="' + hi +
                   '" step="' + st + '" value="' + ctx.state[k] + '">' +
                   '<button class="stp" tabindex="-1" data-d="-1">‹</button>' +
-                  '<span class="val"></span>' +
+                  '<input class="val" type="text" tabindex="-1" spellcheck="false" autocomplete="off">' +
                   '<button class="stp" tabindex="-1" data-d="1">›</button>';
-  const inp = row.querySelector('input'), val = row.querySelector('.val');
+  const inp = row.querySelector('input[type=range]'), val = row.querySelector('.val');
   row.addEventListener('click', () => inp.focus());
-  const show = () => {
-    val.textContent = ctx.fmt[k] ? ctx.fmt[k](ctx.state[k])
-                                 : (hi > 40 ? Math.round(ctx.state[k]) : (+ctx.state[k]).toFixed(2));
-  };
+  const text = () => (ctx.fmt[k] ? ctx.fmt[k](ctx.state[k])
+                                 : (hi > 40 ? Math.round(ctx.state[k]) : (+ctx.state[k]).toFixed(2)));
+  // Never overwrite what is being typed: a drag on another row still reformats this one.
+  const show = () => { if (document.activeElement !== val) val.value = text(); };
   const commit = () => { show(); ctx.onChange(k, 'slider'); };
   inp.addEventListener('input', () => { ctx.state[k] = parseFloat(inp.value); commit(); });
+
+  /* Typed values are clamped to the row's own range and snapped to its step, so the field cannot express a value
+   * the slider could not — the thumb pinning at one end while the readout shows something else is precisely the
+   * disagreement persist() clamps against on restore. An unparseable entry reverts rather than zeroing. */
+  const parse = (ctx.fmt[k] && ctx.fmt[k].parse) || parseFloat;
+  const takeTyped = () => {
+    const raw = parse(val.value);
+    if (isFinite(raw)) {
+      const v = Math.min(hi, Math.max(lo, +(Math.round(raw / st) * st).toFixed(6)));
+      if (v !== ctx.state[k]) { ctx.state[k] = v; inp.value = v; ctx.onChange(k, 'slider'); }
+    }
+    val.value = text();
+  };
+  // The row focuses the slider on click; without this, clicking the field would take the focus straight back out.
+  val.addEventListener('click', (e) => e.stopPropagation());
+  val.addEventListener('focus', () => val.select());
+  val.addEventListener('blur', takeTyped);
+  val.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') { e.preventDefault(); val.blur(); }
+    else if (e.key === 'Escape') { e.preventDefault(); val.value = text(); val.blur(); }
+    else if (e.key === 'ArrowUp' || e.key === 'ArrowDown') e.stopPropagation();   // let the caret rules apply
+  });
   row.querySelectorAll('.stp').forEach((b) => {
     const bump = () => {
       const v = Math.min(hi, Math.max(lo, +(ctx.state[k] + parseFloat(b.dataset.d) * st).toFixed(6)));
@@ -119,12 +163,19 @@ function rowChoice(ctx, k, label, names) {
 
 export function buildRow(ctx, spec) {
   const [k, label, lo, hi, st] = spec;
+  let row;
   switch (rowKind(spec)) {
-    case 'colour': return rowColour(ctx, k, label);
-    case 'choice': return rowChoice(ctx, k, label, lo);
-    case 'toggle': return rowToggle(ctx, k, label);
-    default:       return rowSlider(ctx, k, label, lo, hi, st);
+    case 'colour': row = rowColour(ctx, k, label); break;
+    case 'choice': row = rowChoice(ctx, k, label, lo); break;
+    case 'toggle': row = rowToggle(ctx, k, label); break;
+    default:       row = rowSlider(ctx, k, label, lo, hi, st);
   }
+  // The state key on the element, because a LABEL DOES NOT IDENTIFY A ROW: SPEED, SPIN and BRIGHTNESS each occur
+  // in several sections, and anything reaching in by label picks whichever came first.
+  row.dataset.k = k;
+  const when = rowWhen(spec);
+  if (when && ctx.conditional) ctx.conditional.push({ row, key: when[0], values: when[1] });
+  return row;
 }
 
 /* A SECTION: a header that folds, and optionally a master that switches its effect off.
@@ -180,7 +231,9 @@ export function buildSection(ctx, name, rowSpecs, masterKey) {
  */
 export function attachKeyNav(host) {
   host.addEventListener('keydown', (e) => {
-    const all = [...host.querySelectorAll('input[type=range]')];
+    // offsetParent is null for anything inside a display:none row or a folded section, so Up/Down walks what is
+    // actually on screen rather than stopping on a control nobody can see.
+    const all = [...host.querySelectorAll('input[type=range]')].filter((el) => el.offsetParent !== null);
     const i = all.indexOf(e.target);
     if (i < 0) return;
     let to = -1;
@@ -287,10 +340,20 @@ export function mountPanelToggle({ panel, host = document.body, breakpoint = 820
  */
 export function createPanel({ host, state, sections, fmt = {}, folds, onChange = () => {} }) {
   const foldMap = typeof folds === 'function' ? folds : () => (state.secClosed ||= {});
-  const ctx = { state, fmt, foldMap, onChange };
+  const conditional = [];
+  const syncRows = () => conditional.forEach(({ row, key, values }) => {
+    row.style.display = values.indexOf(state[key]) >= 0 ? '' : 'none';
+  });
+  /* THE PANEL RE-EVALUATES ITS OWN `when` ROWS, so a lab never has to know which of its controls governs the
+   * visibility of another. The caller's onChange still sees every change, unwrapped and in order. */
+  const ctx = {
+    state, fmt, foldMap, conditional, syncRows,
+    onChange: (k, kind) => { syncRows(); onChange(k, kind); },
+  };
   sections.forEach(([name, rowSpecs, masterKey]) => {
     buildSection(ctx, name, rowSpecs, masterKey).forEach((el) => host.appendChild(el));
   });
+  syncRows();
   attachKeyNav(host);
   return ctx;
 }
