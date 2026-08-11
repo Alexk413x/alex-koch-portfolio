@@ -68,8 +68,14 @@
 /* THE STEPPERS, as the reference has them: a nudge either side of the readout, so a value can be set exactly
    without hunting for a pixel on a 110px track. They repeat on hold, because a 0.01 step over a 0..2 range is
    200 clicks otherwise. */
+/* THE READOUT IS AN INPUT AND MUST NOT LOOK LIKE ONE until it is being used: a panel of seventy rows with seventy
+   boxed fields is a form, not an instrument. Everything a browser adds to a text input is stripped, and the only
+   thing that comes back on focus is a ring saying "this one is live". */
 .row .val { flex: 0 0 52px; text-align: center; color: var(--panel-accent); font-size: 10px; white-space: nowrap;
-            font-variant-numeric: tabular-nums; overflow: visible }
+            font-variant-numeric: tabular-nums; overflow: visible;
+            min-width: 0; background: none; border: none; padding: 0; margin: 0;
+            font-family: inherit; cursor: text }
+.row .val:focus { outline: 1px solid var(--panel-accent); outline-offset: 1px; border-radius: 2px }
 .row .stp { flex: 0 0 15px; background: none; border: none; color: var(--panel-dim); font-family: inherit;
             font-size: 11px; line-height: 1; cursor: pointer; padding: 2px 0; border-radius: 2px;
             user-select: none }
