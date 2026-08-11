@@ -148,34 +148,88 @@ function blueNoiseTile(size) {
  *
  * `textures` maps a sampler name to { data, w, h } — see valueNoiseTexture. They are uploaded on build, so a
  * restored context recreates them along with everything else.
+ *
+ * `variant(key)` returns a fragment source for a key, and R.use(key) switches to it — for a shader whose cost
+ * depends on which parts are switched on. `frag` must then be the SUPERSET, because it is what draws while a
+ * narrower build compiles.
  */
-export function createQuad(canvas, { frag, uniforms = [], ext = [], textures = {}, onRestore = null } = {}) {
+export function createQuad(canvas, { frag, uniforms = [], ext = [], textures = {}, onRestore = null,
+                                     variant = null } = {}) {
   const gl = canvas.getContext('webgl', { alpha: false, antialias: false, depth: false, stencil: false,
                                           premultipliedAlpha: false, preserveDrawingBuffer: false,
                                           powerPreference: 'high-performance' })
           || canvas.getContext('experimental-webgl');
   if (!gl) return null;
 
-  let U = {}, last = new Map(), prog = null;
+  /* ONE RENDERER, SEVERAL PROGRAMS. A fragment shader pays for code it does not run: in this project's wormhole,
+   * the plasma layer measured 9.14 ms alone in a shader carrying all three layers and 4.88 ms in one carrying
+   * only plasma, for a byte-identical frame. `variant` is how a caller offers a narrower build — see use().
+   *
+   * A caller that passes no `variant` gets exactly one program and none of the rest of this applies.
+   */
+  const par = gl.getExtension('KHR_parallel_shader_compile');
+  const progs = new Map();
+  // A symbol, so no key a caller can pass ever names the superset. A string sentinel would: the natural key for
+  // "nothing switched on" is the empty one, and it would collide with the base program and quietly draw the
+  // widest shader for the narrowest scene.
+  const BASE = Symbol('superset');
+  let cur = null, pending = null, quad = null;
+
+  // 0 still linking, 1 linked, -1 failed. Reading LINK_STATUS is what BLOCKS until the driver has finished, so
+  // the completion query has to come first or the compile is synchronous after all.
+  const linkState = (prog, wait) => {
+    if (!wait && par && !gl.getProgramParameter(prog, par.COMPLETION_STATUS_KHR)) return 0;
+    if (gl.getProgramParameter(prog, gl.LINK_STATUS)) return 1;
+    console.error('[glquad] link:\n' + gl.getProgramInfoLog(prog));
+    return -1;
+  };
+
+  const submit = (src) => {
+    const vs = stage(gl, gl.VERTEX_SHADER, VERT), fs = stage(gl, gl.FRAGMENT_SHADER, src);
+    if (!vs || !fs) return null;
+    const prog = gl.createProgram();
+    gl.attachShader(prog, vs); gl.attachShader(prog, fs);
+    gl.linkProgram(prog);
+    return prog;
+  };
+
+  /* Makes a linked program current. The attribute binding and the sampler units are BOTH per program — WebGL1
+   * has no vertex array object to remember the first, and a sampler uniform lives in the program like any other
+   * — so both are re-applied on every switch rather than once at build.
+   *
+   * `last` is per program and is NOT cleared here: uniform values live in the program object and survive being
+   * switched away from, so a returning program's cache is still telling the truth.
+   */
+  const activate = (entry) => {
+    gl.useProgram(entry.prog);
+    gl.bindBuffer(gl.ARRAY_BUFFER, quad);
+    const loc = gl.getAttribLocation(entry.prog, 'p');
+    gl.enableVertexAttribArray(loc);
+    gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+    Object.keys(textures).forEach((name, unit) => {
+      gl.uniform1i(gl.getUniformLocation(entry.prog, name), unit);
+    });
+    cur = entry;
+  };
+
+  const adopt = (key, prog) => {
+    const U = {};
+    uniforms.forEach((n) => { U[n] = gl.getUniformLocation(prog, n); });
+    // A freshly linked program's uniforms are all zero, so it starts with an empty cache and everything is
+    // uploaded on the next frame.
+    const entry = { key, prog, U, last: new Map(), ok: true };
+    progs.set(key, entry);
+    return entry;
+  };
 
   const build = () => {
     ext.forEach((n) => gl.getExtension(n));
-    const vs = stage(gl, gl.VERTEX_SHADER, VERT), fs = stage(gl, gl.FRAGMENT_SHADER, frag);
-    if (!vs || !fs) return false;
-    prog = gl.createProgram();
-    gl.attachShader(prog, vs); gl.attachShader(prog, fs);
-    gl.linkProgram(prog);
-    if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) { console.error('[glquad] link:\n' + gl.getProgramInfoLog(prog)); return false; }
-    gl.useProgram(prog);
 
     // One triangle, not two: (-1,-1) (3,-1) (-1,3) covers the clip box with three vertices and rasterises no
     // shared diagonal.
-    const buf = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+    quad = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, quad);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
-    const loc = gl.getAttribLocation(prog, 'p');
-    gl.enableVertexAttribArray(loc);
-    gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
 
     // Uploaded here rather than at construction so a restored context gets them back: the old texture objects
     // died with the old context, and a shader sampling a dead one renders black.
@@ -190,14 +244,14 @@ export function createQuad(canvas, { frag, uniforms = [], ext = [], textures = {
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
-      gl.uniform1i(gl.getUniformLocation(prog, name), unit);
     });
 
-    U = {};
-    uniforms.forEach((n) => { U[n] = gl.getUniformLocation(prog, n); });
-    // Must clear here, not only at construction: a relinked program's uniforms are all zero, and a surviving
-    // cache would suppress the uploads that fix them.
-    last.clear();
+    // Every program in the cache is a dead object now; it went with the context.
+    progs.clear(); cur = null; pending = null;
+
+    const prog = submit(frag);
+    if (!prog || linkState(prog, true) !== 1) return false;
+    activate(adopt(BASE, prog));
     return true;
   };
   if (!build()) return null;
@@ -208,27 +262,66 @@ export function createQuad(canvas, { frag, uniforms = [], ext = [], textures = {
     lost: false,
     w: 1, h: 1,
 
+    /* Asks for the program built for `key`, and returns whether that is what is now current.
+     *
+     * IT NEVER STALLS AND NEVER SHOWS THE WRONG FRAME. A key that has not been built yet starts compiling and
+     * the CURRENT program keeps drawing — the caller's base shader is the superset, so it is already correct,
+     * only slower. Where the driver offers KHR_parallel_shader_compile that compile costs the main thread
+     * nothing at all; without it the wait lands on whichever frame finds it finished.
+     *
+     * Call this BEFORE the frame's uniforms: a switch lands on a program whose uniforms are all zero, and it is
+     * the sends that follow which fill it in.
+     */
+    use(key) {
+      if (!variant || R.lost) return false;
+      if (pending) {
+        const st = linkState(pending.prog, false);
+        if (st === 1) { adopt(pending.key, pending.prog); pending = null; }
+        else if (st === -1) { progs.set(pending.key, { key: pending.key, ok: false }); pending = null; }
+      }
+      if (cur && cur.key === key) return true;
+      const have = progs.get(key);
+      if (have && have.ok) { activate(have); return true; }
+
+      /* WHILE A BUILD IS NOT READY, FALL BACK TO THE SUPERSET — never to whatever happened to be current.
+       *
+       * The current program is usually another narrow build, and a narrow build CANNOT draw a part it does not
+       * contain: switching a layer on while running a build without it showed nothing at all for the 150-350 ms
+       * the compile took. The superset is the only program guaranteed to draw every setting, so it is what
+       * covers the gap. Costs one slower frame at the switch and never a wrong one.
+       */
+      if (cur && cur.key !== BASE) activate(progs.get(BASE));
+      if (have) return false;                          // known bad: the superset draws it, do not retry
+      if (pending) return false;                       // one at a time; the next frame asks again
+      const src = variant(key);
+      if (src == null) return false;
+      const prog = submit(src);
+      if (!prog) { progs.set(key, { key, ok: false }); return false; }
+      pending = { key, prog };
+      return false;
+    },
+
     // Skips the upload when the value has not moved. Reactor pushes about fifty floats per frame and perhaps
     // three of them differ from the frame before.
     f(name, v) {
-      if (last.get(name) === v) return;
-      last.set(name, v);
-      gl.uniform1f(U[name], v);
+      if (cur.last.get(name) === v) return;
+      cur.last.set(name, v);
+      gl.uniform1f(cur.U[name], v);
     },
     f2(name, a, b) {
-      const k = last.get(name);
+      const k = cur.last.get(name);
       if (k && k[0] === a && k[1] === b) return;
-      last.set(name, [a, b]);
-      gl.uniform2f(U[name], a, b);
+      cur.last.set(name, [a, b]);
+      gl.uniform2f(cur.U[name], a, b);
     },
     f3(name, a, b, c) {
-      const k = last.get(name);
+      const k = cur.last.get(name);
       if (k && k[0] === a && k[1] === b && k[2] === c) return;
-      last.set(name, [a, b, c]);
-      gl.uniform3f(U[name], a, b, c);
+      cur.last.set(name, [a, b, c]);
+      gl.uniform3f(cur.U[name], a, b, c);
     },
     // Uncached: an array uniform here is a per-frame animation table, so comparing costs what uploading costs.
-    fv4(name, arr) { gl.uniform4fv(U[name], arr); },
+    fv4(name, arr) { gl.uniform4fv(cur.U[name], arr); },
 
     // Sizes the buffer to a CSS box at a fraction of it, reporting whether anything moved. dpr is capped at 1 on
     // top of `scale`: these are soft, noisy fields where the extra samples buy nothing visible.
