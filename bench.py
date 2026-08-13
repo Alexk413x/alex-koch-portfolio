@@ -7,7 +7,8 @@
     python bench.py --high-perf-gpu     # render on the discrete adapter instead of the default one
     python bench.py --port 8000         # if you already have a server running
 
-EVERY LAB IS MEASURED BY THE SAMPLER ALONE, which needs nothing from the page. `--attribute` and `--state` are
+EVERY LAB IS MEASURED BY THE SAMPLER ALONE, which needs nothing from the page but the size of its canvas -- the
+render target is the divisor for ms/megapixel, and the window is not. `--attribute` and `--state` are
 gone with the DOM build they served: `fps-probe.js` knew that lab's thirteen layers by name, and nothing else has
 layers to attribute cost to.
 
@@ -184,7 +185,10 @@ SAMPLER = '''(async()=>{
    if(d.length&&d.reduce((a,b)=>a+b,0)>ms){res(+(d.reduce((a,b)=>a+b,0)/d.length).toFixed(2));return;}
    requestAnimationFrame(s);};requestAnimationFrame(s);});
   const o=[]; for(let i=0;i<%d;i++) o.push(await R(2000));
+  const cs=[...document.querySelectorAll('canvas')].filter(c=>c.width>1&&c.height>1);
+  const t=cs.length?cs.reduce((a,b)=>a.width*a.height>=b.width*b.height?a:b):null;
   return JSON.stringify({reps:o, size:[innerWidth,innerHeight,devicePixelRatio],
+                         target:t?[t.width,t.height]:null,
                          visible:document.visibilityState});})()'''
 
 
@@ -242,13 +246,13 @@ def main():
     # the compositor's own cap. With only one of them rAF still arrives on the vsync and nothing changes.
     if a.uncapped:
         args += ['--disable-gpu-vsync', '--disable-frame-rate-limit']
-    # DO NOT ASSUME WHICH ADAPTER "DEFAULT" MEANS -- MEASURED, IT WAS THE DISCRETE ONE.
+    # DO NOT ASSUME WHICH ADAPTER "DEFAULT" MEANS -- IT HAS BEEN BOTH ON THIS MACHINE.
     #
-    # The obvious guess is that a hybrid machine renders on its integrated GPU unless told otherwise. On the
-    # machine this was written on that guess is FALSE: with no forcing flag at all, Chrome reported
-    # `ANGLE (NVIDIA GeForce GTX 1650 ... D3D11)`, while the handoff's whole ms/megapixel table was taken on the
-    # Intel UHD 630. Two builds compared across that gap are not being compared at all -- 0.66 ms/MP against
-    # ~20 ms/MP is mostly the adapter, not the code.
+    # With no forcing flag at all, Chrome has been recorded here picking the discrete `ANGLE (NVIDIA GeForce GTX
+    # 1650 ... D3D11)`, and has since been measured from a fresh bench profile picking the Intel UHD 630 -- the part
+    # the handoff's whole ms/megapixel table was taken on. Whichever it picks dominates the reading, so an
+    # unlabelled frame time on a hybrid box is how two adapters' numbers end up in one table: a run with a forcing
+    # flag is measuring different HARDWARE, not a different build.
     #
     # So the adapter is printed on every run, and both directions are forceable. The INTEGRATED one is the honest
     # target for a page anyone else will open; the discrete one is a separate, labelled comparison.
@@ -382,18 +386,33 @@ def _run(a, c_args):
     r = sorted(kept)
     lo, med = r[0], r[len(r) // 2]
     w, h, dpr = d['size']
-    mp = w * h * dpr * dpr / 1e6
+    # THE DIVISOR IS THE RENDER TARGET, NOT THE WINDOW. `innerWidth * innerHeight * dpr^2` described the DOM build,
+    # which composited full-stage layers and owned no buffer; every surviving lab draws ONE GL canvas sized from the
+    # STAGE by dpr and renderScale, so the window count billed the panel's 340px as rendered pixels and ignored the
+    # scale entirely -- 4.4 MP against a real 0.87 on the display this was fixed on, understating ms/MP ~5x. The
+    # handoff's ms/megapixel table is the old build's and is NOT comparable to this line.
+    tgt = d.get('target')
+    mp = (tgt[0] * tgt[1] / 1e6) if tgt else None
     print()
-    print('window %dx%d @ dpr %s = %.1f device megapixels' % (w, h, dpr, mp))
+    print('window %dx%d CSS @ dpr %s' % (w, h, dpr))
+    if mp:
+        print('render target %dx%d = %.2f MP' % (tgt[0], tgt[1], mp))
+    else:
+        print('render target UNKNOWN — no sized canvas in the DOM; ms/MP withheld rather than guessed')
     if warm is not None:
         print('warm-up window (excluded): %.2f ms' % warm)
     print('samples:', kept)
     print('  min %.1f ms (%.0f fps)   median %.1f ms (%.0f fps)   max %.1f ms' % (lo, 1000 / lo, med, 1000 / med, r[-1]))
-    print('  %.2f ms per megapixel' % (lo / mp))
+    if mp:
+        # A DENSITY DIVIDED OUT OF A PINNED MINIMUM IS NOT A DENSITY. Capped, `lo` is the vsync floor for any page
+        # inside budget, so the quotient reports how big the target was and nothing about what a pixel cost.
+        pinned = not a.uncapped and lo <= TARGET_MS * 1.05
+        print('  %.2f ms per megapixel%s'
+              % (lo / mp, '   (vsync-pinned — a floor, not a cost; use --uncapped)' if pinned else ''))
     print()
-    # A THROWAWAY PROFILE IS SYSTEMATICALLY PESSIMISTIC, and by a lot. Measured on one machine in one session: this
-    # harness reports ~20 ms per megapixel where the user's own warm, long-lived Chrome profile managed ~4.6 -- a
-    # factor of four, with hardware acceleration confirmed enabled in both (SystemInfo.getInfo). A fresh profile has
+    # A THROWAWAY PROFILE IS SYSTEMATICALLY PESSIMISTIC, and by a lot. Measured on one machine in one session, in the
+    # window-based megapixels this tool no longer prints: ~20 ms/MP here where the user's own warm, long-lived Chrome
+    # profile managed ~4.6 -- a factor of four, with hardware acceleration confirmed in both. A fresh profile has
     # no GPU shader cache and no accumulated driver state. So the RATIO between two builds measured here is sound,
     # which is what this tool is for; the ABSOLUTE number is a floor, not a forecast. Cross-check against the same
     # page in your everyday browser before concluding a build is too slow to ship.
