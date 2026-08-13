@@ -27,8 +27,6 @@ export const as = {
   deg:    (digits = 0) => to((v) => round(v, digits) + '°', num),                         // stored in degrees
   rad:    (digits = 0) => to((v) => round(v * 180 / Math.PI, digits) + '°',
                              (s) => num(s) * Math.PI / 180),
-  rpm:    (digits = 0) => to((v) => round(v / (2 * Math.PI) * 60, digits) + ' RPM',
-                             (s) => num(s) * 2 * Math.PI / 60),
   // For sliders whose quantity has no physical unit, where "58%" answers "how far up is this" and "1.74" does not.
   ofRange: (max) => to((v) => Math.round(v / max * 100) + '%', (s) => num(s) / 100 * max),
   // Stored in one unit, read in another: a 0..1.5 fraction shown as "125 m", a bow coefficient shown as an angle.

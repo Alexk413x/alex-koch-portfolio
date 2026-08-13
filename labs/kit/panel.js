@@ -25,8 +25,9 @@
  *   ['k','LABEL',0,1,1]          toggle
  *   ['k','LABEL',lo,hi,step]     slider
  *
- * Any of them may carry a trailing options object; `{ when: ['otherKey', [1, 2]] }` shows the row only while
- * that key holds one of those values.
+ * Any of them may carry a trailing options object:
+ *   { when: ['otherKey', [1, 2]] }   show the row only while that key holds one of those values
+ *   { wide: true }                   drop the label and give the control the panel's full width, twice as tall
  */
 export function rowKind(spec) {
   const [, , lo, hi, st] = spec;
@@ -36,18 +37,23 @@ export function rowKind(spec) {
   return 'slider';
 }
 
+/* A row's trailing options object, or null. Only the LAST element is examined, so a choice row's array of names is
+ * never mistaken for one. */
+function rowOpts(spec) {
+  const last = spec[spec.length - 1];
+  return (last && typeof last === 'object' && !Array.isArray(last)) ? last : null;
+}
+
 /* A ROW THAT ONLY APPLIES SOMETIMES SHOULD ONLY BE THERE SOMETIMES.
  *
  * A control that does nothing is worse than one that is absent: the wormhole's HUE row moved and changed
  * nothing in two of its three colour modes, while the two swatches did nothing in the third, and the panel gave
  * no sign which pair was live. Disabling rather than hiding was considered and dropped — a greyed row still
  * occupies the place the eye searches, and the panel is already dense.
- *
- * Only the LAST element is examined, so a choice row's array of names is never mistaken for one.
  */
 function rowWhen(spec) {
-  const last = spec[spec.length - 1];
-  return (last && typeof last === 'object' && !Array.isArray(last) && last.when) ? last.when : null;
+  const o = rowOpts(spec);
+  return o && o.when ? o.when : null;
 }
 
 // A COLOUR: a full-bleed swatch. There is no meaningful min, max or step for one, and a hex string in a numeric
@@ -173,6 +179,8 @@ export function buildRow(ctx, spec) {
   // The state key on the element, because a LABEL DOES NOT IDENTIFY A ROW: SPEED, SPIN and BRIGHTNESS each occur
   // in several sections, and anything reaching in by label picks whichever came first.
   row.dataset.k = k;
+  const opts = rowOpts(spec);
+  if (opts && opts.wide) row.classList.add('wide');
   const when = rowWhen(spec);
   if (when && ctx.conditional) ctx.conditional.push({ row, key: when[0], values: when[1] });
   return row;

@@ -94,6 +94,12 @@
  * every gap in the group would be pushed to the left. */
 .row.choice .tgl { flex: 1 1 0; min-width: 0; margin-left: 0; padding: 2px 0 }
 .row.choice .tgl:first-of-type { margin-left: auto }
+/* WIDE: for a choice whose buttons ARE the label — glyphs that have to be read as shapes, not words. The label
+   column is dropped so the buttons span the panel, and the height is doubled so the glyph has room to be a
+   silhouette rather than a character. */
+.row.wide label { display: none }
+.row.wide.choice .tgl { flex: 1 1 0; margin-left: 0; height: 38px; font-size: 17px; line-height: 1 }
+.row.wide.choice .tgl:first-of-type { margin-left: 0 }
 
 .row .csw { flex: 0 0 86px; height: 18px; margin-left: auto; padding: 0; border: none; border-radius: 3px;
             background: none; cursor: pointer }

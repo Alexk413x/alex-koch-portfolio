@@ -25,8 +25,12 @@ export function ventTimings(vd) {
   return { build, chold, atk, hold, fadeR, b1s, b1e, b2s, b2e, boom, end: boom + hold + fadeR };
 }
 
+/* ONE RPM IN RAD/S, and the only place the two units meet. Rates are stored, shown, stepped and authored in RPM;
+ * the phases they feed are radians. Converting here rather than in the panel keeps the UI arithmetic-free. */
+const RAD_PER_RPM = Math.PI / 30;
+
 export function createSim() {
-  const P = { orbit: 0, orbitX: 0, wob: 0, cam: 0, coreY: 0, coreX: 0, rate: 0, jit: 0 };
+  const P = { spin: 0, orbitX: 0, orbitZ: 0, wobX: 0, wobZ: 0, cam: 0, coreY: 0, coreX: 0, rate: 0 };
   let pulse = 0, pulseVel = 0, pulseSeed = 0;
   let venting = false, ventT = 0, ventSeed = 0;
   let vent = 0, ventBurst = 0, ventSwell = 0;
@@ -41,13 +45,11 @@ export function createSim() {
   const out = {
     inst: 0, pulse: 0, vent: 0, ventBurst: 0, ventSwell: 0,
     visc: 0, turb: 0,
-    phOrbit: 0, phOrbitX: 0, phWob: 0, phCam: 0, phCoreY: 0, phCoreX: 0, phRate: 0,
-    wobble: 0,
+    phSpin: 0, phOrbitX: 0, phOrbitZ: 0, phWobX: 0, phWobZ: 0,
+    phCam: 0, phCoreY: 0, phCoreX: 0, phRate: 0,
+    wobbleX: 0, wobbleZ: 0,
     ringR: 1, swellRingBase: 1, swellTarget: 1,
     ringGlow: 0, shieldExpand: 0, scatter: 0, breakBurst: 999,
-    // Constant: the auto-fling these drive is not wired to any control, the break-scatter below covers it.
-    // Removing them means removing two uniforms from the shader, which is a separate decision.
-    fragFly: 0, snap: 1,
     dropN: 0, dropData,
     ringSpin: 0,
   };
@@ -69,26 +71,31 @@ export function createSim() {
     // `sec` is wall-clock elapsed time, separate from dt because the droplets drift on it: deriving it from a
     // phase would freeze them whenever that phase's rate was 0.
     step(s, dt, sec) {
-      // Instability lags rather than tracking, and rises faster than it falls. It reads the PREVIOUS frame's vent
-      // and pulse deliberately — using this frame's would make the ramp depend on statement order.
-      const md = Math.min(1, Math.max(0, s.mode) / 2);
+      /* INSTABILITY IS A GAUGE, AND NOTHING ELSE READS IT. It is derived from the settings that would actually
+       * destabilise a core — how hard the surface is roiling, how fast the ring is being driven, how far it
+       * breathes — and NOT from which preset is lit. A mode is only a set of slider positions.
+       *
+       * It lags rather than tracking and rises faster than it falls, and it reads the PREVIOUS frame's vent and
+       * pulse deliberately: using this frame's would make the ramp depend on statement order. */
       const pf = Math.min(1.3, Math.abs(pulse) * 2.6);
-      const instRaw = md * 0.7 + s.turb * md * 0.4 + vent * (0.9 + md * 1.8) + pf * 0.6;
+      const instRaw = s.turb * 0.35 + (Math.abs(s.orbitX) + Math.abs(s.orbitZ)) * 0.0065
+                    + s.amp * 0.9 + Math.abs(s.visc) * 0.017 + vent * 1.6 + pf * 0.6;
       const k = instRaw > inst ? (venting ? dt * 15 : dt * 3)
                                : dt * (13 - Math.min(1, Math.abs(pulse)) * 10);
       inst += (instRaw - inst) * Math.min(1, k);
 
-      // A NERVOUS WOBBLE, not noise: two incommensurate sines, ticking faster the more agitated the core is.
-      P.jit += (13 + inst * 42) * dt;
-      const jit = Math.sin(P.jit) * 0.6 + Math.sin(P.jit * 1.7) * 0.35;
-
-      const odir = s.orbit < 0 ? -1 : 1;
-      P.orbit  += (s.orbit + odir * inst * 1.6) * dt;            // the ring sweeps faster the less stable the core
-      P.orbitX += (s.orbitX + inst * jit * (1.1 + Math.min(1, Math.abs(pulse)) * 1.2)) * dt;
-      P.wob    += (s.wobbleSpd + inst * 7.0) * dt;
-      P.cam    += s.cam * dt;
-      P.coreY  += (s.coreSpin + (s.coreSpin < 0 ? -1 : 1) * inst * 1.4) * dt;
-      P.coreX  += (s.coreSpinX + (s.coreSpinX < 0 ? -1 : 1) * inst * 1.0) * dt;
+      /* EVERY RATE IS EXACTLY ITS CONTROL. The mode used to add an instability term to each of these, which meant
+       * ORBIT and WOBBLE at zero still moved the ring and no slider told the truth about what it did. A preset
+       * that wants a violent ring says so in its own values. */
+      const rad = dt * RAD_PER_RPM;          // RPM -> radians for this frame
+      P.spin   += s.orbit * rad;             // about the ring's own axis: moves the surface pattern, nothing else
+      P.orbitX += s.orbitX * rad;            // tumble about world X
+      P.orbitZ += s.orbitZ * rad;            // tumble about world Z
+      P.cam    += s.cam * rad;
+      P.coreY  += s.coreSpin * rad;
+      P.coreX  += s.coreSpinX * rad;
+      P.wobX   += s.wobSpdX * dt;            // wobble speeds are the instrument's own unit, not RPM
+      P.wobZ   += s.wobSpdZ * dt;
       P.rate   += s.rate * dt;
 
       // A DAMPED SPRING, integrated explicitly. DURATION is the period, so w is inversely proportional to it.
@@ -157,14 +164,11 @@ export function createSim() {
       out.swellTarget = s.ringR + breakExpand;
       const stress = expand / (s.ringR * 0.7);      // 1.0 is the failure point
 
-      /* Each mode fails differently: MELTDOWN is pinned high and guttering, CRITICAL breathes between about 50%
-       * and 90%, STABLE follows the slider. The vent then brightens it in step with its own pulses. */
+      /* SHIELD IS THE SLIDER, in every mode. What still moves it is not the mode but what is happening TO it: a
+       * pulse knocks it down, the core pushing against the ring stresses it, a vent floods it. */
       const shPulse = Math.min(1, Math.abs(pulse) * 2.4);
       const shStress = 1 - Math.min(0.6, stress * 0.45);
-      let shieldLvl;
-      if (s.mode >= 1.5)      shieldLvl = 1.0 - Math.random() * 0.10 - Math.min(0.85, shPulse * 1.4);
-      else if (s.mode >= 0.5) shieldLvl = 0.5 + 0.4 * (0.5 + 0.5 * Math.sin(P.rate * 1.7)) - shPulse * 0.15;
-      else                    shieldLvl = (s.ringGlow || 0) * (1 - Math.min(0.5, shPulse * 0.5));
+      let shieldLvl = (s.ringGlow || 0) * (1 - Math.min(0.5, shPulse * 0.5));
       shieldLvl *= shStress;
       shieldLvl += vent * 1.15;
 
@@ -194,14 +198,15 @@ export function createSim() {
 
       out.inst = inst;
       out.pulse = pulse; out.vent = vent; out.ventBurst = ventBurst; out.ventSwell = ventSwell;
-      out.phOrbit = P.orbit; out.phOrbitX = P.orbitX; out.phWob = P.wob; out.phCam = P.cam;
+      out.phSpin = P.spin; out.phOrbitX = P.orbitX; out.phOrbitZ = P.orbitZ;
+      out.phWobX = P.wobX; out.phWobZ = P.wobZ; out.phCam = P.cam;
       out.phCoreY = P.coreY; out.phCoreX = P.coreX; out.phRate = P.rate;
-      out.wobble = s.wobble + inst * 0.30;
+      out.wobbleX = s.wobbleX; out.wobbleZ = s.wobbleZ;
       out.ringGlow = Math.max(0, Math.min(1.6, shieldLvl)) * shieldFac;
       out.shieldExpand = scatterT * 1.3;
       out.scatter = scatterT;
       out.breakBurst = burstOn ? burstT : 999;
-      out.ringSpin = (s.orbit + odir * inst * 1.6) / (2 * Math.PI) * 60;    // live RPM, for the HUD
+      out.ringSpin = s.orbit;    // already RPM — the HUD prints it as stored
 
       /* A Fibonacci sphere pushed outward by the pulse, jittered per index and drifting on its own sines.
        * Computed here rather than in the shader because the inner loop would otherwise hash and call trig twenty

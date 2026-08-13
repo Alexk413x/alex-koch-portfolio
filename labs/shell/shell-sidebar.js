@@ -10,6 +10,11 @@
  *     ['k', 'LABEL', ['A','B','C']]    one-of-N
  *     ['k', 'LABEL', '#']              colour swatch
  *
+ *   ANY ROW may carry a trailing options object:
+ *     { when: ['otherKey', [1, 2]] }   present only while that key holds one of those values
+ *     { wide: true }                   no label, full panel width, double height -- for glyph choices that have
+ *                                      to read as silhouettes (Reactor's core SHAPE) rather than as words
+ *
  *   A SECTION is [name, rows] or [name, rows, masterKey].
  */
 import { as } from '../kit/units.js';

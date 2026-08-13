@@ -172,10 +172,10 @@ maths bug.
   frame toggle is the fix if you want it.
 - **GLARE reaches the fixture only.** The stored default is `0`, so a reading of 0 is correct, not broken.
 - **The rim is unpinned** — the picture sits inside the glass and that gap is real.
-- **Reactor's `uFragFly` and `uSnap` are read by the shader but never move.** The auto-fling they drive was
-  disabled behind a literal `if (false)` in the DC build and superseded by the manual break-scatter. Left at 0
-  and 1 rather than cut, because cutting them changes what that shader can express. Cutting them is a real
-  follow-up, not a bug.
+- **Reactor's ring pattern does not travel with a scattered fragment.** The nine pieces are displaced and tumbled
+  inside `ringSDF`, but the shading reads `ringSpace(hp)` — the unscattered frame — so a flown-off piece's machined
+  surface swims across it rather than riding on it. Fixing it means returning the per-piece transform out of the
+  SDF. The pieces are small on screen for most of a break, which is why it has not been worth that.
 - **The corners are cut, not warped.** Settled; the picture ends on the squircle by clip.
 - **Wormhole compiles a shader per layer set, and two of them do not agree to the last bit.** Separately
   compiled programs schedule their arithmetic differently. Across 120 whole-frame comparisons, seven differed —

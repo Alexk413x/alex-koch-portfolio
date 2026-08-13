@@ -2,38 +2,48 @@
  * alloy ring fragments, and the continuous inner shield band — marched in one loop between a bounding sphere's
  * entry and exit. Pure source, no GL calls.
  *
- * Rotations arrive as a PHASE (uPhOrbit), not a rate: reactor-sim integrates them, so changing a speed does not
+ * Rotations arrive as a PHASE (uPhSpin), not a rate: reactor-sim integrates them, so changing a speed does not
  * teleport whatever it was driving.
  *
- * uFragFly and uSnap are read but never move — the auto-fling they drive is not wired to any control. Removing
- * them changes what this shader can express, so they stay at 0 and 1 until that is decided.
+ * The ring has three: a SPIN about its own axis, and two TUMBLES about world X and world Z. See ringSpace for why
+ * the spin has to be composed innermost.
+ *
+ * THE WHOLE OF FRAG IS ONE TEMPLATE LITERAL, so no backtick and no ${ may appear below — including inside a GLSL
+ * comment. Either one ends the string, and the failure surfaces as a JavaScript parse error naming a token from
+ * the middle of a shader.
  */
 export const UNIFORMS = [
   'uAmp', 'uBreakBurst', 'uCamAngle', 'uCamEl', 'uCoreAngle', 'uCoreAngleX', 'uCoreCol', 'uDropData', 'uDropN',
-  'uFragFly', 'uGlow', 'uHue', 'uOct', 'uPhCam', 'uPhCoreX', 'uPhCoreY', 'uPhOrbit', 'uPhOrbitX', 'uPhRate',
-  'uPhWob', 'uPulse', 'uPulseBright', 'uPulseSize', 'uRate', 'uRes', 'uRingAngleX', 'uRingAngleY', 'uRingGlow',
-  'uRingLight', 'uRingOn', 'uRingR', 'uScatter', 'uShape', 'uShieldExpand', 'uSize', 'uSnap', 'uSubVT', 'uSwellAmt',
+  'uGlow', 'uOct', 'uPhCam', 'uPhCoreX', 'uPhCoreY', 'uPhRate',
+  'uPulse', 'uPulseBright', 'uPulseSize', 'uRate', 'uRes', 'uRingGlow',
+  'uRingLight', 'uRingOn', 'uRingR', 'uRingRough', 'uRingWear',
+  // the three ring axes: a spin in its own plane, and a tumble about each of world X and Z
+  'uPhSpin', 'uRingAngleY',
+  'uPhOrbitX', 'uRingAngleX', 'uWobbleX', 'uPhWobX',
+  'uPhOrbitZ', 'uRingAngleZ', 'uWobbleZ', 'uPhWobZ',
+  'uScatter', 'uShape', 'uShieldExpand', 'uSize', 'uSubVT', 'uSwellAmt',
   'uSwellRingBase', 'uSwellTarget', 'uTime', 'uTurb', 'uVent', 'uVentBright', 'uVentBurst', 'uVentSize',
-  'uVentSwell', 'uVisc', 'uWobble', 'uZoom'
+  'uVentSwell', 'uVisc', 'uZoom'
 ];
 
 export const FRAG = `
 #extension GL_OES_standard_derivatives : enable
 precision highp float;
-uniform vec2 uRes; uniform float uTime,uSize,uVisc,uTurb,uRate,uGlow,uZoom,uHue,uPulse,uVent,uVentBurst,uRingR,uRingLight,uRingGlow,uRingOn,uOct,uCamAngle,uCamEl,uAmp,uPulseBright,uVentSize,uVentBright,uShape,uWobble,uCoreAngle,uCoreAngleX,uPulseSize,uDropN,uPhOrbit,uPhWob,uPhCam,uPhCoreY,uPhCoreX,uPhRate,uRingAngleY,uRingAngleX,uPhOrbitX;
+uniform vec2 uRes; uniform float uTime,uSize,uVisc,uTurb,uRate,uGlow,uZoom,uPulse,uVent,uVentBurst,uRingR,uRingLight,uRingGlow,uRingOn,uOct,uCamAngle,uCamEl,uAmp,uPulseBright,uVentSize,uVentBright,uShape,uWobbleX,uCoreAngle,uCoreAngleX,uPulseSize,uDropN,uPhSpin,uPhWobX,uPhCam,uPhCoreY,uPhCoreX,uPhRate,uRingAngleY,uRingAngleX,uPhOrbitX;
 
 uniform vec4 uDropData[20];   // per-droplet center.xyz + radius.w, precomputed on CPU each frame
-uniform vec3 uCoreCol;        // CORE COLOR picker (base, before RADIATION hue-shift)
+uniform vec3 uCoreCol;        // CORE COLOUR picker — the scene's only light, and every surface is read through it
 uniform float uVentSwell;    // VENT SWELL envelope: 0..1 animation ramp
 uniform float uSwellAmt;     // VENT SWELL target: signed fraction (+1 = ring, +2 = past, -1 = shrink to 0)
 uniform float uSwellRingBase; // original ring radius used as the SWELL target (so the ring can expand separately)
-uniform float uFragFly;      // 0..1: rips the 9 fragments off and flings them outward (they return to reform)
 uniform float uSubVT;        // sub-core (droplet) viscosity/turbulence multiplier
 uniform float uSwellTarget;  // the (break-expanded) ring radius the SWELL reaches toward
 uniform float uScatter;      // break-scatter distance: flings each of the 9 pieces off in a random direction with a random tumble
-uniform float uSnap;         // shield failure flicker (1 = steady, <1 = flickering as it snaps)
 uniform float uShieldExpand; // shield ring balloons outward as it dies during a break
 uniform float uBreakBurst;    // seconds since a break began (>=1.3 = inactive) - drives the shockwave flashes
+uniform float uRingRough;    // RING ROUGHNESS: 0 = mirror alloy, 1 = satin. Widens the specular lobe.
+uniform float uRingWear;     // RING WEAR: bare metal on the machined lips, grime pooled in the recessed bays
+uniform float uRingAngleZ, uPhOrbitZ, uWobbleZ, uPhWobZ;   // the second tumble axis, mirroring the X set
 float hash(vec3 p){ p=fract(p*0.3183099+0.1); p*=17.0; return fract(p.x*p.y*p.z*(p.x+p.y+p.z)); }
 float noise(vec3 x){
   vec3 p=floor(x),f=fract(x); f=f*f*(3.0-2.0*f);
@@ -47,8 +57,7 @@ float fbm3(vec3 p){ float v=0.0,a=0.5; for(int i=0;i<4;i++){ v+=a*noise(p); p=p*
 mat3 rotY(float a){ float c=cos(a),s=sin(a); return mat3(c,0.,-s, 0.,1.,0., s,0.,c); }
 mat3 rotX(float a){ float c=cos(a),s=sin(a); return mat3(1.,0.,0., 0.,c,-s, 0.,s,c); }
 mat3 rotZ(float a){ float c=cos(a),s=sin(a); return mat3(c,-s,0., s,c,0., 0.,0.,1.); }
-vec3 ringSpace(vec3 p);   // forward declaration (defined below, used in coreSDF)
-vec3 hueShift(vec3 col,float a){ const vec3 k=vec3(0.57735); float c=cos(a); return col*c+cross(k,col)*sin(a)+k*dot(k,col)*(1.0-c); }
+vec3 ringSpace(vec3 p);   // forward declaration
 float caust(vec2 p){                 // cheap sunlight-through-water caustic
   float t=uTime*0.5; vec2 q=p; float v=0.0;
   for(int i=0;i<3;i++){
@@ -59,7 +68,6 @@ float caust(vec2 p){                 // cheap sunlight-through-water caustic
 }
 
 float sdBox(vec3 p, vec3 b){ vec3 q=abs(p)-b; return length(max(q,0.0))+min(max(q.x,max(q.y,q.z)),0.0); }
-float sdHexPrism(vec3 p, vec2 h){ const vec3 k=vec3(-0.8660254,0.5,0.57735); p=abs(p); p.xy-=2.0*min(dot(k.xy,p.xy),0.0)*k.xy; vec2 d=vec2(length(p.xy-vec2(clamp(p.x,-k.z*h.x,k.z*h.x),h.x))*sign(p.y-h.x), p.z-h.y); return min(max(d.x,d.y),0.0)+length(max(d,0.0)); }
 float sdOcta(vec3 p, float s){ p=abs(p); return (p.x+p.y+p.z-s)*0.57735; }
 float sdDisk(vec3 p, float r, float h){ vec2 d=vec2(length(p.xz)-r, abs(p.y)-h); return min(max(d.x,d.y),0.0)+length(max(d,0.0)); }
 float smin(float a, float b, float k){ float h=clamp(0.5+0.5*(b-a)/k,0.0,1.0); return mix(b,a,h)-k*h*(1.0-h); }  // goo blend (bridges + pinch-off)
@@ -72,7 +80,7 @@ float shapeSDF(vec3 q, float r){                    // the currently-selected co
   if(uShape<0.5) return length(q)-r;                       // sphere
   else if(uShape<1.5) return sdFacetBall(q, r*0.82);      // faceted ball
   else if(uShape<2.5) return sdBox(q, vec3(r*0.66));       // cube
-  else if(uShape<3.5) return sdOcta(q, r*1.05);           // pyramid
+  else if(uShape<3.5) return sdOcta(q, r*1.05);           // octahedron
   return sdDisk(q, r, r*0.0875);                           // disk
 }
 float coreRadius(){
@@ -82,7 +90,6 @@ float coreRadius(){
   return max(base + clamp(uVentSwell,0.0,1.0)*delta, 0.0);   // VENT SWELL animates the core size during a vent
 }
 float coreSDF(vec3 p){
-  vec3 p0=p;                                         // world point (for ring-aligned bulge)
   p = rotY(uCoreAngle + uPhCoreY) * p;               // core rotation Y
   p = rotX(uCoreAngleX + uPhCoreX) * p;              // core rotation X
   float t=uTime*(0.35+uRate*0.12);
@@ -109,13 +116,22 @@ float boxTorus(vec3 p,float R,vec2 he,float rad){
   vec2 d=abs(q)-he;
   return length(max(d,0.0))+min(max(d.x,d.y),0.0)-rad;
 }
+/* THE THREE AXES, AND THE SPIN IS INNERMOST. Composed the other way round it is not a spin at all: a rotation
+ * about world Y swings a TILTED ring's axis around a cone, so SPIN would silently do a second job — precession —
+ * whenever anything else had tipped the ring, and the two controls would stop being independent. Innermost, it
+ * turns the band inside its own plane and moves nothing but the surface pattern.
+ *
+ * The two tumbles are about world X and world Z. Between them the ring's axis reaches
+ * (-sin g cos b, cos g cos b, sin b), which is the whole sphere — the ring can present any face to the core. */
 vec3 ringSpace(vec3 p){
-  vec3 q = rotY(uRingAngleY + uPhOrbit) * p;                              // Y orbit: static ANGLE Y + ORBIT Y speed
-  q = rotX(uRingAngleX + uPhOrbitX + uWobble*sin(uPhWob)) * q;    // X orbit + wobble
-  return q;                           // spin acts on the surface pattern only (below)
+  vec3 q = rotZ(uRingAngleZ + uPhOrbitZ + uWobbleZ*sin(uPhWobZ)) * p;   // tumble Z
+  q = rotX(uRingAngleX + uPhOrbitX + uWobbleX*sin(uPhWobX)) * q;        // tumble X
+  return rotY(uRingAngleY + uPhSpin) * q;                               // spin, in the ring's own plane
 }
-vec3 ringToWorld(vec3 q){            // inverse of ringSpace (ring-local -> world)
-  return rotY(-(uRingAngleY + uPhOrbit)) * (rotX(-(uRingAngleX + uPhOrbitX + uWobble*sin(uPhWob))) * q);
+vec3 ringToWorld(vec3 q){            // inverse of ringSpace (ring-local -> world), so the order reverses
+  vec3 p = rotY(-(uRingAngleY + uPhSpin)) * q;
+  p = rotX(-(uRingAngleX + uPhOrbitX + uWobbleX*sin(uPhWobX))) * p;
+  return rotZ(-(uRingAngleZ + uPhOrbitZ + uWobbleZ*sin(uPhWobZ))) * p;
 }
 float ringSDF(vec3 p){
   if(uRingOn<0.5) return 1e5;
@@ -123,7 +139,7 @@ float ringSDF(vec3 p){
   float seg=6.28318/9.0;
   float segLen=uSwellRingBase*seg*1.02;
   float harc=min(seg*0.5, (segLen*0.5)/max(uRingR,0.001));
-  float scat=uScatter + uFragFly*2.5;                   // manual break-scatter + auto fling
+  float scat=uScatter;
   if(scat<0.001){
     float ang=atan(pr.z,pr.x);                          // fast path: intact ring with gaps
     float k=floor((ang+3.14159)/seg);
@@ -162,9 +178,85 @@ vec3 nrmR(vec3 p){ vec2 k=vec2(1.0,-1.0)*0.0013;   // ring-only normal (skips co
 vec3 nrmSh(vec3 p){ vec2 k=vec2(1.0,-1.0)*0.0013;   // shield-ring normal
   return normalize(k.xyy*shieldSDF(p+k.xyy) + k.yyx*shieldSDF(p+k.yyx) + k.yxy*shieldSDF(p+k.yxy) + k.xxx*shieldSDF(p+k.xxx)); }
 
-vec3 coreCol(){
-  return hueShift(uCoreCol, uHue);   // base = CORE COLOR picker; RADIATION rotates hue on top
+// The ring's machined dimensions, in metres: the band is 112mm tall and 18mm thick, so relief stays under 2mm.
+const float RIB_W=0.014, RAIL_Y=0.0425, CHAM=0.014, BAY_D=0.0017;
+const float BOSS_R=0.032, BOSS_H=0.0009, LENS_R=0.0075, TRACE_D=0.0007;
+/* TWO conductors per bay, one at each end, as FRACTIONS of the bay rather than a metric period — so it stays two
+ * however large the ring grows, instead of the count rising with the circumference. */
+const float DASH_POS=0.34, DASH_LEN=0.09;
+/* 1/sin^2 of the core's angular radius at the shipped SIZE and RING SIZE. The falloff below is physical, which
+ * means every stored setting would otherwise arrive at a different brightness than it was calibrated against. */
+const float LIGHT_NORM=4.84;
+
+/* A feature's coverage from its distance field, never allowed below one pixel wide. A fixed smoothstep cannot do
+ * this: once a line is finer than a pixel it aliases into sparkle instead of fading out. The W forms take the
+ * pixel footprint instead of measuring it, for coordinates whose own derivative is not trustworthy. */
+float coverW(float d, float halfW, float w){ return clamp((halfW-abs(d))/max(w,1e-6)+0.5, 0.0, 1.0); }
+float cover(float d, float halfW){ return coverW(d, halfW, fwidth(d)); }
+/* One period of a repeating dash, likewise pixel-bounded. The footprint must come from an UNWRAPPED coordinate
+ * because fract's derivative spikes at every wrap, which draws a bright seam once per period. */
+float dashesW(float x, float duty, float w){ return clamp((duty*0.5-abs(fract(x)-0.5))/max(w,1e-6)+0.5, 0.0, 1.0); }
+float dashes(float x, float duty){ return dashesW(x, duty, fwidth(x)); }
+
+/* Diffuse irradiance from the core treated as a uniform sphere rather than a point. sinA is its angular radius
+ * seen from the surface, which both softens the terminator by the light's real size and supplies the inverse-square
+ * falloff — so CORE SIZE and RING SIZE now change how lit the ring is. */
+float sphereDiff(vec3 n, vec3 L, float sinA){
+  return sinA*sinA*clamp((dot(n,L)+sinA)/(1.0+sinA), 0.0, 1.0);
 }
+/* The direction to the point on the core a reflection ray actually strikes. The core is most of a metre wide seen
+ * from the ring, so its highlight has to have a size; a point light gives metal a dot. */
+vec3 sphereSpecL(vec3 Lv, vec3 Rr, float Rc){
+  vec3 c=Rr*max(dot(Lv,Rr),0.0)-Lv;
+  return normalize(Lv+c*clamp(Rc/max(length(c),1e-5), 0.0, 1.0));
+}
+/* Tilts a normal by a height field's true world-space gradient: the hit point's screen derivatives convert
+ * dH/dpixel into dH/dmetre. Perturbing the normal's x and y components with screen derivatives directly tilts it
+ * in a direction unrelated to the surface, which shades but never reads as relief. */
+vec3 bumpN(vec3 p, vec3 n, float H){
+  vec3 dpx=dFdx(p), dpy=dFdy(p);
+  vec3 r1=cross(dpy,n), r2=cross(n,dpx);
+  float det=dot(dpx,r1);
+  vec3 g=sign(det)*(dFdx(H)*r1+dFdy(H)*r2);
+  return normalize(abs(det)*n-g);
+}
+
+struct Surf { float h; float bay; float rim; float trace; float lens; float dash; float halo; };
+/* The ring's machined relief: height in metres, and every mask its albedo, its shading and its lamps read off.
+ * One function because the bump, the cavity darkening and the paint must describe the SAME surface.
+ *
+ * bx is metres along the arc from the nearest bay's centre, y metres up the band, bayL one bay's arc length, aw
+ * the arc footprint of one pixel. The bay centres are aligned to the SDF's nine fragment centres, so a boss sits
+ * on a fragment and never on a joint. */
+Surf ringRelief(float bx, float y, float bayL, float aw){
+  Surf s;
+  float dBay=abs(y)-RAIL_Y;                                  // one channel running the whole band: bounded by the rails, open at both ends
+  s.bay=smoothstep(0.0,0.0016,-dBay);
+  s.rim=cover(dBay,0.0030);                                  // the machined lip, where wear and grazing light land
+  s.h=-BAY_D*s.bay;
+
+  float rN=length(vec2(bx,y));
+  float boss=smoothstep(0.0,0.0018,BOSS_R-rN)*s.bay;         // raised instrument boss at each bay's centre
+  s.h+=BOSS_H*boss;
+  s.lens=smoothstep(LENS_R,LENS_R*0.5,rN)*s.bay;
+  s.halo=smoothstep(BOSS_R*1.7,0.0,rN)*s.bay;
+
+  // Drawn as two separate spans rather than one mirrored distance: abs(abs(bx)-c) kinks at the dash centre, and
+  // fwidth reads that fold as an edge.
+  float dHalf=DASH_LEN*bayL*0.5, dAt=DASH_POS*bayL;
+  s.dash=max(coverW(bx-dAt,dHalf,aw), coverW(bx+dAt,dHalf,aw))*cover(y,0.0018)*s.bay;
+  float nx=clamp(bx/max(bayL*0.5-RIB_W-CHAM,1e-4),-1.0,1.0);
+  float ny=clamp(y/(RAIL_Y-CHAM*0.5),-1.0,1.0);
+  float xr=max(abs(nx),abs(ny));
+  float xm=cover(abs(nx)-abs(ny),0.075)*step(0.45,xr)*step(xr,0.86)*s.bay;   // the broken X, stopping short of the middle
+  float ring=cover(rN-BOSS_R*0.78,0.0016)*boss;              // groove circling the boss
+  // The dash is a lit conductor, not an etched groove: cut to the same depth, but kept out of the trace mask that
+  // darkens a cavity. A powered line does not sit in its own shadow.
+  s.trace=max(ring,xm);
+  s.h-=TRACE_D*max(s.trace,s.dash);
+  return s;
+}
+
 vec3 shieldMaterial(vec3 hp, vec3 rd, vec3 cc){        // the full inner shield ring: land/water topo + shield film
   vec3 n=nrmSh(hp);
   vec3 pr=ringSpace(hp);
@@ -205,7 +297,7 @@ vec3 shieldMaterial(vec3 hp, vec3 rd, vec3 cc){        // the full inner shield 
 
 void main(){
   vec2 uv=(gl_FragCoord.xy-0.5*uRes)/uRes.y;   // the stage's own centre -- the panel is a flex sibling now
-  vec3 cc=coreCol();
+  vec3 cc=uCoreCol;   // CORE COLOUR, straight from the picker
 
   float ca=uCamAngle + uPhCam;         // ANGLE = static position, ORBIT = rotation speed
   float el=uCamEl;
@@ -215,7 +307,7 @@ void main(){
 
   float t=0.0, glow=0.0; int id=0; vec3 hp=ro;
   // bounding sphere: skip empty space and bail on rays that miss the scene
-  float Rb=max(uRingR+0.2, coreRadius()+1.6) + uVentBurst*uVentSize*3.0 + uFragFly*2.4 + uScatter*1.3;   // grow the march radius on a VENT/fling/scatter so nothing is clipped
+  float Rb=max(uRingR+0.2, coreRadius()+1.6) + uVentBurst*uVentSize*3.0 + uScatter*1.3;   // grow the march radius on a VENT or a scatter so nothing is clipped
   float bb=dot(ro,rd), cs=dot(ro,ro)-Rb*Rb, hh=bb*bb-cs;
   float tenter = hh>0.0 ? max(0.0,-bb-sqrt(hh)) : 1e9;
   float texit  = hh>0.0 ? (-bb+sqrt(hh)) : -1.0;
@@ -248,77 +340,86 @@ void main(){
     vec3 n=nrmR(hp);
     vec3 pr=ringSpace(hp);
     vec3 nl=ringSpace(n);
-    float ang=atan(pr.z,pr.x);
-    float pat=ang;   // pattern rides with the ring's orbit
-    vec3 L=normalize(-hp);
+    float pat=atan(pr.z,pr.x);   // pattern rides with the ring's orbit
+    vec3 Lv=-hp; float dL=max(length(Lv),1e-4); vec3 L=Lv/dL;
     float dif=max(dot(n,L),0.0);
     vec3 rad=normalize(vec3(pr.x,0.0,pr.z));
     float facing=dot(nl,rad);
     float outer=smoothstep(0.15,0.6,facing);
     float inner=smoothstep(0.15,0.6,-facing);
-    float fy=abs(pr.y);
-    // 9-section angular alien circuitry with a circle in each section
-    float sects=9.0;
-    float su=pat*sects/6.28318;
-    float bnd=fract(su);
-    float cellAng=bnd-0.5;
-    float rail=smoothstep(0.005,0.001, abs(fy-0.041));                       // twin rails
-    float divider=smoothstep(0.03,0.006, min(bnd,1.0-bnd)) * step(fy,0.047);  // 9 radial dividers
-    float tick=smoothstep(0.52,0.46, abs(fract(pat*40.0/6.28318)-0.5)) * step(fy,0.022); // fine ticks
-    float cellArc=cellAng*(6.28318*uRingR/sects);
-    float rC=length(vec2(cellArc, pr.y));
-    float circle=smoothstep(0.010,0.004, abs(rC-0.030));                      // circle per section
-    float arcB=min(bnd,1.0-bnd)*(6.28318*uRingR/sects);   // arc dist to nearest divider
-    float edgeD=0.043-fy;                                  // dist from rail edge
-    float cham=smoothstep(0.004,0.0, abs(arcB-edgeD)) * step(arcB,0.05) * step(edgeD,0.05) * step(0.0,edgeD); // 45° line at each corner
-    // broken X inside each section (lines stop short of the middle)
-    float nx=clamp(cellAng*2.0,-1.0,1.0);
-    float ny=clamp(pr.y/0.043,-1.0,1.0);
-    float xr=max(abs(nx),abs(ny));
-    float xmark=smoothstep(0.11,0.03, abs(abs(nx)-abs(ny))) * step(0.42,xr) * step(xr,0.88) * step(fy,0.043);
-    float struc=max(max(rail,divider),max(circle,max(cham,xmark)));   // low-freq structure only
-    float lines=max(struc,tick);
-    float emb=clamp(dFdx(struc)+dFdy(struc),-0.4,0.4);   // bevel from structure gradient
-    vec3 lineCol=vec3(0.90,0.93,0.97);            // bright etched alloy
-    // --- fine circuit grid (AA, resolution independent) ---
-    float gu=pat*34.0, gv=pr.y*70.0;                    // constant angular density (does NOT densify on a big ring)
-    float gwu=fwidth(gu), gwv=fwidth(gv);
-    float gx=smoothstep(0.5-gwu,0.5, abs(fract(gu)-0.5));
-    float gy=smoothstep(0.5-gwv,0.5, abs(fract(gv)-0.5));
-    float grid=max(gx,gy)*step(fy,0.046)*clamp(1.5-(gwu+gwv)*1.5,0.0,1.0);  // fade where sub-pixel
-    // --- relief bump: tilt the normal along the structure edges so it self-shades ---
-    vec3 nb=normalize(n - vec3(dFdx(struc),dFdy(struc),0.0)*2.0);
-    // --- lighting basis (sole light = the core) ---
-    vec3 Vd=-rd, Hh=normalize(L+Vd);
-    float difB=max(dot(nb,L),0.0);
-    float ndv=max(dot(nb,Vd),0.0);
-    float spec=pow(max(dot(nb,Hh),0.0),55.0);
+    // --- the machined surface, measured in metres along the band so a feature keeps its size as the ring grows ---
+    float bayL=6.28318*uRingR/9.0;
+    float arc=pat*uRingR;
+    float bx=(fract(arc/bayL+0.5)-0.5)*bayL;             // metres from the nearest bay centre
+    /* Measured off the ring's circular position, not off bx or pat: bx wraps once a bay and atan once a
+     * revolution, and with the ribs gone there is no longer a blanked-out band hiding either fold. */
+    float aw=max(length(fwidth(vec2(cos(pat),sin(pat))))*uRingR, 1e-6);
+    Surf S=ringRelief(bx, pr.y, bayL, aw);
+    vec3 nb=bumpN(hp, n, S.h);
+    float scribe=max(dashesW(pat*34.0,0.06,aw*34.0/max(uRingR,1e-4)), dashes(pr.y*70.0,0.06))*S.bay;   // constant angular density: does NOT densify on a big ring
+
+    // --- lighting basis: the core is the sole light, and it is a sphere, not a point ---
+    vec3 Vd=-rd;
+    float Rc=coreRadius();
+    float sinA=clamp(Rc/dL,0.0,0.995);                   // the core's angular radius from here
+    vec3 lit=cc*(0.35+uGlow*0.85);
+    float irr=sphereDiff(nb,L,sinA)*LIGHT_NORM;
+    float ndv=clamp(dot(nb,Vd),0.0,1.0);
     float fres=pow(1.0-ndv,4.0);
-    float micro=noise(pr*80.0)*0.5+0.5;                 // brushed micro-variation
-    // --- albedo: dark brushed alloy; etched traces are cleaner brighter metal ---
-    vec3 alb=mix(vec3(0.085,0.095,0.115), vec3(0.15,0.16,0.185), micro);
-    alb=mix(alb, lineCol*0.9, clamp(lines*outer,0.0,1.0)*0.8);
-    alb*=1.0 - 0.22*grid*outer;                         // grooves darken (AO)
-    // --- cold environment reflection sheen (metal catches the chamber, not just diffuse) ---
+
+    // --- albedo: dark anodised alloy, brushed along the arc, worn back to bare metal on the machined lips ---
+    float grain=noise(vec3(arc*300.0, pr.y*26.0, 4.0));
+    float mottA=noise(vec3(arc*7.0, pr.y*9.0, 1.0));
+    vec3 alloy=mix(vec3(0.052,0.058,0.068), vec3(0.105,0.112,0.126), grain*0.65+mottA*0.35);
+    vec3 alb=mix(alloy*1.3, alloy*0.7, S.bay);           // the recessed bay is painted darker than its frame
+    float patch=noise(vec3(arc*2.3, pr.y*3.0, 7.0));     // low frequency, so some lips are worn bare and others are not
+    float wear=uRingWear*S.rim*(0.12+0.88*smoothstep(0.30,0.72,patch*0.7+grain*0.3));
+    float grime=uRingWear*S.bay*(0.30+0.70*mottA)*(1.0-S.rim);
+    alb=mix(alb, vec3(0.46,0.48,0.51), wear);
+    alb=mix(alb, alb*0.55, grime*0.5);
+    alb=mix(alb, vec3(0.38,0.40,0.43), S.trace*0.75);    // grooves cut through the coating to clean metal
+    alb=mix(alb, alb*2.4, scribe*0.5);                   // fine scribing does the same, a fraction as deep
+
+    // --- specular: rough metal, the lobe widened by the core's real angular size ---
+    float rough=clamp(mix(0.10,0.78,uRingRough)-wear*0.30+grime*0.24, 0.04, 0.95);
+    vec3 F0=mix(vec3(0.075), vec3(0.56,0.57,0.60), wear);
     vec3 Rr=reflect(-Vd,nb);
-    float envG=clamp(0.5+0.5*Rr.y,0.0,1.0);
-    vec3 envCol=mix(vec3(0.015,0.02,0.03), vec3(0.05,0.07,0.10), envG);
-    envCol += cc*0.05*pow(max(dot(Rr,L),0.0),3.0);      // faint core reflection (subtle)
-    // --- compose ---
-    vec3 m = alb*(0.05 + difB*1.05);                    // diffuse; backside stays in shadow
-    m += envCol*(0.5 + 0.5*fres)*(0.25+0.75*outer);     // reflection sheen gives it form
-    m += vec3(0.85,0.88,0.95)*spec*(0.15+difB)*0.7;     // sharp machined specular
-    m += fres*vec3(0.45,0.52,0.62)*0.22*outer;          // cool metal fresnel edge (not a glow)
-    m += outer*emb*0.7*lineCol;                         // raised bevel highlight on structure
-    m += lines*outer*lineCol*(0.10 + difB*0.9);         // etched design catches the core light
-    float nodeLit=smoothstep(0.013,0.0, rC);            // glowing node at each section center
-    vec3 emitCol=mix(cc,vec3(1.0),0.10);                // powered light stays close to the core color (less white)
-    m += nodeLit*outer*emitCol*uRingLight*5.0;          // powered center light
-    float cline=smoothstep(0.0032,0.0011, abs(fy));                       // thin centerline (thinner than the node dots)
-    float dash=smoothstep(0.5,0.4, abs(fract(pat*80.0/6.28318)-0.5));     // dashed pattern
-    float dLine=cline*dash*smoothstep(0.09,0.14, abs(cellAng));           // dashes sit BETWEEN the dots (skip the node center)
-    m += dLine*outer*emitCol*uRingLight*3.0;            // thin dashed light line between nodes
-    // --- inner face: topographic land / water camo map, lit by the core ---
+    vec3 Ls=sphereSpecL(Lv,Rr,Rc);
+    vec3 Hh=normalize(Ls+Vd);
+    float ndl=clamp(dot(nb,Ls),0.0,1.0);
+    float ndh=clamp(dot(nb,Hh),0.0,1.0);
+    float shine=mix(4.0,760.0,pow(1.0-rough,3.0))/(1.0+sinA*sinA*22.0);
+    vec3 F=F0+(1.0-F0)*pow(1.0-clamp(dot(Vd,Hh),0.0,1.0),5.0);
+    vec3 spec=lit*F*((shine+2.0)*0.04)*pow(ndh,shine)*ndl;
+
+    /* The chamber is not empty: the core's bloom fills it, so an alloy face turned away from the core still has
+     * something to reflect. Radiance down the reflection ray is that haze floor plus the core itself where the ray
+     * happens to point back at it. This is the whole of what lights the outward face — it has no diffuse. */
+    float toCore=max(dot(Rr,L),0.0);
+    // Not pure core colour: bloom scattered through the chamber comes back desaturated, and it is the only thing
+    // that keeps the alloy reading as metal rather than as tinted glass.
+    vec3 haze=mix(cc,vec3(1.0),0.16);
+    /* ROUGHNESS acts HERE, not only on the core's highlight — the outward face never sees that highlight at all.
+     * A wide lobe integrates a broad cone of the chamber and so catches the core even where the mirror direction
+     * misses it; a polished face reflects the sharp image of an empty chamber, which is nearly black. */
+    float envSharp=mix(16.0,1.6,rough);
+    vec3 env=haze*uGlow*(mix(0.02,0.19,rough)+0.55*pow(toCore,envSharp));
+    float ao=clamp(1.0+S.h*260.0,0.30,1.0)*(1.0-0.25*S.trace)*(1.0-0.25*grime);
+    vec3 m=alb*lit*irr*ao;
+    m+=spec*ao;
+    m+=env*(F0+(1.0-F0)*fres)*ao;                        // the haze reflected in the metal; worn lips catch far more of it
+    m+=alb*haze*uGlow*0.30*ao;                           // the same haze arriving diffusely
+    vec3 emitCol=mix(cc,vec3(1.0),0.10);                 // powered light stays close to the core colour (less white)
+    m+=emitCol*uRingLight*outer*(S.lens*4.2+S.dash*0.45);
+    m+=alb*emitCol*uRingLight*outer*S.halo*4.0;          // and what the lamps throw onto the alloy around them
+    /* --- inner face: topographic land / water camo map, lit by the core ---
+     *
+     * BEHIND A BRANCH because it is the expensive half of this shader — four domain-warped fbm3 chains and a
+     * caustic — and the outward face discards every one of them through a mix factor of zero. The two faces are
+     * large contiguous regions on screen, so the branch is coherent across a warp rather than per pixel. No
+     * derivative is taken inside it, which is what makes it safe to skip. */
+    float innerMix=inner*clamp(uRingGlow*1.05,0.0,1.0);
+    if(innerMix>0.003){
     float cw=clamp(caust(vec2(cos(pat)*uRingR*3.0, sin(pat)*uRingR*3.0 + pr.y*30.0)),0.0,2.0);   // seamless cylindrical caustic - no wrap seam
     vec3 lp=vec3(cos(pat)*uRingR*3.5, pr.y*10.0, sin(pat)*uRingR*3.5);  // seamless cylindrical coord — no wrap seam, rides with the ring
     float e=fbm3(lp + fbm3(lp*0.5)*1.7);                               // domain-warped elevation
@@ -351,12 +452,13 @@ void main(){
     float shimmer=pow(cw,2.0)*3.4 + cl*1.4;                            // moving water caustics + drifting clouds (sharper, stronger wisps)
     innerM += cc*shimmer*uRingGlow*9.5;  // colored wispy shield strands
     innerM += cc*cw*0.02*uGlow*(uRingGlow*6.0);   // faint inner-face caustic glow
-    m = mix(m, innerM, inner*clamp(uRingGlow*1.05,0.0,1.0));           // segment inner face also fades with SHIELD (0 = plain alloy, no land)
-    col = m * uSnap;                                                    // flicker at the moment the shield fails
+    m = mix(m, innerM, innerMix);           // segment inner face also fades with SHIELD (0 = plain alloy, no land)
+    }
+    col = m;
   } else if(id==3){
     vec3 bg=vec3(0.015,0.02,0.017) + cc*glow*uGlow*1.7;               // what sits behind the shield band (bg + core bloom)
     float sAlpha=clamp(uRingGlow*1.05, 0.0, 1.0);                    // SHIELD % = opacity: 0 removes it entirely, solid when high
-    col = mix(bg, shieldMaterial(hp, rd, cc), sAlpha) * uSnap;        // full continuous inner shield ring, transparency driven by SHIELD
+    col = mix(bg, shieldMaterial(hp, rd, cc), sAlpha);   // full continuous inner shield ring, transparency driven by SHIELD
   }
 
   float vig=smoothstep(1.5,0.2,length(uv));
