@@ -107,8 +107,11 @@ export function runLoop({ draw, onTick, tickMs = 500, maxDt = 0.05 }) {
 
   const frame = (now) => {
     raf = requestAnimationFrame(frame);
-    // Clamped: a stalled frame integrated as one step throws a spring across its whole range.
-    const dt = Math.min(maxDt, (now - last) / 1000);
+    /* Clamped BOTH WAYS. Above, because a stalled frame integrated as one step throws a spring across its whole
+     * range. Below, because the first rAF timestamp can PRECEDE the performance.now() this loop was built with —
+     * measured here at 451ms against 19501ms — and a negative delta runs every phase and every spring backwards
+     * for one frame. Reactor's INSTABILITY gauge read -224% on load until this clamp existed. */
+    const dt = Math.max(0, Math.min(maxDt, (now - last) / 1000));
     last = now;
     sec = (now - t0) / 1000;
     draw(dt, sec);
