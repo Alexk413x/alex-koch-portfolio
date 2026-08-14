@@ -16,7 +16,8 @@
 <nav id="nav">
   <a class="mark" href="#top">ALEXK413X</a>
   <div class="links">
-    <a href="#app">THE APP</a>
+    <a href="#app">APP</a>
+    <a href="#cartographer">CARTOGRAPHER</a>
     <a href="#experience">EXPERIENCE</a>
     <a href="#labs">LABS</a>
     <a href="#contact">CONTACT</a>
@@ -83,7 +84,7 @@
   <section id="app">
     <div class="inner app-grid">
       <div class="app-copy">
-        <h2 class="sec-title">RPN<br><span style="color:var(--accent)">DOMINATOR</span></h2>
+        <h2 class="sec-title">RPN DOMINATOR<br><span style="color:var(--accent)">CALCULATOR</span></h2>
         <p class="sec-lede">
           Most RPN calculators on the store replicate the HP 15c faceplate down to the button images. This one
           uses the vertical space a phone actually has.
@@ -91,13 +92,7 @@
 
         <div class="then-now">
           <div class="tn then"><b>Then</b>39 keys, one line of display, a 1982 faceplate in your pocket</div>
-          <div class="tn now"><b>Now</b>A stack you can see, keys you can hit, gestures instead of shift keys</div>
-        </div>
-
-        <div class="stats">
-          <div><b>0</b><span>Equals keys</span></div>
-          <div><b>5.0+</b><span>Android supported</span></div>
-          <div><b>2019</b><span>Rewritten in Kotlin</span></div>
+          <div class="tn now"><b>Now</b>A stack you scroll and handle directly &mdash; reorder, swap, delete, undo</div>
         </div>
 
         <div class="cta-row">
@@ -108,15 +103,16 @@
 
       <div class="phone-wrap">
         <div class="phone" id="rpn" tabindex="0" role="group" aria-label="Working RPN calculator demo">
-          <div class="phone-bar"><span>RPN DOMINATOR</span><span class="ver">413X STUDIOS</span></div>
-          <div class="rpn-readout">
-            <div class="rpn-row"><span class="n">4</span><span class="v"></span></div>
-            <div class="rpn-row"><span class="n">3</span><span class="v"></span></div>
-            <div class="rpn-row"><span class="n">2</span><span class="v"></span></div>
-            <div class="rpn-row"><span class="n">1</span><span class="v"></span></div>
-            <div class="rpn-row rpn-in"><span class="n">IN</span><span class="v">0</span></div>
+          <div class="phone-inner">
+            <div class="rpn-readout">
+              <div class="rpn-row"><span class="n">4</span><span class="v"></span></div>
+              <div class="rpn-row"><span class="n">3</span><span class="v"></span></div>
+              <div class="rpn-row"><span class="n">2</span><span class="v"></span></div>
+              <div class="rpn-row"><span class="n">1</span><span class="v"></span></div>
+              <div class="rpn-row rpn-in"><span class="n">IN</span><span class="v">0</span></div>
+            </div>
+            <div class="rpn-pad"></div>
           </div>
-          <div class="rpn-pad"></div>
         </div>
         <div class="phone-note">live &mdash; click the keys, or focus it and type</div>
       </div>
@@ -124,6 +120,91 @@
   </section>
 </div>
 </div>
+
+<section id="cartographer">
+  <div class="inner">
+    <h2 class="sec-title" data-reveal>CARTOGRAPHER</h2>
+    <p class="sec-lede" data-reveal>
+      Surveys an app into a knowledge graph of screens, states and the verified action-routes between them, then
+      compiles that map into deterministic test scripts.
+    </p>
+
+    <div class="anys" data-reveal>
+      <div><b>Any app</b>Nothing is hardcoded to a project. The map is derived by walking the app, not authored by hand.</div>
+      <div><b>Any platform</b>Android, iOS and web behind one driver contract. Drivers load lazily, so an Android project never installs the other two.</div>
+      <div><b>Any LLM</b>The model is an author and an exception handler, never a runtime dependency. Swap it without touching a test.</div>
+    </div>
+
+    <div class="boundary" data-reveal>
+      <h3>The model runs where judgement is needed, and nowhere else</h3>
+      <ol class="stages">
+        <li class="ai"><b>01</b><span class="s">Author and compile the test</span><span class="w">Model, once</span></li>
+        <li><b>02</b><span class="s">Drive the flow</span><span class="w">Script</span></li>
+        <li><b>03</b><span class="s">Collect the evidence bundle</span><span class="w">Script</span></li>
+        <li><b>04</b><span class="s">Compare against baseline and flag</span><span class="w">Deterministic tooling</span></li>
+        <li class="ai"><b>05</b><span class="s">Decide what a flagged delta means</span><span class="w">Model</span></li>
+        <li class="ai"><b>06</b><span class="s">Heal the code, or update the map</span><span class="w">Model, gated</span></li>
+      </ol>
+      <p class="boundary-note">
+        A fully green run touches none of the model stages. Cost scales with change and breakage, not with suite
+        size or how often it runs &mdash; a thousand stable tests running nightly cost nothing in tokens.
+      </p>
+    </div>
+
+    <div class="caps" data-reveal>
+      <div class="cap">
+        <b>End to end</b>
+        <p>Recorded once by the model, replayed deterministically: same actions, same order, same captures.</p>
+      </div>
+      <div class="cap">
+        <b>Visual regression</b>
+        <p>Screenshot against baseline, diffed by script into changed regions. The model only reads the regions.</p>
+      </div>
+      <div class="cap">
+        <b>Accessibility</b>
+        <p>31 pure checkers over the a11y tree, plus contrast, reachability and focus order.</p>
+      </div>
+      <div class="cap">
+        <b>WCAG 2.2 AA</b>
+        <p>The catalogue is 2.2, so 2.1 AA comes free. EAA conformity routes through EN 301 549, which cites
+          WCAG 2.1 AA &mdash; so the output is a WCAG finding, never an <em>EAA: PASS</em> badge, because
+          conformity also covers statements and process no screen can prove.</p>
+      </div>
+      <div class="cap">
+        <b>Performance</b>
+        <p>Metrics against an averaged baseline behind a repeatability gate, with app time isolated from network
+          wait so third-party latency is not reported as your regression.</p>
+      </div>
+      <div class="cap">
+        <b>Self-healing</b>
+        <p>On a flag the model classifies intended, regression or external, then fixes the code or moves the map
+          &mdash; never the map without a human.</p>
+      </div>
+      <div class="cap">
+        <b>No silent green</b>
+        <p>Missing evidence, missing baseline or an unsupported axis reports <em>skipped</em>, <em>baseline-missing</em>
+          or <em>needs-review</em>. Never <em>pass</em>, and not configurable.</p>
+      </div>
+      <div class="cap">
+        <b>Run history</b>
+        <p>Every run stored and viewable, graph and runs together, with fully auditable data behind each verdict.</p>
+      </div>
+    </div>
+
+    <div class="pending" data-reveal>
+      <div class="slot" data-pending="demo">
+        <b>Live map</b>
+        <p>A walkable section of this site, surveyed by Cartographer.</p>
+        <span class="await">Link goes here when the plugin ships</span>
+      </div>
+      <div class="slot" data-pending="snapshot">
+        <b>Data state</b>
+        <p>A snapshot of the graph the plugin produces: screens, states and the verified routes between them.</p>
+        <span class="await">Snapshot goes here when the plugin ships</span>
+      </div>
+    </div>
+  </div>
+</section>
 
 <section id="experience">
   <div class="inner">

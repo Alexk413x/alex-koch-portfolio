@@ -106,7 +106,9 @@ a:hover { color: var(--accent-hover) }
 
 #nav .mark { color: var(--text-strong); font-weight: 700 }
 #nav .links { display: flex; gap: 24px; align-items: center }
-#nav .links a { color: var(--text-muted) }
+/* nowrap, or a two-word label breaks inside its own box, grows taller than its neighbours and reads as a
+   two-line nav even though the row itself never wrapped. */
+#nav .links a { color: var(--text-muted); white-space: nowrap }
 #nav .links a:hover { color: var(--accent) }
 #nav .links a.ext { color: var(--accent) }
 
@@ -304,7 +306,24 @@ a:hover { color: var(--accent-hover) }
 
 .cta-row .secondary:hover { border-color: var(--accent); color: var(--accent) }
 
-.phone-wrap { justify-self: center; display: flex; flex-direction: column; align-items: center; gap: 12px }
+.phone-wrap {
+  justify-self: center; position: relative; z-index: 0;
+  display: flex; flex-direction: column; align-items: center; gap: 16px;
+  perspective: 1600px;
+}
+
+/* Light thrown on the wall BEHIND the device, not a rim around it. Pushed back in Z so the perspective spreads
+   it wider than the phone, which is what makes it read as a room rather than an outline. */
+.phone-wrap::before {
+  content: ''; position: absolute; z-index: 0; pointer-events: none;
+  left: 50%; top: 46%; width: 190%; height: 120%;
+  transform: translate(-50%, -50%) translateZ(-260px);
+  background: radial-gradient(closest-side, rgba(221, 106, 32, .30), rgba(221, 106, 32, .09) 48%, transparent 72%);
+  filter: blur(34px);
+  opacity: var(--m);
+}
+
+.phone, .phone-note { position: relative; z-index: 1 }
 
 /* THE MORPH RUNS ENTIRELY IN CSS off one scalar, --m, which scenes.js writes on the stage each frame. Every
    number below is "old + (new - old) * m"; every colour is a color-mix by the same scalar. Keeping both halves
@@ -313,27 +332,38 @@ a:hover { color: var(--accent-hover) }
    the finished calculator rather than a beige faceplate nobody asked to see. */
 .phone {
   --mix: calc((1 - var(--m)) * 100%);
-  width: min(calc((330 + (280 - 330) * var(--m)) * 1px), 76vw);
-  overflow: hidden;
-  border-radius: calc((6 + (30 - 6) * var(--m)) * 1px);
-  background: #101014;
-  background: color-mix(in srgb, #d8d4c8 var(--mix), #101014);
+  width: min(calc((470 + (330 - 470) * var(--m)) * 1px), 82vw);
+  /* A bezel that is nothing on a faceplate and a real frame on a phone: the padding IS the chassis. */
+  padding: calc(var(--m) * 10px);
+  border-radius: calc((6 + (38 - 6) * var(--m)) * 1px);
+  background: #16161a;
+  background: color-mix(in srgb, #d8d4c8 var(--mix), #16161a);
   border: 1px solid rgba(221, 106, 32, .3);
   border-color: color-mix(in srgb, #8a8578 var(--mix), rgba(221, 106, 32, .3));
-  box-shadow: 0 30px 60px -24px rgba(0, 0, 0, .85), 0 0 70px rgba(221, 106, 32, calc(var(--m) * .22));
+  /* Turned toward the viewer as it becomes an object. transform-style stays flat, so this is a projection of a
+     2D element rather than a 3D scene -- text stays crisp and hit-testing follows the transform, which is why
+     the keys are still clickable at an angle. */
+  /* Starts left and turned one way, sweeps through flat and ends facing the other. The travel is what sells the
+     object as a thing on a surface rather than a picture that changed colour. */
+  transform:
+    translateX(calc((-96 + (0 - -96) * var(--m)) * 1px))
+    rotateY(calc((18 + (-15 - 18) * var(--m)) * 1deg))
+    rotateX(calc(var(--m) * 3.5deg));
+  box-shadow:
+    0 calc(24px + var(--m) * 26px) calc(50px + var(--m) * 40px) -22px rgba(0, 0, 0, .9),
+    inset 0 1px 0 rgba(255, 255, 255, calc(var(--m) * .07));
+}
+
+/* The screen inside the chassis. Its own clip, so the stack's banded rows and the keypad both stop at the
+   bezel's inner curve instead of squaring off against it. */
+.phone-inner {
+  overflow: hidden;
+  border-radius: calc((4 + (26 - 4) * var(--m)) * 1px);
+  background: #0b0b0d;
+  background: color-mix(in srgb, #cfd3bd var(--mix), #0b0b0d);
 }
 
 .phone:focus-visible { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--amber-focus), 0 30px 60px -24px rgba(0, 0, 0, .85) }
-
-/* The title bar belongs to the app, not to a faceplate, so it grows from nothing. */
-.phone-bar {
-  display: flex; justify-content: space-between; align-items: flex-end; overflow: hidden;
-  height: calc(var(--m) * 30px); opacity: calc(max(0, var(--m) - .55) / .45);
-  padding: 0 14px 6px;
-  font-family: var(--font-mono); font-size: 10px; letter-spacing: .16em; color: var(--amber);
-}
-
-.phone-bar .ver { color: var(--text-faint) }
 
 .phone-note {
   opacity: calc(max(0, var(--m) - .9) / .1);
@@ -347,31 +377,31 @@ a:hover { color: var(--accent-hover) }
    current line in both machines. */
 .rpn-row {
   display: flex; justify-content: space-between; align-items: center; overflow: hidden;
-  height: calc((14 + (30 - 14) * var(--m)) * 1px);
-  padding: 0 14px;
+  height: calc((18 + (34 - 18) * var(--m)) * 1px);
+  padding: 0 16px;
   font-family: var(--font-mono);
   background: #1c1c1c;
   background: color-mix(in srgb, #cfd3bd var(--mix), #1c1c1c);
 }
 
-.rpn-row:not(.rpn-in) { height: calc(var(--m) * 30px); opacity: var(--m) }
+.rpn-row:not(.rpn-in) { height: calc(var(--m) * 34px); opacity: var(--m) }
 
 .rpn-row .n { font-size: 11px; color: rgba(255, 255, 255, .38); color: color-mix(in srgb, #5c6350 var(--mix), rgba(255, 255, 255, .38)) }
 
 .rpn-row .v {
-  font-size: calc((15 + (19 - 15) * var(--m)) * 1px);
+  font-size: calc((18 + (21 - 18) * var(--m)) * 1px);
   color: #fff; color: color-mix(in srgb, #23281c var(--mix), #fff);
   overflow-wrap: anywhere;
 }
 
-.rpn-in { height: calc((26 + (30 - 26) * var(--m)) * 1px) }
+.rpn-in { height: calc((34 + (34 - 34) * var(--m)) * 1px) }
 .rpn-in .v.typing::after, .rpn-in.typing .v::after { content: '_'; color: var(--accent); animation: ak-blink 1.05s steps(1) infinite }
 
 /* The pad is a positioning context, not a grid: the two keyboards have different grids (10x4 and 4x7) and a
    grid-template cannot be interpolated between them. Each key carries both rectangles and moves between them. */
 .rpn-pad {
   position: relative;
-  height: calc((116 + (300 - 116) * var(--m)) * 1px);
+  height: calc((168 + (352 - 168) * var(--m)) * 1px);
   margin-top: calc(4px + var(--m) * 4px);
   pointer-events: none;
 }
@@ -388,7 +418,7 @@ a:hover { color: var(--accent-hover) }
   margin: 1px;
   border-radius: calc((2 + (6 - 2) * var(--m)) * 1px);
   font-family: var(--font-mono);
-  font-size: calc((7.5 + (13 - 7.5) * var(--m)) * 1px);
+  font-size: calc((9.5 + (14 - 9.5) * var(--m)) * 1px);
   line-height: 1;
   background: #b4530e;
   background: color-mix(in srgb, #3f4148 var(--mix), #b4530e);
@@ -413,6 +443,53 @@ a:hover { color: var(--accent-hover) }
 .rpn-pad .k.hit { background: var(--accent); color: var(--on-accent) }
 .rpn-pad .k:focus-visible { outline: none; box-shadow: inset 0 0 0 1px var(--accent) }
 .rpn-pad .hp-only { pointer-events: none }
+
+/* ---------------- cartographer ---------------- */
+
+#cartographer { position: relative; padding: 110px var(--pad-page); border-top: 1px solid var(--hairline) }
+
+.anys { margin-top: 40px; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1px; background: var(--hairline); border: 1px solid var(--hairline) }
+.anys div { background: var(--ink); padding: 20px; font-size: 13.5px; line-height: 1.6; color: var(--text-body) }
+.anys b { display: block; margin-bottom: 8px; font-family: var(--font-display); font-weight: 800; font-size: 17px; color: var(--accent) }
+
+.boundary { margin-top: 56px }
+.boundary h3 { margin: 0 0 20px; font-family: var(--font-display); font-weight: 800; font-size: clamp(19px, 2.2vw, 26px); letter-spacing: -.4px; color: var(--text-strong) }
+
+/* The six stages as a rail. Stages the model touches are lit; the four it does not are hairline. That contrast
+   IS the claim, so it is carried by the layout rather than stated again underneath. */
+.stages { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 10px }
+
+.stages li {
+  position: relative; padding: 16px 16px 16px 18px;
+  border: 1px solid var(--hairline); border-left: 2px solid var(--hairline);
+  background: var(--ink-deep);
+}
+
+.stages li b { display: block; font-family: var(--font-mono); font-size: 10px; letter-spacing: .2em; color: var(--text-faint) }
+.stages li .s { display: block; margin-top: 8px; font-size: 13.5px; line-height: 1.45; color: var(--text-body) }
+.stages li .w { display: block; margin-top: 10px; font-family: var(--font-mono); font-size: 10px; letter-spacing: .16em; text-transform: uppercase; color: var(--text-faint) }
+
+.stages li.ai { border-left-color: var(--accent); background: linear-gradient(180deg, rgba(221, 106, 32, .07), transparent) }
+.stages li.ai b, .stages li.ai .w { color: var(--accent) }
+
+.boundary-note { margin: 18px 0 0; max-width: 78ch; font-size: 14px; line-height: 1.65; color: var(--text-muted) }
+
+.caps { margin-top: 56px; display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 28px 40px }
+.cap b { display: block; font-family: var(--font-mono); font-size: 10.5px; letter-spacing: .2em; text-transform: uppercase; color: var(--amber) }
+.cap p { margin: 8px 0 0; font-size: 13.5px; line-height: 1.6; color: var(--text-body) }
+.cap em { color: var(--text-strong); font-style: normal; font-family: var(--font-mono); font-size: 12.5px }
+
+/* Deliberately unfinished, and it says so. A placeholder that looks like content is worse than an empty slot. */
+.pending { margin-top: 56px; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px }
+
+.slot {
+  padding: 22px; border: 1px dashed var(--border-accent); border-radius: var(--radius-card);
+  background: rgba(221, 106, 32, .03);
+}
+
+.slot b { display: block; font-family: var(--font-display); font-weight: 800; font-size: 17px; color: var(--text-strong) }
+.slot p { margin: 8px 0 0; font-size: 13.5px; line-height: 1.6; color: var(--text-body) }
+.slot .await { display: block; margin-top: 14px; font-family: var(--font-mono); font-size: 10px; letter-spacing: .18em; text-transform: uppercase; color: var(--text-faint) }
 
 /* ---------------- experience ---------------- */
 

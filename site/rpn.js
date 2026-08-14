@@ -115,13 +115,14 @@
          The readout has to show where a half-typed number WOULD land, so the entry is projected onto the stack
          the same way commit() will place it — pushed when lift is on, over X when it is off. */
       view() {
-        const eff = entry === null ? cells
-          : (lift ? cells.concat([entry]) : cells.slice(0, -1).concat([entry]));
-        const n = eff.length;
-        // Levels run 4, 3, 2, 1 from the top of the readout down, matching the app: level 1 is the top of stack.
+        /* Levels run 4, 3, 2, 1 down the readout, and they show the STACK ONLY. A half-typed number is not on
+           the stack yet, so it stays on the IN line until something commits it — which is what the app does:
+           level 1 reads 5 while IN reads 26. Projecting the entry up into level 1 would show the same number
+           twice and imply a push that has not happened. */
+        const n = cells.length;
         const levels = [];
         for (let i = DEPTH; i >= 1; i--) {
-          const v = eff[n - i];
+          const v = cells[n - i];
           levels.push({ label: i, text: v === undefined ? '' : format(v) });
         }
         return { x: entry !== null ? entry : format(top()), levels, typing: entry !== null, depth: n };
