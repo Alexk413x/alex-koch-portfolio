@@ -349,9 +349,9 @@ a:hover { color: var(--accent-hover) }
   padding: calc(var(--m) * 10px);
   border-radius: calc((6 + (38 - 6) * var(--m)) * 1px);
   background: #16161a;
-  background: color-mix(in srgb, #d8d4c8 var(--mix), #16161a);
+  background: color-mix(in srgb, #2b2b2d var(--mix), #16161a);
   border: 1px solid rgba(221, 106, 32, .3);
-  border-color: color-mix(in srgb, #8a8578 var(--mix), rgba(221, 106, 32, .3));
+  border-color: color-mix(in srgb, #74777a var(--mix), rgba(221, 106, 32, .3));
   /* Turned toward the viewer as it becomes an object. transform-style stays flat, so this is a projection of a
      2D element rather than a 3D scene -- text stays crisp and hit-testing follows the transform, which is why
      the keys are still clickable at an angle. */
@@ -372,13 +372,18 @@ a:hover { color: var(--accent-hover) }
   overflow: hidden;
   border-radius: calc((4 + (26 - 4) * var(--m)) * 1px);
   background: #0b0b0d;
-  background: color-mix(in srgb, #cfd3bd var(--mix), #0b0b0d);
+  background: color-mix(in srgb, #1b1b1d var(--mix), #0b0b0d);
 }
 
 .phone:focus-visible { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--amber-focus), 0 30px 60px -24px rgba(0, 0, 0, .85) }
 
 
-.rpn-readout { padding: calc(8px + var(--m) * 4px) 0 0; display: grid; gap: 2px }
+/* The brushed plate the LCD is set into; it is the phone's screen surround by the end. */
+.rpn-readout {
+  padding: calc(8px + var(--m) * 4px) 0 0; display: grid; gap: 2px;
+  background: transparent;
+  background: color-mix(in srgb, #a9aeb2 var(--mix), transparent);
+}
 
 /* Height, not just opacity: on a faceplate the upper stack levels take up no room at all, and collapsing them
    is what turns the readout back into the one-line display an HP has. The IN row never collapses -- it is the
@@ -389,16 +394,16 @@ a:hover { color: var(--accent-hover) }
   padding: 0 16px;
   font-family: var(--font-mono);
   background: #1c1c1c;
-  background: color-mix(in srgb, #cfd3bd var(--mix), #1c1c1c);
+  background: color-mix(in srgb, #9ba593 var(--mix), #1c1c1c);
 }
 
 .rpn-row:not(.rpn-in) { height: calc(var(--m) * 34px); opacity: var(--m) }
 
-.rpn-row .n { font-size: 11px; color: rgba(255, 255, 255, .38); color: color-mix(in srgb, #5c6350 var(--mix), rgba(255, 255, 255, .38)) }
+.rpn-row .n { font-size: 11px; color: rgba(255, 255, 255, .38); color: color-mix(in srgb, #59604f var(--mix), rgba(255, 255, 255, .38)) }
 
 .rpn-row .v {
   font-size: calc((18 + (21 - 18) * var(--m)) * 1px);
-  color: #fff; color: color-mix(in srgb, #23281c var(--mix), #fff);
+  color: #fff; color: color-mix(in srgb, #262b20 var(--mix), #fff);
   overflow-wrap: anywhere;
 }
 
@@ -407,12 +412,18 @@ a:hover { color: var(--accent-hover) }
 /* On the faceplate IN is the whole display, so it carries X. In the app it is the entry line and the stack is
    visible above it, so an idle IN repeating X would print the same number twice. */
 #app-stage.is-new .rpn-in.idle .v { opacity: 0 }
+
+/* The faceplate has no row legends -- its display is a bare number, right-aligned. */
+#app-stage:not(.is-new) .rpn-in .n { opacity: 0 }
 .rpn-in .v.typing::after, .rpn-in.typing .v::after { content: '_'; color: var(--accent); animation: ak-blink 1.05s steps(1) infinite }
 
 /* The pad is a positioning context, not a grid: the two keyboards have different grids (10x4 and 4x7) and a
    grid-template cannot be interpolated between them. Each key carries both rectangles and moves between them. */
+/* The black keypad field the caps sit in; orange hairlines by the end. */
 .rpn-pad {
   position: relative;
+  background: rgba(221, 106, 32, .14);
+  background: color-mix(in srgb, #141416 var(--mix), rgba(221, 106, 32, .14));
   height: calc((168 + (352 - 168) * var(--m)) * 1px);
   margin-top: calc(4px + var(--m) * 4px);
   pointer-events: none;
@@ -433,23 +444,23 @@ a:hover { color: var(--accent-hover) }
   font-size: calc((9.5 + (14 - 9.5) * var(--m)) * 1px);
   line-height: 1;
   background: #b4530e;
-  background: color-mix(in srgb, #3f4148 var(--mix), #b4530e);
+  background: color-mix(in srgb, #232326 var(--mix), #b4530e);
   color: #fff;
-  color: color-mix(in srgb, #e8e6dd var(--mix), #fff);
+  color: color-mix(in srgb, #f2f2f0 var(--mix), #fff);
   transition: filter .12s var(--ease-settle);
 }
 
 /* The app's key ramp, read off the shipped screenshots: utility rows darkest, digits brightest, the operator
    column and Enter a step below the digits. On the faceplate these all sit at the same slate. */
-.rpn-pad .k-util { background: #5c2a0d; background: color-mix(in srgb, #3f4148 var(--mix), #5c2a0d) }
-.rpn-pad .k-fn2  { background: #a04a0c; background: color-mix(in srgb, #3f4148 var(--mix), #a04a0c) }
+.rpn-pad .k-util { background: #5c2a0d; background: color-mix(in srgb, #232326 var(--mix), #5c2a0d) }
+.rpn-pad .k-fn2  { background: #a04a0c; background: color-mix(in srgb, #232326 var(--mix), #a04a0c) }
 .rpn-pad .k-op,
-.rpn-pad .k-ent  { background: #a04a0c; background: color-mix(in srgb, #3f4148 var(--mix), #a04a0c) }
+.rpn-pad .k-ent  { background: #a04a0c; background: color-mix(in srgb, #232326 var(--mix), #a04a0c) }
 
 /* f and g are the faceplate's own accents and have no counterpart in the app, so they only ever show in gold
    and blue while the old keyboard is still on screen. */
-.rpn-pad .k-shift-f { background: color-mix(in srgb, #c8a23c var(--mix), #b4530e) }
-.rpn-pad .k-shift-g { background: color-mix(in srgb, #4d7fa8 var(--mix), #b4530e) }
+.rpn-pad .k-shift-f { background: color-mix(in srgb, #c8961e var(--mix), #b4530e) }
+.rpn-pad .k-shift-g { background: color-mix(in srgb, #3f8fc4 var(--mix), #b4530e) }
 
 .rpn-pad .k:hover { filter: brightness(1.25) }
 .rpn-pad .k.hit { background: var(--accent); color: var(--on-accent) }

@@ -21,22 +21,22 @@
 
   function createStack() {
     let cells = [];        // bottom .. top; the last element is X. EMPTY is a real state, not zero.
-    let entry = null;      // digits being typed, or null when the stack is what is showing
-    let lift = true;       // does the next committed number push a level, or overwrite X?
+    let entry = null;      // digits being typed on the IN line, or null when nothing is being entered
 
     const top = () => (cells.length ? cells[cells.length - 1] : 0);
 
-    /* Moves a half-typed number onto the stack, honouring stack lift. LIFT IS THE WHOLE MACHINE: ENTER copies X
-       up and clears this flag, so the number typed next lands ON X instead of above it. Without it
-       `1 ENTER 2 ENTER 3 + +` totals 7 rather than 6, because every ENTER leaves a duplicate nothing consumes. */
+    /* Moves the IN line onto the stack. ONE value, never two.
+     *
+     * A classic HP has no separate entry line: X is both the display and the top of the stack, so ENTER has to
+     * copy X up and disable stack lift to leave you two operands. This calculator has an IN line, so the entry
+     * is already distinct from the stack and ENTER simply pushes it. Carrying the HP's lift semantics over put
+     * two numbers on the stack for one keypress, and `5 ENTER x` squaring a number is a side effect of that
+     * older design rather than something to reproduce here. */
     function commit() {
       if (entry === null) return;
       const v = parseFloat(entry);
-      const n = Number.isFinite(v) ? v : 0;
-      if (lift || !cells.length) cells.push(n);
-      else cells[cells.length - 1] = n;
+      cells.push(Number.isFinite(v) ? v : 0);
       entry = null;
-      lift = true;
     }
 
     const api = {
@@ -53,7 +53,7 @@
         return api;
       },
 
-      // Negates whatever is currently showing, which is the entry while typing and X otherwise.
+      // Negates whatever is currently showing: the entry while typing, X otherwise.
       neg() {
         if (entry !== null) entry = entry.startsWith('-') ? entry.slice(1) : '-' + entry;
         else if (cells.length) cells[cells.length - 1] = -top();
@@ -67,20 +67,15 @@
         return api;
       },
 
-      // Commits any entry, then copies X up a level and disables lift, so the next number typed replaces X.
       enter() {
         commit();
-        // Nothing to lift on an empty stack, and pushing top()'s fallback would invent a zero.
-        if (cells.length) cells.push(top());
-        lift = false;
         return api;
       },
 
-      // Cancels a half-typed number if there is one; otherwise discards X. X always survives.
+      // Cancels a half-typed number if there is one; otherwise discards X.
       drop() {
         if (entry !== null) entry = null;
         else cells.pop();
-        lift = true;
         return api;
       },
 
@@ -96,12 +91,12 @@
       clear() {
         cells = [];
         entry = null;
-        lift = true;
         return api;
       },
 
-      /* Binary operators consume Y and X and push the result. With fewer than two values there is nothing to
-         operate on, so the press is ignored rather than inventing a zero operand. */
+      /* Binary operators take the IN line as the right-hand operand when one is being typed, then consume Y and
+         X. With fewer than two values there is nothing to operate on, so the press is ignored rather than
+         inventing a zero operand. */
       op(sym) {
         commit();
         if (cells.length < 2) return api;
@@ -110,15 +105,11 @@
         return api;
       },
 
-      /* A snapshot for rendering: `x` is what the big line shows, `levels` are the lines above it, deepest
-         first, and `typing` lets the caller show a caret only while a number is being entered.
-         The readout has to show where a half-typed number WOULD land, so the entry is projected onto the stack
-         the same way commit() will place it — pushed when lift is on, over X when it is off. */
+      /* A snapshot for rendering. Levels run 4, 3, 2, 1 down the readout and show the STACK ONLY — a half-typed
+         number lives on IN until something commits it, which is what the app does: level 1 reads 5 while IN
+         reads 26. `x` is the IN line's content: the entry while typing, X otherwise, which is also what the
+         faceplate's single-line display needs. */
       view() {
-        /* Levels run 4, 3, 2, 1 down the readout, and they show the STACK ONLY. A half-typed number is not on
-           the stack yet, so it stays on the IN line until something commits it — which is what the app does:
-           level 1 reads 5 while IN reads 26. Projecting the entry up into level 1 would show the same number
-           twice and imply a push that has not happened. */
         const n = cells.length;
         const levels = [];
         for (let i = DEPTH; i >= 1; i--) {

@@ -25,8 +25,8 @@
    *   hp  — [row, col, rowSpan] on the faceplate, or null if the key does not exist there
    *   app — [row, col] in the app, or null
    * Shared keys travel from one rectangle to the other; the rest fade from or into the pad's centre.
-   * The faceplate is a reconstruction: ENTER sits at row 3 column 6 (keycode 36) and f at row 4 column 2, both
-   * confirmed, but row 3 columns 4 and 5 are a best guess. */
+   * The faceplate is transcribed from a photograph of an HP-15C: 39 keys in ten columns and four rows, with
+   * ENTER double-height at row 3 column 6. */
   const KEYS = [
     // ---- shared: the arithmetic core, which is the part that actually survives the redesign ----
     ['7',     [1, 7], [4, 1], 'num'],
@@ -54,8 +54,8 @@
     ['yˣ',  [1, 4], null, 'fn'], ['1/x', [1, 5], null, 'fn'],
     ['SST', [2, 1], null, 'fn'], ['GTO', [2, 2], null, 'fn'], ['SIN', [2, 3], null, 'fn'],
     ['COS', [2, 4], null, 'fn'], ['TAN', [2, 5], null, 'fn'], ['EEX', [2, 6], null, 'fn'],
-    ['R↓',  [3, 1], null, 'fn'], ['x≷y', [3, 2], null, 'fn'], ['←',   [3, 3], null, 'fn'],
-    ['GSB', [3, 4], null, 'fn'], ['R/S', [3, 5], null, 'fn'],
+    ['R/S', [3, 1], null, 'fn'], ['GSB', [3, 2], null, 'fn'], ['R↓',  [3, 3], null, 'fn'],
+    ['x≷y', [3, 4], null, 'fn'], ['←',   [3, 5], null, 'fn'],
     ['ON',  [4, 1], null, 'fn'], ['f',   [4, 2], null, 'shift-f'], ['g', [4, 3], null, 'shift-g'],
     ['STO', [4, 4], null, 'fn'], ['RCL', [4, 5], null, 'fn'], ['Σ+', [4, 9], null, 'fn'],
 
