@@ -20,11 +20,11 @@
   }
 
   function createStack() {
-    let cells = [0];       // bottom .. top; the last element is X, and X always exists
+    let cells = [];        // bottom .. top; the last element is X. EMPTY is a real state, not zero.
     let entry = null;      // digits being typed, or null when the stack is what is showing
     let lift = true;       // does the next committed number push a level, or overwrite X?
 
-    const top = () => cells[cells.length - 1];
+    const top = () => (cells.length ? cells[cells.length - 1] : 0);
 
     /* Moves a half-typed number onto the stack, honouring stack lift. LIFT IS THE WHOLE MACHINE: ENTER copies X
        up and clears this flag, so the number typed next lands ON X instead of above it. Without it
@@ -33,7 +33,7 @@
       if (entry === null) return;
       const v = parseFloat(entry);
       const n = Number.isFinite(v) ? v : 0;
-      if (lift) cells.push(n);
+      if (lift || !cells.length) cells.push(n);
       else cells[cells.length - 1] = n;
       entry = null;
       lift = true;
@@ -56,7 +56,7 @@
       // Negates whatever is currently showing, which is the entry while typing and X otherwise.
       neg() {
         if (entry !== null) entry = entry.startsWith('-') ? entry.slice(1) : '-' + entry;
-        else cells[cells.length - 1] = -top();
+        else if (cells.length) cells[cells.length - 1] = -top();
         return api;
       },
 
@@ -70,7 +70,8 @@
       // Commits any entry, then copies X up a level and disables lift, so the next number typed replaces X.
       enter() {
         commit();
-        cells.push(top());
+        // Nothing to lift on an empty stack, and pushing top()'s fallback would invent a zero.
+        if (cells.length) cells.push(top());
         lift = false;
         return api;
       },
@@ -78,8 +79,7 @@
       // Cancels a half-typed number if there is one; otherwise discards X. X always survives.
       drop() {
         if (entry !== null) entry = null;
-        else if (cells.length > 1) cells.pop();
-        else cells[0] = 0;
+        else cells.pop();
         lift = true;
         return api;
       },
@@ -94,7 +94,7 @@
       },
 
       clear() {
-        cells = [0];
+        cells = [];
         entry = null;
         lift = true;
         return api;

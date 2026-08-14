@@ -315,10 +315,11 @@ a:hover { color: var(--accent-hover) }
 
 .phone-wrap {
   justify-self: center; position: relative; z-index: 0;
-  /* Tracks the phone's own width off the same scalar, so the column is never wider than what is in it. Pinned
-     to the widest state instead, the shrinking phone leaves 70px of dead air on each side and the gutter reads
-     as a hole at the end of the morph; pinned to the narrowest, the faceplate rides over the copy at the start. */
-  width: min(calc((470 + (330 - 470) * var(--m)) * 1px), 82vw);
+  /* FIXED at the widest state, deliberately. A column that tracks the phone's width keeps the gutter constant
+     but makes the whole centred pair recentre as the phone narrows, which drags the copy sideways for the
+     entire scrub. Holding the column still costs a wider gutter at the end and buys text that does not move
+     while the calculator animates -- the copy is being read, the phone is not. */
+  width: min(470px, 82vw);
   display: flex; flex-direction: column; align-items: center; gap: 16px;
   perspective: 1600px;
 }
@@ -334,7 +335,7 @@ a:hover { color: var(--accent-hover) }
   opacity: var(--m);
 }
 
-.phone, .phone-note { position: relative; z-index: 1 }
+.phone { position: relative; z-index: 1 }
 
 /* THE MORPH RUNS ENTIRELY IN CSS off one scalar, --m, which scenes.js writes on the stage each frame. Every
    number below is "old + (new - old) * m"; every colour is a color-mix by the same scalar. Keeping both halves
@@ -376,10 +377,6 @@ a:hover { color: var(--accent-hover) }
 
 .phone:focus-visible { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--amber-focus), 0 30px 60px -24px rgba(0, 0, 0, .85) }
 
-.phone-note {
-  opacity: calc(max(0, var(--m) - .9) / .1);
-  font-family: var(--font-mono); font-size: 10.5px; letter-spacing: .08em; color: var(--text-faint);
-}
 
 .rpn-readout { padding: calc(8px + var(--m) * 4px) 0 0; display: grid; gap: 2px }
 
@@ -405,7 +402,11 @@ a:hover { color: var(--accent-hover) }
   overflow-wrap: anywhere;
 }
 
-.rpn-in { height: calc((34 + (34 - 34) * var(--m)) * 1px) }
+.rpn-in { height: 34px }
+
+/* On the faceplate IN is the whole display, so it carries X. In the app it is the entry line and the stack is
+   visible above it, so an idle IN repeating X would print the same number twice. */
+#app-stage.is-new .rpn-in.idle .v { opacity: 0 }
 .rpn-in .v.typing::after, .rpn-in.typing .v::after { content: '_'; color: var(--accent); animation: ak-blink 1.05s steps(1) infinite }
 
 /* The pad is a positioning context, not a grid: the two keyboards have different grids (10x4 and 4x7) and a

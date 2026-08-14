@@ -130,6 +130,10 @@
     const inRow = rows[rows.length - 1];
     inRow.querySelector('.v').textContent = v.x;
     inRow.classList.toggle('typing', v.typing);
+    /* Marked, not blanked. Which machine is on screen decides whether an idle IN should show X or nothing, and
+       that state changes on scroll rather than on a keypress — so the choice is left to CSS, which re-evaluates
+       on its own instead of needing the morph to call back into here. */
+    inRow.classList.toggle('idle', !v.typing);
   }
 
   /* The morph parks pointer-events on the pad until the calculator reaches its shipped state. That stops a
