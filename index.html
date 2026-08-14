@@ -3,129 +3,159 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Alex Koch — Portfolio &amp; Labs</title>
-<meta name="description" content="A portfolio site and a set of instruments, including an amber CRT simulated two independent ways.">
+<title>Alex Koch — Agentic Mobile Engineer</title>
+<meta name="description" content="Alex Koch. 11+ years shipping mobile at scale, now architecting multi-agent QA platforms — and a set of WebGL instruments built to make something physical measurable.">
+<meta name="color-scheme" content="dark">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
-<style>
-  /* Deliberately single-look: this is the porch light for a set of amber CRT instruments, so it does not
-     follow the viewer's colour scheme. Everything below is self-contained -- no build step, one file. */
-  :root{
-    --bg:#0b0906; --panel:#141009; --line:#3a2a16;
-    --ink:#f0a24a; --hi:#ffe0c0; --dim:#997d5a; --warn:#ff8a3c;
-  }
-  *{box-sizing:border-box}
-  html,body{margin:0;padding:0}
-  body{
-    background:var(--bg); color:var(--ink);
-    font-family:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
-    font-size:14px; line-height:1.7; letter-spacing:.02em;
-    padding:clamp(24px,5vw,72px) clamp(20px,5vw,40px);
-    /* the faintest scanline wash, so the page belongs to the things it links to */
-    background-image:repeating-linear-gradient(180deg,rgba(0,0,0,.28) 0 1px,transparent 1px 3px);
-  }
-  .wrap{max-width:860px;margin:0 auto}
-  h1{
-    font-size:clamp(22px,4.5vw,34px); font-weight:700; margin:0 0 4px;
-    color:var(--hi); letter-spacing:.12em; text-transform:uppercase;
-    text-shadow:0 0 18px rgba(255,180,84,.28);
-  }
-  .sub{color:var(--dim);margin:0 0 8px}
-  a{color:var(--ink)}
-  h2{
-    font-size:12px; font-weight:700; letter-spacing:.22em; text-transform:uppercase;
-    color:var(--dim); margin:44px 0 14px; padding-bottom:8px; border-bottom:1px solid var(--line);
-  }
-  .grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
-  .card{
-    display:block; padding:16px 18px; text-decoration:none; color:inherit;
-    background:var(--panel); border:1px solid var(--line); border-radius:3px;
-    transition:border-color .15s, transform .15s, box-shadow .15s;
-  }
-  .card:hover,.card:focus-visible{
-    border-color:var(--ink); transform:translateY(-2px);
-    box-shadow:0 0 0 1px rgba(240,162,74,.25),0 8px 26px rgba(0,0,0,.5); outline:none;
-  }
-  .card .name{color:var(--hi);font-weight:700;letter-spacing:.06em}
-  .card .tag{color:var(--warn);font-size:10px;letter-spacing:.18em;text-transform:uppercase}
-  .card p{margin:6px 0 0;color:var(--dim);font-size:12.5px;line-height:1.6}
-  ul.plain{list-style:none;padding:0;margin:0}
-  ul.plain li{padding:5px 0;border-bottom:1px solid rgba(58,42,22,.5)}
-  .note{
-    margin-top:44px;padding:14px 16px;border-left:2px solid var(--warn);
-    background:rgba(255,138,60,.05);color:var(--dim);font-size:12.5px;line-height:1.65;
-  }
-  footer{margin-top:44px;padding-top:16px;border-top:1px solid var(--line);color:var(--dim);font-size:12px}
-</style>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="site/site.css">
 </head>
 <body>
-<div class="wrap">
 
-  <h1>Alex Koch</h1>
-  <p class="sub">Portfolio, and a set of instruments.</p>
-  <p class="sub" style="max-width:64ch">
-    Tools built to make something physical <em>measurable</em> rather than merely to look like it.
-    Hand-authored — no build step, no bundler.
-  </p>
-
-  <h2>The CRT</h2>
-  <div class="grid">
-    <a class="card" href="labs/crt/CRT%20GL.html">
-      <span class="tag">WebGL2</span>
-      <div class="name">CRT GL</div>
-      <p>The tube as a fragment shader: face curvature, shadow mask, beam, phosphor persistence and a
-         ray-traced light fitting reflected in the glass, solved per pixel.</p>
-    </a>
+<nav id="nav">
+  <a class="mark" href="#top">ALEXK413X</a>
+  <div class="links">
+    <a href="#labs">LABS</a>
+    <a href="#contact">CONTACT</a>
+    <a class="ext" href="https://www.linkedin.com/in/alexk413x/" target="_blank" rel="noopener">LINKEDIN ↗</a>
   </div>
-  <p class="sub" style="font-size:12.5px;margin-top:12px">
-    The curve is <em>plotted</em>, not resampled: the shader walks the same pure geometry modules that describe
-    the glass, so nothing on screen can disagree about its shape.
-  </p>
+</nav>
 
-  <h2>Other labs</h2>
-  <div class="grid">
-    <a class="card" href="labs/reactor/Reactor.html">
-      <span class="tag">WebGL</span>
-      <div class="name">Reactor Lab</div>
-      <p>A containment core, sphere-traced: a goo core with sub-cores torn out of it by a pulse, nine alloy
-         ring fragments, and a shield that fails on a schedule.</p>
-    </a>
-    <a class="card" href="labs/wormhole/Wormhole.html">
-      <span class="tag">WebGL</span>
-      <div class="name">Wormhole Lab</div>
-      <p>A domain-warped noise tunnel down the throat of a wormhole, in three flavours.</p>
-    </a>
+<div id="scroll">
+<div id="stage">
+
+  <div class="ring" aria-hidden="true">
+    <svg viewBox="0 0 700 700">
+      <circle cx="350" cy="350" r="300" fill="none" stroke="rgba(221,106,32,.15)" stroke-width="1.5"/>
+      <circle class="r-dash" cx="350" cy="350" r="250" fill="none" stroke="rgba(221,106,32,.45)" stroke-width="2" stroke-dasharray="3 15"/>
+      <circle class="r-hair" cx="350" cy="350" r="218" fill="none" stroke="rgba(240,168,120,.2)" stroke-width="1" stroke-dasharray="1 9"/>
+      <circle class="r-arc" cx="350" cy="350" r="280" fill="none" stroke="#dd6a20" stroke-width="3" stroke-linecap="round" stroke-dasharray="1759" stroke-dashoffset="250"/>
+    </svg>
   </div>
 
-  <h2>Portfolio</h2>
-  <div class="grid">
-    <a class="card" href="Alex%20Koch%20Portfolio.dc.html"><div class="name">Portfolio</div></a>
-    <a class="card" href="Alex%20Koch%20Cinematic%20Intro.dc.html"><div class="name">Cinematic Intro</div></a>
-    <a class="card" href="Alex%20Koch%20Console%20OS.dc.html"><div class="name">Console OS</div></a>
-  </div>
+  <!-- SCENE 01 · IDENTITY -->
+  <section class="scene" id="top">
+    <div class="hero">
+      <div class="hero-grid">
 
-  <h2>Notes</h2>
-  <ul class="plain">
-    <li><a href="Portfolio%20Directions.dc.html">Portfolio Directions</a></li>
-    <li><a href="Realistic%20Light%20Roadmap.dc.html">Realistic Light Roadmap</a></li>
-    <li><a href="https://github.com/Alexk413x/alex-koch-portfolio">Source on GitHub</a></li>
-  </ul>
+        <div>
+          <div class="kicker" data-display-fill>AGENTIC MOBILE ENGINEER</div>
+          <h1 class="lockup" data-display-stack>
+            <span class="l1">ALEX</span><span class="l2">KOCH</span>
+          </h1>
+        </div>
 
-  <div class="note">
-    <strong>Best on desktop.</strong> These are instruments laid out at around 1560&times;1100. On a narrow
-    screen the control panel folds away behind a chevron so the picture gets the screen to itself, but the
-    control density is still built for a large window. Every lab is WebGL and demanding; if one struggles,
-    <strong>RENDER SCALE</strong> in its panel is the lever, and it already starts lower on integrated graphics.
-    No framework and no build step — the labs load nothing at runtime but their own modules and the fonts.
-  </div>
+        <div class="aside">
+          11+ years shipping mobile at scale — Target myDay, Kohl&rsquo;s &amp; Yahoo. Now architecting multi-agent
+          QA platforms that generate, execute &amp; self-heal 500+ tests.
+          <div class="cta">
+            <a class="primary" href="#labs">SEE THE WORK ↓</a>
+            <a class="secondary" href="mailto:Alexk413x@gmail.com">GET IN TOUCH</a>
+          </div>
+        </div>
 
-  <footer>
-    <a href="mailto:Alexk413x@gmail.com">Alexk413x@gmail.com</a> ·
-    <a href="https://www.linkedin.com/in/alexk413x/">LinkedIn</a> ·
-    <a href="https://github.com/Alexk413x">GitHub</a>
-  </footer>
+      </div>
+    </div>
+
+    <div class="hero-foot">
+      <div class="inner">
+        <div class="cue"><span>↓</span> scroll</div>
+        <div class="chips">
+          <span>Kotlin</span>
+          <span>Jetpack Compose</span>
+          <span>Multi-Agent AI</span>
+          <span>Claude Code</span>
+        </div>
+      </div>
+    </div>
+  </section>
 
 </div>
+</div>
+
+<section id="labs">
+  <div class="inner">
+    <div class="sec-label">MODULE 01 // BEHIND THE SCENES</div>
+    <h2 class="sec-title">BEHIND<br><span style="color:var(--accent)">THE GLASS</span></h2>
+    <p class="sec-lede">
+      Where the technique gets proven before it reaches anything that ships. Each one is an instrument —
+      hand-authored, no framework and no build step — built to make something physical <em>measurable</em>
+      rather than merely to look like it.
+    </p>
+    <div class="spec">
+      <span>WebGL2</span><span>Pure ES modules</span><span>No build step</span>
+      <span>Frame cost measured, not estimated</span>
+    </div>
+
+    <div class="lab-grid">
+      <a class="lab-card lead" href="labs/crt/CRT%20GL.html">
+        <div class="tag">WEBGL2</div>
+        <div class="name">CRT GL</div>
+        <p>The tube as a fragment shader: face curvature, shadow mask, beam, phosphor persistence and a
+           ray-traced light fitting reflected in the glass, solved per pixel.</p>
+        <div class="go">INSPECT →</div>
+      </a>
+      <a class="lab-card" href="labs/reactor/Reactor.html">
+        <div class="tag">WEBGL</div>
+        <div class="name">Reactor Lab</div>
+        <p>A containment core, sphere-traced: a goo core with sub-cores torn out of it by a pulse, nine alloy
+           ring fragments, and a shield that fails on a schedule.</p>
+        <div class="go">INSPECT →</div>
+      </a>
+      <a class="lab-card" href="labs/wormhole/Wormhole.html">
+        <div class="tag">WEBGL</div>
+        <div class="name">Wormhole Lab</div>
+        <p>A domain-warped noise tunnel down the throat of a wormhole, in three flavours.</p>
+        <div class="go">INSPECT →</div>
+      </a>
+    </div>
+
+    <div class="note">
+      <strong>Best on desktop.</strong> These are instruments laid out at around 1560&times;1100. On a narrow
+      screen the control panel folds away behind a chevron so the picture gets the screen to itself, but the
+      control density is still built for a large window. Every lab is WebGL and demanding; if one struggles,
+      <strong>RENDER SCALE</strong> in its panel is the lever, and it already starts lower on integrated graphics.
+    </div>
+  </div>
+</section>
+
+<section id="contact">
+  <div class="inner">
+    <h2 class="sec-title">GET IN TOUCH</h2>
+    <div class="contact-links">
+      <a href="mailto:Alexk413x@gmail.com">Alexk413x@gmail.com</a>
+      <a href="https://www.linkedin.com/in/alexk413x/" target="_blank" rel="noopener">LINKEDIN ↗</a>
+      <a href="https://github.com/Alexk413x" target="_blank" rel="noopener">GITHUB ↗</a>
+      <button id="qr-open" type="button">SHOW QR CODE ▸</button>
+    </div>
+  </div>
+</section>
+
+<div id="qr-dialog" role="dialog" aria-modal="true" aria-labelledby="qr-title" hidden>
+  <div class="qr-panel">
+    <div class="sec-label" id="qr-title">SCAN TO OPEN</div>
+    <canvas id="qr-canvas" aria-label="QR code linking to alexk413x.com"></canvas>
+    <div class="qr-url">alexk413x.com</div>
+    <div class="qr-actions">
+      <button id="qr-save" type="button">SAVE PNG ↓</button>
+      <button id="qr-close" type="button">CLOSE</button>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <a href="Alex%20Koch%20Portfolio.dc.html">PORTFOLIO</a>
+  <a href="Alex%20Koch%20Cinematic%20Intro.dc.html">CINEMATIC INTRO</a>
+  <a href="Alex%20Koch%20Console%20OS.dc.html">CONSOLE OS</a>
+  <a href="Portfolio%20Directions.dc.html">DIRECTIONS</a>
+  <a href="Realistic%20Light%20Roadmap.dc.html">LIGHT ROADMAP</a>
+  <a href="https://github.com/Alexk413x/alex-koch-portfolio">SOURCE</a>
+</footer>
+
+<script src="site/display-lockup.js"></script>
+<script src="site/scenes.js"></script>
+<script src="site/qr.js"></script>
+<script src="site/share.js"></script>
 </body>
 </html>
