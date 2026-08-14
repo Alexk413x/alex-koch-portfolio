@@ -12,3 +12,6 @@ desktop.ini
 .vscode/
 .idea/
 *.swp
+
+# codebase-kg scratch export; the .db is the artifact
+.kg-export.json
