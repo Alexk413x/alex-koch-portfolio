@@ -44,6 +44,7 @@
     ['0',     [4, 7], [7, 1], 'num'],
     ['.',     [4, 8], [7, 2], 'num'],
     ['+',     [4, 10], [6, 4], 'op'],
+    ['1/x',   [1, 5], [3, 2], 'fn2'],
     ['CHS',   [1, 6], null, 'fn'],
     ['±',     null, [7, 3], 'fn'],
     ['ENTER', [3, 6, 2], null, 'ent'],
@@ -51,7 +52,7 @@
 
     // ---- faceplate only ----
     ['√x',  [1, 1], null, 'fn'], ['eˣ',  [1, 2], null, 'fn'], ['10ˣ', [1, 3], null, 'fn'],
-    ['yˣ',  [1, 4], null, 'fn'], ['1/x', [1, 5], null, 'fn'],
+    ['yˣ',  [1, 4], null, 'fn'],
     ['SST', [2, 1], null, 'fn'], ['GTO', [2, 2], null, 'fn'], ['SIN', [2, 3], null, 'fn'],
     ['COS', [2, 4], null, 'fn'], ['TAN', [2, 5], null, 'fn'], ['EEX', [2, 6], null, 'fn'],
     ['R/S', [3, 1], null, 'fn'], ['GSB', [3, 2], null, 'fn'], ['R↓',  [3, 3], null, 'fn'],
@@ -64,27 +65,43 @@
     ['Del',   null, [1, 3], 'util'], ['Undo',  null, [1, 4], 'util'],
     ['M-In',  null, [2, 1], 'util'], ['M-Out', null, [2, 2], 'util'],
     ['Deg',   null, [2, 3], 'fn2'],  ['⌃',     null, [2, 4], 'util'],
-    ['π',     null, [3, 1], 'fn2'],  ['%',     null, [3, 2], 'fn2'], ['!', null, [3, 3], 'fn2'],
+    ['π',     null, [3, 1], 'fn2'],  ['!',     null, [3, 3], 'fn2'],
   ];
 
-  // What each key does. Anything absent is decoration on a faceplate that was never wired up.
+  /* What each key does. BOTH keyboards are wired where the key means something arithmetically; the ones left
+     out are programming and mode keys -- SST, GTO, GSB, R/S, ON, f, g, EEX, Sigma-plus -- which have no meaning
+     without a program store, and the app's chevron, whose real behaviour this page does not know. An inert key
+     is better than a key that does something the real calculator does not. */
   const ACTIONS = {
     '7': () => stack.digit('7'), '8': () => stack.digit('8'), '9': () => stack.digit('9'),
     '4': () => stack.digit('4'), '5': () => stack.digit('5'), '6': () => stack.digit('6'),
     '1': () => stack.digit('1'), '2': () => stack.digit('2'), '3': () => stack.digit('3'),
     '0': () => stack.digit('0'), '.': () => stack.dot(),
+
     '÷': () => stack.op('/'), '×': () => stack.op('*'), '−': () => stack.op('-'), '+': () => stack.op('+'),
     'Enter': () => stack.enter(), 'ENTER': () => stack.enter(),
-    '±': () => stack.neg(), 'CHS': () => stack.neg(),
-    'Del': () => stack.back(), 'C': () => stack.drop(), 'CA': () => stack.clear(),
+
+    // Same operation, different faceplate.
+    '±': () => stack.neg(),      'CHS': () => stack.neg(),
+    'Del': () => stack.back(),   '←': () => stack.back(),
+    'M-In': () => stack.sto(),   'STO': () => stack.sto(),
+    'M-Out': () => stack.rcl(),  'RCL': () => stack.rcl(),
+    '1/x': () => stack.unary('inv'),
+
+    'C': () => stack.drop(), 'CA': () => stack.clear(), 'Undo': () => stack.undo(),
+    'π': () => stack.push(Math.PI), '!': () => stack.unary('fact'),
+    'Deg': () => stack.toggleDeg(),
+
+    '√x': () => stack.unary('sqrt'), 'eˣ': () => stack.unary('exp'), '10ˣ': () => stack.unary('exp10'),
+    'yˣ': () => stack.pow(),
+    'SIN': () => stack.unary('sin'), 'COS': () => stack.unary('cos'), 'TAN': () => stack.unary('tan'),
+    'R↓': () => stack.roll(), 'x≷y': () => stack.swap(),
   };
 
-  /* The app's chevron key is left unwired: what it does in the shipped app is not something this page knows,
-     and guessing would put a behaviour on screen that the real calculator does not have. Swapping there is a
-     two-tap gesture on the stack rows rather than a key, which is why the keypad has no SWAP. */
   const KEYMAP = {
     Enter: 'Enter', ' ': 'Enter', Backspace: 'Del', Escape: 'CA', Delete: 'C',
     '/': '÷', '*': '×', '-': '−', '+': '+', '.': '.', n: '±',
+    u: 'Undo', p: 'π', r: '1/x', '^': 'yˣ', '!': '!', c: 'CA',
   };
 
   // Percent rectangle for a cell in a grid, with a small inset so keys read as separate caps at any size.
@@ -127,6 +144,10 @@
   function render() {
     const v = stack.view();
     v.levels.forEach((lv, i) => { rows[i].querySelector('.v').textContent = lv.text; });
+    // The unit key states the CURRENT mode, so its cap is part of the readout rather than a fixed label.
+    const deg = pad.querySelector('[data-key="Deg"]');
+    if (deg) deg.textContent = stack.isDeg() ? 'Deg' : 'Rad';
+
     const inRow = rows[rows.length - 1];
     inRow.querySelector('.v').textContent = v.x;
     inRow.classList.toggle('typing', v.typing);

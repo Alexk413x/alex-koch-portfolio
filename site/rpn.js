@@ -22,6 +22,38 @@
   function createStack() {
     let cells = [];        // bottom .. top; the last element is X. EMPTY is a real state, not zero.
     let entry = null;      // digits being typed on the IN line, or null when nothing is being entered
+    let mem = 0;           // the single memory register behind STO/RCL and M-In/M-Out
+    let degrees = true;    // trig unit; the app ships showing Deg
+    const past = [];       // undo history, whole snapshots
+    const PAST_MAX = 200;
+
+    /* Undo keeps whole snapshots rather than inverse operations. Inverting is where undo goes wrong: some of
+       these are lossy (drop, clear, a binary op consuming both operands) and cannot be run backwards at all. */
+    function mark() {
+      past.push({ cells: cells.slice(), entry, mem, degrees });
+      if (past.length > PAST_MAX) past.shift();
+    }
+
+    const rad = (x) => (degrees ? (x * Math.PI) / 180 : x);
+
+    // Integer factorial only, and only where the result is representable; 171! is already Infinity.
+    function factorial(n) {
+      if (!Number.isInteger(n) || n < 0 || n > 170) return NaN;
+      let r = 1;
+      for (let i = 2; i <= n; i++) r *= i;
+      return r;
+    }
+
+    const UNARY = {
+      sqrt: Math.sqrt,
+      inv: (x) => 1 / x,
+      exp: Math.exp,
+      exp10: (x) => Math.pow(10, x),
+      sin: (x) => Math.sin(rad(x)),
+      cos: (x) => Math.cos(rad(x)),
+      tan: (x) => Math.tan(rad(x)),
+      fact: factorial,
+    };
 
     const top = () => (cells.length ? cells[cells.length - 1] : 0);
 
@@ -41,6 +73,7 @@
 
     const api = {
       digit(c) {
+        mark();
         if (entry === null) entry = '';
         if (entry === '0' && c !== '.') entry = '';
         entry += c;
@@ -48,6 +81,7 @@
       },
 
       dot() {
+        mark();
         if (entry === null) entry = '0';
         if (!entry.includes('.')) entry += '.';
         return api;
@@ -55,12 +89,14 @@
 
       // Negates whatever is currently showing: the entry while typing, X otherwise.
       neg() {
+        mark();
         if (entry !== null) entry = entry.startsWith('-') ? entry.slice(1) : '-' + entry;
         else if (cells.length) cells[cells.length - 1] = -top();
         return api;
       },
 
       back() {
+        mark();
         if (entry === null) return api;
         entry = entry.slice(0, -1);
         if (entry === '' || entry === '-') entry = null;
@@ -68,18 +104,21 @@
       },
 
       enter() {
+        mark();
         commit();
         return api;
       },
 
       // Cancels a half-typed number if there is one; otherwise discards X.
       drop() {
+        mark();
         if (entry !== null) entry = null;
         else cells.pop();
         return api;
       },
 
       swap() {
+        mark();
         commit();
         if (cells.length >= 2) {
           const n = cells.length;
@@ -89,6 +128,7 @@
       },
 
       clear() {
+        mark();
         cells = [];
         entry = null;
         return api;
@@ -98,10 +138,64 @@
          X. With fewer than two values there is nothing to operate on, so the press is ignored rather than
          inventing a zero operand. */
       op(sym) {
+        mark();
         commit();
         if (cells.length < 2) return api;
         const b = cells.pop(), a = cells.pop();
         cells.push(sym === '+' ? a + b : sym === '-' ? a - b : sym === '*' ? a * b : a / b);
+        return api;
+      },
+
+      /* Unary functions consume X and push the result. Anything undefined -- a negative square root, 1/0, a
+         factorial of 2.5 -- lands as NaN or Infinity and formats as ERROR rather than being hidden. */
+      unary(name) {
+        mark();
+        commit();
+        if (!cells.length || !UNARY[name]) return api;
+        cells.push(UNARY[name](cells.pop()));
+        return api;
+      },
+
+      // y to the power of x, consuming both.
+      pow() {
+        mark();
+        commit();
+        if (cells.length < 2) return api;
+        const b = cells.pop(), a = cells.pop();
+        cells.push(Math.pow(a, b));
+        return api;
+      },
+
+      // Roll down: X goes to the bottom and everything else moves up one.
+      roll() {
+        mark();
+        commit();
+        if (cells.length >= 2) cells.unshift(cells.pop());
+        return api;
+      },
+
+      push(v) {
+        mark();
+        commit();
+        cells.push(v);
+        return api;
+      },
+
+      sto() { mark(); commit(); if (cells.length) mem = cells[cells.length - 1]; return api; },
+      rcl() { mark(); commit(); cells.push(mem); return api; },
+
+      toggleDeg() { mark(); degrees = !degrees; return api; },
+      isDeg: () => degrees,
+
+      /* Restores the last snapshot. Nothing to restore is a no-op rather than an error: pressing undo on a
+         fresh calculator should do nothing, not complain. */
+      undo() {
+        const prev = past.pop();
+        if (!prev) return api;
+        cells = prev.cells;
+        entry = prev.entry;
+        mem = prev.mem;
+        degrees = prev.degrees;
         return api;
       },
 
