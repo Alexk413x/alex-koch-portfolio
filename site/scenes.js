@@ -18,6 +18,7 @@
 
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
   let hold = .5, exit = .7, vh = 1, queued = false;
+  let mIn = .18, mOut = .22;   // morph dead zones, read from the stylesheet in measure()
 
   /* Reads the scene runway back off the stylesheet. site.css is the only place --scene-hold and --scene-exit are
      written, so the height the stage stays pinned for and the range the exit is scrubbed across cannot disagree —
@@ -26,6 +27,8 @@
     const cs = getComputedStyle(document.documentElement);
     hold = parseFloat(cs.getPropertyValue('--scene-hold')) || 0;
     exit = parseFloat(cs.getPropertyValue('--scene-exit')) || 1;
+    mIn = parseFloat(cs.getPropertyValue('--morph-hold-in')) || 0;
+    mOut = parseFloat(cs.getPropertyValue('--morph-hold-out')) || 0;
     vh = window.innerHeight || 1;
   }
 
@@ -43,12 +46,15 @@
    */
   const morphStage = document.getElementById('app-stage');
   const morphScroll = document.getElementById('app-scroll');
-  const SCRUB = .85;   // fraction of the pin spent morphing; the rest holds the finished state before unpinning
-
+  /* The pin is three parts: sit at the faceplate, morph, sit at the finished app. The holds are what make the
+     two pure states findable — with the scrub starting at the first pixel of the pin, each end state exists at
+     exactly one scroll position and reading either one is an accident. */
   function morph(y) {
     if (!morphStage || !morphScroll) return;
     const run = morphScroll.offsetHeight - morphStage.offsetHeight;
-    const t = run > 0 ? ease(((y - morphScroll.offsetTop) / run) / SCRUB) : 1;
+    const p = run > 0 ? (y - morphScroll.offsetTop) / run : 1;
+    const span = 1 - mIn - mOut;
+    const t = span > 0 ? ease((p - mIn) / span) : (p >= 1 ? 1 : 0);
     morphStage.style.setProperty('--m', t.toFixed(4));
     morphStage.classList.toggle('is-new', t > .5);
     // Keys stay inert until the shipped state is essentially reached, so a scroll-past cannot half-press one.

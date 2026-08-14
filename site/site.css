@@ -45,8 +45,13 @@
   --scene-hold: .5;
   --scene-exit: .7;
 
-  /* Viewport heights of scrub for the calculator morph, and the only declaration of it. */
-  --morph-run: 1.2;
+  /* The calculator morph's runway, in viewport heights, and the only declaration of it. The two holds are
+     fractions of that runway spent sitting still at each pure state — without them the faceplate and the
+     finished app each exist at exactly one scroll position, which is impossible to land on deliberately.
+     scenes.js reads all three back rather than restating them. */
+  --morph-run: 1.8;
+  --morph-hold-in: .18;
+  --morph-hold-out: .22;
 }
 
 *, *::before, *::after { box-sizing: border-box }
