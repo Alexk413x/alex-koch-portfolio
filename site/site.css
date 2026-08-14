@@ -259,6 +259,15 @@ a:hover { color: var(--accent-hover) }
 
 .cta-row .primary:hover { background: var(--accent-hover); color: var(--on-accent) }
 
+.cta-row .secondary {
+  border: 1px solid var(--border-neutral); color: var(--text-strong);
+  font-family: var(--font-display); font-weight: 700; font-size: 14px;
+  padding: 12px 20px; border-radius: var(--radius-cta);
+  transition: border-color .18s var(--ease-settle), color .18s var(--ease-settle);
+}
+
+.cta-row .secondary:hover { border-color: var(--accent); color: var(--accent) }
+
 .phone-wrap { justify-self: center; display: flex; flex-direction: column; align-items: center; gap: 12px }
 
 .phone {

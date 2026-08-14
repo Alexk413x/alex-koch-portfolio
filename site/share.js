@@ -7,7 +7,8 @@
 (function () {
   'use strict';
 
-  const SITE_URL = 'https://alexk413x.com';
+  // The www host, deliberately: the apex alexk413x.com does not resolve, so a code encoding it scans to nothing.
+  const SITE_URL = 'https://www.alexk413x.com';
   const DARK = '#341706';      // --orange-950
   const LIGHT = '#fff4ec';     // --orange-100
   const QUIET = 4;             // modules of margin the spec requires around the code
