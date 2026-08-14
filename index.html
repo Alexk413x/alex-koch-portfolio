@@ -76,42 +76,53 @@
 </div>
 </div>
 
-<section id="app">
-  <div class="inner app-grid">
-    <div>
-      <h2 class="sec-title" data-reveal>RPN<br><span style="color:var(--accent)">DOMINATOR</span></h2>
-      <p class="sec-lede" data-reveal>
-        An RPN calculator built for a touchscreen instead of a replica HP 15c faceplate. A stack you can see,
-        drag to reorder, swap with two taps and swipe to delete.
-      </p>
+<!-- One calculator, not two. Scroll interpolates it from a replica faceplate into the shipped app; the DOM tree
+     and the live stack machine behind it never change. -->
+<div id="app-scroll">
+<div id="app-stage">
+  <section id="app">
+    <div class="inner app-grid">
+      <div class="app-copy">
+        <h2 class="sec-title">RPN<br><span style="color:var(--accent)">DOMINATOR</span></h2>
+        <p class="sec-lede">
+          Most RPN calculators on the store replicate the HP 15c faceplate down to the button images. This one
+          uses the vertical space a phone actually has.
+        </p>
 
-      <div class="stats" data-reveal>
-        <div><b>0</b><span>Equals keys</span></div>
-        <div><b>5.0+</b><span>Android supported</span></div>
-        <div><b>2019</b><span>Rewritten in Kotlin</span></div>
-      </div>
-
-      <div class="cta-row" data-reveal>
-        <a class="primary" href="https://play.google.com/store/apps/details?id=com.gmail.alexk413x.RPN_Dominator_Calculator" target="_blank" rel="noopener">LAUNCH ON PLAY ↗</a>
-        <a class="secondary" href="https://www.alexk413x.com/android" target="_blank" rel="noopener">FULL WRITE-UP ↗</a>
-      </div>
-    </div>
-
-    <div class="phone-wrap" data-reveal>
-      <div class="phone" id="rpn" tabindex="0" role="group" aria-label="Working RPN calculator demo">
-        <div class="phone-bar"><span>RPN DOMINATOR</span><span class="ver">413X STUDIOS</span></div>
-        <div class="rpn-readout">
-          <div class="rpn-level"><span class="n">4:</span><span class="v"></span></div>
-          <div class="rpn-level"><span class="n">3:</span><span class="v"></span></div>
-          <div class="rpn-level"><span class="n">2:</span><span class="v"></span></div>
-          <div class="rpn-x">0</div>
+        <div class="then-now">
+          <div class="tn then"><b>Then</b>One-line display &middot; cramped keys &middot; a calculator pretending to be a 1982 calculator</div>
+          <div class="tn now"><b>Now</b>Visible stack &middot; touch-sized keys &middot; drag to reorder, two taps to swap, swipe to delete</div>
         </div>
-        <div class="rpn-pad"></div>
+
+        <div class="stats">
+          <div><b>0</b><span>Equals keys</span></div>
+          <div><b>5.0+</b><span>Android supported</span></div>
+          <div><b>2019</b><span>Rewritten in Kotlin</span></div>
+        </div>
+
+        <div class="cta-row">
+          <a class="primary" href="https://play.google.com/store/apps/details?id=com.gmail.alexk413x.RPN_Dominator_Calculator" target="_blank" rel="noopener">LAUNCH ON PLAY ↗</a>
+          <a class="secondary" href="https://www.alexk413x.com/android" target="_blank" rel="noopener">FULL WRITE-UP ↗</a>
+        </div>
       </div>
-      <div class="phone-note">live &mdash; click the keys, or focus it and type</div>
+
+      <div class="phone-wrap">
+        <div class="phone" id="rpn" tabindex="0" role="group" aria-label="Working RPN calculator demo">
+          <div class="phone-bar"><span>RPN DOMINATOR</span><span class="ver">413X STUDIOS</span></div>
+          <div class="rpn-readout">
+            <div class="rpn-level"><span class="n">4:</span><span class="v"></span></div>
+            <div class="rpn-level"><span class="n">3:</span><span class="v"></span></div>
+            <div class="rpn-level"><span class="n">2:</span><span class="v"></span></div>
+            <div class="rpn-x">0</div>
+          </div>
+          <div class="rpn-pad"></div>
+        </div>
+        <div class="phone-note">live &mdash; click the keys, or focus it and type</div>
+      </div>
     </div>
-  </div>
-</section>
+  </section>
+</div>
+</div>
 
 <section id="experience">
   <div class="inner">

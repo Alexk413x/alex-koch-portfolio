@@ -39,8 +39,14 @@
     });
   }
 
+  /* The morph parks pointer-events on the pad until the calculator reaches its shipped state. That stops a
+     mouse but NOT a keyboard: a focused button still activates on Enter, and a synthetic click ignores
+     pointer-events entirely. Reading the same property here gates every path from one source of truth. */
+  const interactive = () => getComputedStyle(pad).pointerEvents !== 'none';
+
   // Flashes the cap that just fired, so a keyboard press is as visible as a click.
   function press(label) {
+    if (!interactive()) return;
     const key = KEYS.find((k) => k[0] === label);
     if (!key) return;
     key[1]();

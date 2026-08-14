@@ -44,6 +44,9 @@
      and the runway the exit is scrubbed across cannot drift apart. */
   --scene-hold: .5;
   --scene-exit: .7;
+
+  /* Viewport heights of scrub for the calculator morph, and the only declaration of it. */
+  --morph-run: 1.2;
 }
 
 *, *::before, *::after { box-sizing: border-box }
@@ -228,10 +231,36 @@ a:hover { color: var(--accent-hover) }
 
 /* ---------------- featured app ---------------- */
 
+/* The morph's pin. Height is the viewport plus the scrub runway; scenes.js derives progress from exactly this
+   geometry, so the runway is declared once, here. */
+#app-scroll { position: relative; height: calc(100vh + var(--morph-run) * 100vh); height: calc(100dvh + var(--morph-run) * 100dvh) }
+#app-stage { position: sticky; top: 0; height: 100vh; height: 100dvh; display: flex; align-items: center; overflow: hidden }
+
 #app {
-  position: relative; padding: 110px var(--pad-page); border-top: 1px solid var(--hairline);
+  position: relative; width: 100%; padding: 90px var(--pad-page) 60px;
+  border-top: 1px solid var(--hairline);
   background: linear-gradient(180deg, var(--ink), var(--ink-panel) 60%, var(--ink));
 }
+
+/* Every fallback is the SHIPPED state, so with no JS, reduced motion, or a short viewport the calculator is the
+   finished one rather than a beige faceplate nobody asked to see. */
+.then-now { margin-top: 24px; display: grid; gap: 8px; max-width: 62ch }
+
+.tn {
+  font-family: var(--font-mono); font-size: 11px; line-height: 1.7; letter-spacing: .06em;
+  color: var(--text-faint); transition: color .3s var(--ease-settle);
+}
+
+.tn b {
+  display: inline-block; min-width: 52px; font-weight: 500;
+  text-transform: uppercase; letter-spacing: .18em;
+}
+
+/* Which half of the sentence is true right now is itself part of the morph. */
+#app-stage:not(.is-new) .then { color: var(--text-body) }
+#app-stage:not(.is-new) .then b { color: var(--amber) }
+#app-stage.is-new .now { color: var(--text-body) }
+#app-stage.is-new .now b { color: var(--accent) }
 
 /* auto, not a fraction: the phone is a fixed 280px, so a fractional column pads it with dead space on both
    sides and the gap reads as a hole rather than a gutter. */
@@ -271,28 +300,44 @@ a:hover { color: var(--accent-hover) }
 .phone-wrap { justify-self: center; display: flex; flex-direction: column; align-items: center; gap: 12px }
 
 .phone {
-  width: min(280px, 76vw); overflow: hidden;
-  border-radius: 30px; background: #101014; border: 1px solid rgba(221, 106, 32, .3);
-  box-shadow: 0 30px 60px -24px rgba(0, 0, 0, .85), 0 0 70px rgba(221, 106, 32, .22);
+  width: min(var(--m-w, 280px), 76vw); overflow: hidden;
+  border-radius: var(--m-r, 30px);
+  background: var(--m-body, #101014);
+  border: 1px solid var(--m-edge, rgba(221, 106, 32, .3));
+  box-shadow: 0 30px 60px -24px rgba(0, 0, 0, .85), 0 0 70px rgba(221, 106, 32, var(--m-glow, .22));
 }
 
 .phone:focus-visible { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--amber-focus), 0 30px 60px -24px rgba(0, 0, 0, .85) }
 
+/* The title bar belongs to the app, not to a faceplate, so it grows from nothing. */
 .phone-bar {
-  display: flex; justify-content: space-between; padding: 14px 18px 8px;
+  display: flex; justify-content: space-between; align-items: flex-end; overflow: hidden;
+  height: var(--m-bar-h, 30px); opacity: var(--m-bar-o, 1); padding: 0 18px 8px;
   font-family: var(--font-mono); font-size: 10px; letter-spacing: .16em; color: var(--amber);
 }
 
 .phone-bar .ver { color: var(--text-faint) }
-.phone-note { font-family: var(--font-mono); font-size: 10.5px; letter-spacing: .08em; color: var(--text-faint) }
 
-.rpn-readout { padding: 8px 18px 14px; text-align: right; font-family: var(--font-mono) }
-.rpn-level { display: flex; justify-content: space-between; font-size: 11px; line-height: 1.9; color: var(--text-faint) }
-.rpn-level .v { color: var(--text-muted) }
+.phone-note {
+  opacity: var(--m-note-o, 1);
+  font-family: var(--font-mono); font-size: 10.5px; letter-spacing: .08em; color: var(--text-faint);
+}
+
+.rpn-readout { padding: 10px 18px 14px; text-align: right; font-family: var(--font-mono); background: var(--m-screen, transparent) }
+
+/* Height, not just opacity: on the faceplate these levels take up no room at all, which is the entire point
+   being made. Collapsing them is what turns the readout back into a one-line display. */
+.rpn-level {
+  display: flex; justify-content: space-between; overflow: hidden;
+  height: var(--m-row-h, 21px); opacity: var(--m-row-o, 1);
+  font-size: 11px; line-height: 1.9; color: var(--m-ink, var(--text-faint));
+}
+
+.rpn-level .v { color: var(--m-ink, var(--text-muted)) }
 
 .rpn-x {
-  font-family: var(--font-display); font-weight: 900; font-size: 34px; letter-spacing: -1.5px;
-  color: var(--text-strong); margin-top: 6px; min-height: 42px; overflow-wrap: anywhere;
+  font-family: var(--font-display); font-weight: 900; font-size: var(--m-x-size, 34px); letter-spacing: -1.5px;
+  color: var(--m-ink, var(--text-strong)); margin-top: 6px; min-height: 42px; overflow-wrap: anywhere;
 }
 
 /* The caret marks that a number is mid-entry rather than sitting on the stack — the one piece of state a
@@ -301,12 +346,15 @@ a:hover { color: var(--accent-hover) }
 
 .rpn-pad {
   display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px;
-  background: rgba(221, 106, 32, .14); border-top: 1px solid rgba(221, 106, 32, .14);
+  background: var(--m-rule, rgba(221, 106, 32, .14));
+  border-top: 1px solid var(--m-rule, rgba(221, 106, 32, .14));
+  pointer-events: var(--m-live, auto);
 }
 
 .rpn-pad button {
-  font-family: var(--font-mono); font-size: 13px; cursor: pointer;
-  background: #191419; border: 0; color: rgba(255, 255, 255, .75); padding: 15px 0;
+  font-family: var(--font-mono); font-size: var(--m-key-size, 13px); cursor: pointer;
+  background: var(--m-key, #191419); border: 0; color: var(--m-key-ink, rgba(255, 255, 255, .75));
+  padding: var(--m-key-pad, 15px) 0;
   transition: background .12s var(--ease-settle), color .12s var(--ease-settle);
 }
 
@@ -549,6 +597,15 @@ footer a:hover { color: var(--accent) }
 
 /* vh caps, not replacements: the width clamp still governs on a tall narrow phone, and the height cap only bites
    when the viewport is too short to seat the type the width asked for. */
+/* A pinned scrubbed morph needs room to be legible. Below this the section is a plain block already in its
+   shipped state — the threshold matches the media query scenes.js checks, or the two disagree and the page
+   pins a scene the script has stopped driving. */
+@media (max-height: 620px) {
+  #app-scroll { height: auto }
+  #app-stage { position: static; height: auto; display: block; overflow: visible }
+  #app { padding: 90px var(--pad-page) }
+}
+
 @media (max-height: 500px) {
   .scene { padding-top: 54px }
   .kicker { font-size: min(clamp(20px, 3.2vw, 44px), 7vh) }
@@ -566,6 +623,9 @@ footer a:hover { color: var(--accent) }
   html { scroll-behavior: auto }
   #scroll { height: auto }
   #stage { position: static; height: auto; min-height: 100vh }
+  #app-scroll { height: auto }
+  #app-stage { position: static; height: auto; display: block; overflow: visible }
+  .tn { transition: none }
   .scene { position: static; min-height: 100vh; opacity: 1; transform: none; filter: none }
   .kicker, .aside, .lockup span { animation: none }
   .ring .r-dash, .ring .r-hair, .ring .r-arc, .cue span, .rpn-x.typing::after { animation: none }
