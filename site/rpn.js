@@ -118,8 +118,9 @@
         const eff = entry === null ? cells
           : (lift ? cells.concat([entry]) : cells.slice(0, -1).concat([entry]));
         const n = eff.length;
+        // Levels run 4, 3, 2, 1 from the top of the readout down, matching the app: level 1 is the top of stack.
         const levels = [];
-        for (let i = DEPTH; i >= 2; i--) {
+        for (let i = DEPTH; i >= 1; i--) {
           const v = eff[n - i];
           levels.push({ label: i, text: v === undefined ? '' : format(v) });
         }

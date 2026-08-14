@@ -234,7 +234,14 @@ a:hover { color: var(--accent-hover) }
 /* The morph's pin. Height is the viewport plus the scrub runway; scenes.js derives progress from exactly this
    geometry, so the runway is declared once, here. */
 #app-scroll { position: relative; height: calc(100vh + var(--morph-run) * 100vh); height: calc(100dvh + var(--morph-run) * 100dvh) }
-#app-stage { position: sticky; top: 0; height: 100vh; height: 100dvh; display: flex; align-items: center; overflow: hidden }
+/* --m defaults to the shipped state HERE, on the element scenes.js writes to: an inline style outranks this, so
+   the rig can drive it, while no-JS and reduced-motion inherit the finished calculator. Declaring the default on
+   .phone instead would shadow the inherited value and pin the morph at 1 forever. */
+#app-stage {
+  --m: 1;
+  position: sticky; top: 0; height: 100vh; height: 100dvh;
+  display: flex; align-items: center; overflow: hidden;
+}
 
 #app {
   position: relative; width: 100%; padding: 90px var(--pad-page) 60px;
@@ -299,12 +306,21 @@ a:hover { color: var(--accent-hover) }
 
 .phone-wrap { justify-self: center; display: flex; flex-direction: column; align-items: center; gap: 12px }
 
+/* THE MORPH RUNS ENTIRELY IN CSS off one scalar, --m, which scenes.js writes on the stage each frame. Every
+   number below is "old + (new - old) * m"; every colour is a color-mix by the same scalar. Keeping both halves
+   of the transition in one place is the point -- a morph split across CSS and JS is two descriptions of it.
+   Each declaration states the SHIPPED value first, so a browser without color-mix, or a page with no JS, gets
+   the finished calculator rather than a beige faceplate nobody asked to see. */
 .phone {
-  width: min(var(--m-w, 280px), 76vw); overflow: hidden;
-  border-radius: var(--m-r, 30px);
-  background: var(--m-body, #101014);
-  border: 1px solid var(--m-edge, rgba(221, 106, 32, .3));
-  box-shadow: 0 30px 60px -24px rgba(0, 0, 0, .85), 0 0 70px rgba(221, 106, 32, var(--m-glow, .22));
+  --mix: calc((1 - var(--m)) * 100%);
+  width: min(calc((330 + (280 - 330) * var(--m)) * 1px), 76vw);
+  overflow: hidden;
+  border-radius: calc((6 + (30 - 6) * var(--m)) * 1px);
+  background: #101014;
+  background: color-mix(in srgb, #d8d4c8 var(--mix), #101014);
+  border: 1px solid rgba(221, 106, 32, .3);
+  border-color: color-mix(in srgb, #8a8578 var(--mix), rgba(221, 106, 32, .3));
+  box-shadow: 0 30px 60px -24px rgba(0, 0, 0, .85), 0 0 70px rgba(221, 106, 32, calc(var(--m) * .22));
 }
 
 .phone:focus-visible { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--amber-focus), 0 30px 60px -24px rgba(0, 0, 0, .85) }
@@ -312,57 +328,91 @@ a:hover { color: var(--accent-hover) }
 /* The title bar belongs to the app, not to a faceplate, so it grows from nothing. */
 .phone-bar {
   display: flex; justify-content: space-between; align-items: flex-end; overflow: hidden;
-  height: var(--m-bar-h, 30px); opacity: var(--m-bar-o, 1); padding: 0 18px 8px;
+  height: calc(var(--m) * 30px); opacity: calc(max(0, var(--m) - .55) / .45);
+  padding: 0 14px 6px;
   font-family: var(--font-mono); font-size: 10px; letter-spacing: .16em; color: var(--amber);
 }
 
 .phone-bar .ver { color: var(--text-faint) }
 
 .phone-note {
-  opacity: var(--m-note-o, 1);
+  opacity: calc(max(0, var(--m) - .9) / .1);
   font-family: var(--font-mono); font-size: 10.5px; letter-spacing: .08em; color: var(--text-faint);
 }
 
-.rpn-readout { padding: 10px 18px 14px; text-align: right; font-family: var(--font-mono); background: var(--m-screen, transparent) }
+.rpn-readout { padding: calc(8px + var(--m) * 4px) 0 0; display: grid; gap: 2px }
 
-/* Height, not just opacity: on the faceplate these levels take up no room at all, which is the entire point
-   being made. Collapsing them is what turns the readout back into a one-line display. */
-.rpn-level {
-  display: flex; justify-content: space-between; overflow: hidden;
-  height: var(--m-row-h, 21px); opacity: var(--m-row-o, 1);
-  font-size: 11px; line-height: 1.9; color: var(--m-ink, var(--text-faint));
+/* Height, not just opacity: on a faceplate the upper stack levels take up no room at all, and collapsing them
+   is what turns the readout back into the one-line display an HP has. The IN row never collapses -- it is the
+   current line in both machines. */
+.rpn-row {
+  display: flex; justify-content: space-between; align-items: center; overflow: hidden;
+  height: calc((14 + (30 - 14) * var(--m)) * 1px);
+  padding: 0 14px;
+  font-family: var(--font-mono);
+  background: #1c1c1c;
+  background: color-mix(in srgb, #cfd3bd var(--mix), #1c1c1c);
 }
 
-.rpn-level .v { color: var(--m-ink, var(--text-muted)) }
+.rpn-row:not(.rpn-in) { height: calc(var(--m) * 30px); opacity: var(--m) }
 
-.rpn-x {
-  font-family: var(--font-display); font-weight: 900; font-size: var(--m-x-size, 34px); letter-spacing: -1.5px;
-  color: var(--m-ink, var(--text-strong)); margin-top: 6px; min-height: 42px; overflow-wrap: anywhere;
+.rpn-row .n { font-size: 11px; color: rgba(255, 255, 255, .38); color: color-mix(in srgb, #5c6350 var(--mix), rgba(255, 255, 255, .38)) }
+
+.rpn-row .v {
+  font-size: calc((15 + (19 - 15) * var(--m)) * 1px);
+  color: #fff; color: color-mix(in srgb, #23281c var(--mix), #fff);
+  overflow-wrap: anywhere;
 }
 
-/* The caret marks that a number is mid-entry rather than sitting on the stack — the one piece of state a
-   stack machine's display would otherwise hide. */
-.rpn-x.typing::after { content: '_'; color: var(--accent); animation: ak-blink 1.05s steps(1) infinite }
+.rpn-in { height: calc((26 + (30 - 26) * var(--m)) * 1px) }
+.rpn-in .v.typing::after, .rpn-in.typing .v::after { content: '_'; color: var(--accent); animation: ak-blink 1.05s steps(1) infinite }
 
+/* The pad is a positioning context, not a grid: the two keyboards have different grids (10x4 and 4x7) and a
+   grid-template cannot be interpolated between them. Each key carries both rectangles and moves between them. */
 .rpn-pad {
-  display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px;
-  background: var(--m-rule, rgba(221, 106, 32, .14));
-  border-top: 1px solid var(--m-rule, rgba(221, 106, 32, .14));
-  pointer-events: var(--m-live, auto);
+  position: relative;
+  height: calc((116 + (300 - 116) * var(--m)) * 1px);
+  margin-top: calc(4px + var(--m) * 4px);
+  pointer-events: none;
 }
 
-.rpn-pad button {
-  font-family: var(--font-mono); font-size: var(--m-key-size, 13px); cursor: pointer;
-  background: var(--m-key, #191419); border: 0; color: var(--m-key-ink, rgba(255, 255, 255, .75));
-  padding: var(--m-key-pad, 15px) 0;
-  transition: background .12s var(--ease-settle), color .12s var(--ease-settle);
+#app-stage.is-live .rpn-pad { pointer-events: auto }
+
+.rpn-pad .k {
+  position: absolute; border: 0; cursor: pointer; padding: 0;
+  left: calc((var(--x0) + (var(--x1) - var(--x0)) * var(--m)) * 1%);
+  top: calc((var(--y0) + (var(--y1) - var(--y0)) * var(--m)) * 1%);
+  width: calc((var(--w0) + (var(--w1) - var(--w0)) * var(--m)) * 1% - 2px);
+  height: calc((var(--h0) + (var(--h1) - var(--h0)) * var(--m)) * 1% - 2px);
+  opacity: calc(var(--o0) + (var(--o1) - var(--o0)) * var(--m));
+  margin: 1px;
+  border-radius: calc((2 + (6 - 2) * var(--m)) * 1px);
+  font-family: var(--font-mono);
+  font-size: calc((7.5 + (13 - 7.5) * var(--m)) * 1px);
+  line-height: 1;
+  background: #b4530e;
+  background: color-mix(in srgb, #3f4148 var(--mix), #b4530e);
+  color: #fff;
+  color: color-mix(in srgb, #e8e6dd var(--mix), #fff);
+  transition: filter .12s var(--ease-settle);
 }
 
-.rpn-pad button.op { color: var(--accent) }
-.rpn-pad button.ent { color: var(--amber) }
-.rpn-pad button:hover { background: var(--ink-hot) }
-.rpn-pad button.hit { background: var(--accent); color: var(--on-accent) }
-.rpn-pad button:focus-visible { outline: none; background: var(--ink-hot); box-shadow: inset 0 0 0 1px var(--accent) }
+/* The app's key ramp, read off the shipped screenshots: utility rows darkest, digits brightest, the operator
+   column and Enter a step below the digits. On the faceplate these all sit at the same slate. */
+.rpn-pad .k-util { background: #5c2a0d; background: color-mix(in srgb, #3f4148 var(--mix), #5c2a0d) }
+.rpn-pad .k-fn2  { background: #a04a0c; background: color-mix(in srgb, #3f4148 var(--mix), #a04a0c) }
+.rpn-pad .k-op,
+.rpn-pad .k-ent  { background: #a04a0c; background: color-mix(in srgb, #3f4148 var(--mix), #a04a0c) }
+
+/* f and g are the faceplate's own accents and have no counterpart in the app, so they only ever show in gold
+   and blue while the old keyboard is still on screen. */
+.rpn-pad .k-shift-f { background: color-mix(in srgb, #c8a23c var(--mix), #b4530e) }
+.rpn-pad .k-shift-g { background: color-mix(in srgb, #4d7fa8 var(--mix), #b4530e) }
+
+.rpn-pad .k:hover { filter: brightness(1.25) }
+.rpn-pad .k.hit { background: var(--accent); color: var(--on-accent) }
+.rpn-pad .k:focus-visible { outline: none; box-shadow: inset 0 0 0 1px var(--accent) }
+.rpn-pad .hp-only { pointer-events: none }
 
 /* ---------------- experience ---------------- */
 
