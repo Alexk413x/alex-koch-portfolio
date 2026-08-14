@@ -68,10 +68,9 @@
     ['π',     null, [3, 1], 'fn2'],  ['!',     null, [3, 3], 'fn2'],
   ];
 
-  /* What each key does. BOTH keyboards are wired where the key means something arithmetically. Left out are the
-     faceplate's programming and mode keys -- SST, GTO, GSB, R/S, ON, f, g, EEX, Sigma-plus -- which mean nothing
-     without a program store, and the app's chevron, which unfolds two further rows of functions in the shipped
-     app: that would take the app grid from 4x7 to 4x9 and change the morph's end state with it. */
+  /* What each key does. Both keyboards are wired wherever the key means something arithmetically; the rest are
+     inert -- the faceplate's programming and mode keys (SST, GTO, GSB, R/S, ON, f, g, EEX, Sigma-plus) and the
+     app's chevron. This demonstrates the stack; it is not a reimplementation of either calculator. */
   const ACTIONS = {
     '7': () => stack.digit('7'), '8': () => stack.digit('8'), '9': () => stack.digit('9'),
     '4': () => stack.digit('4'), '5': () => stack.digit('5'), '6': () => stack.digit('6'),
