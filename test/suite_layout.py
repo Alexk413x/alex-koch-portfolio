@@ -3,7 +3,9 @@ import urllib.request
 
 NAME = 'layout'
 
-WIDTHS = [1600, 1400, 1280, 1150, 1024, 900, 860]
+# 830 is the last width before the 820px rule hides every link but the external one, so it is where a nav that
+# has grown an item too many wraps first. Anything narrower is testing the collapsed nav, not this one.
+WIDTHS = [1600, 1400, 1280, 1150, 1024, 900, 860, 830]
 SECTIONS = ['cartographer', 'experience', 'labs', 'contact']
 
 
