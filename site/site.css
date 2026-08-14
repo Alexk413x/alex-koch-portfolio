@@ -356,8 +356,9 @@ a:hover { color: var(--accent-hover) }
 .phone {
   --mix: calc((1 - var(--m)) * 100%);
   width: min(calc((470 + (330 - 470) * var(--m)) * 1px), 82vw);
-  /* A bezel that is nothing on a faceplate and a real frame on a phone: the padding IS the chassis. */
-  padding: calc(var(--m) * 10px);
+  /* The padding IS the chassis. A faceplate needs a case around its plate, not just a hairline, or it reads as a
+     picture of a calculator; a phone needs a wider one. Both get a frame, the phone's is deeper. */
+  padding: calc(6px + var(--m) * 4px);
   border-radius: calc((6 + (38 - 6) * var(--m)) * 1px);
   background: #16161a;
   background: color-mix(in srgb, #2b2b2d var(--mix), #16161a);
@@ -392,9 +393,30 @@ a:hover { color: var(--accent-hover) }
 /* The brushed plate the LCD is set into; it is the phone's screen surround by the end. */
 .rpn-readout {
   perspective: 700px;
-  padding: calc(8px + var(--m) * 4px) 0 0; display: grid; gap: 2px;
+  /* Side padding only while it is a faceplate: that is what seats the LCD INTO the brushed plate instead of
+     letting it run edge to edge. The phone's screen has no surround to show, so it goes to zero. */
+  padding: calc(8px + var(--m) * 4px) calc((1 - var(--m)) * 10px) 0;
+  display: grid; gap: 2px;
   background: transparent;
   background: color-mix(in srgb, #a9aeb2 var(--mix), transparent);
+}
+
+/* The brushed strip under the LCD, closing the surround the readout's padding opens on the other three sides.
+   HEIGHT, not opacity: on the phone this part is absent rather than transparent, and collapsing it is what lets
+   the keypad close up against the screen. Hairlines are inset shadows so they add no height at zero. */
+.rpn-band {
+  height: calc((1 - var(--m)) * 16px);
+  overflow: hidden;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 11px;
+  background: linear-gradient(180deg, #ced3d7, #9aa0a4 46%, #b7bcc0 54%, #7f8488);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .55), inset 0 -1px 0 rgba(0, 0, 0, .5);
+}
+
+.rpn-band span {
+  font-family: var(--font-mono);
+  font-size: 8.5px; font-weight: 700; letter-spacing: .18em;
+  color: #3c4144; white-space: nowrap;
 }
 
 /* Height, not just opacity: on a faceplate the upper stack levels take up no room at all, and collapsing them
@@ -458,7 +480,7 @@ a:hover { color: var(--accent-hover) }
   perspective: 900px;
   background: rgba(221, 106, 32, .14);
   background: color-mix(in srgb, #141416 var(--mix), rgba(221, 106, 32, .14));
-  height: calc((132 + (300 - 132) * var(--m)) * 1px);
+  height: calc((156 + (300 - 156) * var(--m)) * 1px);
   margin-top: calc(4px + var(--m) * 4px);
   pointer-events: none;
 }
