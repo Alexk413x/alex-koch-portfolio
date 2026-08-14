@@ -81,4 +81,25 @@
   // addListener is the pre-2021 Safari spelling; without it the fallback is simply that the rig never re-arms.
   if (reduced.addEventListener) reduced.addEventListener('change', apply);
   else if (reduced.addListener) reduced.addListener(apply);
+
+  /* Sections below the stage rise in once, on arrival. An observer rather than the scroll handler above: that
+     one has to run every frame to scrub, this only has to fire once per element, and unobserving after the
+     first hit means a long page costs nothing to scroll back up. */
+  const marked = document.querySelectorAll('[data-reveal]');
+  if (!marked.length) return;
+
+  if (reduced.matches || !('IntersectionObserver' in window)) {
+    marked.forEach((el) => el.classList.add('shown'));
+    return;
+  }
+
+  const io = new IntersectionObserver((entries) => {
+    for (const entry of entries) {
+      if (!entry.isIntersecting) continue;
+      entry.target.classList.add('shown');
+      io.unobserve(entry.target);
+    }
+  }, { rootMargin: '0px 0px -12% 0px' });
+
+  marked.forEach((el) => io.observe(el));
 })();
