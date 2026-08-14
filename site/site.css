@@ -316,6 +316,74 @@ a:hover { color: var(--accent-hover) }
 .rpn-pad button.hit { background: var(--accent); color: var(--on-accent) }
 .rpn-pad button:focus-visible { outline: none; background: var(--ink-hot); box-shadow: inset 0 0 0 1px var(--accent) }
 
+/* ---------------- experience ---------------- */
+
+#experience { position: relative; padding: 110px var(--pad-page); border-top: 1px solid var(--hairline); background: var(--ink-deep) }
+
+.expertise { margin-top: 34px; display: grid; gap: 10px; max-width: 92ch }
+
+.expertise div { font-size: 14px; line-height: 1.6; color: var(--text-body) }
+
+.expertise b {
+  display: inline-block; min-width: 92px;
+  font-family: var(--font-mono); font-size: 10px; font-weight: 500; letter-spacing: .18em;
+  text-transform: uppercase; color: var(--amber);
+}
+
+.roles { margin-top: 56px }
+
+/* A rail down the date column, with each role's marker sitting on it. One continuous line rather than a border
+   under every entry: ten hairline-separated rows is the spec-table look, and this is a timeline. */
+.role {
+  display: grid; grid-template-columns: 190px minmax(0, 1fr); gap: 0 40px;
+  padding: 0 0 44px; position: relative;
+}
+
+.role .when { position: relative; padding-left: 22px }
+
+.role .when::before {
+  content: ''; position: absolute; left: 0; top: 7px;
+  width: 9px; height: 9px; border-radius: 50%;
+  background: var(--ink); border: 1px solid var(--accent);
+}
+
+/* The rail stops at the last marker instead of trailing past it. */
+.role:not(:last-child) .when::after {
+  content: ''; position: absolute; left: 4px; top: 20px; bottom: -44px;
+  width: 1px; background: var(--hairline);
+}
+
+.role .dates {
+  display: block; font-family: var(--font-mono); font-size: 11px; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--amber);
+}
+
+.role .place { display: block; margin-top: 6px; font-weight: 600; font-size: 15px; color: var(--text-strong) }
+.role .place em { display: block; margin-top: 2px; font-style: normal; font-family: var(--font-mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--text-faint) }
+
+.role h3 { margin: 0; font-family: var(--font-display); font-weight: 800; font-size: 21px; letter-spacing: -.3px; color: var(--text-strong) }
+
+.role .apps { margin-top: 5px; font-family: var(--font-mono); font-size: 11px; letter-spacing: .1em; color: var(--text-muted) }
+
+.role p { margin: 14px 0 0; font-size: 14.5px; line-height: 1.65; color: var(--text-body); max-width: 74ch }
+.role p b { color: var(--text-strong); font-weight: 600 }
+.role p a { border-bottom: 1px solid var(--border-accent) }
+
+.role .meta { margin-top: 12px; font-size: 12.5px; line-height: 1.6; color: var(--text-muted); max-width: 74ch }
+
+.role .meta b {
+  display: inline-block; margin-right: 8px;
+  font-family: var(--font-mono); font-size: 10px; font-weight: 500; letter-spacing: .18em;
+  text-transform: uppercase; color: var(--text-faint);
+}
+
+.offbeat { margin-top: 18px; display: grid; gap: 6px; font-size: 13.5px; line-height: 1.6; color: var(--text-muted) }
+
+.offbeat b {
+  font-family: var(--font-mono); font-size: 10px; font-weight: 500; letter-spacing: .18em;
+  text-transform: uppercase; color: var(--amber); margin-bottom: 4px;
+}
+
 /* ---------------- labs ---------------- */
 
 /* Parked from the previous index verbatim in copy, retinted onto the site tokens. It becomes scene 04 once the
@@ -460,6 +528,12 @@ footer a:hover { color: var(--accent) }
 
   .hero-grid { grid-template-columns: minmax(0, 1fr); gap: 26px }
   .app-grid { grid-template-columns: minmax(0, 1fr); gap: 40px }
+
+  /* The date rail keeps its marker and line, but the role moves under it rather than beside it. */
+  .role { grid-template-columns: minmax(0, 1fr); gap: 14px }
+  .role .what { padding-left: 22px }
+  .role:not(:last-child) .when::after { bottom: -58px }
+  .expertise b { min-width: 0; display: block }
   .lab-grid { grid-template-columns: minmax(0, 1fr) }
   .lab-card.lead { grid-row: auto }
   .lab-card.lead .name { font-size: 20px }
