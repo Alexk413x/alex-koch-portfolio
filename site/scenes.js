@@ -57,15 +57,19 @@
     const t = span > 0 ? ease((p - mIn) / span) : (p >= 1 ? 1 : 0);
     morphStage.style.setProperty('--m', t.toFixed(4));
     morphStage.classList.toggle('is-new', t > .5);
-    // Keys stay inert until the shipped state is essentially reached, so a scroll-past cannot half-press one.
-    morphStage.classList.toggle('is-live', t > .96);
+    /* BOTH calculators are usable, each at its own resting state. Keys are inert only while plates are in
+       flight, so a scroll-past cannot half-press one; the faceplate is as clickable as the app is. */
+    const atOld = t < .04, atApp = t > .96;
+    morphStage.classList.toggle('is-live', atOld || atApp);
+    morphStage.classList.toggle('is-old', atOld);
+    morphStage.classList.toggle('is-app', atApp);
   }
 
   // Everything reaches its shipped state and stays there: no pin, no scrub.
   function morphFinal() {
     if (!morphStage) return;
     morphStage.style.setProperty('--m', '1');
-    morphStage.classList.add('is-new', 'is-live');
+    morphStage.classList.add('is-new', 'is-live', 'is-app');
   }
 
   function frame() {

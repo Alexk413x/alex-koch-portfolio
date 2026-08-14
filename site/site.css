@@ -385,6 +385,7 @@ a:hover { color: var(--accent-hover) }
 
 /* The brushed plate the LCD is set into; it is the phone's screen surround by the end. */
 .rpn-readout {
+  perspective: 700px;
   padding: calc(8px + var(--m) * 4px) 0 0; display: grid; gap: 2px;
   background: transparent;
   background: color-mix(in srgb, #a9aeb2 var(--mix), transparent);
@@ -393,16 +394,30 @@ a:hover { color: var(--accent-hover) }
 /* Height, not just opacity: on a faceplate the upper stack levels take up no room at all, and collapsing them
    is what turns the readout back into the one-line display an HP has. The IN row never collapses -- it is the
    current line in both machines. */
+/* The stack levels are plates that unfold upward off the IN line, each on its own clock. Height alone made them
+   grow out of nothing in the middle of the readout; hinging them at their bottom edge and swinging them up is
+   what reads as a panel deploying. transform-origin is the whole trick. */
 .rpn-row {
+  --d: 0;
+  --rate: 3.2;
+  --p: clamp(0, calc((var(--m) - var(--d)) * var(--rate)), 1);
+  --e: calc(var(--p) * var(--p) * var(--p) * (var(--p) * (var(--p) * 6 - 15) + 10));
+  --kmix: calc((1 - var(--e)) * 100%);
+
   display: flex; justify-content: space-between; align-items: center; overflow: hidden;
   height: calc((18 + (34 - 18) * var(--m)) * 1px);
   padding: 0 16px;
   font-family: var(--font-mono);
   background: #1c1c1c;
   background: color-mix(in srgb, #9ba593 var(--mix), #1c1c1c);
+  transform-origin: 50% 100%;
 }
 
-.rpn-row:not(.rpn-in) { height: calc(var(--m) * 34px); opacity: var(--m) }
+.rpn-row:not(.rpn-in) {
+  height: calc(var(--e) * 34px);
+  opacity: var(--e);
+  transform: rotateX(calc((1 - var(--e)) * -78deg)) translateY(calc((1 - var(--e)) * 10px));
+}
 
 .rpn-row .n { font-size: 11px; color: rgba(255, 255, 255, .38); color: color-mix(in srgb, #59604f var(--mix), rgba(255, 255, 255, .38)) }
 
@@ -424,53 +439,96 @@ a:hover { color: var(--accent-hover) }
 
 /* The pad is a positioning context, not a grid: the two keyboards have different grids (10x4 and 4x7) and a
    grid-template cannot be interpolated between them. Each key carries both rectangles and moves between them. */
-/* The black keypad field the caps sit in; orange hairlines by the end. */
+/* The black keypad field the caps sit in; orange hairlines by the end. Perspective so a key that lifts off the
+   surface mid-flight actually reads as lifting rather than just scaling. */
 .rpn-pad {
   position: relative;
+  perspective: 900px;
   background: rgba(221, 106, 32, .14);
   background: color-mix(in srgb, #141416 var(--mix), rgba(221, 106, 32, .14));
-  height: calc((168 + (352 - 168) * var(--m)) * 1px);
+  height: calc((132 + (300 - 132) * var(--m)) * 1px);
   margin-top: calc(4px + var(--m) * 4px);
   pointer-events: none;
 }
 
 #app-stage.is-live .rpn-pad { pointer-events: auto }
 
+/* Keys at rest in a state the other keyboard owns are hidden outright, which also takes them out of the tab
+   order — a focusable button with zero size is a dead stop for anyone using the keyboard. */
+#app-stage.is-app .rpn-pad .hp-only,
+#app-stage.is-old .rpn-pad .app-only { visibility: hidden }
+
+/* EVERY KEY RUNS ITS OWN CLOCK. --d is when this key starts and --rate how fast it runs, both set once in JS;
+   --p is its local 0..1 and --e the same smoothed. Without this the whole keyboard lerps in lockstep, which is
+   what made the morph read as a crossfade of two pictures rather than a mechanism rearranging itself.
+   Smootherstep, not smoothstep: the flatter ends and steeper middle are what give a plate weight — it leans
+   into the move and arrives decisively instead of drifting the whole way. */
 .rpn-pad .k {
-  position: absolute; border: 0; cursor: pointer; padding: 0;
-  left: calc((var(--x0) + (var(--x1) - var(--x0)) * var(--m)) * 1%);
-  top: calc((var(--y0) + (var(--y1) - var(--y0)) * var(--m)) * 1%);
-  width: calc((var(--w0) + (var(--w1) - var(--w0)) * var(--m)) * 1% - 2px);
-  height: calc((var(--h0) + (var(--h1) - var(--h0)) * var(--m)) * 1% - 2px);
-  opacity: calc(var(--o0) + (var(--o1) - var(--o0)) * var(--m));
-  margin: 1px;
-  border-radius: calc((2 + (6 - 2) * var(--m)) * 1px);
+  --d: 0;
+  --rate: 2.4;
+  --p: clamp(0, calc((var(--m) - var(--d)) * var(--rate)), 1);
+  --e: calc(var(--p) * var(--p) * var(--p) * (var(--p) * (var(--p) * 6 - 15) + 10));
+  /* Zero at both ends, one in the middle: the arc a plate takes when it lifts, travels and sets back down. */
+  --arc: calc(4 * var(--e) * (1 - var(--e)));
+  --kmix: calc((1 - var(--e)) * 100%);
+  --tx: calc(var(--tx0) + (var(--tx1) - var(--tx0)) * var(--e));
+  --ty: calc(var(--ty0) + (var(--ty1) - var(--ty0)) * var(--e));
+  --sx: calc(var(--sx0) + (var(--sx1) - var(--sx0)) * var(--e));
+  --sy: calc(var(--sy0) + (var(--sy1) - var(--sy0)) * var(--e));
+
+  /* left/top/width/height are set ONCE in JS and never animate — see rpn-demo.js. Only transform and opacity
+     change per frame, so the scrub costs compositing rather than a layout of every key. */
+  position: absolute; border: 0; cursor: pointer; padding: 0; margin: 0;
+  opacity: calc(var(--o0) + (var(--o1) - var(--o0)) * var(--e));
+  border-radius: 5px;
+
+  transform:
+    translate(calc(var(--tx) * 1%), calc(var(--ty) * 1%))
+    translateZ(calc(var(--arc) * 30px))
+    rotateY(calc(var(--arc) * var(--spin, 0) * 1deg))
+    rotateZ(calc(var(--arc) * var(--tilt, 0) * 1deg))
+    scale(var(--sx), var(--sy));
+
   font-family: var(--font-mono);
-  font-size: calc((9.5 + (14 - 9.5) * var(--m)) * 1px);
   line-height: 1;
   background: #b4530e;
-  background: color-mix(in srgb, #232326 var(--mix), #b4530e);
+  background: color-mix(in srgb, #232326 var(--kmix), #b4530e);
   color: #fff;
-  color: color-mix(in srgb, #f2f2f0 var(--mix), #fff);
+  color: color-mix(in srgb, #f2f2f0 var(--kmix), #fff);
   transition: filter .12s var(--ease-settle);
 }
 
-/* The app's key ramp, read off the shipped screenshots: utility rows darkest, digits brightest, the operator
-   column and Enter a step below the digits. On the faceplate these all sit at the same slate. */
-.rpn-pad .k-util { background: #5c2a0d; background: color-mix(in srgb, #232326 var(--mix), #5c2a0d) }
-.rpn-pad .k-fn2  { background: #a04a0c; background: color-mix(in srgb, #232326 var(--mix), #a04a0c) }
+/* Retracting plates turn edge-on as they go, so the faceplate strips itself rather than dissolving. */
+.rpn-pad .hp-only {
+  transform:
+    translate(calc(var(--tx) * 1%), calc(var(--ty) * 1%))
+    translateZ(calc(var(--arc) * 44px))
+    rotateY(calc(var(--e) * -70deg))
+    scale(var(--sx), var(--sy));
+}
+
+/* Deploying plates unfold the other way, arriving flat. */
+.rpn-pad .app-only {
+  transform:
+    translate(calc(var(--tx) * 1%), calc(var(--ty) * 1%))
+    translateZ(calc(var(--arc) * 44px))
+    rotateX(calc((1 - var(--e)) * 72deg))
+    scale(var(--sx), var(--sy));
+}
+
+.rpn-pad .k-util { background: #5c2a0d; background: color-mix(in srgb, #232326 var(--kmix), #5c2a0d) }
+.rpn-pad .k-fn2  { background: #a04a0c; background: color-mix(in srgb, #232326 var(--kmix), #a04a0c) }
 .rpn-pad .k-op,
-.rpn-pad .k-ent  { background: #a04a0c; background: color-mix(in srgb, #232326 var(--mix), #a04a0c) }
+.rpn-pad .k-ent  { background: #a04a0c; background: color-mix(in srgb, #232326 var(--kmix), #a04a0c) }
 
 /* f and g are the faceplate's own accents and have no counterpart in the app, so they only ever show in gold
    and blue while the old keyboard is still on screen. */
-.rpn-pad .k-shift-f { background: color-mix(in srgb, #c8961e var(--mix), #b4530e) }
-.rpn-pad .k-shift-g { background: color-mix(in srgb, #3f8fc4 var(--mix), #b4530e) }
+.rpn-pad .k-shift-f { background: color-mix(in srgb, #c8961e var(--kmix), #b4530e) }
+.rpn-pad .k-shift-g { background: color-mix(in srgb, #3f8fc4 var(--kmix), #b4530e) }
 
 .rpn-pad .k:hover { filter: brightness(1.25) }
 .rpn-pad .k.hit { background: var(--accent); color: var(--on-accent) }
 .rpn-pad .k:focus-visible { outline: none; box-shadow: inset 0 0 0 1px var(--accent) }
-.rpn-pad .hp-only { pointer-events: none }
 
 /* ---------------- cartographer ---------------- */
 
