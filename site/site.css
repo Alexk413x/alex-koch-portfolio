@@ -592,9 +592,18 @@ a:hover { color: var(--accent-hover) }
 /* Deliberately unfinished, and it says so. A placeholder that looks like content is worse than an empty slot. */
 .pending { margin-top: 56px; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; max-width: 620px }
 
+/* The whole card is the link, so the target is the card rather than a word inside it. */
 .slot {
+  display: flex; flex-direction: column; color: inherit;
   padding: 22px; border: 1px dashed var(--border-accent); border-radius: var(--radius-card);
   background: rgba(221, 106, 32, .03);
+  transition: border-color .18s var(--ease-settle), background .18s var(--ease-settle),
+              transform .18s var(--ease-settle);
+}
+
+.slot:hover {
+  color: inherit; border-style: solid; border-color: var(--accent);
+  background: rgba(221, 106, 32, .07); transform: translateY(-2px);
 }
 
 .slot b {
@@ -617,7 +626,19 @@ a:hover { color: var(--accent-hover) }
   animation: ak-halo 2.4s var(--ease-settle) infinite;
 }
 .slot p { margin: 8px 0 0; font-size: 13.5px; line-height: 1.6; color: var(--text-body) }
-.slot .await { display: block; margin-top: 14px; font-family: var(--font-mono); font-size: 10px; letter-spacing: .18em; text-transform: uppercase; color: var(--text-faint) }
+.slot .go {
+  margin-top: auto; padding-top: 16px;
+  font-family: var(--font-mono); font-size: 10.5px; letter-spacing: .18em; color: var(--text-faint);
+  transition: color .18s var(--ease-settle);
+}
+
+.slot:hover .go { color: var(--accent) }
+
+/* ---------------- holding page ---------------- */
+
+.holding { min-height: 100vh; min-height: 100dvh; display: flex; align-items: center; padding: 0 var(--pad-page) }
+.holding .sec-title { margin-top: 12px }
+.holding .cta-row { margin-top: 34px }
 
 /* ---------------- experience ---------------- */
 
