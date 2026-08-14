@@ -104,16 +104,26 @@
     u: 'Undo', p: 'π', r: '1/x', '^': 'yˣ', '!': '!', c: 'CA',
   };
 
-  // Percent rectangle for a cell in a grid, with a small inset so keys read as separate caps at any size.
-  function rect(cell, cols, gridRows) {
+  /* Percent rectangle for a grid cell, inset so the caps read as separate keys with the field showing between
+     them. The inset is in pad-percent, so it stays proportional as the pad resizes under the morph. */
+  function rect(cell, cols, gridRows, gx, gy) {
     const [r, c, span = 1] = cell;
     return {
-      x: ((c - 1) / cols) * 100, y: ((r - 1) / gridRows) * 100,
-      w: (1 / cols) * 100, h: (span / gridRows) * 100,
+      x: ((c - 1) / cols) * 100 + gx / 2,
+      y: ((r - 1) / gridRows) * 100 + gy / 2,
+      w: (1 / cols) * 100 - gx,
+      h: (span / gridRows) * 100 - gy,
     };
   }
 
-  const GONE = { x: 50, y: 50, w: 0, h: 0 };
+  /* Where a key comes from, or goes to, when it exists on only one keyboard. Every key used to collapse into
+     the pad's centre, which made the whole set converge on one point and read as a group being sucked in
+     rather than as parts detaching. A golden-angle spread gives each key its own direction with no two
+     neighbours agreeing, and no randomness, so the motion is identical on every load. */
+  function exitVector(i) {
+    const a = ((i * 137.508) % 360) * Math.PI / 180;
+    return { dx: Math.cos(a) * 46, dy: Math.sin(a) * 34 };
+  }
 
   /* WHEN each key moves, which is the difference between a mechanism and a crossfade. Three beats:
    *   the faceplate strips itself, outermost columns first, because the edge of a panel is what lets go first;
@@ -124,13 +134,13 @@
     let d, span;
     if (hp && !app) {
       const fromCentre = Math.abs(hp[1] - 5.5) / 4.5;          // 1 at the outer columns, 0 in the middle
-      d = 0.20 * (1 - fromCentre); span = 0.40;
+      d = 0.20 * (1 - fromCentre) + 0.012 * (hp[0] - 1); span = 0.40;
     } else if (!hp && app) {
       // Ranked, not raw row: the app-only keys sit in rows 1-3 and row 7, and using the row number directly
       // gave the row-7 pair a start of 0.73 — past the point where a 0.42 span can still finish.
-      d = 0.40 + 0.05 * (Math.min(app[0], 4) - 1); span = 0.42;
+      d = 0.40 + 0.05 * (Math.min(app[0], 4) - 1) + 0.022 * (app[1] - 1); span = 0.42;
     } else {
-      d = 0.17 + 0.02 * ((app ? app[0] : 1) - 1); span = 0.46;
+      d = 0.17 + 0.02 * ((app ? app[0] : 1) - 1) + 0.018 * ((app ? app[1] : 1) - 1); span = 0.46;
     }
     /* A key that has not finished by the end of the scrub never reaches its resting rectangle, and sits
        stranded mid-flight in what is supposed to be a still state. Clamping here means a later change to any
@@ -157,20 +167,27 @@
     const b = document.createElement('button');
     b.type = 'button';
     b.dataset.key = label;
-    b.textContent = label;
     b.className = 'k k-' + kind;
+    /* The label lives in its own element so it can undo the plate's scale. A key travelling between a 10x25
+       faceplate cell and a 25x14 app cell is scaled 0.4 across and 1.75 down, and a glyph riding that comes out
+       squashed to a sliver — which reads as a missing button rather than a distorted one. */
+    const cap = document.createElement('span');
+    cap.className = 'cap';
+    cap.textContent = label;
+    b.appendChild(cap);
     if (!ACTIONS[label]) b.tabIndex = -1;          // a dead faceplate key is not a tab stop
     if (!hp) b.classList.add('app-only');
     if (!app) b.classList.add('hp-only');
 
-    const hpR = hp ? rect(hp, HP_COLS, HP_ROWS) : null;
-    const apR = app ? rect(app, AP_COLS, AP_ROWS) : null;
+    const hpR = hp ? rect(hp, HP_COLS, HP_ROWS, 0.55, 1.3) : null;
+    const apR = app ? rect(app, AP_COLS, AP_ROWS, 0.8, 0.8) : null;
     const home = apR || hpR;
+    const gone = exitVector(i);
 
     // Centre-relative, so a rotation pivots where a plate would and the scale lands the box on its target.
     const toward = (target) => {
       const cx = home.x + home.w / 2, cy = home.y + home.h / 2;
-      if (!target) return { tx: ((50 - cx) / home.w) * 100, ty: ((50 - cy) / home.h) * 100, sx: 0, sy: 0 };
+      if (!target) return { tx: (gone.dx / home.w) * 100, ty: (gone.dy / home.h) * 100, sx: 0, sy: 0 };
       return {
         tx: ((target.x + target.w / 2 - cx) / home.w) * 100,
         ty: ((target.y + target.h / 2 - cy) / home.h) * 100,
@@ -185,8 +202,6 @@
     s.top = home.y.toFixed(3) + '%';
     s.width = home.w.toFixed(3) + '%';
     s.height = home.h.toFixed(3) + '%';
-    // The label rides the plate's own scale, so the type size needs no animating either.
-    s.fontSize = (apR ? 14 : 9.5) + 'px';
 
     for (const [k, v] of [['--tx0', a.tx], ['--ty0', a.ty], ['--sx0', a.sx], ['--sy0', a.sy],
                           ['--tx1', z.tx], ['--ty1', z.ty], ['--sx1', z.sx], ['--sy1', z.sy]]) {
