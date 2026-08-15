@@ -38,6 +38,10 @@
      balanced about the core, which sits on the centre line between them. 530px is what the lockup's ink needs at
      its full 176px size, measured — under that it wraps. */
   --hero-col: 530px;
+  /* Scene 01 is THREE of those: the lockup, the core's lane, the aside. It is therefore wider than the 1400px
+     the sections below share, and its left rail sits outside theirs on a wide screen. That is deliberate — the
+     stage is full-bleed and cinematic where the sections are a document. */
+  --hero-max: calc(var(--hero-col) * 3);
 
   --ease-reveal: cubic-bezier(.4, 0, .2, 1);
   --ease-settle: cubic-bezier(.2, .85, .25, 1);
@@ -183,13 +187,13 @@ a:hover { color: var(--accent-hover) }
 .hero { flex: 1; display: flex; align-items: center; padding: 0 var(--pad-page); position: relative; z-index: 3 }
 
 .hero-grid {
-  width: 100%; max-width: var(--content-max); margin: 0 auto;
-  /* THREE columns, and the middle one holds nothing: it is the core's lane. The two side columns are the same
-     width by construction rather than by one being measured against the other, so the balance survives a resize.
-     No column gap, because the lane IS the gap. minmax lets both sides shrink together when the window cannot
-     seat them; below 820px the grid collapses to one column and none of this applies. */
+  width: 100%; max-width: var(--hero-max); margin: 0 auto;
+  /* THREE EQUAL COLUMNS, and the middle one holds nothing: it is the core's lane. Equal by construction rather
+     than by one being measured against the other, so the balance survives a resize. No column gap, because the
+     lane IS the gap. minmax lets all three shrink together when the window cannot seat them; below 820px the
+     grid collapses to one column and none of this applies. */
   display: grid;
-  grid-template-columns: minmax(0, var(--hero-col)) 1fr minmax(0, var(--hero-col));
+  grid-template-columns: repeat(3, minmax(0, var(--hero-col)));
   column-gap: 0; row-gap: 48px; align-items: center;
 }
 
@@ -239,8 +243,10 @@ a:hover { color: var(--accent-hover) }
    everything above them, which is visible the moment the window is wider than the content max. */
 .hero-foot { padding: 0 var(--pad-page) 30px; position: relative; z-index: 3 }
 
+/* The hero's OWN width, not the page's: the cue has to sit under the lockup and the chips under the aside, and
+   the scene is wider than the sections below it. */
 .hero-foot .inner {
-  max-width: var(--content-max); margin: 0 auto;
+  max-width: var(--hero-max); margin: 0 auto;
   display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; flex-wrap: wrap;
 }
 
