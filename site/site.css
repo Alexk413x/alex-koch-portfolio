@@ -824,6 +824,22 @@ section[id] { scroll-margin-top: 84px }
   text-transform: uppercase; color: var(--text-faint);
 }
 
+/* THE ONLY THING ON THE PAGE THAT ADMITS A READER EXISTS. Every role closes on one line naming what is worth
+   asking about, so the section ends on an invitation rather than on a tools list. It is last on purpose, and it
+   is the only accent in the entry, which is what lifts it clear of the two grey metadata rows above it.
+   "Ask about", not "ask me about": the voice is third person about the operator and imperative to the visitor,
+   and a first-person aside here would be the one place on the page that breaks it. */
+.role .ask {
+  margin-top: 18px; max-width: 74ch;
+  font-size: 14.5px; line-height: 1.6; color: var(--text-strong);
+}
+
+.role .ask b {
+  display: block; margin-bottom: 5px;
+  font-family: var(--font-mono); font-size: 10px; font-weight: 500; letter-spacing: .18em;
+  text-transform: uppercase; color: var(--accent);
+}
+
 /* EDUCATION IS NOT A JOB. It has no employer and no duration worth reading, so it is not a marker on the rail
    and it carries no dates at all — as the twelfth role it made the timeline end on the one entry that was not
    one. Its own block, indented to the rail's text column so the section still reads as one thing. */
