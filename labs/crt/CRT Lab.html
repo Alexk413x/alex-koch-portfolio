@@ -12,9 +12,9 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="CRT GL">
+<meta name="apple-mobile-web-app-title" content="CRT Lab">
 <link rel="manifest" href="./crt-gl.webmanifest">
-<title>CRT GL — one pass</title>
+<title>CRT Lab — one pass</title>
 <!-- AN INLINE FAVICON, because a browser asks for /favicon.ico whether or not one exists and logs a 404 when it
      does not. A data URI answers the question in the document rather than needing a file beside it, which keeps
      this page a single artefact -- the same reason its markup, logic and styles all live in one document. -->
@@ -74,11 +74,11 @@
        frame, because nothing about it is animated. -->
   <svg id="cal" viewBox="0 0 100 100" preserveAspectRatio="none"
        style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible"></svg>
-  <div id="mast"><div class="t">CRT GL</div><div class="s">TERMINAL</div></div>
+  <div id="mast"><div class="t">CRT Lab</div><div class="s">TERMINAL</div></div>
   <div id="hud"><span id="fps">-- FPS</span> <span id="scaleinfo"></span><br><span id="gpu"></span> <span id="heatread"></span> <span id="glstate"></span></div>
 </div>
 <div id="panel">
-  <h1>CRT GL</h1>
+  <h1>CRT Lab</h1>
   <div class="btns" id="actions"></div>
   <div class="phos" id="phosrow"></div>
   <div id="controls"></div>
@@ -208,8 +208,12 @@ const bez = memo(
 const state = defaultPreset(R.gpu);
 
 /* SETTINGS PERSIST, which they did not: this page had no storage of any kind, so every reload started from the
- * literal above and any tuning was lost. The DOM lab keeps its state under `crtlab` with its own schema version;
- * this is the same shape under `crtgl`, kept separate so the two builds cannot overwrite each other's tuning.
+ * literal above and any tuning was lost.
+ *
+ * THE KEY IS `crtgl` AND IT STAYS THAT WAY, though the lab is now called CRT Lab. It is not a name, it is an
+ * address: every visitor who has ever tuned this page has their configuration stored under it, and moving it
+ * orphans all of them silently — no error, no fallback, and the shipped defaults are themselves a real saved
+ * configuration, so the loss would not even show in a screenshot. Migrate it deliberately or leave it alone.
  *
  * MERGED OVER THE DEFAULTS, KEY BY KEY, and type-checked -- not assigned wholesale. Controls have come and gone
  * this session (CONVERGE became six per-gun offsets, EDGE GLASS and FRAME LIGHT were deleted), so a stored
@@ -228,7 +232,7 @@ const state = defaultPreset(R.gpu);
 //      (scanlines and grille columns), and tw/tht/tjust/type arrived with them. A v10 blob's tsize would be
 //      read as a 2.08-SCANLINE row height, which is legal and wrong, so the whole blob is retired.
 const MM_PER_UNIT = 900;   // mm of room across one glass half-height -- see the note in state
-const SAVE_KEY = 'crtgl', SAVE_V = 11;
+const SAVE_KEY = 'crtgl', SAVE_V = 11;   // an address, not a name — see the note above before changing it
 try {
   const raw = localStorage.getItem(SAVE_KEY);
   const s = raw ? JSON.parse(raw) : null;

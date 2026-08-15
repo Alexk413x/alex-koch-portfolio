@@ -80,7 +80,9 @@ Five things in there are not decoration:
 
 ## Persistence
 
-**Each lab needs its own storage key** — `crtgl`, `reactor`, `wormhole`, `labshell`. localStorage is the one thing
+**Each lab needs its own storage key** — `crtgl`, `reactor`, `wormhole`, `labshell`. `crtgl` no longer matches
+the name of the lab that uses it, and that is deliberate: a key is an address, and moving one silently orphans
+every configuration stored under it. localStorage is the one thing
 labs genuinely share, so two on one key overwrite each other. It is the single thing you must change when copying.
 
 `persist()` handles the four traps, all paid for already:

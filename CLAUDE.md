@@ -30,7 +30,7 @@ site that silently disagreed with its source. That is the same failure this proj
 level up from the geometry. It is deleted. If Pages is wanted again, serve the repo ROOT — it already works
 as-is — or add a script that copies; do not reintroduce a hand-kept mirror.
 
-The same rule caught the **control panel**, which existed three times: inline in CRT GL, again in the DC
+The same rule caught the **control panel**, which existed three times: inline in CRT Lab, again in the DC
 `Sidebar.dc.html`, and a third time in `components/ControlPanel.dc.html`. All that survives is
 `labs/kit/panel.js` + `panel.css`, and every lab uses it, tinted through custom properties. **Do not add a
 second.** It caught the **host scaffolding** too: Reactor and Wormhole came out 113 lines identical — 58% of one
@@ -78,8 +78,8 @@ lab's own handle.
 ### `python bench.py` — the whole measurement in one command
 
 ```
-python bench.py                     # CRT GL, 12 samples, verdict
-python bench.py --page reactor      # any lab: crtgl | reactor | wormhole | shell, or a literal path
+python bench.py                     # CRT Lab, 12 samples, verdict
+python bench.py --page reactor      # any lab: crt | reactor | wormhole | shell, or a literal path
 python bench.py --uncapped          # frame COST, not frame rate
 python bench.py --inject "<js>"     # pin a setting first, so two runs are comparable
 ```
@@ -158,6 +158,8 @@ These are the checks a small embedded preview cannot perform. They are the reaso
    chevron: the stage grows without the window changing, and a buffer sized from `innerWidth` instead of the
    stage would stretch here.
 3. **Settings persistence.** Each lab stores under its own key — `crtgl`, `reactor`, `wormhole`, `labshell` —
+   and **`crtgl` deliberately no longer matches its lab's name**: a storage key is an address, not a label, and
+   moving it orphans every stored configuration silently. See the note above `SAVE_KEY` before touching it —
    carrying a `v` that is checked on the way in. The shipped defaults are a real saved configuration, not a
    neutral baseline, so to see them you need an origin with no stored state; clearing localStorage and calling
    `location.reload()` does NOT give you one, because the flush on hide writes the in-memory state straight back.
@@ -192,7 +194,7 @@ maths bug.
 
 `labs/crt/CRT Lab HANDOFF.md` has the full "settled decisions — please don't relitigate" list. **It is named for
 a build that no longer exists, and most of it still binds**: the projection, the outline and the geometry it
-argues about are the shared modules CRT GL walks. Read it before touching either. Its companion
+argues about are the shared modules CRT Lab walks. Read it before touching either. Its companion
 `CRT Lab LAYER HANDOFF.md` is more mixed — the thirteen-layer model is gone with the DOM build, but the sections
 on the face's shape and the rim's pinning are still current.
 
@@ -202,11 +204,11 @@ on the face's shape and the rim's pinning are still current.
   last users of `support.js`, React and Babel; migrating them retires all three.
 - **Reactor's two frozen uniforms** (above) are uncut.
 - **Reactor's `renderNow` is not reproducible**, because `sim.step` carries phase forward — so that lab has no
-  render fingerprint of the kind `render-probe.js` gives CRT GL. Resetting the sim would be the way in.
+  render fingerprint of the kind `render-probe.js` gives CRT Lab. Resetting the sim would be the way in.
 - **Mobile is a fold-away panel, not a layout.** Below 820px wide *or 500px tall* each lab hides its panel behind
-  a chevron and CRT GL applies a small-display override table; the control density is still built for a large
+  a chevron and CRT Lab applies a small-display override table; the control density is still built for a large
   window. **Both halves of that test are load-bearing** — a phone on its side is 852x393, wide enough to pass any
-  width test — and the pair lives in three places that must move together: `NARROW_W`/`SHORT_H` in CRT GL, the
+  width test — and the pair lives in three places that must move together: `NARROW_W`/`SHORT_H` in CRT Lab, the
   `breakpoint`/`shortSide` defaults in `labs/kit/panel.js`, and the `(max-width), (max-height)` queries in
   `panel.css` and `lab.css`. A stylesheet cannot be read from the script; if they disagree the panel overlays the
   stage while the script still believes it is in the flow.

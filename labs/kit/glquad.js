@@ -1,6 +1,6 @@
 /* glquad.js — hosts one full-screen fragment shader: compile, uniform cache, resize, context loss.
  *
- * Knows nothing about any uniform's meaning; the shader source and the values are the caller's. CRT GL keeps its
+ * Knows nothing about any uniform's meaning; the shader source and the values are the caller's. CRT Lab keeps its
  * own host — four programs and a half-float ping-pong do not fit this shape.
  */
 

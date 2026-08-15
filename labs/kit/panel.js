@@ -14,8 +14,8 @@
  * has no other way to reach the page. Anything a lab needs to do on a change -- invalidate a memo, resize --
  * arrives as (key, kind) on onChange.
  *
- * WHAT IS DELIBERATELY NOT HERE: anything a single lab needs. CRT GL's phosphor selector and its POWER / WARP /
- * SURGE actions live in CRT GL, because a kit that grows a special case per caller is three implementations
+ * WHAT IS DELIBERATELY NOT HERE: anything a single lab needs. CRT Lab's phosphor selector and its POWER / WARP /
+ * SURGE actions live in CRT Lab, because a kit that grows a special case per caller is three implementations
  * again wearing one filename.
  */
 

@@ -14,7 +14,7 @@ from a CDN at runtime, and plain module pages, which have no runtime dependency 
 ## The CRT lab
 
 The centrepiece, and the reason most of this code exists.
-**[CRT GL](labs/crt/CRT%20GL.html)** is an amber CRT solved per pixel in a WebGL2 fragment shader — the face's
+**[CRT Lab](labs/crt/CRT%20Lab.html)** is an amber CRT solved per pixel in a WebGL2 fragment shader — the face's
 curvature, the shadow mask, the beam, the phosphor's persistence and a ray-traced light fitting reflected in the
 glass — with a measurement grid and a heat-map overlay reporting how hard the surface is being compressed.
 
@@ -76,8 +76,8 @@ Looking at the screen is not evidence here, so the labs ship the means to measur
 by any page — it all attaches on demand, so it costs nothing when unused.
 
 ```
-python bench.py                       # CRT GL: frame rate as a distribution, with a verdict
-python bench.py --page reactor        # any lab: crtgl | reactor | wormhole | shell, or a literal path
+python bench.py                       # CRT Lab: frame rate as a distribution, with a verdict
+python bench.py --page reactor        # any lab: crt | reactor | wormhole | shell, or a literal path
 python bench.py --uncapped            # frame COST, not frame rate — needed once a page holds 60
 python bench.py --inject "<js>"       # pin a setting first, so two runs are comparable
 ```
@@ -87,13 +87,13 @@ in a window that is not front-most, warms the profile's cache, and drives the pa
 protocol. It refuses a verdict when the machine is too loaded to measure on, and reports the first sampling
 window separately as a warm-up rather than letting it poison that judgement.
 
-- `labs/crt/render-probe.js` — a deterministic render fingerprint for CRT GL. Hashes seven fixed scenes, which
+- `labs/crt/render-probe.js` — a deterministic render fingerprint for CRT Lab. Hashes seven fixed scenes, which
   is how a refactor proves it changed nothing.
 - `window.CRTGL`, `window.REACTOR`, `window.WORMHOLE`, `window.SHELL` — every lab publishes a handle carrying
   `state`, `R`, `fit()` and a `renderNow()` that draws **synchronously**, so a frame can be taken from a tab
   that is not front-most, where Chrome delivers no animation frames at all. Read pixels back in the **same
   task** as the call, or a working shader reports as black.
-- **Not every `renderNow` is reproducible.** CRT GL's, Wormhole's and Shell's are functions of `(state, time)`
+- **Not every `renderNow` is reproducible.** CRT Lab's, Wormhole's and Shell's are functions of `(state, time)`
   and give the same frame twice. Reactor's is not — `sim.step` carries phase forward — so a pixel fingerprint
   of that lab means nothing unless the sim is fresh.
 
