@@ -33,7 +33,11 @@
   --radius-card: 12px;
 
   --pad-page: 40px;
-  --content-max: 1400px;
+  /* THE PAGE'S RAIL IS THE HERO'S RAIL. Every section below the stage shares this, so tying it to --hero-max
+     means the lockup and the section titles start on the same line instead of stepping in by 95px on a wide
+     screen. The coupling runs one way and is deliberate: widening the hero's columns widens the whole page.
+     Body copy does not follow it — .sec-lede, .role p, .expertise and the rest cap their own measure. */
+  --content-max: var(--hero-max);
   /* Both of scene 01's side columns, and the only declaration of that width. They are equal so the hero reads as
      balanced about the core, which sits on the centre line between them. 530px is what the lockup's ink needs at
      its full 176px size, measured — under that it wraps. */
