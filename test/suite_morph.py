@@ -50,11 +50,15 @@ def run(page, r):
 
     M = "document.getElementById('app-stage').style.getPropertyValue('--m')"
 
-    def at(fraction, pause=1.25):
-        """Scrolls, then waits out the morph's own clock. It is no longer tracked to the scroll, so the value
-        after a move is a function of TIME, not of where the move stopped."""
+    def at(fraction, pause=0.15):
+        """Scrolls, then waits for the morph to reach a PURE state.
+
+        It is no longer tracked to the scroll, so the value after a move is a function of TIME rather than of
+        where the move stopped -- and a fixed pause is a guess about the slowest machine that will ever run
+        this. Polling for the state the mechanism is guaranteed to reach is the same assertion without the
+        guess, and it returns as soon as it is true."""
         page.scroll(top + int(run_px * fraction), pause=pause)
-        return float(page.js(M) or 0)
+        return page.until_morphed()
 
     # The dead zones are gone with the scrub, and the runway shrank with them. 1.8 viewport heights, 40% of it
     # moving nothing, is the thing this replaced.
@@ -65,13 +69,13 @@ def run(page, r):
     # ONE NUDGE PLAYS THE WHOLE THING. Barely past the trigger is enough; the morph owns its own clock from
     # there, so how far the reader scrolled has no bearing on where it stops.
     nudge = int(run_px * 0.14) + 20
-    page.scroll(top, pause=1.25)
-    page.scroll(top + nudge, pause=1.25)
-    r.near('one nudge past the trigger plays it to completion', float(page.js(M) or 0), 1.0, 0.001)
+    at(0.0)
+    page.scroll(top + nudge, pause=0.15)
+    r.near('one nudge past the trigger plays it to completion', page.until_morphed(), 1.0, 0.001)
     r.ok('and the nudge really was small', nudge < vh * 0.2, '%dpx' % nudge)
 
     # It is played, not jumped: a moment after the trigger it must be part way through.
-    page.scroll(top, pause=1.25)
+    at(0.0)
     page.scroll(top + nudge, pause=0.2)
     mid = float(page.js(M) or 0)
     r.ok('the morph is animated, not switched', 0.001 < mid < 0.999, 'm=%.3f a fifth of a second in' % mid)
@@ -83,7 +87,7 @@ def run(page, r):
     # so wherever the reader stops, the mechanism finishes what it started.
     impure = []
     for f in (0.05, 0.3, 0.55, 0.8, 1.0):
-        m = at(f, pause=1.15)
+        m = at(f)
         if 0.001 < m < 0.999:
             impure.append('%.2f->%.3f' % (f, m))
     r.ok('it comes to rest on a pure state everywhere in the pin', not impure, ', '.join(impure))

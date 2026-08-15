@@ -796,13 +796,17 @@ section[id] { scroll-margin-top: 84px }
   width: 1px; background: var(--hairline);
 }
 
+/* THE EMPLOYER LEADS AND THE YEARS QUALIFY IT. The rail is a list of places, and the name is what a reader is
+   scanning for; a column of dates makes them decode a year before they learn whose it is. The marker still
+   aligns to the first line, which is now the name. */
+.role .place { display: block; font-weight: 600; font-size: 15px; color: var(--text-strong) }
+
 .role .dates {
-  display: block; font-family: var(--font-mono); font-size: 11px; letter-spacing: .1em;
+  display: block; margin-top: 5px;
+  font-family: var(--font-mono); font-size: 11px; letter-spacing: .1em;
   text-transform: uppercase; color: var(--amber);
 }
-
-.role .place { display: block; margin-top: 6px; font-weight: 600; font-size: 15px; color: var(--text-strong) }
-.role .place em { display: block; margin-top: 2px; font-style: normal; font-family: var(--font-mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--text-faint) }
+.role .place em { display: block; margin-top: 3px; font-style: normal; font-family: var(--font-mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--text-faint) }
 
 .role h3 { margin: 0; font-family: var(--font-display); font-weight: 800; font-size: 21px; letter-spacing: -.3px; color: var(--text-strong) }
 
@@ -820,7 +824,31 @@ section[id] { scroll-margin-top: 84px }
   text-transform: uppercase; color: var(--text-faint);
 }
 
-.offbeat { margin-top: 18px; display: grid; gap: 6px; font-size: 13.5px; line-height: 1.6; color: var(--text-muted) }
+/* EDUCATION IS NOT A JOB. It has no employer and no duration worth reading, so it is not a marker on the rail
+   and it carries no dates at all — as the twelfth role it made the timeline end on the one entry that was not
+   one. Its own block, indented to the rail's text column so the section still reads as one thing. */
+.education { margin-top: 4px; padding-left: 230px }
+
+.education > b {
+  display: block; margin-bottom: 10px;
+  font-family: var(--font-mono); font-size: 10px; font-weight: 500; letter-spacing: .18em;
+  text-transform: uppercase; color: var(--amber);
+}
+
+/* The institution and the degree read as one line and wrap as two, so the pair never separates awkwardly. */
+.education .ed-line { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px }
+.education .ed-place { font-family: var(--font-display); font-weight: 800; font-size: 21px; letter-spacing: -.3px; color: var(--text-strong) }
+.education .ed-degree { font-family: var(--font-mono); font-size: 11px; letter-spacing: .1em; color: var(--amber) }
+
+.education p { margin: 14px 0 0; font-size: 14.5px; line-height: 1.65; color: var(--text-body); max-width: 74ch }
+.education .meta { margin-top: 12px; font-size: 12.5px; line-height: 1.6; color: var(--text-muted); max-width: 74ch }
+.education .meta b {
+  display: inline-block; margin-right: 8px;
+  font-family: var(--font-mono); font-size: 10px; font-weight: 500; letter-spacing: .18em;
+  text-transform: uppercase; color: var(--text-faint);
+}
+
+.offbeat { margin-top: 30px; display: grid; gap: 6px; font-size: 13.5px; line-height: 1.6; color: var(--text-muted) }
 
 .offbeat b {
   font-family: var(--font-mono); font-size: 10px; font-weight: 500; letter-spacing: .18em;
@@ -973,6 +1001,7 @@ footer a:hover { color: var(--accent) }
   /* The date rail keeps its marker and line, but the role moves under it rather than beside it. */
   .role { grid-template-columns: minmax(0, 1fr); gap: 14px }
   .role .what { padding-left: 22px }
+  .education { padding-left: 22px }
   .role:not(:last-child) .when::after { bottom: -58px }
   .expertise b { min-width: 0; display: block }
   .lab-grid { grid-template-columns: minmax(0, 1fr) }
