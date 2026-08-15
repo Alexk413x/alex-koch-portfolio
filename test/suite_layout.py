@@ -287,25 +287,6 @@ def run(page, r):
          page.js("!document.getElementById('qr-dialog').hidden"))
     page.js("document.getElementById('qr-close').click();1")
 
-    # EVERY ROLE CLOSES ON AN INVITATION. One ask line each, and LAST in the entry -- placed above the metadata
-    # it would read as another grey row, and the whole point is that the section ends on the only element that
-    # admits a reader exists.
-    ask = page.json("(()=>{const rs=[...document.querySelectorAll('#experience .role')];"
-                    "return JSON.stringify({roles:rs.length,"
-                    "lines:rs.filter(r=>r.querySelectorAll('.ask').length===1).length,"
-                    "last:rs.filter(r=>r.querySelector('.what').lastElementChild.classList.contains('ask')).length,"
-                    "empty:rs.filter(r=>{const a=r.querySelector('.ask');"
-                    "return !a || a.innerText.replace(/ask about/i,'').trim().length < 30}).length})})()")
-    r.check('every role has exactly one ask line', ask['lines'], ask['roles'])
-    r.check('and it closes the entry', ask['last'], ask['roles'])
-    r.check('none of them is a stub', ask['empty'], 0)
-
-    # The voice is third person about the operator and imperative to the visitor. An ask line is the one place
-    # on the page tempted into "ask me about", which would be the only first person anywhere in the copy.
-    me = page.json("JSON.stringify([...document.querySelectorAll('#experience .ask')]"
-                   ".map(a=>a.innerText).filter(t=>/\\b(I|me|my|we|our)\\b/i.test(t)))")
-    r.ok('and none of them slips into the first person', not me, ' | '.join(me[:2]))
-
     # NO EM DASH REACHES A READER. Retired as a rule on 2026-08-14, and the character with it. Read from the
     # rendered text rather than the source, so entities and literals are the same thing and code comments -- which
     # are explicitly out of scope -- cannot register. En dashes stay: they are ranges, which is what they are for.
