@@ -152,21 +152,26 @@ a:hover { color: var(--accent-hover) }
   pointer-events: var(--e1, auto);
 }
 
-/* The calibration ring: this brand's mark, and the only thing on the page that never stops moving. Three speeds
-   so the pattern never repeats to the eye. Decorative, so it can never eat a click. */
-.ring {
-  position: absolute; top: 48%; left: 50%;
-  width: min(86vh, 780px); height: min(86vh, 780px);
-  transform: translate(-50%, -50%) scale(var(--ring, 1));
-  opacity: var(--ring-o, 1);
-  pointer-events: none; z-index: 1;
-  filter: drop-shadow(0 0 18px rgba(221, 106, 32, .45));
-}
+/* The reactor's core, and the only thing in the middle of this scene. Screen-blended because it is emissive on
+   its own near-black background and behind its own vignette: over the stage's gradient both composite to
+   nothing, so the canvas has no box edge and adds no second horizon.
 
-.ring svg { width: 100%; height: 100%; display: block }
-.ring .r-dash { transform-origin: 350px 350px; animation: ak-spin 7s linear infinite }
-.ring .r-hair { transform-origin: 350px 350px; animation: ak-spin-r 11s linear infinite }
-.ring .r-arc { transform-origin: 350px 350px; transform: rotate(-90deg); animation: ak-spin 7s linear infinite }
+   Sized in vh, because the shader scales its picture by the buffer's HEIGHT — matched to the width instead, the
+   core would grow and shrink as the window was dragged wider. `--ring-o` is the exit curve scenes.js writes;
+   it is named for the calibration ring that used to hold this spot. */
+#hero-core {
+  position: absolute; top: 48%; left: 50%;
+  width: min(94vh, 900px); height: min(94vh, 900px);
+  transform: translate(-50%, -50%);
+  opacity: var(--ring-o, 1);
+  mix-blend-mode: screen;
+  pointer-events: none; z-index: 1;
+  /* The shader's background is a NEAR-black, not black, and screened over the page it lifts the whole square by
+     about 8/255 — a visible box edge in the middle of the hero. Taken to nothing well outside the bloom, which
+     is part of the object and is not clipped. */
+  -webkit-mask-image: radial-gradient(closest-side, #000 52%, rgba(0, 0, 0, 0) 92%);
+  mask-image: radial-gradient(closest-side, #000 52%, rgba(0, 0, 0, 0) 92%);
+}
 
 /* ---------------- scene 01 ---------------- */
 
@@ -924,6 +929,6 @@ footer a:hover { color: var(--accent) }
   .tn { transition: none }
   .scene { position: static; min-height: 100vh; opacity: 1; transform: none; filter: none }
   .kicker, .aside, .lockup span { animation: none }
-  .ring .r-dash, .ring .r-hair, .ring .r-arc, .cue span, .live-dot::after { animation: none }
+  .cue span, .live-dot::after { animation: none }
   [data-reveal] { opacity: 1; transform: none; transition: none }
 }

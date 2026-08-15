@@ -27,6 +27,11 @@ actually did.
 - **`suite_morph`** — the pin, the dead zones at both ends, and the two states the calculator has to
   rest in cleanly. A key whose start plus span exceeded 1 once sat stranded mid-flight in a state that is
   meant to be still, so the grid is asserted at both ends: 39 keys in 10x4, 28 keys in 4x7, no overlaps.
+- **`suite_hero`** — the WebGL core in the hero: that it compiled, that it draws a lit frame, that the lit
+  surface renders at the ACCENT'S HUE (the shader tone maps per channel, so the colour it is handed is not the
+  colour it produces — this check is what caught a butter-yellow core at 38 degrees and an over-corrected blood
+  red at 9.9), that the canvas never takes a click, and that a throw of the mouse spins the face the way the
+  hand went rather than against it.
 - **`suite_qr`** — decodes what the encoder draws, across the versions and a multibyte payload. An early
   encoder produced a flawless-looking symbol that read as nothing, because the fifteen format bits were
   written least-significant first. Only reading the code back catches that.

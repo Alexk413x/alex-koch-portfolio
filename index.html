@@ -29,14 +29,9 @@
 <div id="scroll">
 <div id="stage">
 
-  <div class="ring" aria-hidden="true">
-    <svg viewBox="0 0 700 700">
-      <circle cx="350" cy="350" r="300" fill="none" stroke="rgba(221,106,32,.15)" stroke-width="1.5"/>
-      <circle class="r-dash" cx="350" cy="350" r="250" fill="none" stroke="rgba(221,106,32,.45)" stroke-width="2" stroke-dasharray="3 15"/>
-      <circle class="r-hair" cx="350" cy="350" r="218" fill="none" stroke="rgba(240,168,120,.2)" stroke-width="1" stroke-dasharray="1 9"/>
-      <circle class="r-arc" cx="350" cy="350" r="280" fill="none" stroke="#dd6a20" stroke-width="3" stroke-linecap="round" stroke-dasharray="1759" stroke-dashoffset="250"/>
-    </svg>
-  </div>
+  <!-- The reactor's core, and the whole of what sits behind this scene. site/hero-core.js drives it; without
+       WebGL the element stays empty. -->
+  <canvas id="hero-core" aria-hidden="true"></canvas>
 
   <!-- SCENE 01 · IDENTITY -->
   <section class="scene" id="top">
@@ -468,5 +463,6 @@
 <script src="site/share.js"></script>
 <script src="site/rpn.js"></script>
 <script src="site/rpn-demo.js"></script>
+<script type="module" src="site/hero-core.js"></script>
 </body>
 </html>

@@ -41,6 +41,11 @@ of them — and that is now `labs/kit/lab.js`.
 There is no framework, no CDN and no build step in any lab. `labs/kit/` is the shared kit; a lab is a thin host
 page plus pure modules for its shader, its sim, its control table and its values.
 
+**The home page is now a consumer of `labs/`.** `site/hero-core.js` imports `labs/kit/glquad.js`, `labs/kit/lab.js`
+and four of `labs/reactor/`'s modules to draw the reactor's core, alone and ring-off, behind the hero. It is the
+lab's scene, not a copy of it — the uniform block both pages upload lives in `labs/reactor/reactor-uniforms.js`
+for that reason. So `labs/` is no longer only a lab: renaming or deleting anything in it breaks `index.html`.
+
 **Start a new lab from `labs/shell/Shell.html`.** It is the base lab — a live catalogue of every control type and
 every formatter, annotated with why each is the kind it is, built on the same scaffold the real labs use. It is
 not linked from the index and is not meant for users.
