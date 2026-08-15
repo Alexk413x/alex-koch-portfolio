@@ -140,6 +140,53 @@ class Page:
                       {'type': 'mouseWheel', 'x': 400, 'y': 300, 'deltaX': 0, 'deltaY': dy})
         time.sleep(pause)
 
+    def until(self, expr, timeout=4.0, step=0.05):
+        """Polls a JS predicate until it is true. Returns whether it became true."""
+        end = time.time() + timeout
+        while time.time() < end:
+            if self.js('!!(%s)' % expr):
+                return True
+            time.sleep(step)
+        return False
+
+    def until_still(self, quiet=0.2, timeout=5.0):
+        """Waits until the page has FINISHED moving, rather than for a fixed time.
+
+        A scroll that has stopped is not the same as a scroll that has finished. The page answers a gesture with
+        a settle, then decides whether to carry, then glides -- so between the wheel going quiet and the carry
+        starting there is a window where nothing is moving and the page is not done. AKNAV.busy() covers exactly
+        that window; stillness alone is what made these checks flaky."""
+        self.until('!window.AKNAV || !window.AKNAV.busy()', timeout=timeout)
+        end = time.time() + timeout
+        last, still = None, 0.0
+        while time.time() < end:
+            y = self.js('Math.round(scrollY)')
+            busy = self.js('!!(window.AKNAV && window.AKNAV.busy())')
+            still = still + 0.05 if (y == last and not busy) else 0.0
+            if still >= quiet:
+                return y
+            last = y
+            time.sleep(0.05)
+        return self.js('Math.round(scrollY)')
+
+    def until_morphed(self, timeout=4.0):
+        """Waits for the calculator to reach a PURE state.
+
+        It runs on its own clock rather than tracking the scroll, so a glide that crosses its trigger leaves it
+        animating after the page has come to rest. Reading --m before then reads a mechanism mid-flight."""
+        self.until("(m => m < 0.001 || m > 0.999)"
+                   "(+(document.getElementById('app-stage').style.getPropertyValue('--m') || 0))",
+                   timeout=timeout)
+        return float(self.js("document.getElementById('app-stage').style.getPropertyValue('--m') || '0'"))
+
+    def quiesce(self):
+        """Lets the page forget the reader touched it.
+
+        The carry only ever finishes a movement the READER made, so it ignores a scrollTo unless real input
+        arrived in the last two seconds. Anything that drives the page programmatically and does not want to
+        race a carry waits this out first."""
+        time.sleep(2.1)
+
     def flick(self, total=900, events=24, spacing=0.016, pause=1.1):
         """A trackpad flick: ONE decision arriving as a decaying stream of events over ~400ms.
 

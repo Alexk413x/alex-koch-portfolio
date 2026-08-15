@@ -246,6 +246,7 @@
   /* Fires once the scrolling stops, not on the crossing itself. By then the reader has landed somewhere, so the
      section they are carried into is the one they actually chose rather than the one they passed through. */
   function park() {
+    settleTimer = 0;
     if (glide || current < 0) return;
     if (!roomy.matches || reduced.matches) { parked = current; return; }
     if (performance.now() < quietUntil) { parked = current; return; }
@@ -283,10 +284,14 @@
   /* The stop list, for anything that needs to know where the page can come to rest. The measurements are all
      derived — section spans, the morph trigger, the roles, the gap filling — so restating them anywhere else is
      a second description that can drift. The harness reads this rather than recomputing the geometry. */
+  /* `busy` is the page still DECIDING: either gliding, or counting down the settle before it decides whether to
+     carry. A reader cannot see the difference between that and a page at rest, but anything measuring one can
+     be fooled by it — a scroll that has stopped is not the same as a scroll that has finished. */
   window.AKNAV = {
     stops: () => stops.slice(),
     index: () => stopIndex,
     section: () => current,
+    busy: () => glide !== 0 || settleTimer !== 0,
   };
 
   remeasure();

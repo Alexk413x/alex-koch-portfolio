@@ -126,6 +126,11 @@ def run(page, r):
     # reading line fixed inside the viewport, the last item can be unreachable at every scroll position there is.
     page.viewport(1600, 1000)
     page.scroll(0)
+    # The walk drives the page by scrollTo, and a carry mid-walk would fight it for the scroll position and pin
+    # it at a section top -- which reads as the meter failing to reach the last two sections. The carry ignores
+    # a programmatic scroll once the reader's last real input is two seconds old, so waiting that out disarms it
+    # deterministically rather than relying on each step being quicker than the settle.
+    page.quiesce()
     seen, order, last_k = [], True, -1
     maxy = page.js('document.documentElement.scrollHeight - innerHeight')
     for i in range(41):
@@ -183,37 +188,37 @@ def run(page, r):
     cart = sections[0]
 
     page.scroll(cart - 500, pause=0.4)
-    page.flick(700)
-    r.near('a real gesture past a boundary is carried to the section top',
-           page.js('Math.round(scrollY)'), cart, 8)
+    page.flick(700, pause=0)
+    r.near('a real gesture past a boundary is carried to the section top', page.until_still(), cart, 8)
 
     # Inside the section it stays theirs: a nudge that crosses nothing must not be undone.
     at = page.js('Math.round(scrollY)')
-    page.wheel(200, pause=1.2)
-    r.ok('scrolling inside a section is left alone', page.js('Math.round(scrollY)') > at + 100,
-         'moved from %d to %d' % (at, page.js('Math.round(scrollY)')))
+    page.wheel(200, pause=0)
+    after = page.until_still()
+    r.ok('scrolling inside a section is left alone', after > at + 100, 'moved from %d to %d' % (at, after))
 
     # Contact's top is below the furthest the page can scroll, so the clamp parks the last section at the bottom.
     page.scroll(end - 400, pause=0.4)
-    page.flick(600)
-    r.near('the last section rests at the bottom', page.js('Math.round(scrollY)'), end, 8)
+    page.flick(600, pause=0)
+    r.near('the last section rests at the bottom', page.until_still(), end, 8)
 
     # The arrow keys step the page a whole beat at a time rather than a fixed number of pixels. The stops are
     # built from the same DOM as the section spans, so a press has to land exactly on one.
     page.scroll(0, pause=0.4)
     page.js('document.body.focus();1')
-    page.key('ArrowDown')
-    r.near('an arrow press lands on the next stop', page.js('Math.round(scrollY)'), stops[1], 8)
-    page.key('ArrowDown')
-    r.near('and the one after that', page.js('Math.round(scrollY)'), stops[2], 8)
-    page.key('ArrowUp')
-    r.near('and it steps back the same way', page.js('Math.round(scrollY)'), stops[1], 8)
+    page.key('ArrowDown', pause=0.05)
+    r.near('an arrow press lands on the next stop', page.until_still(), stops[1], 8)
+    page.key('ArrowDown', pause=0.05)
+    r.near('and the one after that', page.until_still(), stops[2], 8)
+    page.key('ArrowUp', pause=0.05)
+    r.near('and it steps back the same way', page.until_still(), stops[1], 8)
 
     # THE HERO RESOLVES TO THE REACTOR ALONE. Its second stop is the point where the words have finished leaving
     # and nothing else is in the frame; the instrument's own exit has not started. Both halves matter: a stop
     # placed where the core had already begun to go would have nothing to hold.
     page.scroll(0, pause=0.4)
-    page.key('ArrowDown')
+    page.key('ArrowDown', pause=0.05)
+    page.until_still()
     hero = page.json("(()=>{const s=document.getElementById('stage');"
                      "return JSON.stringify({text:+s.style.getPropertyValue('--o1'),"
                      "cue:+s.style.getPropertyValue('--cue-o'),"
@@ -233,44 +238,44 @@ def run(page, r):
     page.key(' ', pause=0.18)
     after = page.js(pulse)
     r.ok('the space bar strikes the reactor', after > before + 0.25, 'spring %.3f -> %.3f' % (before, after))
-    r.near('and steps with it', page.js('Math.round(scrollY)'), stops[1], 400)
+    r.near('and steps with it', page.until_still(), stops[1], 400)
 
     # Every role is its own stop, so the timeline can be walked rather than scrolled past.
     roles = page.js("document.querySelectorAll('#experience .role').length")
     steps = 0
     at = page.js('Math.round(scrollY)')
     while steps < 30:
-        page.key('ArrowDown', pause=0.85)
-        now = page.js('Math.round(scrollY)')
+        page.key('ArrowDown', pause=0.05)
+        now = page.until_still()
         steps += 1
         if now == at:
             break
         at = now
     r.ok('the page steps to the bottom in one beat per stop', 12 <= steps <= 24,
          '%d presses for %d roles' % (steps, roles))
-    r.near('the last press rests at the bottom', page.js('Math.round(scrollY)'), end, 8)
+    r.near('the last press rests at the bottom', page.until_still(), end, 8)
 
     # A NAV LINK INTO A PINNED SCENE MUST GO TO ITS RANGE, NOT TO THE ELEMENT. #alex is absolutely positioned
     # inside a sticky stage, so its own page position is where that stage comes to REST -- the far end of the
     # hero's runway, with the words already climbed out. The browser's own jump landed on an empty frame.
     page.scroll(6000, pause=0.4)
-    page.click_at('#nav .links a[href="#alex"]', pause=1.4)
-    r.near('the ALEX link goes to the top of the page', page.js('Math.round(scrollY)'), 0, 8)
+    page.click_at('#nav .links a[href="#alex"]', pause=0.05)
+    r.near('the ALEX link goes to the top of the page', page.until_still(), 0, 8)
     r.near('and the hero is showing when it lands',
            float(page.js("document.getElementById('stage').style.getPropertyValue('--o1') || '1'")), 1.0, 0.02)
 
     # Same shape for the calculator: its range's top is the faceplate, its element's is somewhere mid-morph.
     page.scroll(6000, pause=0.4)
-    page.click_at('#nav .links a[href="#app"]', pause=1.4)
-    r.near('the APP link lands on the faceplate',
-           float(page.js("document.getElementById('app-stage').style.getPropertyValue('--m') || '0'")), 0.0, 0.05)
+    page.click_at('#nav .links a[href="#app"]', pause=0.05)
+    page.until_still()
+    r.near('the APP link lands on the faceplate', page.until_morphed(), 0.0, 0.001)
 
     # An arrow inside the calculator belongs to the calculator. The key is left un-prevented there, so the
     # browser's own 40px scroll happens and the page does NOT step -- which is the thing being asserted.
     page.scroll(0, pause=0.4)
     page.js("document.getElementById('rpn').focus();1")
-    page.key('ArrowDown', pause=0.6)
-    moved = page.js('Math.round(scrollY)')
+    page.key('ArrowDown', pause=0.05)
+    moved = page.until_still()
     r.ok('an arrow in the calculator does not step the page', moved < 200,
          'moved %dpx, a stop is %d' % (moved, stops[1]))
 
