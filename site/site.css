@@ -34,7 +34,10 @@
 
   --pad-page: 40px;
   --content-max: 1400px;
-  --aside-max: 320px;
+  /* Both of scene 01's side columns, and the only declaration of that width. They are equal so the hero reads as
+     balanced about the core, which sits on the centre line between them. 530px is what the lockup's ink needs at
+     its full 176px size, measured — under that it wraps. */
+  --hero-col: 530px;
 
   --ease-reveal: cubic-bezier(.4, 0, .2, 1);
   --ease-settle: cubic-bezier(.2, .85, .25, 1);
@@ -181,8 +184,13 @@ a:hover { color: var(--accent-hover) }
 
 .hero-grid {
   width: 100%; max-width: var(--content-max); margin: 0 auto;
-  display: grid; grid-template-columns: minmax(0, 1fr) minmax(240px, var(--aside-max));
-  gap: 48px; align-items: center;
+  /* THREE columns, and the middle one holds nothing: it is the core's lane. The two side columns are the same
+     width by construction rather than by one being measured against the other, so the balance survives a resize.
+     No column gap, because the lane IS the gap. minmax lets both sides shrink together when the window cannot
+     seat them; below 820px the grid collapses to one column and none of this applies. */
+  display: grid;
+  grid-template-columns: minmax(0, var(--hero-col)) 1fr minmax(0, var(--hero-col));
+  column-gap: 0; row-gap: 48px; align-items: center;
 }
 
 .kicker {
@@ -204,7 +212,10 @@ a:hover { color: var(--accent-hover) }
 .lockup .l1 { animation: ak-wipe .6s .2s var(--ease-reveal) both }
 .lockup .l2 { color: var(--accent); animation: ak-wipe .6s .5s var(--ease-reveal) both }
 
+/* Column THREE explicitly. With the lane between them there is a middle column holding nothing, and a second
+   child would otherwise fall into it and sit on top of the core. */
 .aside {
+  grid-column: 3;
   color: var(--text-body); font-size: clamp(13px, 1.4vw, 16px); line-height: 1.65;
   animation: ak-rise .9s .9s both;
 }
