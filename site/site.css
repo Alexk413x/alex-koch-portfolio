@@ -174,7 +174,10 @@ a:hover { color: var(--accent-hover) }
    core would grow and shrink as the window was dragged wider. `--ring-o` is the exit curve scenes.js writes;
    it is named for the calibration ring that used to hold this spot. */
 #hero-core {
-  position: absolute; top: 48%; left: 50%;
+  /* 48% was the calibration ring's, and a decorative device could sit high. This is the object the columns are
+     arranged around, so it belongs on the line they are centred on: the scene's padding-top and the foot are
+     within 10px of each other, which puts the content's centre 5px below the stage's middle at every height. */
+  position: absolute; top: calc(50% + 5px); left: 50%;
   width: min(94vh, 900px); height: min(94vh, 900px);
   transform: translate(-50%, -50%);
   opacity: var(--ring-o, 1);
