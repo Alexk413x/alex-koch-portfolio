@@ -131,6 +131,38 @@ class Page:
                           {'type': kind, 'x': r['x'], 'y': r['y'], 'button': 'left', 'clickCount': 1})
         time.sleep(pause)
 
+    def wheel(self, dy, pause=0.25):
+        """A REAL wheel event, which scroll() is deliberately not.
+
+        The page answers input rather than position, so it ignores a programmatic scrollTo. Anything testing
+        the wheel has to arrive the way a reader does."""
+        self.cdp.call('Input.dispatchMouseEvent',
+                      {'type': 'mouseWheel', 'x': 400, 'y': 300, 'deltaX': 0, 'deltaY': dy})
+        time.sleep(pause)
+
+    def flick(self, total=900, events=24, spacing=0.016, pause=1.1):
+        """A trackpad flick: ONE decision arriving as a decaying stream of events over ~400ms.
+
+        This is the shape that matters. A page reading the wheel as distance answers every event in the tail and
+        races several stops past the one that was wanted."""
+        step = total / float(events)
+        for i in range(events):
+            self.cdp.call('Input.dispatchMouseEvent',
+                          {'type': 'mouseWheel', 'x': 400, 'y': 300, 'deltaX': 0,
+                           'deltaY': step * (1 - i / float(events)) * 2})
+            time.sleep(spacing)
+        time.sleep(pause)
+
+    VK = {'ArrowDown': 40, 'ArrowUp': 38, 'ArrowLeft': 37, 'ArrowRight': 39, ' ': 32}
+
+    def key(self, name, pause=0.95):
+        """A real key press. The default pause covers the page's glide, which is what an arrow starts."""
+        for kind in ('keyDown', 'keyUp'):
+            self.cdp.call('Input.dispatchKeyEvent',
+                          {'type': kind, 'key': name, 'code': name,
+                           'windowsVirtualKeyCode': self.VK.get(name, 0)})
+        time.sleep(pause)
+
     def screenshot(self, path):
         data = self.cdp.call('Page.captureScreenshot', {'format': 'png'})['data']
         with open(path, 'wb') as f:

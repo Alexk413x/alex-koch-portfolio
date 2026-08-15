@@ -15,3 +15,6 @@ desktop.ini
 
 # codebase-kg scratch export; the .db is the artifact
 .kg-export.json
+
+# Per-machine Claude Code permissions; .claude/settings.json is the shared one
+.claude/settings.local.json

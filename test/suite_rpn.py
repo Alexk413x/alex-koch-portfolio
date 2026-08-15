@@ -81,9 +81,10 @@ def run(page, r):
                       "return JSON.stringify(s.view().levels.map(l=>l.text))})()")
     r.check('one result leaves one value on the stack', [x for x in empty if x], ['5'])
 
-    # Now through the real keypad, from the end of the morph where the app is assembled and live.
+    # Now through the real keypad, from the end of the morph where the app is assembled and live. The morph runs
+    # on its own clock rather than tracking the scroll, so the wait here is the animation's, not the browser's.
     pin = page.pin('app-scroll', 'app-stage')
-    page.scroll(pin['top'] + pin['run'], pause=0.7)
+    page.scroll(pin['top'] + pin['run'], pause=1.3)
     page.js("document.querySelector('#rpn .rpn-pad [data-key=\\\"CA\\\"]').click();1")
     for key in ('1', '2', 'Enter', '3', '+'):
         page.js("document.querySelector('#rpn .rpn-pad [data-key=%s]').click();1" % json.dumps(key))

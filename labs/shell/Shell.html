@@ -58,7 +58,10 @@
  */
 import { createQuad } from '../kit/glquad.js';
 import { createPanel, buildActions, mountPanelToggle } from '../kit/panel.js';
-import { persist, fitCanvas, runLoop, textOut, reportNoGL } from '../kit/lab.js';
+import { persist, fitCanvas, runLoop, textOut, reportNoGL, escapeLeaves } from '../kit/lab.js';
+
+// Escape leaves the instrument, the way the back button does.
+escapeLeaves();
 import { FRAG, UNIFORMS } from './shell-shader.js';
 import { SECTIONS, FMT, SHAPES } from './shell-sidebar.js';
 import { PRESETS, defaultPreset, matchIdx } from './shell-presets.js';

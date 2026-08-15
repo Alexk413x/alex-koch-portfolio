@@ -46,6 +46,13 @@
       l.style.width = 'max-content';
       l.style.whiteSpace = 'nowrap';
       l.style.transform = 'none';
+      /* Back to the AUTHORED tracking before measuring, the same discipline fill() keeps with dsFs. The
+         correction below is a delta on the tracking it reads, so measuring the previous pass's output makes
+         every run build on the last: the lines still match each other, but the pair keeps widening. A resize
+         from 430 back to 1600 grew this lockup 21px and it never recovered. Cleared rather than cached,
+         because the authored value is itself viewport-dependent. */
+      l.style.letterSpacing = '';
+      l.style.marginRight = '';
     });
 
     if (justify) {

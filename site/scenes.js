@@ -11,14 +11,28 @@
   const stage = document.getElementById('stage');
   if (!stage) return;
 
-  const TRAVEL = 130;       // px a scene rises as it leaves — generous, still readable
+  /* THE TEXT LEAVES, THE INSTRUMENT STAYS AND THEN GOES. Two envelopes off one scroll, deliberately out of
+     phase: the words climb out of the top of the frame under their own blur while the core and the ring hold,
+     and only once the words are gone do those fade, across the handover to the next section. One envelope for
+     both made the whole scene dissolve in place, which reads as a cross-fade rather than as an exit. */
+  const TRAVEL = 1;         // viewport heights the words rise. A fraction of the frame only fades in place;
+                            // clearing the top is what makes it read as leaving.
   const BLUR = 8;           // px of defocus at full exit
-  const RING_SWELL = .14;   // the ring inflates as the scene leaves, so the exit is not a flat fade
-  const RING_LAG = .25;     // fraction of the exit the ring holds for after the text has started going
+  const TEXT_HOLD = .45;    // fraction of the exit the words stay opaque for, so they are seen to leave
+  const CUE_OUT = .22;      // fraction of the words' exit over which the scroll arrow is simply gone. It is an
+                            // invitation, and an invitation that blurs and rides off the top competes with the
+                            // instrument for the eye at exactly the wrong moment.
+  const CORE_SHRINK = .88;  // how far the core collapses into itself as it leaves
+  const HALO_SPREAD = 420;  // viewBox units each edge of the ring travels OUTWARD. The band opens and clears the
+                            // frame sideways rather than dimming in place, so the scene is struck, not dissolved.
+  /* In units of the WORDS' exit, and over one: the instrument does not begin to leave until they are gone and
+     a stop has been made on it. That stop is the whole point — the hero resolves to the reactor alone, with
+     nothing else in the frame, and the next press is what strikes it. */
+  const RING_START = 1.12;
+  const RING_SPAN = .8;     // viewport heights it takes to go, finishing before the next section arrives
 
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
   let hold = .5, exit = .7, vh = 1, queued = false;
-  let mIn = .18, mOut = .22;   // morph dead zones, read from the stylesheet in measure()
 
   /* Reads the scene runway back off the stylesheet. site.css is the only place --scene-hold and --scene-exit are
      written, so the height the stage stays pinned for and the range the exit is scrubbed across cannot disagree —
@@ -27,8 +41,7 @@
     const cs = getComputedStyle(document.documentElement);
     hold = parseFloat(cs.getPropertyValue('--scene-hold')) || 0;
     exit = parseFloat(cs.getPropertyValue('--scene-exit')) || 1;
-    mIn = parseFloat(cs.getPropertyValue('--morph-hold-in')) || 0;
-    mOut = parseFloat(cs.getPropertyValue('--morph-hold-out')) || 0;
+    trip = parseFloat(cs.getPropertyValue('--morph-trip')) || .14;
     vh = window.innerHeight || 1;
   }
 
@@ -46,30 +59,68 @@
    */
   const morphStage = document.getElementById('app-stage');
   const morphScroll = document.getElementById('app-scroll');
-  /* The pin is three parts: sit at the faceplate, morph, sit at the finished app. The holds are what make the
-     two pure states findable — with the scrub starting at the first pixel of the pin, each end state exists at
-     exactly one scroll position and reading either one is an accident. */
-  function morph(y) {
-    if (!morphStage || !morphScroll) return;
-    const run = morphScroll.offsetHeight - morphStage.offsetHeight;
-    const p = run > 0 ? (y - morphScroll.offsetTop) / run : 1;
-    const span = 1 - mIn - mOut;
-    const t = span > 0 ? ease((p - mIn) / span) : (p >= 1 ? 1 : 0);
-    morphStage.style.setProperty('--m', t.toFixed(4));
-    morphStage.classList.toggle('is-new', t > .5);
+
+  /* ONE SCROLL PLAYS IT, THE NEXT ONE LEAVES.
+   *
+   * The morph used to be scrubbed: --m tracked the scroll position across 1.8 viewport heights, with a dead
+   * zone at each end so the two pure states were wide enough to stop on. That is 40% of the runway spent moving
+   * nothing, and the mechanism could still be left stranded halfway through by a reader who simply stopped.
+   *
+   * Now the scroll chooses only a DIRECTION. Crossing the trigger commits the morph and it runs to completion on
+   * its own clock, so it always lands on a pure state and cannot be held part-played — the holds are not needed,
+   * because there is no longer a position that means "halfway". The remaining pin is the way out.
+   */
+  const MORPH_MS = 900;
+  const RELEASE = .57;    // where scrolling back up releases it, as a fraction of the commit point. Two lines
+                          // rather than one, so a reader parked on the trigger cannot flap the mechanism back
+                          // and forth on a pixel of movement.
+  let trip = .14;         // read from the stylesheet in measure(); nav.js reads the same declaration
+
+  let mValue = 0, mTarget = 0, mFrom = 0, mStart = 0, mAnim = 0;
+
+  function writeMorph(v) {
+    morphStage.style.setProperty('--m', v.toFixed(4));
+    morphStage.classList.toggle('is-new', v > .5);
     /* BOTH calculators are usable, each at its own resting state. Keys are inert only while plates are in
        flight, so a scroll-past cannot half-press one; the faceplate is as clickable as the app is. */
-    const atOld = t < .04, atApp = t > .96;
+    const atOld = v < .04, atApp = v > .96;
     morphStage.classList.toggle('is-live', atOld || atApp);
     morphStage.classList.toggle('is-old', atOld);
     morphStage.classList.toggle('is-app', atApp);
   }
 
-  // Everything reaches its shipped state and stays there: no pin, no scrub.
+  function tick(ts) {
+    if (!mStart) mStart = ts;
+    const p = clamp((ts - mStart) / MORPH_MS);
+    mValue = mFrom + (mTarget - mFrom) * ease(p);
+    writeMorph(mValue);
+    mAnim = p < 1 ? requestAnimationFrame(tick) : 0;
+  }
+
+  /* Re-based rather than resumed when the target flips, so a reader who reverses mid-flight gets the morph
+     running back from where it actually is instead of jumping to where it would have been. */
+  function setMorph(target) {
+    if (target === mTarget) return;
+    mTarget = target;
+    mFrom = mValue;
+    mStart = 0;
+    if (!mAnim) mAnim = requestAnimationFrame(tick);
+  }
+
+  function morph(y) {
+    if (!morphStage || !morphScroll) return;
+    const run = morphScroll.offsetHeight - morphStage.offsetHeight;
+    const p = run > 0 ? (y - morphScroll.offsetTop) / run : 1;
+    if (p >= trip) setMorph(1);
+    else if (p <= trip * RELEASE) setMorph(0);
+  }
+
+  // Everything reaches its shipped state and stays there: no pin, no trigger.
   function morphFinal() {
     if (!morphStage) return;
-    morphStage.style.setProperty('--m', '1');
-    morphStage.classList.add('is-new', 'is-live', 'is-app');
+    if (mAnim) { cancelAnimationFrame(mAnim); mAnim = 0; }
+    mValue = mTarget = mFrom = 1;
+    writeMorph(1);
   }
 
   function frame() {
@@ -78,16 +129,22 @@
     morph(y);
     const e = ease((y - hold * vh) / (exit * vh));
 
-    stage.style.setProperty('--o1', (1 - e).toFixed(3));
-    stage.style.setProperty('--y1', (-TRAVEL * e).toFixed(1) + 'px');
+    /* Opaque while it climbs, fading only once it is most of the way out. Fading from the first pixel would
+       make it disappear before it had visibly gone anywhere, which is the whole thing this avoids. */
+    stage.style.setProperty('--o1', (1 - ease((e - TEXT_HOLD) / (1 - TEXT_HOLD))).toFixed(3));
+    stage.style.setProperty('--y1', (-TRAVEL * vh * e).toFixed(1) + 'px');
     stage.style.setProperty('--b1', (BLUR * e).toFixed(2) + 'px');
     stage.style.setProperty('--e1', e > .5 ? 'none' : 'auto');
-    stage.style.setProperty('--ring', (1 + RING_SWELL * e).toFixed(4));
-    /* The ring is a sibling of the scene, not a child, so it does not inherit the scene's fade — it is the
-       persistent device and later scenes pass in front of it. On its own curve it must still be gone before the
-       stage unpins, or the last of the runway is a bare ring holding the screen. Lagged: the text leaves, then
-       the instrument powers down. */
-    stage.style.setProperty('--ring-o', (1 - ease((e - RING_LAG) / (1 - RING_LAG))).toFixed(3));
+    stage.style.setProperty('--cue-o', (1 - ease(e / CUE_OUT)).toFixed(3));
+
+    /* The core and the ring are SIBLINGS of the scene, not children, so they do not inherit its fade and can be
+       given a curve of their own. It starts only once the words are clear, which leaves a stop where the
+       reactor holds the frame by itself, and runs on past the end of the pin so the stage carries them off
+       still lit instead of sliding away already dark. */
+    const r = ease((y - (hold + exit * RING_START) * vh) / (RING_SPAN * vh));
+    stage.style.setProperty('--core-s', (1 - CORE_SHRINK * r).toFixed(4));
+    stage.style.setProperty('--halo-x', (HALO_SPREAD * r).toFixed(1) + 'px');
+    stage.style.setProperty('--ring-o', (1 - r).toFixed(3));
   }
 
   function onScroll() {
@@ -103,7 +160,9 @@
 
   // Hands the stage back to the stylesheet's static end state, which is what the reduced-motion rules expect.
   function clear() {
-    for (const p of ['--o1', '--y1', '--b1', '--e1', '--ring', '--ring-o']) stage.style.removeProperty(p);
+    for (const p of ['--o1', '--y1', '--b1', '--e1', '--cue-o', '--core-s', '--halo-x', '--ring-o']) {
+      stage.style.removeProperty(p);
+    }
   }
 
   /* A pinned, scrubbed morph needs a viewport tall enough to hold the scene. A landscape phone is 393px tall, so

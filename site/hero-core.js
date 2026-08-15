@@ -224,7 +224,11 @@ function init() {
    * front-most: Windows Chrome delivers no animation frames to one that is not. */
   /* `stop` is here for inspection, not for the page: with the loop running, a frame stepped by hand is overwritten
    * before it can be looked at, so a pulse cannot be photographed at its peak. Nothing calls it in normal use. */
+  /* `pulse` is the page's, not the inspector's: nav.js fires it when a wheel gesture or an arrow key steps onto
+     the reactor, so the object answers a keyboard the same way it answers a cursor. Same call as pointerdown,
+     including bringing the core up, because a key press has no hover to do that for it. */
   window.HERO = { state, sim, R, renderNow: (dt) => loop.renderNow(dt), stop: () => loop.stop(),
+                  pulse: () => { sim.firePulse(state); target = 1; },
                   get onScreen() { return onScreen; },
                   get near() { return near; }, set near(v) { target = near = clamp01(v); } };
 }

@@ -44,7 +44,10 @@
 <script type="module">
 import { createQuad } from '../kit/glquad.js';
 import { createPanel, buildActions, mountPanelToggle } from '../kit/panel.js';
-import { persist, fitCanvas, runLoop, textOut, reportNoGL } from '../kit/lab.js';
+import { persist, fitCanvas, runLoop, textOut, reportNoGL, escapeLeaves } from '../kit/lab.js';
+
+// Escape leaves the instrument, the way the back button does.
+escapeLeaves();
 import { FRAG, UNIFORMS } from './reactor-shader.js';
 import { SECTIONS, FMT } from './reactor-sidebar.js';
 import { PRESETS, MODES, CAM_KEYS, defaultPreset, matchIdx } from './reactor-presets.js';

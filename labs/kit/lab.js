@@ -144,6 +144,27 @@ export function runLoop({ draw, onTick, tickMs = 500, maxDt = 0.05 }) {
   };
 }
 
+/* Escape leaves the instrument, the way the back button does.
+ *
+ * A lab is a full-screen app with no chrome, reached by a click from somewhere else, and the way out of one is
+ * otherwise not obvious. Called explicitly by each lab rather than run as a side effect of importing this
+ * module, because site/hero-core.js imports it too — the home page must not grow a key that navigates away from
+ * itself.
+ *
+ * defaultPrevented is the guard that matters: the panel's numeric fields already take Escape to cancel a typed
+ * value, and cancelling an edit must not also leave the page.
+ */
+export function escapeLeaves(fallback = '../../index.html') {
+  addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape' || e.defaultPrevented || e.metaKey || e.ctrlKey || e.altKey) return;
+    const el = document.activeElement;
+    if (el && el.closest && el.closest('input, textarea, select, [contenteditable="true"]')) return;
+    // Opened in a new tab there is nothing to go back to, so it goes home rather than nowhere.
+    if (history.length > 1 && document.referrer) history.back();
+    else location.href = fallback;
+  });
+}
+
 // Puts the reason on screen when a renderer could not be built, so the page is not merely black.
 export function reportNoGL(msg = 'NO WEBGL') {
   const el = document.getElementById('glstate');

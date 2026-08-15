@@ -45,60 +45,82 @@ GRID = """(() => {
 def run(page, r):
     page.goto('index.html')
     pin = page.pin('app-scroll', 'app-stage')
-    top, run_px = pin['top'], pin['run']
+    top, run_px, vh = pin['top'], pin['run'], pin['vh']
     r.ok('the scene pins', run_px > 0, 'run=%s' % run_px)
 
-    def at(fraction, pause=0.3):
+    M = "document.getElementById('app-stage').style.getPropertyValue('--m')"
+
+    def at(fraction, pause=1.25):
+        """Scrolls, then waits out the morph's own clock. It is no longer tracked to the scroll, so the value
+        after a move is a function of TIME, not of where the move stopped."""
         page.scroll(top + int(run_px * fraction), pause=pause)
-        return float(page.js("document.getElementById('app-stage').style.getPropertyValue('--m')") or 0)
+        return float(page.js(M) or 0)
 
-    # Both pure states have to be reachable, not exist at a single scroll position.
-    zones = {'faceplate': 0, 'morphing': 0, 'app': 0}
-    step = max(1, run_px // 40)
-    for offset in range(0, run_px + step, step):
-        page.scroll(top + offset, pause=0.03)
-        m = float(page.js("document.getElementById('app-stage').style.getPropertyValue('--m')") or 0)
-        zones['faceplate' if m <= 0.0005 else ('app' if m >= 0.9995 else 'morphing')] += step
-    r.ok('the faceplate holds still long enough to stop on', zones['faceplate'] > run_px * 0.10,
-         '%dpx of %d' % (zones['faceplate'], run_px))
-    r.ok('the finished app holds still too', zones['app'] > run_px * 0.10,
-         '%dpx of %d' % (zones['app'], run_px))
-    r.ok('and there is a scrub between them', zones['morphing'] > run_px * 0.4,
-         '%dpx of %d' % (zones['morphing'], run_px))
+    # The dead zones are gone with the scrub, and the runway shrank with them. 1.8 viewport heights, 40% of it
+    # moving nothing, is the thing this replaced.
+    r.ok('the pin carries no dead runway', run_px < vh * 1.2, '%dpx against a %dpx viewport' % (run_px, vh))
 
-    r.near('m is 0 at the start of the pin', at(0.0), 0.0, 0.001)
-    r.near('m is 1 by the end', at(1.0), 1.0, 0.001)
+    r.near('the faceplate is where the pin starts', at(0.0), 0.0, 0.001)
+
+    # ONE NUDGE PLAYS THE WHOLE THING. Barely past the trigger is enough; the morph owns its own clock from
+    # there, so how far the reader scrolled has no bearing on where it stops.
+    nudge = int(run_px * 0.14) + 20
+    page.scroll(top, pause=1.25)
+    page.scroll(top + nudge, pause=1.25)
+    r.near('one nudge past the trigger plays it to completion', float(page.js(M) or 0), 1.0, 0.001)
+    r.ok('and the nudge really was small', nudge < vh * 0.2, '%dpx' % nudge)
+
+    # It is played, not jumped: a moment after the trigger it must be part way through.
+    page.scroll(top, pause=1.25)
+    page.scroll(top + nudge, pause=0.2)
+    mid = float(page.js(M) or 0)
+    r.ok('the morph is animated, not switched', 0.001 < mid < 0.999, 'm=%.3f a fifth of a second in' % mid)
+
+    # Scrolling back releases it, to completion, the same way.
+    r.near('scrolling back releases it', at(0.0), 0.0, 0.001)
+
+    # AND IT ALWAYS RESTS ON A PURE STATE. With the scrub gone there is no scroll position that means "halfway",
+    # so wherever the reader stops, the mechanism finishes what it started.
+    impure = []
+    for f in (0.05, 0.3, 0.55, 0.8, 1.0):
+        m = at(f, pause=1.15)
+        if 0.001 < m < 0.999:
+            impure.append('%.2f->%.3f' % (f, m))
+    r.ok('it comes to rest on a pure state everywhere in the pin', not impure, ', '.join(impure))
 
     # NO KEY MAY BE MID-FLIGHT AT REST. This is the failure that shipped once.
-    at(0.0, pause=0.6)
+    at(0.0)
     face = page.json(GRID)
     r.check('faceplate shows all 39 keys', face['visible'], 39)
     r.check('faceplate keys do not overlap', face['overlaps'], 0)
     r.check('faceplate is 10 columns', face['cols'], 10)
     r.check('faceplate is 4 rows', face['rows'], 4)
 
-    at(1.0, pause=0.6)
+    at(1.0)
     app = page.json(GRID)
     r.check('app shows all 28 keys', app['visible'], 28)
     r.check('app keys do not overlap', app['overlaps'], 0)
     r.check('app is 4 columns', app['cols'], 4)
     r.check('app is 7 rows', app['rows'], 7)
 
-    # Keys are inert while plates are in flight, live at both resting states.
-    at(0.45, pause=0.5)
-    page.js("document.querySelector('#rpn .rpn-pad [data-key=\\\"CA\\\"]').click();1")
+    # Keys are inert while plates are in flight, live at both resting states. Mid-flight is no longer a scroll
+    # position, so it has to be caught in TIME: trigger the morph, then click while it is still running.
+    at(1.0)
+    page.click_at('#rpn .rpn-pad [data-key="CA"]')
+    at(0.0)
     before = page.js("document.querySelector('#rpn .rpn-in .v').textContent")
+    page.scroll(top + nudge, pause=0.25)
     page.click_at('#rpn .rpn-pad [data-key="7"]')
     r.check('a key mid-morph does nothing', page.js("document.querySelector('#rpn .rpn-in .v').textContent"), before)
 
-    at(1.0, pause=0.5)
+    at(1.0)
     page.click_at('#rpn .rpn-pad [data-key="7"]')
     r.check('the app keypad is live at rest', page.js("document.querySelector('#rpn .rpn-in .v').textContent"), '7')
 
     # The faceplate is a working calculator too, reached by a real click through the 3D transform. Cleared from
     # the app state first: the faceplate has no CA, and the app's is hidden while the faceplate is showing.
     page.click_at('#rpn .rpn-pad [data-key="CA"]')
-    at(0.0, pause=0.6)
+    at(0.0)
     for key in ('9', '√x'):
         page.click_at('#rpn .rpn-pad [data-key="%s"]' % key)
     r.check('the faceplate is live at rest: 9 then sqrt', page.js("document.querySelector('#rpn .rpn-in .v').textContent"), '3')

@@ -17,7 +17,9 @@
   const canvas = document.getElementById('qr-canvas');
   if (!dlg || !canvas || !window.AKQR) return;
 
-  const openBtn = document.getElementById('qr-open');
+  /* Every trigger, not one button: the header mark and the contact button are two doors into this one dialog
+     rather than two descriptions of it, sharing the drawn-once canvas and the same focus trap. */
+  const openBtns = document.querySelectorAll('[data-qr-open]');
   const closeBtn = document.getElementById('qr-close');
   const saveBtn = document.getElementById('qr-save');
   let lastFocus = null;
@@ -72,7 +74,7 @@
     }
   }
 
-  openBtn.addEventListener('click', open);
+  openBtns.forEach((btn) => btn.addEventListener('click', open));
   closeBtn.addEventListener('click', close);
   dlg.addEventListener('click', (e) => { if (e.target === dlg) close(); });
 

@@ -95,6 +95,9 @@ import { createFlicker } from './crt-flicker.js';
 import { createRenderer, buildFaceLUT, buildOutlineLUT, toLinear } from './crt-gl.js';
 import { defaultPreset } from './crt-presets.js';
 import { makeFmt, SECTIONS } from './crt-sidebar.js';
+// The one thing this lab takes from the shared kit: Escape leaves, the way the back button does.
+import { escapeLeaves } from '../kit/lab.js';
+escapeLeaves();
 import { createPanel, buildActions, mountPanelToggle } from '../kit/panel.js';
 
 const canvas = document.getElementById('tube');
