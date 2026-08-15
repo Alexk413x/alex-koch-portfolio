@@ -137,9 +137,12 @@ a:hover { color: var(--accent-hover) }
   height: calc(100dvh + (var(--scene-hold) + var(--scene-exit)) * 100dvh);
 }
 
+/* FLAT, not a radial gradient. It carried a warm pool centred at 50% 42% — which is exactly where the core
+   sits, so the object read as having a second, softer glow parked behind it that nothing in the scene was
+   casting. The core brings its own light; the stage should bring none. */
 #stage {
   position: sticky; top: 0; height: 100vh; height: 100dvh; overflow: hidden;
-  background: radial-gradient(120% 100% at 50% 42%, #150c06 0%, #0a0709 55%, #060509 100%);
+  background: var(--ink);
 }
 
 .scene {
