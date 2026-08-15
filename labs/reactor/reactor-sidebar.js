@@ -36,6 +36,7 @@ export const SECTIONS = [
    * how far the surface travels -- they are the same gesture and sit together. */
   ['PULSE', [['pulseAmp', 'FORCE', 1, 20, 0.5],
              ['dropN', 'SUB-CORES', 0, 20, 1],
+             ['dropSize', 'SUB-CORE SIZE', 0.2, 2, 0.05],
              ['pulseBright', 'BRIGHT', 0, 4, 0.1],
              ['pulseDur', 'DURATION', 0.3, 4, 0.1],
              ['pulseSize', 'SWELL', -1, 2, 0.1],
@@ -128,6 +129,7 @@ export const FMT = {
   pulseAmp:    as.raw(0, ' kPa'),
   pulseSize:   as.pct(),
   dropN:       as.raw(0),
+  dropSize:    as.mult(2),
   pulseBright: as.mult(1),
   pulseDur:    as.sec(1),
   ventSize:    as.mult(1),
