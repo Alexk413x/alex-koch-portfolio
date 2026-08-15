@@ -155,9 +155,13 @@ a:hover { color: var(--accent-hover) }
   pointer-events: var(--e1, auto);
 }
 
-/* The reactor's core, and the only thing in the middle of this scene. Screen-blended because it is emissive on
-   its own near-black background and behind its own vignette: over the stage's gradient both composite to
-   nothing, so the canvas has no box edge and adds no second horizon.
+/* The reactor's core, and the only thing in the middle of this scene.
+   LIGHTEN, not screen, and that is the whole reason there is no disc behind the object. The shader fills every
+   pixel it is not drawing with a NEAR-black — measured at rgb(7,9,8), not zero — and screen ADDS that to
+   whatever is under it, lifting the page's rgb(12,12,14) to about rgb(19,20,21) across the entire canvas. On a
+   stage that carried its own gradient that went unnoticed; on a flat one it reads as a perfect circle parked
+   behind the core. Lighten takes the per-channel maximum instead, so a background darker than the page
+   contributes exactly nothing and only what the core actually emits survives. No mask is needed for it either.
 
    Sized in vh, because the shader scales its picture by the buffer's HEIGHT — matched to the width instead, the
    core would grow and shrink as the window was dragged wider. `--ring-o` is the exit curve scenes.js writes;
@@ -167,13 +171,8 @@ a:hover { color: var(--accent-hover) }
   width: min(94vh, 900px); height: min(94vh, 900px);
   transform: translate(-50%, -50%);
   opacity: var(--ring-o, 1);
-  mix-blend-mode: screen;
+  mix-blend-mode: lighten;
   pointer-events: none; z-index: 1;
-  /* The shader's background is a NEAR-black, not black, and screened over the page it lifts the whole square by
-     about 8/255 — a visible box edge in the middle of the hero. Taken to nothing well outside the bloom, which
-     is part of the object and is not clipped. */
-  -webkit-mask-image: radial-gradient(closest-side, #000 52%, rgba(0, 0, 0, 0) 92%);
-  mask-image: radial-gradient(closest-side, #000 52%, rgba(0, 0, 0, 0) 92%);
 }
 
 /* ---------------- scene 01 ---------------- */
