@@ -123,10 +123,82 @@
     writeMorph(1);
   }
 
+  /* ---- the loop ----
+   *
+   * TWO BEATS, COMMITTED, because the argument is the CONTRAST. A green run walks 02, 03, 04 and never reaches a
+   * model stage; a flagged one wakes 05 and 06. Told rather than shown, that is a sentence under a grid; shown,
+   * the reader watches the accent stay away and then arrive.
+   *
+   * Same rig as the calculator and for the same reason: the scroll picks a beat, the beat plays to completion on
+   * its own clock. There is no scroll position that means "halfway through stage 3", so there is nothing to hold
+   * still for and no dead runway to hold it in.
+   */
+  const loopStage = document.getElementById('loop-stage');
+  const loopScroll = document.getElementById('loop-scroll');
+  const stages = Array.prototype.slice.call(document.querySelectorAll('#loop .stage'));
+  const runOut = document.getElementById('loop-run');
+  const aiOut = document.getElementById('loop-ai');
+  const aiCell = document.getElementById('loop-ai-cell');
+  const costOut = document.getElementById('loop-cost');
+
+  const BEAT_MS = 260;      // per stage, so a run reads as a run rather than as a state change
+  const GREEN = [1, 2, 3];  // 01 already happened when the test was authored
+  const FLAG = [1, 2, 3, 4, 5];
+
+  let beat = -1, beatAnim = 0, beatT0 = 0;
+
+  function paint(path, reached, label) {
+    let touched = 0;
+    stages.forEach((el, i) => {
+      const at = path.indexOf(i);
+      const lit = i === 0 ? true : (at !== -1 && at < reached);
+      el.classList.toggle('lit', lit);
+      el.classList.toggle('done', i === 0);
+      if (lit && i !== 0 && el.classList.contains('ai')) touched++;
+    });
+    if (runOut) runOut.textContent = label;
+    if (aiOut) aiOut.textContent = touched + ' of 3';
+    if (aiCell) aiCell.classList.toggle('hot', touched > 0);
+    if (costOut) costOut.textContent = touched ? 'Per flag' : 'Nothing';
+  }
+
+  function playBeat(n) {
+    if (n === beat) return;
+    beat = n;
+    if (beatAnim) { cancelAnimationFrame(beatAnim); beatAnim = 0; }
+    const path = n >= 2 ? FLAG : GREEN;
+    const label = n <= 0 ? 'Ready' : (n === 1 ? 'Green' : 'Flagged');
+    if (n <= 0) { paint(path, 0, label); return; }
+    beatT0 = 0;
+    const step = (ts) => {
+      if (!beatT0) beatT0 = ts;
+      const reached = Math.min(path.length, Math.floor((ts - beatT0) / BEAT_MS) + 1);
+      paint(path, reached, label);
+      beatAnim = reached < path.length ? requestAnimationFrame(step) : 0;
+    };
+    beatAnim = requestAnimationFrame(step);
+  }
+
+  function loop(y) {
+    if (!loopStage || !loopScroll || !stages.length) return;
+    const run = loopScroll.offsetHeight - loopStage.offsetHeight;
+    const p = run > 0 ? (y - loopScroll.offsetTop) / run : 1;
+    playBeat(p >= trip * 3 ? 2 : (p >= trip ? 1 : 0));
+  }
+
+  // Reduced motion and short viewports get the flagged run whole: every stage lit, the model ones in accent.
+  function loopFinal() {
+    if (!stages.length) return;
+    if (beatAnim) { cancelAnimationFrame(beatAnim); beatAnim = 0; }
+    beat = 2;
+    paint(FLAG, FLAG.length, 'Flagged');
+  }
+
   function frame() {
     queued = false;
     const y = window.scrollY || window.pageYOffset || 0;
     morph(y);
+    loop(y);
     const e = ease((y - hold * vh) / (exit * vh));
 
     /* Opaque while it climbs, fading only once it is most of the way out. Fading from the first pixel would
@@ -172,7 +244,7 @@
   function apply() {
     window.removeEventListener('scroll', onScroll);
     window.removeEventListener('resize', onResize);
-    if (reduced.matches || short.matches) { clear(); morphFinal(); return; }
+    if (reduced.matches || short.matches) { clear(); morphFinal(); loopFinal(); return; }
     measure();
     frame();
     window.addEventListener('scroll', onScroll, { passive: true });

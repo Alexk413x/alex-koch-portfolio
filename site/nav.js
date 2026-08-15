@@ -100,8 +100,25 @@
     if (orbY > 24) list.push(orbY);
     const heroCount = list.length;
 
-    const cart = document.getElementById('cartographer');
-    if (cart) list.push(at(cart));
+    /* The loop is three stops for the same reason the calculator is two: its beats are places to BE, not
+       positions passed through. Its triggers are multiples of --morph-trip, the one declaration both files
+       read, so a change there cannot strand a stop short of the beat it is meant to land on. */
+    const loopScroll = document.getElementById('loop-scroll');
+    const loopStage = document.getElementById('loop-stage');
+    const trip = parseFloat(getComputedStyle(document.documentElement)
+      .getPropertyValue('--morph-trip')) || .14;
+    if (loopScroll && loopStage) {
+      const pinTop = at(loopScroll);
+      const run = loopScroll.offsetHeight - loopStage.offsetHeight;
+      list.push(pinTop);
+      if (run > 0) {
+        list.push(Math.min(maxScroll(), pinTop + Math.round(run * trip) + 24));
+        list.push(Math.min(maxScroll(), pinTop + Math.round(run * trip * 3) + 24));
+      }
+    } else {
+      const cart = document.getElementById('cartographer');
+      if (cart) list.push(at(cart));
+    }
 
     /* The calculator is two stops, not one: the faceplate it is pinned at, and just past the trigger, which
        commits the morph and lets it play out on its own clock. The trigger fraction is read from the
@@ -111,8 +128,6 @@
     if (appScroll && appStage) {
       const pinTop = at(appScroll);
       const run = appScroll.offsetHeight - appStage.offsetHeight;
-      const trip = parseFloat(getComputedStyle(document.documentElement)
-        .getPropertyValue('--morph-trip')) || .14;
       list.push(pinTop);
       if (run > 0) list.push(Math.min(maxScroll(), pinTop + Math.round(run * trip) + 24));
     }

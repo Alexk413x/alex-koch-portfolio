@@ -100,31 +100,67 @@
 </div>
 </div>
 
-<section id="cartographer">
-  <div class="inner">
-    <h2 class="sec-title" data-reveal>QA<br><span style="color:var(--accent)">CARTOGRAPHER</span></h2>
-    <p class="tagline" data-reveal>AI only where judgement is needed.</p>
-    <p class="sec-lede" data-reveal>
-      Surveys and maps the entire application flow: every screen, every state, and the verified routes between
-      them. That map compiles into deterministic test scripts. Replays cost nothing.
-    </p>
+<!-- THE CLAIM IS A THING MOVING THROUGH STAGES AND SKIPPING SOME OF THEM, so it is shown rather than stated.
+     Same rig as the calculator: pinned, and each beat is committed by one gesture and then runs to completion on
+     its own clock. Two beats, because the ARGUMENT IS THE CONTRAST — a green run that touches no model stage at
+     all, then a flagged one that wakes two. Six list items, one --run scalar, one class. -->
+<div id="loop-scroll" data-range>
+<div id="loop-stage">
+  <section id="cartographer">
+    <div class="inner">
+      <h2 class="sec-title">QA<br><span style="color:var(--accent)">CARTOGRAPHER</span></h2>
+      <p class="tagline">AI only where judgement is needed.</p>
+      <p class="sec-lede">
+        A fully green run touches none of the model stages, so a thousand stable tests cost nothing in tokens.
+      </p>
 
+      <ol class="loop" id="loop">
+        <li class="stage ai"><span class="sn">01</span><span class="st">Author and compile the test</span><span class="sw">Model, once</span></li>
+        <li class="stage"><span class="sn">02</span><span class="st">Drive the flow</span><span class="sw">Script</span></li>
+        <li class="stage"><span class="sn">03</span><span class="st">Collect the evidence bundle</span><span class="sw">Script</span></li>
+        <li class="stage"><span class="sn">04</span><span class="st">Compare against baseline and flag</span><span class="sw">Deterministic tooling</span></li>
+        <li class="stage ai"><span class="sn">05</span><span class="st">Decide what a flagged delta means</span><span class="sw">Model</span></li>
+        <li class="stage ai"><span class="sn">06</span><span class="st">Heal the code, or update the map</span><span class="sw">Model, gated</span></li>
+      </ol>
+
+      <div class="loop-read">
+        <span class="m"><i>Run</i><b id="loop-run">Ready</b></span>
+        <span class="m" id="loop-ai-cell"><i>Model stages touched</i><b id="loop-ai">0 of 3</b></span>
+        <span class="m"><i>Replay cost</i><b id="loop-cost">Nothing</b></span>
+      </div>
+    </div>
+  </section>
+</div>
+</div>
+
+<section id="capabilities">
+  <div class="inner">
     <div class="anys" data-reveal>
       <div><b>Any app</b>The map is walked out of the app, not hand-authored.</div>
       <div><b>Any platform</b>Android, iOS and web behind one driver contract.</div>
       <div><b>Any LLM</b>An author and an exception handler, never a runtime dependency.</div>
     </div>
 
-    <div class="caps" data-reveal>
-      <div class="cap"><b>Costs nothing to run</b><p>A green run touches no model at all, so cost tracks change and breakage, not suite size.</p></div>
-      <div class="cap"><b>End to end</b><p>Recorded once, replayed deterministically: same actions, same order, same captures.</p></div>
-      <div class="cap"><b>Visual regression</b><p>Screenshots diffed against baseline into changed regions, by script.</p></div>
-      <div class="cap"><b>Accessibility</b><p>31 checkers over the a11y tree, plus contrast, reachability and focus order.</p></div>
-      <div class="cap"><b>WCAG 2.2 AA</b><p>The standard EN 301 549 cites for EAA. Reported as findings, not as a badge no tool can earn.</p></div>
-      <div class="cap"><b>Performance</b><p>Metrics against an averaged baseline, with app time isolated from network wait.</p></div>
-      <div class="cap"><b>Self-healing</b><p>A flag is classified intended, regression or external, then the code or the map is fixed.</p></div>
-      <div class="cap"><b>No silent green</b><p>Missing evidence reports skipped or needs-review. Never pass, and not configurable.</p></div>
-      <div class="cap"><b>Run history</b><p>Every run stored and viewable, with auditable data behind each verdict.</p></div>
+    <!-- THREE CLUSTERS, NOT NINE PEERS. Nine equal blurbs in one grid is a specification; a reader gets no
+         ranking from it and takes none away. They already fall into three groups, and three read in one pass. -->
+    <div class="clusters" data-reveal>
+      <div class="cluster">
+        <b>What it checks</b>
+        <div class="cap"><b>End to end</b><p>Recorded once, replayed deterministically: same actions, same order, same captures.</p></div>
+        <div class="cap"><b>Visual regression</b><p>Screenshots diffed against baseline into changed regions, by script.</p></div>
+        <div class="cap"><b>Accessibility</b><p>31 checkers over the a11y tree, plus contrast, reachability and focus order.</p></div>
+        <div class="cap"><b>WCAG 2.2 AA</b><p>The standard EN 301 549 cites for EAA. Reported as findings, not as a badge no tool can earn.</p></div>
+        <div class="cap"><b>Performance</b><p>Metrics against an averaged baseline, with app time isolated from network wait.</p></div>
+      </div>
+      <div class="cluster">
+        <b>What it does when it fails</b>
+        <div class="cap"><b>Self-healing</b><p>A flag is classified intended, regression or external, then the code or the map is fixed.</p></div>
+        <div class="cap"><b>No silent green</b><p>Missing evidence reports skipped or needs-review. Never pass, and not configurable.</p></div>
+      </div>
+      <div class="cluster">
+        <b>What it keeps</b>
+        <div class="cap"><b>Run history</b><p>Every run stored and viewable, with auditable data behind each verdict.</p></div>
+      </div>
     </div>
 
     <div class="pending" data-reveal>
