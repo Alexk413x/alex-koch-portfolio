@@ -282,6 +282,15 @@ def run(page, r):
          page.js("!document.getElementById('qr-dialog').hidden"))
     page.js("document.getElementById('qr-close').click();1")
 
+    # NO EM DASH REACHES A READER. Retired as a rule on 2026-08-14, and the character with it. Read from the
+    # rendered text rather than the source, so entities and literals are the same thing and code comments -- which
+    # are explicitly out of scope -- cannot register. En dashes stay: they are ranges, which is what they are for.
+    dashes = page.json("JSON.stringify((document.body.innerText.match(/[^.]{0,44}\\u2014[^.]{0,44}/g)||[]))")
+    r.ok('no em dash reaches a reader', not dashes, ' | '.join(dashes[:3]))
+    r.ok('and the ranges kept their en dashes',
+         page.js("(document.body.innerText.match(/\\u2013/g)||[]).length") >= 15,
+         '%d en dashes' % page.js("(document.body.innerText.match(/\\u2013/g)||[]).length"))
+
     # Every internal link resolves to something actually on disk.
     hrefs = page.json("JSON.stringify([...new Set([...document.querySelectorAll('a[href]')]"
                       '.map(a=>a.getAttribute("href"))'
