@@ -341,10 +341,27 @@
     stepTo(dir);
   });
 
-  /* An anchor click already names a destination and the stylesheet already scroll-margins it under the bar.
-     Following that with a carry to the section's middle would be a second, unasked-for move. */
+  /* An anchor click already names a destination, so the carry must not follow it with a second, unasked-for
+     move. And for the two pinned scenes it has to name a different destination than the browser would.
+     A SCENE INSIDE A STICKY STAGE HAS NO PAGE POSITION OF ITS OWN. #alex resolves to where the stage comes to
+     rest, which is the END of the hero's runway — the words have already climbed out and the frame is empty, so
+     the browser's own jump lands on nothing. #app has the same shape. The page position is the RANGE's, which
+     is the mapping the meter and the stops already run on. */
   document.addEventListener('click', (e) => {
     const a = e.target.closest && e.target.closest('a[href^="#"]');
-    if (a) quietUntil = performance.now() + 1400;
+    if (!a) return;
+    quietUntil = performance.now() + 1400;
+
+    const hash = a.getAttribute('href');
+    if (!hash || hash.length < 2) return;
+    const target = document.querySelector(hash);
+    const range = target && target.closest('[data-range]');
+    if (!range) return;
+
+    e.preventDefault();
+    stopIndex = -1;
+    glideTo(Math.max(0, Math.min(maxScroll(),
+      Math.round(range.getBoundingClientRect().top + (window.scrollY || window.pageYOffset || 0)))));
+    if (history.replaceState) history.replaceState(null, '', hash);
   }, true);
 })();

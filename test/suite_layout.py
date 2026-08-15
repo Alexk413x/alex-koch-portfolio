@@ -250,6 +250,21 @@ def run(page, r):
          '%d presses for %d roles' % (steps, roles))
     r.near('the last press rests at the bottom', page.js('Math.round(scrollY)'), end, 8)
 
+    # A NAV LINK INTO A PINNED SCENE MUST GO TO ITS RANGE, NOT TO THE ELEMENT. #alex is absolutely positioned
+    # inside a sticky stage, so its own page position is where that stage comes to REST -- the far end of the
+    # hero's runway, with the words already climbed out. The browser's own jump landed on an empty frame.
+    page.scroll(6000, pause=0.4)
+    page.click_at('#nav .links a[href="#alex"]', pause=1.4)
+    r.near('the ALEX link goes to the top of the page', page.js('Math.round(scrollY)'), 0, 8)
+    r.near('and the hero is showing when it lands',
+           float(page.js("document.getElementById('stage').style.getPropertyValue('--o1') || '1'")), 1.0, 0.02)
+
+    # Same shape for the calculator: its range's top is the faceplate, its element's is somewhere mid-morph.
+    page.scroll(6000, pause=0.4)
+    page.click_at('#nav .links a[href="#app"]', pause=1.4)
+    r.near('the APP link lands on the faceplate',
+           float(page.js("document.getElementById('app-stage').style.getPropertyValue('--m') || '0'")), 0.0, 0.05)
+
     # An arrow inside the calculator belongs to the calculator. The key is left un-prevented there, so the
     # browser's own 40px scroll happens and the page does NOT step -- which is the thing being asserted.
     page.scroll(0, pause=0.4)
