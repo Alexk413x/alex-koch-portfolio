@@ -100,9 +100,9 @@
     if (orbY > 24) list.push(orbY);
     const heroCount = list.length;
 
-    /* The loop is three stops for the same reason the calculator is two: its beats are places to BE, not
-       positions passed through. Its triggers are multiples of --morph-trip, the one declaration both files
-       read, so a change there cannot strand a stop short of the beat it is meant to land on. */
+    /* Two stops, like the calculator: the suite at rest, and the suite having run. Its trigger is
+       --morph-trip, the one declaration both files read, so a change there cannot strand the stop short of
+       the beat it is meant to land on. */
     const loopScroll = document.getElementById('loop-scroll');
     const loopStage = document.getElementById('loop-stage');
     const trip = parseFloat(getComputedStyle(document.documentElement)
@@ -111,10 +111,7 @@
       const pinTop = at(loopScroll);
       const run = loopScroll.offsetHeight - loopStage.offsetHeight;
       list.push(pinTop);
-      if (run > 0) {
-        list.push(Math.min(maxScroll(), pinTop + Math.round(run * trip) + 24));
-        list.push(Math.min(maxScroll(), pinTop + Math.round(run * trip * 3) + 24));
-      }
+      if (run > 0) list.push(Math.min(maxScroll(), pinTop + Math.round(run * trip) + 24));
     } else {
       const cart = document.getElementById('cartographer');
       if (cart) list.push(at(cart));

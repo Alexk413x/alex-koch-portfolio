@@ -682,9 +682,9 @@ section[id] { scroll-margin-top: 84px }
 
 /* ---------------- cartographer ---------------- */
 
-/* The loop's pin, in viewport heights, and the only declaration of it. Two beats to commit and then the way
+/* The scene's pin, in viewport heights, and the only declaration of it. One beat to commit and then the way
    out, so it is shorter than the calculator's: the scene is read, not scrubbed. */
-:root { --loop-run: 1.3 }
+:root { --loop-run: .9 }
 
 #loop-scroll {
   position: relative;
@@ -696,37 +696,47 @@ section[id] { scroll-margin-top: 84px }
 
 #cartographer { position: relative; padding: 90px var(--pad-page) 60px; width: 100% }
 
-/* ---- the run ----
- *
- * Six stages, and the argument is which ones a green run never reaches. Lit is the default state a stage
- * arrives in; SKIP is the interesting one, because a stage the run stepped over is the claim being made.
- */
-.loop { margin: 42px 0 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px }
-
-.stage {
-  border-left: 2px solid var(--hairline); padding: 12px 0 12px 14px;
-  opacity: .2;
-  transition: opacity .32s var(--ease-settle), border-color .32s var(--ease-settle), background .32s var(--ease-settle);
+/* The two run modes, which are a pair and read as one claim: discovery AND deterministic replay out of the same
+   tool. Set apart from the Any row above it by weight rather than by another box — the section already has
+   enough edges. */
+.modes { margin-top: 24px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 32px }
+.modes div { font-size: 13.5px; line-height: 1.55; color: var(--text-body) }
+.modes b {
+  display: block; margin-bottom: 5px;
+  font-family: var(--font-mono); font-size: 10.5px; letter-spacing: .2em; text-transform: uppercase;
+  color: var(--amber);
 }
 
-.stage .sn { font-family: var(--font-mono); font-size: 10px; letter-spacing: .2em; color: var(--text-faint) }
-.stage .st { display: block; margin-top: 8px; font-size: 12.5px; line-height: 1.4; color: var(--text-body) }
-.stage .sw { display: block; margin-top: 9px; font-family: var(--font-mono); font-size: 9px; letter-spacing: .14em; text-transform: uppercase; color: var(--text-faint) }
+/* ---- what a run covers ----
+ *
+ * Six kinds of check, lighting in turn as the suite runs. NOT the pipeline's stages: how it works is a
+ * conversation for later, and spending this screen on internals argues the wrong case to a reader who is here
+ * to find out what it takes off their plate.
+ */
+.covers { margin: 34px 0 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--hairline); border: 1px solid var(--hairline) }
 
-.stage.lit { opacity: 1; border-left-color: var(--text-muted) }
-/* A MODEL STAGE IS THE ONLY THING THAT COSTS, so it is the only thing that takes the accent. That is the whole
-   readout: the accent appearing at all is the token cost appearing. */
-.stage.lit.ai { border-left-color: var(--accent); background: linear-gradient(180deg, rgba(221, 106, 32, .1), transparent) }
-.stage.lit.ai .sn, .stage.lit.ai .sw { color: var(--accent) }
-.stage.done { opacity: .45 }
+.cover {
+  background: var(--ink); padding: 16px 18px;
+  opacity: .28;
+  transition: opacity .3s var(--ease-settle), background .3s var(--ease-settle);
+}
 
-.loop-read { margin-top: 34px; display: flex; gap: 44px; align-items: baseline; flex-wrap: wrap }
+.cover b { display: block; font-family: var(--font-mono); font-size: 10.5px; letter-spacing: .2em; text-transform: uppercase; color: var(--text-muted); transition: color .3s var(--ease-settle) }
+.cover span { display: block; margin-top: 7px; font-size: 13px; line-height: 1.5; color: var(--text-body) }
+
+/* A check that has run is lit and amber. Nothing here is a failure state: every one of them passes, which is
+   the point being made. */
+.cover.on { opacity: 1; background: linear-gradient(180deg, rgba(221, 106, 32, .07), transparent) }
+.cover.on b { color: var(--amber) }
+
+.loop-read { margin-top: 34px; display: flex; gap: 52px; align-items: baseline; flex-wrap: wrap }
 .loop-read .m i { display: block; font-style: normal; font-family: var(--font-mono); font-size: 10px; letter-spacing: .16em; text-transform: uppercase; color: var(--text-faint) }
 .loop-read .m b {
   display: block; margin-top: 6px;
-  font-family: var(--font-display); font-weight: 800; font-size: 26px; letter-spacing: -.6px;
+  font-family: var(--font-display); font-weight: 800; font-size: 30px; letter-spacing: -.8px;
   color: var(--text-strong); font-variant-numeric: tabular-nums;
 }
+/* The cost is the one figure in accent, and it is the one that stays at zero. */
 .loop-read .m.hot b { color: var(--accent) }
 
 #capabilities { position: relative; padding: 0 var(--pad-page) 110px }
@@ -747,7 +757,7 @@ section[id] { scroll-margin-top: 84px }
 
 .tagline + .sec-lede { margin-top: 20px }
 
-.anys { margin-top: 40px; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1px; background: var(--hairline); border: 1px solid var(--hairline) }
+.anys { margin-top: 30px; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1px; background: var(--hairline); border: 1px solid var(--hairline) }
 .anys div { background: var(--ink); padding: 20px; font-size: 13.5px; line-height: 1.6; color: var(--text-body) }
 .anys b { display: block; margin-bottom: 8px; font-family: var(--font-display); font-weight: 800; font-size: 17px; color: var(--accent) }
 
@@ -1062,7 +1072,8 @@ footer a:hover { color: var(--accent) }
   .education { padding-left: 22px }
   .role:not(:last-child) .when::after { bottom: -58px }
   .expertise b { min-width: 0; display: block }
-  .loop { grid-template-columns: repeat(2, 1fr) }
+  .covers { grid-template-columns: minmax(0, 1fr) }
+  .modes { grid-template-columns: minmax(0, 1fr); gap: 20px }
   .clusters { grid-template-columns: minmax(0, 1fr); gap: 34px }
   .lab-grid { grid-template-columns: minmax(0, 1fr) }
   .lab-card.lead { grid-row: auto }
@@ -1110,7 +1121,7 @@ footer a:hover { color: var(--accent) }
   #app-stage { position: static; height: auto; display: block; overflow: visible }
   #loop-scroll { height: auto }
   #loop-stage { position: static; height: auto; display: block; overflow: visible }
-  .stage { transition: none }
+  .cover { transition: none }
   .tn { transition: none }
   .scene { position: static; min-height: 100vh; opacity: 1; transform: none; filter: none }
   .kicker, .aside, .lockup span { animation: none }

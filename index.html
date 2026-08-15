@@ -100,33 +100,52 @@
 </div>
 </div>
 
-<!-- THE CLAIM IS A THING MOVING THROUGH STAGES AND SKIPPING SOME OF THEM, so it is shown rather than stated.
-     Same rig as the calculator: pinned, and each beat is committed by one gesture and then runs to completion on
-     its own clock. Two beats, because the ARGUMENT IS THE CONTRAST — a green run that touches no model stage at
-     all, then a flagged one that wakes two. Six list items, one --run scalar, one class. -->
+<!-- WHAT A RUN COVERS AND WHAT IT COSTS, not how it works. The reader is an enterprise trying to take cost out
+     of QA; the internals are a conversation for later, and showing them here spends the section's one screen on
+     the wrong argument. One gesture starts the suite: every kind of check lights in turn and the figures count
+     up, and the cost lands on zero while they do. Every number here is off the shipped record. -->
 <div id="loop-scroll" data-range>
 <div id="loop-stage">
   <section id="cartographer">
     <div class="inner">
       <h2 class="sec-title">QA<br><span style="color:var(--accent)">CARTOGRAPHER</span></h2>
-      <p class="tagline">AI only where judgement is needed.</p>
+      <p class="tagline">Every check a release needs, for what a green run costs: nothing.</p>
       <p class="sec-lede">
-        A fully green run touches none of the model stages, so a thousand stable tests cost nothing in tokens.
+        One recorded suite covers the whole surface, heals itself when the app moves under it, and replays for
+        free. Cost tracks change and breakage, not how many tests you own.
       </p>
 
-      <ol class="loop" id="loop">
-        <li class="stage ai"><span class="sn">01</span><span class="st">Author and compile the test</span><span class="sw">Model, once</span></li>
-        <li class="stage"><span class="sn">02</span><span class="st">Drive the flow</span><span class="sw">Script</span></li>
-        <li class="stage"><span class="sn">03</span><span class="st">Collect the evidence bundle</span><span class="sw">Script</span></li>
-        <li class="stage"><span class="sn">04</span><span class="st">Compare against baseline and flag</span><span class="sw">Deterministic tooling</span></li>
-        <li class="stage ai"><span class="sn">05</span><span class="st">Decide what a flagged delta means</span><span class="sw">Model</span></li>
-        <li class="stage ai"><span class="sn">06</span><span class="st">Heal the code, or update the map</span><span class="sw">Model, gated</span></li>
+      <!-- Reach, then coverage, then cost. The three Any claims answer "will it work with what we already
+           have", which for an enterprise is the question asked before any of the others. -->
+      <div class="anys">
+        <div><b>Any app</b>The map is walked out of the app, not hand-authored.</div>
+        <div><b>Any platform</b>Android, iOS and web behind one driver contract.</div>
+        <div><b>Any LLM</b>An author and an exception handler, never a runtime dependency.</div>
+      </div>
+
+      <!-- Two ways to run it, and the pair is the differentiator: the same tool discovers the surface and then
+           replays it deterministically, so nobody writes the first script and nothing drifts afterwards. -->
+      <div class="modes">
+        <div><b>Exploratory crawl</b>Walks the app and builds the map itself. No script written first.</div>
+        <div><b>Scripted replay</b>Runs the compiled map deterministically. Same actions, same order, every time.</div>
+      </div>
+
+      <ol class="covers" id="covers">
+        <li class="cover"><b>End to end</b><span>Recorded once, replayed deterministically</span></li>
+        <li class="cover"><b>Visual regression</b><span>Diffed to changed regions, by script</span></li>
+        <li class="cover"><b>Accessibility</b><span>31 checkers over the a11y tree</span></li>
+        <li class="cover"><b>WCAG 2.2 AA</b><span>The standard EN 301 549 cites for EAA</span></li>
+        <li class="cover"><b>Performance</b><span>App time isolated from network wait</span></li>
+        <li class="cover"><b>Self-healing</b><span>Classified, then the code or the map is fixed</span></li>
       </ol>
 
+      <!-- CARTOGRAPHER'S OWN NUMBERS ONLY. The 500+ tests at a 95%+ pass rate belong to QAAI, the platform at
+           Yahoo!, and borrowing them here reads as one product when they are two. What is left is what this
+           tool can claim standing on its own, and all three are structural rather than measured. -->
       <div class="loop-read">
-        <span class="m"><i>Run</i><b id="loop-run">Ready</b></span>
-        <span class="m" id="loop-ai-cell"><i>Model stages touched</i><b id="loop-ai">0 of 3</b></span>
-        <span class="m"><i>Replay cost</i><b id="loop-cost">Nothing</b></span>
+        <span class="m"><i>Kinds of check</i><b id="rd-kinds">0 of 6</b></span>
+        <span class="m hot"><i>Scripts hand-written</i><b>0</b></span>
+        <span class="m hot"><i>Token cost to replay</i><b id="rd-cost">0</b></span>
       </div>
     </div>
   </section>
@@ -135,12 +154,6 @@
 
 <section id="capabilities">
   <div class="inner">
-    <div class="anys" data-reveal>
-      <div><b>Any app</b>The map is walked out of the app, not hand-authored.</div>
-      <div><b>Any platform</b>Android, iOS and web behind one driver contract.</div>
-      <div><b>Any LLM</b>An author and an exception handler, never a runtime dependency.</div>
-    </div>
-
     <!-- THREE CLUSTERS, NOT NINE PEERS. Nine equal blurbs in one grid is a specification; a reader gets no
          ranking from it and takes none away. They already fall into three groups, and three read in one pass. -->
     <div class="clusters" data-reveal>
@@ -163,10 +176,14 @@
       </div>
     </div>
 
+    <!-- Deliberately unfinished, and it says so. The snapshot it will carry is a real run against the RPN
+         Dominator app; until that part of the plugin is refined enough to publish, the slot names what is
+         coming rather than pretending to be it. -->
     <div class="pending" data-reveal>
       <a class="slot" href="cartographer-demo.html">
         <b><i class="live-dot" aria-hidden="true"></i>Live demo</b>
-        <p>A walkable section of this site, surveyed by Cartographer.</p>
+        <p>A testing snapshot from the RPN Dominator app, surveyed and replayed by Cartographer.
+           Standing in for it today: a walkable section of this site.</p>
         <div class="go">OPEN →</div>
       </a>
     </div>

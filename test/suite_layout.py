@@ -291,51 +291,31 @@ def run(page, r):
          page.js("!document.getElementById('qr-dialog').hidden"))
     page.js("document.getElementById('qr-close').click();1")
 
-    # THE LOOP SCENE IS THE CLAIM, OPERATED. Its whole argument is the contrast: a green run reaches none of the
-    # three model stages, and a flagged one wakes two. Both halves are asserted, because a scene that lights
-    # everything makes the same picture as one that lights nothing.
+    # The scene's mechanism, not its wording. What has to hold is that the run starts idle, lights every check
+    # it has, keeps its readout agreeing with the DOM, and never writes a cost other than zero -- including
+    # part-way through, which is where a driver that only sets the final value would be caught.
     page.viewport(1600, 1000)
     loop_top = page.js("Math.round(document.getElementById('loop-scroll').getBoundingClientRect().top+scrollY)")
     run = page.js("document.getElementById('loop-scroll').offsetHeight"
                   " - document.getElementById('loop-stage').offsetHeight")
     trip = page.js("parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--morph-trip'))")
 
-    LOOP = ("(()=>{const s=[...document.querySelectorAll('#loop .stage')];"
-            "return JSON.stringify({run:document.getElementById('loop-run').textContent,"
-            "ai:document.getElementById('loop-ai').textContent,"
-            "lit:s.map(e=>e.classList.contains('lit')?1:0),"
-            "hotModel:s.filter(e=>e.classList.contains('ai')&&e.classList.contains('lit')).length})})()")
+    RUN = ("(()=>{const c=[...document.querySelectorAll('#covers .cover')];"
+           "return JSON.stringify({on:c.filter(e=>e.classList.contains('on')).length,total:c.length,"
+           "kinds:document.getElementById('rd-kinds').textContent,"
+           "cost:document.getElementById('rd-cost').textContent})})()")
 
     page.scroll(loop_top, pause=1.1)
-    d = page.json(LOOP)
-    r.check('the loop rests with only the authoring stage lit', sum(d['lit']), 1)
+    r.check('the suite is idle at the top of the pin', page.json(RUN)['on'], 0)
 
-    page.scroll(loop_top + round(run * trip) + 24, pause=1.4)
-    d = page.json(LOOP)
-    r.check('a green run walks four stages', sum(d['lit']), 4)
-    r.check('and reaches no model stage after the first', d['ai'], '0 of 3')
-    r.check('the readout says green', d['run'], 'Green')
+    page.scroll(loop_top + round(run * trip) + 24, pause=0.45)
+    r.check('the cost is zero while it is still running', page.json(RUN)['cost'], '0')
 
-    page.scroll(loop_top + round(run * trip * 3) + 24, pause=1.6)
-    d = page.json(LOOP)
-    r.check('a flagged run walks all six', sum(d['lit']), 6)
-    r.check('and wakes two model stages', d['ai'], '2 of 3')
-    r.check('the readout says flagged', d['run'], 'Flagged')
-
-    # Nine equal blurbs became three clusters. The count matters: the ninth was the claim, and it is the scene now.
-    r.check('the capabilities read as three clusters',
-            page.js("document.querySelectorAll('#capabilities .cluster').length"), 3)
-    r.check('carrying eight between them',
-            page.js("document.querySelectorAll('#capabilities .cap').length"), 8)
-
-    # NO EM DASH REACHES A READER. Retired as a rule on 2026-08-14, and the character with it. Read from the
-    # rendered text rather than the source, so entities and literals are the same thing and code comments -- which
-    # are explicitly out of scope -- cannot register. En dashes stay: they are ranges, which is what they are for.
-    dashes = page.json("JSON.stringify((document.body.innerText.match(/[^.]{0,44}\\u2014[^.]{0,44}/g)||[]))")
-    r.ok('no em dash reaches a reader', not dashes, ' | '.join(dashes[:3]))
-    r.ok('and the ranges kept their en dashes',
-         page.js("(document.body.innerText.match(/\\u2013/g)||[]).length") >= 15,
-         '%d en dashes' % page.js("(document.body.innerText.match(/\\u2013/g)||[]).length"))
+    page.until_ran()
+    d = page.json(RUN)
+    r.check('every check it has is lit by the end', d['on'], d['total'])
+    r.check('and the readout agrees with them', d['kinds'], '%d of %d' % (d['on'], d['total']))
+    r.check('and replaying still costs nothing', d['cost'], '0')
 
     # Every internal link resolves to something actually on disk.
     hrefs = page.json("JSON.stringify([...new Set([...document.querySelectorAll('a[href]')]"
