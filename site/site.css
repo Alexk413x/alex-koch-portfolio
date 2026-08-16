@@ -724,6 +724,17 @@ section[id] { scroll-margin-top: 84px }
  */
 .covers { margin: 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--hairline); border: 1px solid var(--hairline) }
 
+/* THE REACH CLAIMS, as plain lines. They were three bordered cells sitting directly above the check grid's
+   bordered cells, in a different internal style, and the pair read as one undifferentiated block of boxes.
+   Same words, same treatment as the run modes above them. */
+.anys { margin-bottom: 26px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 26px }
+.anys div { font-size: 13.5px; line-height: 1.55; color: var(--text-body) }
+.anys b {
+  display: block; margin-bottom: 5px;
+  font-family: var(--font-mono); font-size: 10.5px; letter-spacing: .2em; text-transform: uppercase;
+  color: var(--amber);
+}
+
 /* A NAME AND NOTHING ELSE. Each of these carried a line of explanation and the same list appeared again lower
    down the page with a paragraph each. A reader scanning for "does it do accessibility" is looking for the
    word, not for a sentence about it. */
@@ -1519,6 +1530,7 @@ footer a:hover { color: var(--accent) }
    they are worse. */
 @media (max-width: 1080px) {
   .loop-grid { grid-template-columns: minmax(0, 1fr); gap: 34px }
+  .anys { grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 20px }
   .covers { grid-template-columns: repeat(2, 1fr) }
 }
 
