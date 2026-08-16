@@ -206,7 +206,10 @@ def run(page, r):
     # check pass or fail depending on what had been edited that day rather than on whether the carry worked.
     page.scroll(stops[1], pause=0.4)
     r.check('starting inside the first section', page.js('window.AKNAV.section()'), 0)
-    page.flick(700, pause=0)
+    # A short tail so the dispatched wheel events are all PROCESSED before the wait begins. The harness can
+    # queue them faster than the browser drains them, and a straggler arriving after the carry has started
+    # cancels it exactly as a reader's own scroll would -- landing 59px into a 300px glide.
+    page.flick(700, pause=0.35)
     landed = page.until_still()
     r.check('the gesture crossed a boundary', page.js('window.AKNAV.section()'), 1)
     r.near('and a real gesture past one is carried to the section top', landed, cart, 8)
@@ -254,12 +257,15 @@ def run(page, r):
     # A step onto it strikes it, the same way a click does. The spring is at rest until something drives it.
     # Relative, not absolute: the spring decays rather than snapping back, so an earlier strike can still be
     # ringing. What has to be true is that the press DROVE it, not that it started at exactly nothing.
+    # POLLED, not sampled at a moment. The pulse is a spring: it is kicked, swings, and decays, so reading it a
+    # fixed fraction of a second after the press catches it wherever it happens to be in that swing -- 0.79 once
+    # and 0.19 the next run, for the same working strike.
     pulse = 'Math.abs(window.HERO.sim.step(window.HERO.state, 0, 0).pulse)'
     page.scroll(0, pause=1.6)
-    before = page.js(pulse)
-    page.key(' ', pause=0.18)
-    after = page.js(pulse)
-    r.ok('the space bar strikes the reactor', after > before + 0.25, 'spring %.3f -> %.3f' % (before, after))
+    r.ok('the reactor is near rest before the press', page.js(pulse) < 0.15, '%.3f' % page.js(pulse))
+    page.key(' ', pause=0.02)
+    r.ok('the space bar strikes the reactor', page.until('(%s) > 0.3' % pulse, timeout=1.5),
+         'peak %.3f' % page.js(pulse))
     r.near('and steps with it', page.until_still(), stops[1], 400)
 
     # Every role is its own stop, so the timeline can be walked rather than scrolled past.
@@ -368,6 +374,27 @@ def run(page, r):
             page.js("(document.querySelector('.tl-strip button[aria-selected]')||{}).textContent"),
             page.js("document.querySelectorAll('.tl-scroll .role')[7].dataset.label"))
     r.check('and still does not move the page', page.js('Math.round(scrollY)'), page_before)
+
+    # THE LOADING RING GETS OUT OF THE WAY. It is a full-screen overlay, so the failure that matters is not
+    # whether it appears but whether it LEAVES -- one left at opacity zero is an invisible sheet across the whole
+    # instrument that quietly eats every click. Removed from the DOM, not merely faded.
+    for path, tint in [('labs/reactor/Reactor.html', 'rgb(143, 255, 106)'),
+                       ('labs/wormhole/Wormhole.html', 'rgb(255, 180, 84)')]:
+        page.goto(path)
+        page.settle(1.6)
+        r.ok('the ring is gone once %s is running' % path.split('/')[1],
+             page.js("document.querySelectorAll('.kit-load').length") == 0)
+
+    # And it wears its own lab's colour, because it reads --panel-accent rather than carrying one of its own.
+    page.cdp.call('Page.navigate', {'url': 'http://127.0.0.1:%d/labs/reactor/Reactor.html' % page.port})
+    lit = page.until("document.querySelector('.kit-load .kr-dash circle')", timeout=3)
+    if lit:
+        r.check('and takes the lab it belongs to for its colour',
+                page.js("getComputedStyle(document.querySelector('.kit-load .kr-dash circle')).stroke"),
+                'rgb(143, 255, 106)')
+    else:
+        r.skip('and takes the lab it belongs to for its colour', 'the lab came up before it could be sampled')
+    page.goto('index.html')
 
     # Every internal link resolves to something actually on disk.
     hrefs = page.json("JSON.stringify([...new Set([...document.querySelectorAll('a[href]')]"

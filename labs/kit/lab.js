@@ -103,7 +103,7 @@ export function fitCanvas({ stage, R, scale, onFit, settle = 60 }) {
  */
 export function runLoop({ draw, onTick, tickMs = 500, maxDt = 0.05 }) {
   let t0 = performance.now(), last = t0, sec = 0, raf = 0;
-  let frames = 0, tickT = t0, pausedAt = 0;
+  let frames = 0, tickT = t0, pausedAt = 0, shown = false;
 
   const frame = (now) => {
     raf = requestAnimationFrame(frame);
@@ -115,6 +115,7 @@ export function runLoop({ draw, onTick, tickMs = 500, maxDt = 0.05 }) {
     last = now;
     sec = (now - t0) / 1000;
     draw(dt, sec);
+    if (!shown) { shown = true; labReady(); }   // the first frame is the thing the ring was covering for
     frames++;
     if (onTick && now - tickT >= tickMs) {
       onTick(Math.round(frames * 1000 / (now - tickT)), dt, sec);
@@ -142,6 +143,24 @@ export function runLoop({ draw, onTick, tickMs = 500, maxDt = 0.05 }) {
     stop() { if (raf) { cancelAnimationFrame(raf); raf = 0; } },
     renderNow(dt, at) { draw(dt == null ? 1 / 60 : dt, at == null ? sec : at); },
   };
+}
+
+/* Dismisses the loading ring once there is something behind it to look at.
+ *
+ * The overlay is markup and a stylesheet; this is the only line of script it needs, and it exists because CSS
+ * cannot know when a shader finished compiling. runLoop calls it after the first frame it draws, so the three
+ * labs that use the loop get it for nothing and only a lab with its own loop has to say so.
+ *
+ * REMOVED, not merely faded: an overlay left at opacity 0 is an invisible sheet across the whole instrument
+ * that quietly eats every click.
+ */
+export function labReady() {
+  const el = document.querySelector('.kit-load');
+  if (!el || el.classList.contains('done')) return;
+  el.classList.add('done');
+  const drop = () => el.remove();
+  el.addEventListener('transitionend', drop, { once: true });
+  setTimeout(drop, 900);   // transitionend never fires under reduced motion, where there is no transition
 }
 
 /* Escape leaves the instrument, the way the back button does.
