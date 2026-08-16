@@ -116,13 +116,16 @@
 
       <div class="loop-say">
       <p class="tagline">Every check a release needs, for what a green run costs: nothing.</p>
-      <p class="sec-lede">Cost tracks change and breakage, not how many tests you own.</p>
+      <p class="sec-lede">
+        One recorded suite covers the whole surface, heals itself when the app moves under it, and replays for
+        free. Cost tracks change and breakage, not how many tests you own.
+      </p>
 
       <!-- Two ways to run it, and the pair is the differentiator: the same tool discovers the surface and then
-           replays it, so nobody writes the first script and nothing drifts afterwards. -->
+           replays it deterministically, so nobody writes the first script and nothing drifts afterwards. -->
       <div class="modes">
-        <div><b>Exploratory crawl</b>Walks the app and builds the map itself.</div>
-        <div><b>Scripted replay</b>Replays the compiled map. Same actions, same order, every time.</div>
+        <div><b>Exploratory crawl</b>Walks the app and builds the map itself. No script written first.</div>
+        <div><b>Scripted replay</b>Runs the compiled map deterministically. Same actions, same order, every time.</div>
       </div>
       </div>
 
@@ -130,7 +133,7 @@
       <!-- Reach, then coverage. The three Any claims answer "will it work with what we already have", which for
            an enterprise is the question asked before any of the others. -->
       <div class="anys">
-        <div><b>Any app</b>Walked out of the app, never hand-authored.</div>
+        <div><b>Any app</b>The map is walked out of the app, not hand-authored.</div>
         <div><b>Any platform</b>Android, iOS and web behind one driver contract.</div>
         <div><b>Any LLM</b>An author and an exception handler, never a runtime dependency.</div>
       </div>
@@ -147,9 +150,8 @@
 
       <!-- THE SECTION'S LAST LINE, spanning both columns: three figures, and the section is an argument that
            ends on them. CARTOGRAPHER'S OWN NUMBERS ONLY -- the 500+ tests at a 95%+ pass rate belong to QAAI,
-           the platform at Yahoo!, and borrowing them here reads as one product when they are two. All three are
-           structural rather than measured, and each is now the only place its claim is made: the prose above
-           used to say all three again in words. -->
+           the platform at Yahoo!, and borrowing them here reads as one product when they are two. What is left
+           is what this tool can claim standing on its own, and all three are structural rather than measured. -->
       <div class="loop-read">
         <span class="m"><i>Kinds of check</i><b id="rd-kinds">0 of 6</b></span>
         <span class="m hot"><i>Scripts hand-written</i><b>0</b></span>
