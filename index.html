@@ -127,33 +127,40 @@
         <div><b>Exploratory crawl</b>Walks the app and builds the map itself. No script written first.</div>
         <div><b>Scripted replay</b>Runs the compiled map deterministically. Same actions, same order, every time.</div>
       </div>
-      </div>
 
-      <div class="loop-show">
       <!-- Reach, before coverage. The three Any claims answer "will it work with what we already have", which
-           for an enterprise is the question asked before any of the others. Plain lines rather than the bordered
-           panels they used to be: the check grid below is the only boxed thing in the section, so the boxes read
-           as the run's own indicator instead of as a house style. -->
+           for an enterprise is the question asked before any of the others. -->
       <div class="anys">
         <div><b>Any app</b>The map is walked out of the app, not hand-authored.</div>
         <div><b>Any platform</b>Android, iOS and web behind one driver contract.</div>
         <div><b>Any LLM</b>An author and an exception handler, never a runtime dependency.</div>
       </div>
+      </div>
 
-      <!-- EVERY KIND OF CHECK A RUN COVERS, and nothing but their names. They were listed twice: here with a
-           line of explanation each, and again below in a three-cluster grid with a paragraph each. This is the
-           whole list, once, and the names are the claim -- a reader scanning for "does it do accessibility"
-           does not need a sentence to find out. They light in turn as the suite runs. -->
-      <ol class="covers" id="covers">
-        <li class="cover">End to end</li>
-        <li class="cover">Visual regression</li>
-        <li class="cover">Accessibility</li>
-        <li class="cover">WCAG 2.2 AA</li>
-        <li class="cover">Performance</li>
-        <li class="cover">Self-healing</li>
-        <li class="cover">No silent green</li>
-        <li class="cover">Run history</li>
-      </ol>
+      <div class="loop-show">
+      <!-- THREE CLUSTERS, NOT NINE PEERS. Nine equal blurbs in one grid is a specification; a reader gets no
+           ranking from it and takes none away. They already fall into three groups, and three read in one pass.
+           Each cap carries `cover` too, which is the handle the run lights them by: the list and the thing the
+           scene animates are one set of elements, not two descriptions of the same set. -->
+      <div class="clusters" id="covers">
+        <div class="cluster">
+          <b>What it checks</b>
+          <div class="cap cover"><b>End to end</b><p>Recorded once, replayed deterministically: same actions, same order, same captures.</p></div>
+          <div class="cap cover"><b>Visual regression</b><p>Screenshots diffed against baseline into changed regions, by script.</p></div>
+          <div class="cap cover"><b>Accessibility</b><p>31 checkers over the a11y tree, plus contrast, reachability and focus order.</p></div>
+          <div class="cap cover"><b>WCAG 2.2 AA</b><p>The standard EN 301 549 cites for EAA. Reported as findings, not as a badge no tool can earn.</p></div>
+          <div class="cap cover"><b>Performance</b><p>Metrics against an averaged baseline, with app time isolated from network wait.</p></div>
+        </div>
+        <div class="cluster">
+          <b>What it does when it fails</b>
+          <div class="cap cover"><b>Self-healing</b><p>A flag is classified intended, regression or external, then the code or the map is fixed.</p></div>
+          <div class="cap cover"><b>No silent green</b><p>Missing evidence reports skipped or needs-review. Never pass, and not configurable.</p></div>
+        </div>
+        <div class="cluster">
+          <b>What it keeps</b>
+          <div class="cap cover"><b>Run history</b><p>Every run stored and viewable, with auditable data behind each verdict.</p></div>
+        </div>
+      </div>
 
       <!-- Deliberately unfinished, and the page it opens says so. The snapshot it will carry is a real run
            against the RPN Dominator app; until that part of the plugin is refined enough to publish, this is a
