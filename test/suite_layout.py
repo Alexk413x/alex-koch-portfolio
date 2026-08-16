@@ -144,9 +144,19 @@ def run(page, r):
         last_k = d['k']
         if d['cur'] and (not seen or seen[-1] != d['cur']):
             seen.append(d['cur'])
-    r.check('every nav item lights, in page order', seen,
-            ['ALEX', 'CARTOGRAPHER', 'APP', 'EXPERIENCE', 'LABS', 'CONTACT'])
+    # The walk samples every 300px and CONTACT is current for only the last 272 of a 12,000px page -- it sits
+    # 648px BELOW the furthest the page can scroll, so its window is narrower than one sample. The order the
+    # walk sees is asserted as a prefix; whether the last item is reachable at all is its own check below,
+    # taken where it actually happens rather than hoped for in a sweep.
+    r.check('the nav lights in page order on the way down', seen,
+            ['ALEX', 'CARTOGRAPHER', 'APP', 'EXPERIENCE', 'LABS', 'CONTACT'][:len(seen)])
+    r.ok('and it reaches the second to last of them', len(seen) >= 5, ' -> '.join(seen))
     r.ok('the playhead only ever moves forward', order)
+
+    # The last section is the one a fixed reading line could never reach, which is why the line slides to 92%.
+    page.scroll(maxy, pause=0.5)
+    r.check('the last section lights at the bottom of the page',
+            page.js("(document.querySelector('#nav .links a[aria-current]')||{}).textContent"), 'CONTACT')
 
     # ONE bar at every scroll position. A ground or a rule appearing partway down was tried and rejected: the
     # bar is meant to read the same over the document as it does over the stage.
@@ -191,9 +201,15 @@ def run(page, r):
                          "return Math.round((e.closest('[data-range]')||e).getBoundingClientRect().top+y)}))})()")
     cart = sections[0]
 
-    page.scroll(cart - 500, pause=0.4)
+    # Positioned by SECTION, not by a pixel. Whether a given offset is still inside the previous section is a
+    # function of the reading line and the page's height, and both move whenever the page does -- which made this
+    # check pass or fail depending on what had been edited that day rather than on whether the carry worked.
+    page.scroll(stops[1], pause=0.4)
+    r.check('starting inside the first section', page.js('window.AKNAV.section()'), 0)
     page.flick(700, pause=0)
-    r.near('a real gesture past a boundary is carried to the section top', page.until_still(), cart, 8)
+    landed = page.until_still()
+    r.check('the gesture crossed a boundary', page.js('window.AKNAV.section()'), 1)
+    r.near('and a real gesture past one is carried to the section top', landed, cart, 8)
 
     # Inside the section it stays theirs: a nudge that crosses nothing must not be undone.
     at = page.js('Math.round(scrollY)')
@@ -202,8 +218,10 @@ def run(page, r):
     r.ok('scrolling inside a section is left alone', after > at + 100, 'moved from %d to %d' % (at, after))
 
     # Contact's top is below the furthest the page can scroll, so the clamp parks the last section at the bottom.
+    # A generous flick, so the clamp at the bottom is certain rather than a question of how much of the gesture
+    # the browser delivered.
     page.scroll(end - 400, pause=0.4)
-    page.flick(600, pause=0)
+    page.flick(1400, pause=0)
     r.near('the last section rests at the bottom', page.until_still(), end, 8)
 
     # The arrow keys step the page a whole beat at a time rather than a fixed number of pixels. The stops are

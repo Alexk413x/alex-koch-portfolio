@@ -1053,6 +1053,356 @@ footer {
 footer a { color: var(--text-faint) }
 footer a:hover { color: var(--accent) }
 
+
+/* ---------------- the instruments, as objects ---------------- */
+
+/* Three stylised solids in CSS 3D, one per lab. No canvas and no context: the page already runs one for the
+   reactor in the hero, and three more would be four live WebGL contexts each holding its buffers whether or not
+   it is drawing. These hold nothing.
+ *
+ * Roughly 110 elements across the three, of which the tube's funnel plates and the throat's stations are pure
+ * geometry placed once at load and never touched again. Everything that animates is transform or opacity, so
+ * the row is compositor work and the main thread never sees it — and the idle only runs while the section is on
+ * screen, so three continuous animations cost a phone nothing once they scroll away.
+ *
+ * Every static transform is the object's composed pose, so the global reduced-motion rule leaves three
+ * assembled solids rather than three blank boxes.
+ */
+
+/* The object sits above the card's text as its picture. Its own stacking context, so the 3D inside it cannot
+   interact with the card's hover lift. */
+/* A FIXED HEIGHT, not the sketch's 4:3. The solids are drawn at fixed pixel sizes inside, so an aspect ratio
+   only decides how much empty space surrounds them — and against the lead card's 880px that came out 660px
+   tall and swallowed the card. This is a card's picture, not a stage. */
+.lab-card .obj { height: 210px; aspect-ratio: auto; margin: 0 0 18px }
+.lab-card.lead .obj { height: 430px }   /* it spans two rows, so it has two rows of room */
+
+/* THE IDLE ONLY RUNS WHILE THE ROW IS ON SCREEN. Three continuous animations are atmosphere in view and battery
+   out of it, and the arrival observer already knows which it is — .wh.on gates the throat's own play state, and
+   these two gate the rest. */
+.lab-card .obj.cold *, .lab-card .obj.off * { animation-play-state: paused }
+
+/* ---------------- lab objects, cue 05 ----------------
+ *
+ * Three stylised solids in CSS 3D. No canvas, no context, no library. Every animated property is transform or
+ * opacity, so the whole row is compositor work. Static transforms are the base state, which means the global
+ * reduced-motion rule leaves each object composed rather than blank.
+ */
+
+
+.obj { position: relative; width: 100%; aspect-ratio: 4 / 3; perspective: 560px; margin-bottom: 14px; overflow: hidden }
+.obj-3d { position: absolute; inset: 0; transform-style: preserve-3d }
+.obj-3d > * { position: absolute; left: 50%; top: 50% }
+
+/* ---- the throat ----
+ * One keyframe describes a bent path through space. Every ring runs it with a negative delay, so at any instant
+ * the fourteen of them occupy fourteen points along that bend and the tunnel reads as a curve rather than a bore.
+ */
+/* Held only slightly off-axis. Enough that a rib running down the tunnel still projects to something, not so
+   much that the throat stops rushing the viewer. The bend comes from the PATH, not from turning the camera. */
+/* THE PIVOT IS THE MOUTH, not the far end. transform-origin takes a z, so +320 sets the rotation centre inside
+   the near rings: the mouth the viewer is sitting in barely moves and the far end, 1570px behind the pivot,
+   is what swings. Pivoting on the far end does the opposite and the tunnel wheels around the camera while the
+   distance holds still, which is backwards from being inside it. Note +320 rather than the path's near
+   extreme of +430: no ring is ever AT the extreme, so pivoting there still leaves the visible near rings
+   swinging. It belongs where the large rings actually are. */
+.wh .obj-3d { transform-origin: 50% 50% 320px; animation: wh-sway 18s linear infinite }
+/* The roll. A rotateZ about the tube's own axis does two jobs at once: the wall turns, and because the far end
+   carries all the offset while the mouth sits on the axis, the bend sweeps a full circle round the throat
+   without the mouth moving at all. Its own wrapper so it composes with the sway instead of fighting it. */
+.wh .roll { position: absolute; inset: 0; transform-style: preserve-3d; animation: wh-roll 52s linear infinite }
+.wh .roll > * { position: absolute; left: 50%; top: 50% }
+@keyframes wh-roll { to { transform: rotateZ(360deg) } }
+/* Hover deliberately does NOT touch this. Speeding the roll swings the bend around faster, which is a different
+   thing from the wall turning, and it is the wall that should answer a hover. The bend keeps its own slow rate. */
+/* Four keyframes tracing an orbit rather than two on an alternate, so the far end circles instead of wagging.
+   The amplitude can be generous here, the reverse of the other pivot: the end that moves is the far one, and
+   perspective shrinks it to about a third, so six degrees is a readable drift rather than a lurch. */
+@keyframes wh-sway {
+  0% { transform: rotateY(6deg) rotateX(0deg) }
+  25% { transform: rotateY(0deg) rotateX(5deg) }
+  50% { transform: rotateY(-6deg) rotateX(0deg) }
+  75% { transform: rotateY(0deg) rotateX(-5deg) }
+  100% { transform: rotateY(6deg) rotateX(0deg) }
+}
+.wh .rg {
+  width: 158px; height: 158px; margin: -79px 0 0 -79px;
+  border: 1px solid var(--accent); border-radius: 50%;
+  /* HIDDEN UNTIL ARRIVAL. A paused animation renders its element's BASE style, not its first keyframe, so a
+     visible base meant all fourteen rings sat there in their resting poses, then blinked out the instant the
+     animation started at 0% and rebuilt from nothing. The resting pose is still written per ring in the script;
+     it is just no longer drawn, except under reduced motion where it is all there is. */
+  opacity: 0;
+  /* Paused, and with POSITIVE delays, so the throat builds on arrival instead of being caught mid-flight.
+     animation-play-state pauses the delay as well as the animation, which is the whole reason this works:
+     nothing counts down while the section is off screen. Negative delays would place every ring somewhere
+     along the path at load, and the tunnel would simply be there. */
+  animation: wh-fly 3.6s linear infinite;
+  animation-play-state: paused;
+}
+.wh.on .rg { animation-play-state: running }
+/* THE OFFSET GROWS WITH THE SQUARE OF THE DISTANCE FROM THE FAR END, so the vanishing point sits dead centre
+   and the near mouth carries all the displacement. Spread linearly it reads as a straight tube skewed sideways:
+   every ring is displaced by the same proportion, so nothing curves. Squared, one end is pinned and the other
+   swings, which is a bend. The tilts follow the same curve so each ring banks into it rather than staying
+   square to the camera. These five stops are the shared centreline function sampled at u = 1, .75, .5, .25, 0.
+   Both ends fade to nothing, so the object dissolves rather than ending, and can sit anywhere on a page. */
+/* TRAVEL RUNS FAR TO NEAR: rings rise out of the distance, swell, and sweep past the viewer. That is forward
+   motion down the throat. Running it the other way, with the rings shrinking away, reads as reversing out.
+   The stops are the shared centreline sampled at u = 1, .75, .5, .25, 0, so reversing the direction is
+   nothing more than reading that list the other way round. */
+@keyframes wh-fly {
+  0% { transform: translate3d(170px, -74px, -1250px) rotateY(23deg) rotateX(-15deg); opacity: 0 }
+  14% { opacity: .5 }
+  25% { transform: translate3d(95.6px, -41.6px, -830px) rotateY(12.9deg) rotateX(-8.4deg) }
+  50% { transform: translate3d(42.5px, -18.5px, -410px) rotateY(5.8deg) rotateX(-3.8deg) }
+  75% { transform: translate3d(10.6px, -4.6px, 10px) rotateY(1.4deg) rotateX(-.9deg) }
+  86% { opacity: .42 }
+  100% { transform: translate3d(0, 0, 430px) rotateY(0deg) rotateX(0deg); opacity: 0 }
+}
+/* The wall's longitudinal lines, as short segments chained along it and fixed in space. Carrying them on the
+   rings instead breaks them: a stub is a fixed length in tube units, so the ones near the camera are magnified
+   into streaks that shoot clear across the frame while the ones at the far end shrink to nothing. Fixed
+   geometry keeps every segment the length its own place on the wall calls for. */
+/* THE WALL IS A CHAIN OF STATIONS, and each one spins about the tube's axis at its own position. That is the
+   difference between the lines rotating around the tube and the tube's BEND being swung around: a rotateZ on
+   the whole throat moves the centreline with it, because the bend lives in x and y. Rotating each station in
+   place leaves every centre exactly where it was and turns only the blades on the wall. */
+.wh .wst { position: absolute; left: 50%; top: 50%; width: 0; height: 0; transform-style: preserve-3d }
+.wh .wsp { position: absolute; left: 0; top: 0; width: 0; height: 0; transform-style: preserve-3d; animation: wall-spin 30s linear infinite }
+@keyframes wall-spin { to { transform: rotateZ(360deg) } }
+/* Hover spins the WALL faster. The bend keeps its own slow roll and is deliberately not touched. */
+.wh:hover .wsp { animation-duration: 7s }
+
+/* Each blade's own opacity is handed in as --o rather than set directly, so the wall can be faded up as a set
+   on arrival without putting an opacity on any ancestor. That matters: an opacity above them would flatten the
+   3D and collapse the tube, the same trap the rings hit. Only the leaves carry it, and leaves have no children
+   to flatten. Same accent as the hoops, so the tube is one object rather than two colours of wireframe. */
+.wh .wb {
+  /* 1.4px, not 1px. A 1px bar is already sub-pixel once perspective shrinks it, and a sub-pixel line does not
+     render as a faint line, it renders as a dotted one: coverage varies along its length and the rasteriser
+     drops the thin parts. A little over a pixel survives the far end and still reads as a hairline near it. */
+  position: absolute; left: 0; top: 0; height: 1.4px; margin-top: -.7px;
+  transform-origin: 0 50%;
+  background: var(--accent);
+  opacity: 0;
+  /* The stagger lives in --d rather than an inline transition-delay, so leaving can override it. An inline
+     delay would win over any stylesheet rule and the departure would inherit the 2.4s build stagger. */
+  transition: opacity .9s var(--ease-settle) var(--d, 0s), background-color .35s var(--ease-settle);
+}
+.wh.on .wb { opacity: var(--o) }
+/* HOOPS AND BLADES BRIGHTEN IDENTICALLY: the same two colours, over the same 350ms, and nothing else. The
+   blades used to take an opacity multiplier as well, which made them lift further and on a different clock
+   (their opacity transition is 900ms, for the arrival), so the wall and the rings arrived at their bright
+   state at different times and by different amounts. A hoop's opacity is animation-driven and cannot be
+   transitioned, so colour is the one lever both can pull. */
+.wh.on:hover .wb { background: var(--accent-hover) }
+.wh .rg { transition: border-color .35s var(--ease-settle), opacity .35s var(--ease-settle) }
+.wh:hover .rg { border-color: var(--accent-hover) }
+/* LEAVING IS A CLEAR, NOT A PERFORMANCE. The departure fires when the object is nearly off screen, so nobody
+   watches it: a choreographed exit would be effort spent where there is no audience, and a long one risks
+   being caught halfway through on the way back. Quick and unstaggered, and the next arrival is clean. */
+/* Leaving runs the sweep BACKWARDS: --dr staggers from the near station outward, so the wall retracts away
+   from the viewer exactly as it reached toward them. A separate property because an inline delay would win
+   over any rule, and because the two directions want different durations. */
+.wh:not(.on) .wb { transition: opacity .4s var(--ease-settle) var(--dr, 0s), background-color .35s var(--ease-settle) }
+/* Replay and reset only: no transition at all for one frame, so the wall is at zero before the rebuild. */
+.wh.reset .wb { transition: none }
+
+/* ---- the core ----
+ * Goo, and nothing else in the frame. Three stacked layers each carry a fixed asymmetric border-radius and turn
+ * at a different rate, so the silhouette never repeats; the container squashes and stretches on top of that.
+ * Every one of those is a transform. Animating border-radius directly would repaint the blob every frame.
+ */
+/* The hover swell lives on a WRAPPER, not on the core. Putting it on the core means fighting the squash
+   animation for the same property: the element would snap to its base transform the moment the animation was
+   removed, then transition from there. On a wrapper the two compose, so the blob keeps warping while it is
+   held open. */
+.rx .blob {
+  width: 116px; height: 116px; margin: -58px 0 0 -58px;
+  transition: transform .45s var(--ease-settle), filter .45s var(--ease-settle);
+}
+.rx:hover .blob { transform: scale(1.24); filter: brightness(1.35) }
+/* Dormant before arrival and after departure, so the core has somewhere to arrive FROM. Without it the reactor
+   is the one object that is simply always there, and its pulse reads as a twitch rather than as an entrance. */
+.rx.cold .blob { transform: scale(.06); opacity: 0 }
+.rx.off .blob { animation: rx-collapse .6s var(--ease-settle) forwards }
+@keyframes rx-collapse {
+  0% { transform: scale(1); opacity: 1 }
+  26% { transform: scale(1.16, 1.08); filter: brightness(1.4) }
+  100% { transform: scale(.06); filter: brightness(.5); opacity: 0 }
+}
+.rx .core { position: absolute; inset: 0; animation: goo-squash 5.4s ease-in-out infinite alternate }
+@keyframes goo-squash {
+  0% { transform: scale(1.06, .93) rotate(-4deg) }
+  100% { transform: scale(.94, 1.08) rotate(5deg) }
+}
+/* THE DARK CENTRE IS OFF-CENTRE, and that is the whole reason it moves. A radial gradient centred at 50% 50%
+   is invariant under rotation, so with a centred core the silhouette warped while the dark mass sat pinned to
+   the middle looking painted on. Offset it, make it an ellipse rather than a circle, and the rotations that
+   were already running carry it: three cores orbiting at three rates, overlapping into one wandering void.
+   No new element and no new animated property; the same transforms do the work. */
+.rx .core b {
+  position: absolute; inset: 0;
+  border-radius: 62% 38% 44% 56% / 55% 43% 57% 45%;
+  background: radial-gradient(ellipse 68% 78% at 43% 40%, #150b04 0%, #2b1307 34%, var(--accent) 71%, #ffc890 88%, rgba(221, 106, 32, .14) 100%);
+  animation: goo-a 7s linear infinite;
+}
+.rx .core b:nth-child(2) {
+  border-radius: 39% 61% 66% 34% / 42% 63% 37% 58%;
+  background: radial-gradient(ellipse 80% 66% at 57% 46%, #150b04 0%, #2b1307 32%, var(--accent) 70%, #ffc890 88%, rgba(221, 106, 32, .12) 100%);
+  opacity: .72; animation: goo-b 11s linear infinite;
+}
+.rx .core b:nth-child(3) {
+  border-radius: 52% 48% 33% 67% / 63% 36% 64% 37%;
+  background: radial-gradient(ellipse 62% 84% at 49% 58%, #150b04 0%, #2b1307 36%, var(--accent) 72%, #ffc890 89%, rgba(221, 106, 32, .1) 100%);
+  opacity: .5; animation: goo-c 17s linear infinite;
+}
+@keyframes goo-a {
+  0% { transform: rotate(0deg) scale(1) }
+  50% { transform: rotate(180deg) scale(1.1) }
+  100% { transform: rotate(360deg) scale(1) }
+}
+@keyframes goo-b {
+  0% { transform: rotate(0deg) scale(1.07) }
+  50% { transform: rotate(-180deg) scale(.92) }
+  100% { transform: rotate(-360deg) scale(1.07) }
+}
+@keyframes goo-c {
+  0% { transform: rotate(30deg) scale(.96) }
+  50% { transform: rotate(210deg) scale(1.12) }
+  100% { transform: rotate(390deg) scale(.96) }
+}
+/* The lab's own event: a pulse tears through the core. */
+.rx.go .core { animation: rx-pulse .95s var(--ease-settle) }
+@keyframes rx-pulse {
+  0% { transform: scale(1) }
+  30% { transform: scale(1.3, 1.18); filter: brightness(1.7) }
+  62% { transform: scale(.9, 1.06); filter: brightness(1.1) }
+  100% { transform: scale(1); filter: brightness(1) }
+}
+
+/* ---- the tube ----
+ * The yaw is wider than a monitor would want, because the back is half the object and it has to be seen. The
+ * sway swings it from nearly three-quarter to nearly square on, so the funnel comes into view and goes again.
+ */
+.crt .obj-3d { transform: rotateX(6deg) }
+.crt .tube { animation: crt-sway 19s ease-in-out infinite alternate }
+@keyframes crt-sway {
+  0% { transform: rotateY(-38deg) rotateX(4deg) }
+  100% { transform: rotateY(-17deg) rotateX(1deg) }
+}
+/* A Predicta tube on its own: no cabinet, no stand, nothing on the face but the glass and a hairline of trim.
+   The funnel behind it is half the object and is built in the script, off a single interpolation. */
+.crt .tube { position: absolute; left: 50%; top: 50%; width: 0; height: 0; transform-style: preserve-3d }
+.crt .tube > * { position: absolute; left: 0; top: 0; border: 1px solid rgba(0, 0, 0, .45) }
+
+.crt .fr {
+  width: 180px; height: 136px; margin: -68px 0 0 -90px; transform: translateZ(15px); border-radius: 44px;
+  background: radial-gradient(132% 118% at 26% 4%, #453b32, #281f1a 44%, #120f0c 100%);
+}
+/* A single lit edge along the top. It is the whole difference between a moulded shell and a flat panel. */
+.crt .fr::before {
+  content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+  background: linear-gradient(177deg, rgba(255, 230, 204, .22) 0 1.5px, rgba(255, 230, 204, .05) 10%, transparent 28%);
+}
+/* No rim panels. Four quads around the edge of the face read as arms bracketing the screen rather than as the
+   side of a tube, so the plate stack starts flush with the face and forms its own rim on the way back. */
+
+/* THE BACK IS THE OTHER HALF OF THE OBJECT, not a cap on it. The plates step back and in from the face, each
+   one interpolated off a single --t. The count is the whole trick: a handful read as a second lobe stuck to
+   the side of the tube, because you see each plate's FACE rather than a surface joining them. Packed close
+   enough, the visible slivers overlap into one continuous wall and the stack turns into a cone. */
+/* Size, depth, radius and shade are all computed per plate in the script; only what every plate shares lives
+   here. NO filter on these: a filter forces an element out of the preserve-3d context and flattens it, which
+   silently collapses the whole cone into the plane of the face. The shading is baked into the colour instead. */
+/* The lit top edge is doing more work here than the fill is. Stacked plates are perceived through the slivers
+   of each one that the plate in front does not cover, so a bright edge per plate accumulates into a highlight
+   running the length of the cone. Without it a dark form on a dark ground is just a hole. */
+.crt .fn {
+  position: absolute; left: 0; top: 0; border: 0;
+  box-shadow: inset 0 1px 0 rgba(255, 232, 208, .13), inset -1px 0 0 rgba(255, 232, 208, .05);
+}
+
+/* The glass reaches the shell. An 8px ring is the entire bezel and the trim inside it is one hairline, warm
+   rather than white, so it reads as brushed metal against the case instead of a drawn border. */
+.crt .face {
+  position: absolute; inset: 8px;
+  border-radius: 32px; overflow: hidden;
+  border: 1px solid rgba(255, 216, 180, .26);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, .5), inset 0 2px 9px rgba(0, 0, 0, .72);
+  background: radial-gradient(124% 106% at 50% 40%, #321c0a, #140b06 60%, #090609 100%);
+}
+.crt .face::before { content: ''; position: absolute; inset: 0; background: repeating-linear-gradient(180deg, rgba(255, 255, 255, .055) 0 1px, transparent 1px 3px) }
+/* The sheen is the curvature. At this size it is the only part of a curved face the eye actually checks. */
+.crt .face::after { content: ''; position: absolute; inset: 0; background: linear-gradient(126deg, rgba(255, 255, 255, .17) 0 16%, rgba(255, 255, 255, .04) 30%, transparent 44%) }
+.crt s {
+  position: absolute; left: 0; right: 0; top: 0; height: 2px; text-decoration: none;
+  background: linear-gradient(90deg, transparent, var(--accent-hover), transparent);
+  transform: translateY(52px); opacity: .5;
+  animation: crt-scan 4.2s linear infinite;
+}
+@keyframes crt-scan {
+  0% { transform: translateY(-4px); opacity: 0 }
+  9% { opacity: .95 }
+  91% { opacity: .95 }
+  100% { transform: translateY(134px); opacity: 0 }
+}
+/* The degauss: two copies of the picture's GLOW, tinted red and blue and pulled apart sideways. Fringing the
+   raster instead is the obvious move and it is wrong twice over. The scanlines are horizontal, so a horizontal
+   offset of them is invisible, which forces a vertical one; and a vertical offset drops the tinted lines into
+   the gaps between the amber ones, so the whole screen turns to colour stripes and the picture is gone. The
+   glow is what a mis-converged gun actually displaces. Held while hovered rather than fired: a magnet held
+   against the glass does not tick. */
+.crt .face u {
+  position: absolute; inset: 0; opacity: 0; mix-blend-mode: screen;
+  background: radial-gradient(124% 106% at 50% 40%, currentColor, transparent 64%);
+  transition: opacity .3s var(--ease-settle), transform .3s var(--ease-settle);
+}
+.crt .face u.r { color: rgba(255, 62, 38, .34) }
+.crt .face u.g { color: rgba(84, 236, 116, .19) }
+.crt .face u.b { color: rgba(72, 132, 255, .3) }
+.crt .face { transition: transform .3s var(--ease-settle), background-color .55s var(--ease-settle) }
+.crt .face::before, .crt s { transition: opacity .55s var(--ease-settle) }
+.crt:hover .face { transform: skewX(.9deg) scale(1.015, .99) }
+/* All three guns, orbiting rather than parked. One keyframe and three negative delays a third of a cycle
+   apart, so red, green and blue are always 120 degrees around the circle from each other and every one of them
+   passes through view while the pointer is down. Screened together they return to neutral where they overlap,
+   which is what convergence actually looks like: white in the middle, colour at the edges. */
+@keyframes rgb-orbit {
+  0% { transform: translate(7px, 0) }
+  25% { transform: translate(0, 5px) }
+  50% { transform: translate(-7px, 0) }
+  75% { transform: translate(0, -5px) }
+  100% { transform: translate(7px, 0) }
+}
+.crt:hover .face u { opacity: 1 }
+.crt:hover .face u.r { animation: rgb-orbit 2.4s linear infinite }
+.crt:hover .face u.g { animation: rgb-orbit 2.4s linear infinite -.8s }
+.crt:hover .face u.b { animation: rgb-orbit 2.4s linear infinite -1.6s }
+
+/* Cold: no raster, no scanline, no glow, and no convergence to lose. This is the state before the section
+   arrives, and it is what makes the power-on true. A tube that is already lit cannot power on; it can only
+   flicker. Last, so it wins over the hover rules while the tube is still dark. */
+.crt.cold .face { background: #08060a }
+.crt.cold .face::before, .crt.cold s, .crt.cold .face u { opacity: 0 }
+
+/* The power-down, and it is the reverse of the power-up rather than a fade: the picture squeezes to a bright
+   horizontal line and flares out as the raster collapses. It is the one departure worth watching, which is why
+   this object leads the exit. */
+.crt.off .face { animation: crt-off .55s var(--ease-settle) forwards }
+@keyframes crt-off {
+  0% { transform: scaleY(1); filter: brightness(1) }
+  42% { transform: scaleY(.9); filter: brightness(1.8) }
+  100% { transform: scaleY(.012); filter: brightness(2.6) }
+}
+.crt.go .face { animation: crt-on .85s var(--ease-settle) }
+@keyframes crt-on {
+  0% { transform: scaleY(.015); filter: brightness(2.8) }
+  55% { transform: scaleY(1.05); filter: brightness(1.5) }
+  100% { transform: scaleY(1); filter: brightness(1) }
+}
+
 /* ---------------- narrow and short ---------------- */
 
 /* NARROW AND SHORT ARE DIFFERENT FAULTS AND TAKE DIFFERENT ANSWERS. Too narrow for two columns is a layout
