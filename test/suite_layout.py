@@ -162,8 +162,11 @@ def run(page, r):
     # 648px BELOW the furthest the page can scroll, so its window is narrower than one sample. The order the
     # walk sees is asserted as a prefix; whether the last item is reachable at all is its own check below,
     # taken where it actually happens rather than hoped for in a sweep.
-    r.check('the nav lights in page order on the way down', seen,
-            ['ALEX', 'CARTOGRAPHER', 'APP', 'EXPERIENCE', 'LABS', 'CONTACT'][:len(seen)])
+    # The expected order is READ OFF THE NAV, not written down here: this check is about the playhead lighting
+    # sections in page order, and a copy of the labels would fail the next time one is renamed while testing
+    # nothing the nav does not already say.
+    labels = page.json("JSON.stringify([...document.querySelectorAll('#nav .links a')].map(a=>a.textContent))")
+    r.check('the nav lights in page order on the way down', seen, labels[:len(seen)])
     r.ok('and it reaches the second to last of them', len(seen) >= 5, ' -> '.join(seen))
     r.ok('the playhead only ever moves forward', order)
 
