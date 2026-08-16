@@ -948,6 +948,26 @@ section[id] { scroll-margin-top: 84px }
 
 .role .apps { margin-top: 5px; font-family: var(--font-mono); font-size: 11px; letter-spacing: .1em; color: var(--text-muted) }
 
+/* THE SAME WORDS, LISTED. Each paragraph a role already carried becomes a point, so the body scans as what was
+   done rather than reading as an essay — the prose still explains the how and the what, it just stops arriving
+   as one block. Nothing here rewrites anything: the markup changed and the text did not. */
+.role .pts { margin: 14px 0 0; padding: 0; list-style: none; max-width: 74ch }
+.role .pts li {
+  position: relative; padding-left: 20px;
+  font-size: 14.5px; line-height: 1.65; color: var(--text-body);
+}
+.role .pts li + li { margin-top: 12px }
+
+/* FILLED, and deliberately not numbered. The points are things done, not a sequence, and 01 / 02 / 03 would
+   claim an order that is not in the content.
+   Aligned to the first line's optical centre rather than its top, which is what stops a marker sitting level
+   with the ascenders and reading as a tick floating above the text. */
+.role .pts li::before {
+  content: ''; position: absolute; left: 0; top: .58em;
+  width: 6px; height: 6px;
+  background: var(--accent);
+}
+
 .role p { margin: 14px 0 0; font-size: 14.5px; line-height: 1.65; color: var(--text-body); max-width: 74ch }
 .role p b { color: var(--text-strong); font-weight: 600 }
 .role p a { border-bottom: 1px solid var(--border-accent) }
