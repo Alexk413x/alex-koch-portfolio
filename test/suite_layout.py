@@ -59,6 +59,20 @@ def run(page, r):
                       "const a=document.querySelector('.aside').getBoundingClientRect();"
                       "return !(a.top>=l.bottom||a.bottom<=l.top||a.left>=l.right||a.right<=l.left)})()")
         r.ok('aside never overlaps the lockup on %s' % label, not hit)
+
+        # AND THE ROLE VIEWER GIVES UP ITS PIN. Pinned at 393px the deck is taller than the stage, the stage
+        # clips, and the reader gets a role's first two lines with no way to reach the rest -- a phone on its
+        # side passes every width-only test while doing exactly that. Unpinned it is a plain stack, so the
+        # check is that every role is on the page at once and none of them is cut off.
+        d = page.json("(()=>{const g=document.getElementById('exp-stage');"
+                      "const all=[...document.querySelectorAll('.exp-deck .role')];"
+                      "const lit=all.filter(e=>+getComputedStyle(e).opacity>0.05);"
+                      "const cut=all.some(e=>e.scrollHeight-e.clientHeight>2);"
+                      "return JSON.stringify({sticky:getComputedStyle(g).position==='sticky',"
+                      "n:all.length,lit:lit.length,cut:cut})})()")
+        r.ok('the role viewer stops pinning on %s' % label, not d['sticky'])
+        r.check('and shows every role at once on %s' % label, d['lit'], d['n'])
+        r.ok('with none of them clipped on %s' % label, not d['cut'])
     page.reset_viewport()
 
     # Reduced motion collapses both rigs rather than pinning a scene nothing is driving.
@@ -341,39 +355,51 @@ def run(page, r):
     r.check('and the readout agrees with them', d['kinds'], '%d of %d' % (d['on'], d['total']))
     r.check('and replaying still costs nothing', d['cost'], '0')
 
-    # THE TIMELINE KEEPS ITS OWN SCROLL, and hands back at the ends. The mechanism, not the copy: scrolling the
-    # list must not move the page, the readout must follow the list, and the oldest role must be reachable --
-    # it is shorter than the panel, so a reading line fixed near the top can never be cleared by it.
+    # THE ROLES ARE A VIEWER, ONE AT A TIME. The mechanism, not the copy: exactly one role showing at any
+    # position in the pin, the strip agreeing with it, and every role reachable -- including the last, which is
+    # the one a floor()'d index is most likely to strand.
     page.viewport(1600, 1000)
-    page.scroll(page.js("Math.round(document.getElementById('experience').getBoundingClientRect().top+scrollY)"),
-                pause=0.6)
-    page_before = page.js('Math.round(scrollY)')
+    # top is MEASURED, not read off offsetTop -- the section is position: relative, so offsetTop reports the
+    # distance from the section rather than from the top of the document and every beat lands on role one.
+    geo = page.json("(()=>{const s=document.getElementById('exp-scroll'),g=document.getElementById('exp-stage');"
+                    "return JSON.stringify({top:Math.round(s.getBoundingClientRect().top+scrollY),"
+                    "run:s.offsetHeight-g.offsetHeight,"
+                    "n:document.querySelectorAll('.exp-deck .role').length})})()")
+    SHOWING = ("(()=>{const all=[...document.querySelectorAll('.exp-deck .role')];"
+               "const lit=all.filter(e=>+getComputedStyle(e).opacity>0.05);"
+               "const here=document.querySelector('.exp-deck .role.here');"
+               "return JSON.stringify({lit:lit.length,who:here?here.dataset.label:'',"
+               "tab:(document.querySelector('.exp-strip button[aria-selected]')||{}).textContent})})()")
 
-    def at_inner(frac):
-        page.js("(()=>{const s=document.getElementById('tl-scroll');"
-                "s.scrollTop=(s.scrollHeight-s.clientHeight)*%s;return 1})()" % frac)
-        page.settle()
-        return page.json("(()=>{const r=document.querySelector('.tl-scroll .role.here');"
-                         "return JSON.stringify({idx:[...document.querySelectorAll('.tl-scroll .role')]"
-                         ".indexOf(r),year:document.querySelector('.tl-year').textContent,"
-                         "page:Math.round(scrollY)})})()")
+    seen, alone = [], True
+    for i in range(geo['n']):
+        page.scroll(geo['top'] + round(geo['run'] * ((i + 0.5) / geo['n'])), pause=0.55)
+        d = page.json(SHOWING)
+        if d['lit'] != 1:
+            alone = False
+        seen.append((d['who'], d['tab']))
+    r.ok('exactly one role is showing at every beat', alone,
+         'saw %s' % [x for x in seen][:3])
+    r.check('every role gets a beat of its own', len(set(w for w, _ in seen)), geo['n'])
+    r.ok('and the strip agrees with the deck', all(w == t for w, t in seen),
+         ' | '.join('%s/%s' % (w, t) for w, t in seen if w != t)[:80])
 
-    top = at_inner(0)
-    r.check('the newest role is current at the top of the list', top['idx'], 0)
-    mid = at_inner(0.5)
-    r.ok('the readout follows the list', mid['idx'] > top['idx'], '%d -> %d' % (top['idx'], mid['idx']))
-    end = at_inner(1)
-    r.check('the oldest role is reachable at the bottom', end['idx'],
-            page.js("document.querySelectorAll('.tl-scroll .role').length") - 1)
-    r.check('and none of it moved the page', end['page'], page_before)
+    # The strip jumps the PAGE to that role's beat, since the deck holds no state of its own.
+    page.click_at('.exp-strip button:nth-child(6)', pause=1.3)
+    r.check('a jump shows the role it names', page.json(SHOWING)['who'],
+            page.js("document.querySelectorAll('.exp-deck .role')[5].dataset.label"))
 
-    # The strip jumps the LIST, and the readout agrees with the button that was pressed -- which is only true
-    # while the reading line sits where a jump puts its target.
-    page.click_at('.tl-strip button:nth-child(8)', pause=1.2)
-    r.check('a jump selects the role it names',
-            page.js("(document.querySelector('.tl-strip button[aria-selected]')||{}).textContent"),
-            page.js("document.querySelectorAll('.tl-scroll .role')[7].dataset.label"))
-    r.check('and still does not move the page', page.js('Math.round(scrollY)'), page_before)
+    # AND THE PIN LETS GO. The viewer lives inside #experience, so past the last role the scroll has to carry on
+    # into the section's own tail rather than hold -- a runway that outlasts its content reads as a stuck page.
+    page.scroll(geo['top'] + geo['run'], pause=0.6)
+    r.check('the last role is the one at the end of the pin', page.json(SHOWING)['who'],
+            page.js("[...document.querySelectorAll('.exp-deck .role')].pop().dataset.label"))
+    page.scroll(geo['top'] + geo['run'] + 600, pause=0.6)
+    d = page.json("(()=>{const g=document.getElementById('exp-stage').getBoundingClientRect();"
+                  "const e=document.querySelector('#experience .education').getBoundingClientRect();"
+                  "return JSON.stringify({stage:Math.round(g.top),edu:Math.round(e.top)})})()")
+    r.ok('and past it the pin releases into the tail', d['stage'] < 0 and d['edu'] < 1000,
+         'stage %dpx, education %dpx' % (d['stage'], d['edu']))
 
     # THE LOADING RING GETS OUT OF THE WAY. It is a full-screen overlay, so the failure that matters is not
     # whether it appears but whether it LEAVES -- one left at opacity zero is an invisible sheet across the whole

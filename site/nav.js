@@ -127,12 +127,22 @@
       if (run > 0) list.push(Math.min(maxScroll(), pinTop + Math.round(run * trip) + 24));
     }
 
-    /* ONE stop for the timeline, not eleven. The roles used to be eleven page positions; inside their own
-       scroller they share a single one, and eleven stops there would be eleven presses that move nothing.
-       Travelling the roles is the timeline's own job now — the wheel does it under the pointer, and the strip
-       does it by name. */
+    /* ONE STOP PER ROLE, back again and meaningful this time. The roles are beats of a pinned viewer now, so a
+       press both moves the page and changes what is showing — which is what a stop is for. Placed mid-beat
+       rather than on its edge, so a pixel of rounding cannot land on the neighbour. */
     const exp = document.getElementById('experience');
     if (exp) list.push(at(exp));
+
+    const expScroll = document.getElementById('exp-scroll');
+    const expStage = document.getElementById('exp-stage');
+    if (expScroll && expStage) {
+      const pinTop = at(expScroll);
+      const run = expScroll.offsetHeight - expStage.offsetHeight;
+      const n = document.querySelectorAll('.exp-deck .role').length;
+      for (let i = 0; i < n && run > 0; i++) {
+        list.push(Math.min(maxScroll(), pinTop + Math.round(run * ((i + .5) / n))));
+      }
+    }
 
     const labs = document.getElementById('labs');
     if (labs) list.push(at(labs));

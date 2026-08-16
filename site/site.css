@@ -831,6 +831,15 @@ section[id] { scroll-margin-top: 84px }
 
 #experience { position: relative; padding: 110px var(--pad-page); background: var(--ink-deep) }
 
+/* The viewer breaks OUT of the section's padding rather than the section going without it: it is pinned, so it
+   has to be able to fill the screen, and a sticky child of a padded column is pinned to that column. Moving the
+   padding onto the .inner blocks instead put the title 5px off every other section's rail, because .inner is
+   centred at --content-max and its own padding lands inside that, not beside it. */
+#exp-scroll {
+  height: calc(100dvh + var(--exp-run, 3) * 100dvh);
+  margin-left: calc(-1 * var(--pad-page)); margin-right: calc(-1 * var(--pad-page));
+}
+
 .expertise { margin-top: 34px; display: grid; gap: 10px; max-width: 92ch }
 
 .expertise div { font-size: 14px; line-height: 1.6; color: var(--text-body) }
@@ -841,112 +850,80 @@ section[id] { scroll-margin-top: 84px }
   text-transform: uppercase; color: var(--amber);
 }
 
-/* ---- the timeline ----
+/* ---- the roles, one at a time ----
  *
- * Fourteen years was 39.6% of the page and the only stretch carrying no device at all. Contained, it is one
- * screen you travel through rather than a document you fall down, and the section stops being the longest
- * thing on the page by a factor of four.
+ * Three columns and a sticky year readout said the same things twice: the year sat in a column of its own AND
+ * in every role's dates, and the rail's markers repeated what the strip already showed. This says each thing
+ * once. The employer leads because that is what a reader scans for, the title is under it, and the year appears
+ * exactly where it belongs — in the dates.
+ *
+ * PINNED, and the scroll chooses WHICH role rather than how far down a list you are. The section is a viewer
+ * you step through, so it costs one screen however many roles there are.
  */
-.tl { margin-top: 44px }
+:root {
+  /* Viewport heights of pin per role, and the only declaration of it. nav.js places a stop on each beat and
+     the viewer derives its index from the same number, so a role can never be a beat the stepper cannot reach. */
+  --exp-beat: .3;
+}
 
-/* The jump strip is EMPLOYERS, not years. A reader scanning for where someone has worked is scanning for
-   names, and asking them to decode a date first puts the wrong thing in front. */
-.tl-strip { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 22px }
-.tl-strip button {
+#exp-stage { position: sticky; top: 0; height: 100vh; height: 100dvh; overflow: hidden; display: grid; align-items: center }
+
+.exp-view { width: 100%; max-width: var(--content-max); margin: 0 auto; padding: 90px var(--pad-page) 60px }
+
+/* THE STRIP IS THE RAIL. It names every role and lights the one you are on, which is the only progress readout
+   this section needs — a separate dial would be the duplication all over again. */
+.exp-strip { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 46px }
+.exp-strip button {
   font-family: var(--font-mono); font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase;
   padding: 7px 11px; border-radius: var(--radius-cta);
-  border: 1px solid var(--hairline); background: none; color: var(--text-muted); cursor: pointer;
+  border: 1px solid var(--hairline); background: none; color: var(--text-faint); cursor: pointer;
   transition: border-color .2s var(--ease-settle), color .2s var(--ease-settle);
 }
-.tl-strip button:hover { border-color: var(--border-accent); color: var(--text-strong) }
-.tl-strip button[aria-selected="true"] { border-color: var(--accent); color: var(--accent) }
-.tl-strip button:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--amber-focus) }
+.exp-strip button:hover { border-color: var(--border-accent); color: var(--text-strong) }
+.exp-strip button[aria-selected="true"] { border-color: var(--accent); color: var(--accent) }
+.exp-strip button:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--amber-focus) }
 
-.tl-body { display: grid; grid-template-columns: 230px minmax(0, 1fr); gap: 0 40px; align-items: start }
+/* One deck, every role stacked on the same spot. Sized by the tallest so the strip above never moves as the
+   roles change under it — a viewer whose furniture jumps between entries reads as a page reloading. */
+.exp-deck { position: relative; min-height: var(--deck-h, 430px) }
 
-/* THE READOUT IS THE QUIET FLEX. Watching the band slide from 4.1 to 16 across one scroll IS the fourteen
-   years, stated once, in a form no paragraph can match. Sticky against the section, so it holds while the
-   roles run past it. */
-.tl-read { position: sticky; top: 96px }
-.tl-year {
-  font-family: var(--font-display); font-weight: 900; font-size: 54px; line-height: 1;
-  letter-spacing: -2px; color: var(--text-strong); font-variant-numeric: tabular-nums;
+/* CENTRED IN THE DECK, not hung from its top. The deck is as tall as the longest role, so a short one left a
+   third of a screen of nothing under it while the strip stayed put. Centring costs nothing — the tallest role
+   still exactly fills the box, so this can never overflow the pin. */
+.exp-deck .role {
+  position: absolute; inset: 0; padding: 0; max-width: 88ch;
+  display: flex; flex-direction: column; justify-content: center;
+  opacity: 0; transform: translateY(14px); pointer-events: none;
+  transition: opacity .38s var(--ease-settle), transform .38s var(--ease-settle);
 }
-.tl-where { margin-top: 6px; font-weight: 600; font-size: 16px; color: var(--amber) }
+.exp-deck .role.here { opacity: 1; transform: none; pointer-events: auto }
 
-.tl-band { margin-top: 22px }
-.tl-band b {
-  display: block; margin-top: 8px;
-  font-family: var(--font-mono); font-size: 10px; font-weight: 500; letter-spacing: .14em;
-  text-transform: uppercase; color: var(--text-faint);
+/* THE EMPLOYER IS THE HEADLINE. It is what a reader is scanning for, and it was previously a 15px label in a
+   date column while the year had 54px of display face to itself. */
+.role-where {
+  font-family: var(--font-display); font-weight: 900; font-size: clamp(30px, 3.6vw, 46px);
+  line-height: 1; letter-spacing: -1.4px; color: var(--text-strong);
 }
-/* The bar is the whole Android era, 4.0 to 16, and the fill is the slice this role shipped against. Both ends
-   are written as percentages of that one scale, so two roles can be compared by eye. */
-.tl-bar { display: block; position: relative; height: 3px; background: var(--hairline) }
-.tl-bar i {
-  position: absolute; top: 0; bottom: 0;
-  left: var(--lo, 0%); right: calc(100% - var(--hi, 100%));
-  background: var(--accent);
-  transition: left .45s var(--ease-settle), right .45s var(--ease-settle);
-}
-.tl-band.none .tl-bar i { left: 0; right: 100% }
-.tl-band.none b { color: var(--text-faint) }
-
-/* ITS OWN SCROLL, handed back at the ends. overscroll-behavior: contain is what stops the wheel chaining to
-   the page the moment this list bottoms out, so the pointer decides which of the two is moving. */
-.tl-scroll {
-  height: 66vh; min-height: 420px; overflow-y: auto; overscroll-behavior: contain;
-  padding-right: 20px;
-  scrollbar-width: thin; scrollbar-color: var(--hairline) transparent;
-}
-.tl-scroll::-webkit-scrollbar { width: 6px }
-.tl-scroll::-webkit-scrollbar-thumb { background: var(--hairline); border-radius: 3px }
-.tl-scroll:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--amber-focus) }
-
-/* ARRIVAL. The role being read sits at full strength and its neighbours recede, so the section always has one
-   thing in focus and the eye is told where to be. */
-.tl-scroll .role { transition: opacity .35s var(--ease-settle) }
-.tl-scroll .role:not(.here) { opacity: .38 }
-.tl-scroll .role.here .when::before { background: var(--accent); border-color: var(--accent) }
-
-.roles { margin-top: 56px }
-
-/* A rail down the date column, with each role's marker sitting on it. One continuous line rather than a border
-   under every entry: ten hairline-separated rows is the spec-table look, and this is a timeline. */
-.role {
-  display: grid; grid-template-columns: 190px minmax(0, 1fr); gap: 0 40px;
-  padding: 0 0 44px; position: relative;
+.role-where i {
+  display: inline-block; margin-left: 12px; vertical-align: middle; font-style: normal;
+  font-family: var(--font-mono); font-size: 10px; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--text-faint);
 }
 
-.role .when { position: relative; padding-left: 22px }
-
-.role .when::before {
-  content: ''; position: absolute; left: 0; top: 7px;
-  width: 9px; height: 9px; border-radius: 50%;
-  background: var(--ink); border: 1px solid var(--accent);
+.exp-deck .role h3 {
+  margin: 10px 0 0; font-family: var(--font-display); font-weight: 800; font-size: 20px;
+  letter-spacing: -.3px; color: var(--accent);
 }
 
-/* The rail stops at the last marker instead of trailing past it. */
-.role:not(:last-child) .when::after {
-  content: ''; position: absolute; left: 4px; top: 20px; bottom: -44px;
-  width: 1px; background: var(--hairline);
+.role-meta { margin-top: 10px; display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 20px }
+.role-apps, .role-when {
+  font-family: var(--font-mono); font-size: 11px; letter-spacing: .1em; color: var(--text-muted);
 }
+/* The one place a year belongs, and now the only place one appears. */
+.role-when { color: var(--amber) }
 
-/* THE EMPLOYER LEADS AND THE YEARS QUALIFY IT. The rail is a list of places, and the name is what a reader is
-   scanning for; a column of dates makes them decode a year before they learn whose it is. The marker still
-   aligns to the first line, which is now the name. */
-.role .place { display: block; font-weight: 600; font-size: 15px; color: var(--text-strong) }
+.exp-deck .what { margin-top: 24px }
 
-.role .dates {
-  display: block; margin-top: 5px;
-  font-family: var(--font-mono); font-size: 11px; letter-spacing: .1em;
-  text-transform: uppercase; color: var(--amber);
-}
-.role .place em { display: block; margin-top: 3px; font-style: normal; font-family: var(--font-mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--text-faint) }
-
-.role h3 { margin: 0; font-family: var(--font-display); font-weight: 800; font-size: 21px; letter-spacing: -.3px; color: var(--text-strong) }
-
-.role .apps { margin-top: 5px; font-family: var(--font-mono); font-size: 11px; letter-spacing: .1em; color: var(--text-muted) }
 
 /* THE SAME WORDS, LISTED. Each paragraph a role already carried becomes a point, so the body scans as what was
    done rather than reading as an essay — the prose still explains the how and the what, it just stops arriving
@@ -982,8 +959,9 @@ section[id] { scroll-margin-top: 84px }
 
 /* EDUCATION IS NOT A JOB. It has no employer and no duration worth reading, so it is not a marker on the rail
    and it carries no dates at all — as the twelfth role it made the timeline end on the one entry that was not
-   one. Its own block, indented to the rail's text column so the section still reads as one thing. */
-.education { margin-top: 4px; padding-left: 230px }
+   one. Its own block, on the page's rail — the 230px indent it used to carry was aligning it to the date column
+   of a three-column timeline that no longer exists. */
+.education { margin-top: 4px }
 
 .education > b {
   display: block; margin-bottom: 10px;
@@ -1502,18 +1480,7 @@ footer a:hover { color: var(--accent) }
   .hero-grid { grid-template-columns: minmax(0, 1fr); gap: 26px }
   .app-grid { grid-template-columns: minmax(0, 1fr); gap: 40px }
 
-  /* The date rail keeps its marker and line, but the role moves under it rather than beside it. */
-  /* NO INNER SCROLLER ON A PHONE. A scroll region inside a scrolling page is a trap on touch: there is no
-     pointer to say which one the flick was meant for. It becomes a plain list again. */
-  .tl-body { grid-template-columns: minmax(0, 1fr); gap: 24px }
-  .tl-read { position: static }
-  .tl-year { font-size: 40px }
-  .tl-scroll { height: auto; min-height: 0; overflow: visible; padding-right: 0 }
-  .tl-scroll .role:not(.here) { opacity: 1 }
-  .role { grid-template-columns: minmax(0, 1fr); gap: 14px }
-  .role .what { padding-left: 22px }
-  .education { padding-left: 22px }
-  .role:not(:last-child) .when::after { bottom: -58px }
+  .exp-view { padding: 60px var(--pad-page) }
   .expertise b { min-width: 0; display: block }
   .covers { grid-template-columns: minmax(0, 1fr) }
   .modes { grid-template-columns: minmax(0, 1fr); gap: 20px }
@@ -1551,6 +1518,25 @@ footer a:hover { color: var(--accent) }
   .lockup { font-size: min(clamp(64px, 13vw, 176px), 21vh); letter-spacing: -2px }
   .aside { font-size: 12.5px; line-height: 1.5 }
   .hero-foot { padding-bottom: 14px }
+}
+
+/* NO PIN ON A PHONE, on EITHER measurement — a viewer that shows one role at a time needs a screen to show it
+   on, and a phone on its side has 393px of one. Pinned there the deck is taller than the stage and the stage
+   clips, so the reader gets a role's first two lines and no way to reach the rest.
+   Unpinned it is a plain stack: every role is simply on the page, in order, which is what a phone wanted all
+   along. The strip goes with the pin, because its jumps target scroll positions that no longer exist.
+   ONE BLOCK, both conditions — 820 and 620 are the same pair #app-scroll and #loop-scroll collapse on, and the
+   runway is a custom property rather than an inline height for exactly this rule's benefit. */
+@media (max-width: 820px), (max-height: 620px) {
+  #exp-scroll { height: auto }
+  #exp-stage { position: static; height: auto; display: block; overflow: visible }
+  .exp-strip { display: none }
+  .exp-deck { min-height: 0 }
+  .exp-deck .role {
+    position: static; display: block; max-width: none;
+    opacity: 1; transform: none; pointer-events: auto;
+  }
+  .exp-deck .role + .role { margin-top: 56px; padding-top: 44px; border-top: 1px solid var(--hairline) }
 }
 
 /* The scene rig collapses to a plain static section at its end state — no sticky stage, no scrubbed transform. */

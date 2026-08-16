@@ -247,26 +247,27 @@
         Jetpack, JIRA, Firebase, Microsoft Azure, JUnit, Espresso, Xamarin, Git, Photoshop</div>
     </div>
 
-    <!-- THE RAIL BECOMES THE INSTRUMENT. Fourteen years was 40% of the page and the only stretch with no
-         device on it; contained, it is one screen you travel through rather than a document you fall down.
-         The list keeps its OWN scroll: overscroll-behavior stops that scroll chaining to the page, so the
-         wheel moves the timeline while the pointer is over it and hands back at either end. Native, so it
-         costs no listener and cannot fight the page's own stepper. -->
-    <div class="tl">
-      <div class="tl-strip" role="tablist" aria-label="Jump to a role"></div>
-      <div class="tl-body">
-        <div class="tl-read" aria-hidden="true">
-          <div class="tl-year">2026</div>
-          <div class="tl-where">Yahoo!</div>
-          <div class="tl-band"><span class="tl-bar"><i></i></span><b>Android 9&ndash;16</b></div>
-        </div>
-        <div class="tl-scroll" id="tl-scroll" tabindex="0" aria-label="Roles, oldest last">
+  </div>
 
-      <article class="role" data-reveal data-year="2026" data-label="Yahoo!" data-lo="9" data-hi="16">
-        <div class="when"><span class="place">Yahoo!<em>Contract: Mindlance</em></span><span class="dates">Sep 2025 &ndash; Present</span></div>
-        <div class="what">
+  <!-- ONE ROLE AT A TIME. Three columns and a sticky year readout said the same things twice; this says each
+         thing once. The employer leads, the title is under it, and the year appears exactly where it belongs —
+         in the dates, not repeated in a column of its own.
+         Pinned, and the scroll chooses WHICH role rather than how far down a list you are, so the section is a
+         viewer you step through instead of a document you fall down. The strip is the rail: it names every role
+         and lights the one you are on, which is the only progress readout the section needs. -->
+<div id="exp-scroll">
+<div id="exp-stage">
+  <div class="exp-view">
+    <div class="exp-strip" role="tablist" aria-label="Jump to a role"></div>
+    <div class="exp-deck">
+
+            <article class="role" data-year="2026" data-label="Yahoo!" data-lo="9" data-hi="16">
+        <header class="role-head">
+          <div class="role-where">Yahoo!<i>Contract: Mindlance</i></div>
           <h3>Agentic Engineer</h3>
-          <div class="apps">Yahoo! Mail &middot; QAAI (internal)</div>
+          <div class="role-meta"><span class="role-apps">Yahoo! Mail &middot; QAAI (internal)</span><span class="role-when">Sep 2025 &ndash; Present</span></div>
+        </header>
+        <div class="what">
           <ul class="pts">
             <li>Architected QAAI, a multi-agent end-to-end QA platform that generates, executes and self-heals 500+
             tests from natural language, running in CI/CD at a 95%+ pass rate with accurate bug detection. It saves
@@ -284,11 +285,13 @@
         </div>
       </article>
 
-      <article class="role" data-reveal data-year="2025" data-label="Target" data-lo="8" data-hi="13">
-        <div class="when"><span class="place">Target</span><span class="dates">Aug 2022 &ndash; Apr 2025</span></div>
-        <div class="what">
+            <article class="role" data-year="2025" data-label="Target" data-lo="8" data-hi="13">
+        <header class="role-head">
+          <div class="role-where">Target</div>
           <h3>Lead Android Developer</h3>
-          <div class="apps">myDay &middot; Store Companion</div>
+          <div class="role-meta"><span class="role-apps">myDay &middot; Store Companion</span><span class="role-when">Aug 2022 &ndash; Apr 2025</span></div>
+        </header>
+        <div class="what">
           <ul class="pts">
             <li>Led the myDay team through updating and maintaining a multi-module monolithic application. Mentored
             team members through learning and using new features across multiple libraries, Compose and Kotlin, and
@@ -307,11 +310,13 @@
         </div>
       </article>
 
-      <article class="role" data-reveal data-year="2022" data-label="Kohl's" data-lo="8" data-hi="10">
-        <div class="when"><span class="place">Kohl&rsquo;s</span><span class="dates">Jan 2021 &ndash; Aug 2022</span></div>
-        <div class="what">
+            <article class="role" data-year="2022" data-label="Kohl's" data-lo="8" data-hi="10">
+        <header class="role-head">
+          <div class="role-where">Kohl&rsquo;s</div>
           <h3>Senior Android Developer</h3>
-          <div class="apps">Self-Pickup &middot; associate apps and libraries</div>
+          <div class="role-meta"><span class="role-apps">Self-Pickup &middot; associate apps and libraries</span><span class="role-when">Jan 2021 &ndash; Aug 2022</span></div>
+        </header>
+        <div class="what">
           <ul class="pts">
             <li>Worked with balanced teams on a variety of associate- and customer-facing applications. Led the
             implementation of best practices to improve an aging code base, and provided training and mentorship to
@@ -332,11 +337,13 @@
         </div>
       </article>
 
-      <article class="role" data-reveal data-year="2020" data-label="i2020" data-lo="5" data-hi="11">
-        <div class="when"><span class="place">i2020 Fintech</span><span class="dates">Aug 2019 &ndash; Sep 2020</span></div>
-        <div class="what">
+            <article class="role" data-year="2020" data-label="i2020" data-lo="5" data-hi="11">
+        <header class="role-head">
+          <div class="role-where">i2020 Fintech</div>
           <h3>Senior Android Developer</h3>
-          <div class="apps">ORO Pay &middot; ORO Merchant</div>
+          <div class="role-meta"><span class="role-apps">ORO Pay &middot; ORO Merchant</span><span class="role-when">Aug 2019 &ndash; Sep 2020</span></div>
+        </header>
+        <div class="what">
           <ul class="pts">
             <li>Developed, maintained and released features for ORO Pay, an app for the underbanked in Brazil. ORO Pay
             provides cards with account balances so users can store and transfer money safely without a bank account
@@ -355,11 +362,13 @@
         </div>
       </article>
 
-      <article class="role" data-reveal data-year="2019" data-label="413X" data-lo="5" data-hi="16">
-        <div class="when"><span class="place">413X Studios<em>Personal project</em></span><span class="dates">Apr 2019</span></div>
-        <div class="what">
+            <article class="role" data-year="2019" data-label="413X" data-lo="5" data-hi="16">
+        <header class="role-head">
+          <div class="role-where">413X Studios<i>Personal project</i></div>
           <h3>RPN Dominator Calculator</h3>
-          <div class="apps">Published on Google Play</div>
+          <div class="role-meta"><span class="role-apps">Published on Google Play</span><span class="role-when">Apr 2019</span></div>
+        </header>
+        <div class="what">
           <ul class="pts">
             <li>A reverse-Polish calculator built to fully use a phone's touchscreen and to request no unnecessary
             permissions, rewritten in April 2019 in Kotlin on modern frameworks. Most RPN calculators on the store
@@ -374,11 +383,13 @@
         </div>
       </article>
 
-      <article class="role" data-reveal data-year="2019" data-label="Viewpoint" data-lo="4.1" data-hi="9">
-        <div class="when"><span class="place">Viewpoint</span><span class="dates">Jul 2017 &ndash; Mar 2019</span></div>
-        <div class="what">
+            <article class="role" data-year="2019" data-label="Viewpoint" data-lo="4.1" data-hi="9">
+        <header class="role-head">
+          <div class="role-where">Viewpoint</div>
           <h3>Mobile Developer</h3>
-          <div class="apps">FieldView &middot; Team</div>
+          <div class="role-meta"><span class="role-apps">FieldView &middot; Team</span><span class="role-when">Jul 2017 &ndash; Mar 2019</span></div>
+        </header>
+        <div class="what">
           <ul class="pts">
             <li><b>FieldView</b> (Android, iOS, Windows) is the largest and oldest app at Viewpoint, dating back to
             Pocket PC days, with 10k+ active devices globally. It lets construction personnel navigate a site in
@@ -395,11 +406,13 @@
         </div>
       </article>
 
-      <article class="role" data-reveal data-year="2017" data-label="Rave">
-        <div class="when"><span class="place">Rave</span><span class="dates">Mar 2017 &ndash; May 2017</span></div>
-        <div class="what">
+            <article class="role" data-year="2017" data-label="Rave">
+        <header class="role-head">
+          <div class="role-where">Rave</div>
           <h3>Android Developer</h3>
-          <div class="apps">TabbedOut</div>
+          <div class="role-meta"><span class="role-apps">TabbedOut</span><span class="role-when">Mar 2017 &ndash; May 2017</span></div>
+        </header>
+        <div class="what">
           <ul class="pts">
             <li>Contracted to maintain and update the TabbedOut application through a partnership between the two
             companies. Fixed UI issues across different screen sizes so the app read consistently at any size, and
@@ -409,11 +422,13 @@
         </div>
       </article>
 
-      <article class="role" data-reveal data-year="2017" data-label="Vacasa" data-lo="4" data-hi="7.1">
-        <div class="when"><span class="place">Vacasa</span><span class="dates">Mar 2015 &ndash; Jan 2017</span></div>
-        <div class="what">
+            <article class="role" data-year="2017" data-label="Vacasa" data-lo="4" data-hi="7.1">
+        <header class="role-head">
+          <div class="role-where">Vacasa</div>
           <h3>Android Developer</h3>
-          <div class="apps">Housekeeping (internal)</div>
+          <div class="role-meta"><span class="role-apps">Housekeeping (internal)</span><span class="role-when">Mar 2015 &ndash; Jan 2017</span></div>
+        </header>
+        <div class="what">
           <ul class="pts">
             <li>Developed an internal Android app for Vacasa's housekeepers, improving the efficiency of their everyday
             work by providing what they needed in one place: cleaning information, hours worked, maintenance
@@ -425,11 +440,13 @@
         </div>
       </article>
 
-      <article class="role" data-reveal data-year="2015" data-label="Rexel">
-        <div class="when"><span class="place">Rexel</span><span class="dates">Jul 2014 &ndash; Feb 2015</span></div>
-        <div class="what">
+            <article class="role" data-year="2015" data-label="Rexel">
+        <header class="role-head">
+          <div class="role-where">Rexel</div>
           <h3>Mobile Application Developer</h3>
-          <div class="apps">Rexel USA</div>
+          <div class="role-meta"><span class="role-apps">Rexel USA</span><span class="role-when">Jul 2014 &ndash; Feb 2015</span></div>
+        </header>
+        <div class="what">
           <ul class="pts">
             <li>Developed a mobile e-commerce app for Rexel and all the brands beneath it, creating one source of code
             covering the different brands and languages using Titanium. Development focused on using the hardware
@@ -440,11 +457,13 @@
         </div>
       </article>
 
-      <article class="role" data-reveal data-year="2014" data-label="Itsy Bitsy">
-        <div class="when"><span class="place">Itsy Bitsy Stories</span><span class="dates">May 2012 &ndash; Jul 2014</span></div>
-        <div class="what">
+            <article class="role" data-year="2014" data-label="Itsy Bitsy">
+        <header class="role-head">
+          <div class="role-where">Itsy Bitsy Stories</div>
           <h3>Mobile / Web Developer</h3>
-          <div class="apps">123 Calling &middot; Asian Art Museum kiosk</div>
+          <div class="role-meta"><span class="role-apps">123 Calling &middot; Asian Art Museum kiosk</span><span class="role-when">May 2012 &ndash; Jul 2014</span></div>
+        </header>
+        <div class="what">
           <ul class="pts">
             <li>Converted and updated the iOS app 123 Calling and built an Android kiosk app for the San Francisco
             Asian Art Museum. 123 Calling was converted from English to Simplified Chinese so Chinese students could
@@ -455,11 +474,13 @@
         </div>
       </article>
 
-      <article class="role" data-reveal data-year="2012" data-label="HP">
-        <div class="when"><span class="place">Hewlett-Packard<em>Internship</em></span><span class="dates">Jun 2012 &ndash; Aug 2012</span></div>
-        <div class="what">
+            <article class="role" data-year="2012" data-label="HP">
+        <header class="role-head">
+          <div class="role-where">Hewlett-Packard<i>Internship</i></div>
           <h3>Software Engineer Intern</h3>
-          <div class="apps">Inkjet High-Speed Production Services</div>
+          <div class="role-meta"><span class="role-apps">Inkjet High-Speed Production Services</span><span class="role-when">Jun 2012 &ndash; Aug 2012</span></div>
+        </header>
+        <div class="what">
           <ul class="pts">
             <li>Developed and launched an internal web page displaying and graphing printhead and ink usage, reducing
             weekly graphical development time from hours to minutes. Created a new heat-map graph for analysing
@@ -468,10 +489,12 @@
           <div class="meta"><b>Tools</b>PHP, JavaScript, HTML, CSS, JpGraph, SCRUM</div>
         </div>
       </article>
-        </div>
-      </div>
     </div>
+  </div>
+</div>
+</div>
 
+  <div class="inner">
     <!-- EDUCATION IS NOT A JOB, so it is not a stop on the rail. A degree has no duration worth reading and no
          employer, and leaving it as the twelfth role made the timeline end on the one entry that is not one. -->
     <div class="education" data-reveal>

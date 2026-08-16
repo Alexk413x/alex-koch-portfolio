@@ -1,53 +1,55 @@
-/* timeline.js — the experience rail as an instrument.
+/* timeline.js — the roles, one at a time.
  *
- * The list keeps its OWN scroll, and `overscroll-behavior: contain` in the stylesheet is what makes that
- * civilised: the wheel moves the timeline while the pointer is over it and hands back to the page at either
- * end, natively, with no listener to fight the page's own stepper.
+ * The section is a viewer rather than a list: it is pinned, and the scroll chooses WHICH role is showing rather
+ * than how far down a column of them you are. That is what lets fourteen years cost one screen.
  *
- * This file does three things and nothing else: builds the jump strip from the roles themselves, keeps one
- * readout in step with whatever is being read, and marks that role so its neighbours can recede. All three run
- * off ONE description of "which role am I on", for the same reason the header and the page share one.
+ * Two things read the same number and nothing else does: the deck, which shows that role, and the strip, which
+ * lights it. The strip is also the section's only progress readout — a separate dial would be the duplication
+ * this design exists to remove.
  */
 (function () {
   'use strict';
 
-  const scroll = document.getElementById('tl-scroll');
-  const strip = document.querySelector('.tl-strip');
-  if (!scroll || !strip) return;
+  const scroll = document.getElementById('exp-scroll');
+  const stage = document.getElementById('exp-stage');
+  const strip = document.querySelector('.exp-strip');
+  const deck = document.querySelector('.exp-deck');
+  if (!scroll || !stage || !strip || !deck) return;
 
-  const roles = Array.prototype.slice.call(scroll.querySelectorAll('.role'));
+  const roles = Array.prototype.slice.call(deck.querySelectorAll('.role'));
   if (!roles.length) return;
 
-  const yearOut = document.querySelector('.tl-year');
-  const whereOut = document.querySelector('.tl-where');
-  const band = document.querySelector('.tl-band');
-  const bandOut = band && band.querySelector('b');
-  const bar = band && band.querySelector('.tl-bar');
+  /* THE RUNWAY IS DECLARED IN THE STYLESHEET, once. --exp-beat is viewport heights per role; the container's
+     height is derived from it in CSS and the index is derived from it here, so the pin cannot be a different
+     length from the thing it is pinning. */
+  function beat() {
+    const v = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--exp-beat'));
+    return v > 0 ? v : .3;
+  }
 
-  /* The whole Android era, as the scale both ends of the band are written against. Fixed rather than derived
-     from the roles, so a role that shipped against a narrow range reads as narrow instead of filling the bar. */
-  const API_LO = 4, API_HI = 16;
-  const pct = (v) => ((Math.max(API_LO, Math.min(API_HI, v)) - API_LO) / (API_HI - API_LO)) * 100;
+  /* Written as a PROPERTY, not as a height. A media query cannot outrank an inline style, and below the
+     breakpoint the pin has to give the runway back — a viewer showing one role at a time needs a screen to show
+     it on, and a landscape phone has 393px of one. */
+  scroll.style.setProperty('--exp-run', roles.length * beat());
 
   // ---------------------------------------------------------------- the strip
   const tabs = roles.map((role, i) => {
     const b = document.createElement('button');
     b.type = 'button';
     b.setAttribute('role', 'tab');
-    b.textContent = role.dataset.label || ('0' + (i + 1)).slice(-2);
-    /* Scrolls the LIST, not the page. scrollIntoView would scroll every ancestor that can scroll, which here
-       means the page moves as well and the reader is taken out of the section they were browsing.
-       The two boxes are measured against EACH OTHER rather than read off offsetTop, which is relative to the
-       nearest positioned ancestor — not the scroller — so the arithmetic silently lands on the wrong role. */
+    b.textContent = role.dataset.label || String(i + 1);
+    /* Scrolls the PAGE to that role's beat, which is the only way to change what is showing: the deck has no
+       state of its own, so setting a class here would be a second description that the next scroll frame
+       overwrites. Landing mid-beat rather than on its edge, so a pixel of rounding cannot show the neighbour. */
     b.addEventListener('click', () => {
-      const delta = role.getBoundingClientRect().top - scroll.getBoundingClientRect().top;
-      scroll.scrollTo({ top: scroll.scrollTop + delta, behavior: 'smooth' });
+      const run = scroll.offsetHeight - stage.offsetHeight;
+      window.scrollTo({ top: pinTop() + run * ((i + .5) / roles.length), behavior: 'smooth' });
     });
     strip.appendChild(b);
     return b;
   });
 
-  // ---------------------------------------------------------------- the readout
+  // ---------------------------------------------------------------- which role
   let current = -1;
 
   function show(i) {
@@ -59,55 +61,53 @@
     current = i;
     roles[i].classList.add('here');
     tabs[i].setAttribute('aria-selected', 'true');
-
-    const d = roles[i].dataset;
-    if (yearOut) yearOut.textContent = d.year || '';
-    if (whereOut) whereOut.textContent = d.label || '';
-    if (!band) return;
-
-    const lo = parseFloat(d.lo), hi = parseFloat(d.hi);
-    const has = !Number.isNaN(lo) && !Number.isNaN(hi);
-    band.classList.toggle('none', !has);
-    if (bandOut) bandOut.textContent = has ? 'Android ' + d.lo + '–' + d.hi : 'Not an Android role';
-    if (bar && has) {
-      bar.style.setProperty('--lo', pct(lo).toFixed(1) + '%');
-      bar.style.setProperty('--hi', pct(hi).toFixed(1) + '%');
-    }
   }
 
-  /* ONE reading line, and whichever role contains it is the one being read. Measured against the SCROLLER's box
-     rather than the viewport's: the list scrolls inside the page, so a viewport-relative line would report the
-     same role however far through the list the reader was.
-     FIXED near the top of the panel, so the role at the top of the panel is the one the readout names. That is
-     what makes the strip honest: a jump puts its target at the top, and the reader expects the readout to agree
-     with the button they just pressed.
-     A SLIDING line was tried first, to solve the last role — it is shorter than the panel, so at the bottom of
-     the scroll its top never climbs past a line near the top, and the oldest role would light for nobody. But
-     sliding it down puts SEVERAL roles above the line at the end, and the last one wins, so the strip and the
-     readout stop agreeing. The end of the list is simply the last role, and saying so costs one line. */
-  const LINE = .12;
+  /* MEASURED, never read off offsetTop. offsetTop is relative to the nearest POSITIONED ancestor, and the
+     section this pin lives in is position: relative — so it reports the distance from the section rather than
+     from the top of the document, and every beat lands on the wrong role. */
+  function pinTop() {
+    return scroll.getBoundingClientRect().top + (window.scrollY || window.pageYOffset || 0);
+  }
 
   let queued = false;
   function frame() {
     queued = false;
-    const run = Math.max(1, scroll.scrollHeight - scroll.clientHeight);
-    if (scroll.scrollTop >= run - 2) { show(roles.length - 1); return; }
-
-    const box = scroll.getBoundingClientRect();
-    const line = box.top + box.height * LINE;
-    let i = 0;
-    for (let n = 0; n < roles.length; n++) {
-      if (roles[n].getBoundingClientRect().top <= line) i = n;
-    }
+    const run = scroll.offsetHeight - stage.offsetHeight;
+    const y = window.scrollY || window.pageYOffset || 0;
+    const p = run > 0 ? (y - pinTop()) / run : 0;
+    const i = Math.max(0, Math.min(roles.length - 1, Math.floor(p * roles.length)));
     show(i);
   }
 
-  scroll.addEventListener('scroll', () => {
+  window.addEventListener('scroll', () => {
     if (queued) return;
     queued = true;
     requestAnimationFrame(frame);
   }, { passive: true });
 
   window.addEventListener('resize', frame);
+  window.addEventListener('load', frame);
   frame();
+
+  /* The deck is absolutely positioned, so it has no height of its own and the strip above it would sit on the
+     tallest role's text. Measured once, after fonts, and written as a floor. */
+  function fitDeck() {
+    let tallest = 0;
+    roles.forEach((r) => {
+      /* Released from the absolute box to be measured. A role is inset: 0 on the deck, so in place its height IS
+         the deck's — asking it how tall it wants to be while it is stretched to fit reads back the answer from
+         the last pass and the deck never grows. */
+      const was = r.classList.contains('here');
+      if (!was) r.classList.add('here');
+      r.style.position = 'static';
+      tallest = Math.max(tallest, r.offsetHeight);
+      r.style.position = '';
+      if (!was) r.classList.remove('here');
+    });
+    deck.style.setProperty('--deck-h', tallest + 'px');
+  }
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitDeck);
+  else fitDeck();
+  window.addEventListener('resize', fitDeck);
 })();
