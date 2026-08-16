@@ -694,24 +694,12 @@ section[id] { scroll-margin-top: 84px }
 
 #loop-stage { position: sticky; top: 0; height: 100vh; height: 100dvh; overflow: hidden; display: grid; align-items: center }
 
-#cartographer { position: relative; padding: 70px var(--pad-page) 44px; width: 100% }
-
-/* TWO COLUMNS, ONE COMPOSITION. Stacked, this section ran 915px of content against a 768px laptop screen, and
-   six blocks in a row read as a pile of sections rather than as one. The claim and the payoff it lands on sit
-   together on the left; the evidence for them is on the right. It is also the only way the section fits the
-   screen it is pinned to without losing a word.
-   Wider than the section's 1060 measure cap, because a two-column grid needs the room and each column is
-   already a narrow measure on its own. */
-.loop-grid { margin-top: 26px; display: grid; grid-template-columns: 5fr 7fr; gap: 46px; align-items: start }
-#cartographer .inner > .loop-grid { max-width: none }
-
-/* The blocks that lead their column lose the top margin they carried as stack members. */
-.loop-say > :first-child, .loop-show > :first-child { margin-top: 0 }
+#cartographer { position: relative; padding: 90px var(--pad-page) 60px; width: 100% }
 
 /* The two run modes, which are a pair and read as one claim: discovery AND deterministic replay out of the same
    tool. Set apart from the Any row above it by weight rather than by another box — the section already has
    enough edges. */
-.modes { margin-top: 22px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 26px }
+.modes { margin-top: 24px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 32px }
 .modes div { font-size: 13.5px; line-height: 1.55; color: var(--text-body) }
 .modes b {
   display: block; margin-bottom: 5px;
@@ -725,10 +713,10 @@ section[id] { scroll-margin-top: 84px }
  * conversation for later, and spending this screen on internals argues the wrong case to a reader who is here
  * to find out what it takes off their plate.
  */
-.covers { margin: 26px 0 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--hairline); border: 1px solid var(--hairline) }
+.covers { margin: 34px 0 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--hairline); border: 1px solid var(--hairline) }
 
 .cover {
-  background: var(--ink); padding: 13px 15px;
+  background: var(--ink); padding: 16px 18px;
   opacity: .28;
   transition: opacity .3s var(--ease-settle), background .3s var(--ease-settle);
 }
@@ -741,9 +729,7 @@ section[id] { scroll-margin-top: 84px }
 .cover.on { opacity: 1; background: linear-gradient(180deg, rgba(221, 106, 32, .07), transparent) }
 .cover.on b { color: var(--amber) }
 
-/* SPANS BOTH COLUMNS, as the section's closing line. The three figures are what the argument lands on, and
-   each is now the only place its claim is made. */
-.loop-read { grid-column: 1 / -1; margin-top: 30px; display: flex; gap: 56px; align-items: baseline; flex-wrap: wrap }
+.loop-read { margin-top: 34px; display: flex; gap: 52px; align-items: baseline; flex-wrap: wrap }
 .loop-read .m i { display: block; font-style: normal; font-family: var(--font-mono); font-size: 10px; letter-spacing: .16em; text-transform: uppercase; color: var(--text-faint) }
 .loop-read .m b {
   display: block; margin-top: 6px;
@@ -771,8 +757,8 @@ section[id] { scroll-margin-top: 84px }
 
 .tagline + .sec-lede { margin-top: 20px }
 
-.anys { margin-top: 30px; display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 1px; background: var(--hairline); border: 1px solid var(--hairline) }
-.anys div { background: var(--ink); padding: 16px 17px; font-size: 13px; line-height: 1.55; color: var(--text-body) }
+.anys { margin-top: 30px; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1px; background: var(--hairline); border: 1px solid var(--hairline) }
+.anys div { background: var(--ink); padding: 20px; font-size: 13.5px; line-height: 1.6; color: var(--text-body) }
 .anys b { display: block; margin-bottom: 8px; font-family: var(--font-display); font-weight: 800; font-size: 17px; color: var(--accent) }
 
 /* THREE CLUSTERS, NOT NINE PEERS. Nine equal blurbs in one grid is a specification: a reader gets no ranking
@@ -1565,22 +1551,9 @@ footer a:hover { color: var(--accent) }
   #app-scroll { height: auto }
   #app-stage { position: static; height: auto; display: block; overflow: visible }
   #app { padding: 90px var(--pad-page) }
-}
-
-/* THE LOOP SCENE NEEDS MORE ROOM THAN THE MORPH DOES, so it pins on two conditions rather than one. Measured:
-   687-727px of content at 1080px wide and up, and about 840 once the two columns collapse below that — against
-   the morph, which is one calculator being scrubbed. scenes.js checks this same pair; if the two disagree the
-   page pins a scene the script has stopped driving. */
-@media (max-height: 760px), (max-width: 1080px) and (max-height: 900px) {
   #loop-scroll { height: auto }
   #loop-stage { position: static; height: auto; display: block; overflow: visible }
   #cartographer { padding: 110px var(--pad-page) 40px }
-}
-
-/* Two columns stop paying here: measured at 1080px wide they are within 20px of a single column, and below it
-   they are worse. */
-@media (max-width: 1080px) {
-  .loop-grid { grid-template-columns: minmax(0, 1fr); gap: 34px }
 }
 
 @media (max-height: 500px) {
