@@ -81,6 +81,16 @@ def run(page, r):
                       "return JSON.stringify(s.view().levels.map(l=>l.text))})()")
     r.check('one result leaves one value on the stack', [x for x in empty if x], ['5'])
 
+    # THE DEMO OPENS WITH A STACK ON IT, and undo must not walk back past that. The seed is where the reader
+    # arrived, not somewhere they got to; without forget() the history holds the eight presses that built it and
+    # undo unwinds into an empty calculator nobody ever saw.
+    seeded = page.json("(()=>{const s=window.AKRPN.createStack();"
+                       "['1','2'].forEach(d=>s.digit(d));s.dot();s.digit('5');s.enter();"
+                       "['3','8','2'].forEach(d=>{s.digit(d);s.enter()});s.forget();"
+                       "for(let i=0;i<10;i++)s.undo();"
+                       "return JSON.stringify(s.view().levels.map(l=>l.text))})()")
+    r.check('a sealed stack survives ten undos', seeded, ['12.5', '3', '8', '2'])
+
     # Now through the real keypad, from the end of the morph where the app is assembled and live. The morph runs
     # on its own clock rather than tracking the scroll, so the wait here is the animation's, not the browser's.
     pin = page.pin('app-scroll', 'app-stage')

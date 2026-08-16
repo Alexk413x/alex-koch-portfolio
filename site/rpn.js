@@ -187,6 +187,14 @@
       toggleDeg() { mark(); degrees = !degrees; return api; },
       isDeg: () => degrees,
 
+      /* Makes the CURRENT state the floor: everything before it stops being reachable by undo.
+         For a calculator that opens with values already on it, the seed is where the reader started, and undo
+         walking back past it unwinds into a state they never saw. Called once, immediately after seeding. */
+      forget() {
+        past.length = 0;
+        return api;
+      },
+
       /* Restores the last snapshot. Nothing to restore is a no-op rather than an error: pressing undo on a
          fresh calculator should do nothing, not complain. */
       undo() {

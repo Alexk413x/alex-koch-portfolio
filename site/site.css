@@ -950,11 +950,10 @@ section[id] { scroll-margin-top: 84px }
 
 /* Asymmetric on purpose: CRT GL is the flagship and three identical tiles say the three are interchangeable.
    Exactly three cells for exactly three instruments. */
-.lab-grid { display: grid; gap: 14px; grid-template-columns: 1.35fr 1fr; margin-top: 40px }
+/* THREE EQUAL CARDS. Each instrument is its own object and its own claim, and a lead card sized larger than
+   the other two ranks them without saying why. The row stretches, so the three come out the same height. */
+.lab-grid { display: grid; gap: 14px; grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: 40px }
 
-.lab-card.lead { grid-row: span 2 }
-.lab-card.lead .name { font-size: 30px }
-.lab-card.lead p { font-size: 14.5px; max-width: 46ch }
 
 .lab-card {
   display: flex; flex-direction: column; padding: 20px 22px; color: inherit;
@@ -1074,8 +1073,7 @@ footer a:hover { color: var(--accent) }
 /* A FIXED HEIGHT, not the sketch's 4:3. The solids are drawn at fixed pixel sizes inside, so an aspect ratio
    only decides how much empty space surrounds them — and against the lead card's 880px that came out 660px
    tall and swallowed the card. This is a card's picture, not a stage. */
-.lab-card .obj { height: 210px; aspect-ratio: auto; margin: 0 0 18px }
-.lab-card.lead .obj { height: 430px }   /* it spans two rows, so it has two rows of room */
+.lab-card .obj { height: 240px; aspect-ratio: auto; margin: 0 0 18px }
 
 /* THE IDLE ONLY RUNS WHILE THE ROW IS ON SCREEN. Three continuous animations are atmosphere in view and battery
    out of it, and the arrival observer already knows which it is — .wh.on gates the throat's own play state, and
@@ -1426,8 +1424,6 @@ footer a:hover { color: var(--accent) }
   .modes { grid-template-columns: minmax(0, 1fr); gap: 20px }
   .clusters { grid-template-columns: minmax(0, 1fr); gap: 34px }
   .lab-grid { grid-template-columns: minmax(0, 1fr) }
-  .lab-card.lead { grid-row: auto }
-  .lab-card.lead .name { font-size: 20px }
   .lockup { letter-spacing: -3px }
   /* Release the column with the grid. Pinned to 3 against a single-column template, the aside opens an implicit
      third column and lands on top of the lockup rather than under it. */

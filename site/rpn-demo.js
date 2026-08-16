@@ -15,6 +15,19 @@
   if (!root || !window.AKRPN) return;
 
   const stack = window.AKRPN.createStack();
+
+  /* IT OPENS WITH A STACK ON IT. The whole claim beside this calculator is "a stack you scroll and handle
+     directly", and the morph now ENDS on the app — so an empty one made the payoff frame four blank rows, and
+     the reader was shown furniture where the argument should be. Seeded through the keypad's own API rather
+     than by writing cells, so the demo starts in a state it could actually have been driven into; then the
+     history is sealed, because this is where the reader arrived, not somewhere they got to.
+     It also sharpens the other half: the 1982 side has ONE line of display, and holding four values is exactly
+     what it could not do. */
+  for (const key of ['1', '2', '.', '5']) key === '.' ? stack.dot() : stack.digit(key);
+  stack.enter();
+  for (const n of ['3', '8', '2']) { stack.digit(n); stack.enter(); }
+  stack.forget();
+
   const rows = root.querySelectorAll('.rpn-row');
   const pad = root.querySelector('.rpn-pad');
 
