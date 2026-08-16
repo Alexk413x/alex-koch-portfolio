@@ -6,7 +6,7 @@ NAME = 'layout'
 # 830 is the last width before the 820px rule hides every link but the external one, so it is where a nav that
 # has grown an item too many wraps first. Anything narrower is testing the collapsed nav, not this one.
 WIDTHS = [1600, 1400, 1280, 1150, 1024, 900, 860, 830]
-SECTIONS = ['cartographer', 'experience', 'labs', 'contact']
+SECTIONS = ['cartographer', 'experience', 'background', 'labs', 'contact']
 
 
 def run(page, r):
@@ -417,6 +417,10 @@ def run(page, r):
     for h in (1080, 1000, 900):
         page.viewport(1600, h)
         page.settle(0.4)
+        # Re-derived every time: resizing changes the page's height, so a scroll position that was inside the
+        # pin at the previous size is not necessarily inside it at this one.
+        page.scroll(page.js("Math.round(document.getElementById('exp-scroll')"
+                            ".getBoundingClientRect().top+scrollY)+80"), pause=0.4)
         gaps.append(page.js("(()=>{const s=document.querySelector('.exp-strip').getBoundingClientRect();"
                             "const n=document.getElementById('nav').getBoundingClientRect();"
                             "return Math.round(s.top-n.bottom)})()"))
@@ -431,10 +435,10 @@ def run(page, r):
             page.js("[...document.querySelectorAll('.exp-deck .role')].pop().dataset.label"))
     page.scroll(geo['top'] + geo['run'] + 600, pause=0.6)
     d = page.json("(()=>{const g=document.getElementById('exp-stage').getBoundingClientRect();"
-                  "const e=document.querySelector('#experience .education').getBoundingClientRect();"
-                  "return JSON.stringify({stage:Math.round(g.top),edu:Math.round(e.top)})})()")
-    r.ok('and past it the pin releases into the tail', d['stage'] < 0 and d['edu'] < 1000,
-         'stage %dpx, education %dpx' % (d['stage'], d['edu']))
+                  "const b=document.getElementById('background').getBoundingClientRect();"
+                  "return JSON.stringify({stage:Math.round(g.top),next:Math.round(b.top)})})()")
+    r.ok('and past it the pin releases into the next section', d['stage'] < 0 and d['next'] < 1200,
+         'stage %dpx, background %dpx' % (d['stage'], d['next']))
 
     # THE LOADING RING GETS OUT OF THE WAY. It is a full-screen overlay, so the failure that matters is not
     # whether it appears but whether it LEAVES -- one left at opacity zero is an invisible sheet across the whole

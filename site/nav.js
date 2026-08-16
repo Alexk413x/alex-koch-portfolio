@@ -144,6 +144,9 @@
       }
     }
 
+    const bg = document.getElementById('background');
+    if (bg) list.push(at(bg));
+
     const labs = document.getElementById('labs');
     if (labs) list.push(at(labs));
     list.push(maxScroll());

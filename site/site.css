@@ -901,10 +901,39 @@ section[id] { scroll-margin-top: 84px }
    changes length — which is the section having less to say about that job, not a hole. */
 .exp-deck .role {
   position: absolute; inset: 0 0 auto; display: block; padding: 0; max-width: 88ch;
-  opacity: 0; transform: translateY(14px); pointer-events: none;
-  transition: opacity .38s var(--ease-settle), transform .38s var(--ease-settle);
+  opacity: 0; pointer-events: none;
+  transition: opacity .18s linear;
 }
-.exp-deck .role.here { opacity: 1; transform: none; pointer-events: auto }
+
+/* THE ROLE IS REVEALED BY A SCANLINE, not faded in. The amber rule travelling down is the instrument's own
+   vocabulary — the same colour the loading ring uses to say a thing is being measured — so the transition says
+   "reading the next record" rather than "a slide changed".
+   The outgoing role clears in .18s against the sweep's .52s, so the rule always reveals onto empty ground
+   instead of onto the previous role's text. */
+.exp-deck .role.here {
+  opacity: 1; pointer-events: auto;
+  animation: role-sweep .52s cubic-bezier(.25, .8, .3, 1) both;
+}
+
+@keyframes role-sweep {
+  from { clip-path: inset(0 0 100% 0) }
+  to { clip-path: inset(0 0 0 0) }
+}
+
+/* The leading edge. It rides a TRANSFORM rather than animating `top`, which is why timeline.js writes each
+   role's measured height to --role-h: a percentage would resolve against the 2px rule itself. Its glow is cut
+   off below the line by the sweep's own clip, which is what makes it read as an edge rather than a bar. */
+.exp-deck .role.here::after {
+  content: ''; position: absolute; left: 0; right: 0; top: 0; height: 2px; pointer-events: none;
+  background: var(--accent); box-shadow: 0 0 18px 3px rgba(255, 138, 58, .55);
+  animation: role-rule .52s cubic-bezier(.25, .8, .3, 1) both;
+}
+
+@keyframes role-rule {
+  from { transform: translateY(0); opacity: 1 }
+  88% { opacity: 1 }
+  to { transform: translateY(var(--role-h, 480px)); opacity: 0 }
+}
 
 /* THE EMPLOYER IS THE HEADLINE. It is what a reader is scanning for, and it was previously a 15px label in a
    date column while the year had 54px of display face to itself. */
@@ -969,7 +998,7 @@ section[id] { scroll-margin-top: 84px }
    and it carries no dates at all — as the twelfth role it made the timeline end on the one entry that was not
    one. Its own block, on the page's rail — the 230px indent it used to carry was aligning it to the date column
    of a three-column timeline that no longer exists. */
-.education { margin-top: 4px }
+.education { margin-top: 0 }
 
 .education > b {
   display: block; margin-bottom: 10px;
@@ -996,6 +1025,13 @@ section[id] { scroll-margin-top: 84px }
   font-family: var(--font-mono); font-size: 10px; font-weight: 500; letter-spacing: .18em;
   text-transform: uppercase; color: var(--amber); margin-bottom: 4px;
 }
+
+/* ---------------- education and elsewhere ---------------- */
+
+/* Its own section rather than the timeline's tail. Neither half is a job: a degree has no employer and no
+   duration worth reading, and the off-hours list is not work at all. */
+#background { position: relative; padding: 110px var(--pad-page); background: var(--ink-deep) }
+#background .sec-title { margin-bottom: 44px }
 
 /* ---------------- labs ---------------- */
 
@@ -1558,6 +1594,9 @@ footer a:hover { color: var(--accent) }
 
 /* The scene rig collapses to a plain static section at its end state — no sticky stage, no scrubbed transform. */
 @media (prefers-reduced-motion: reduce) {
+  .exp-deck .role.here { animation: none }
+  .exp-deck .role.here::after { display: none }
+
   html { scroll-behavior: auto }
   #scroll { height: auto }
   #stage { position: static; height: auto; min-height: 100vh }

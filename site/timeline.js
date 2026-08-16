@@ -101,8 +101,11 @@
       const was = r.classList.contains('here');
       if (!was) r.classList.add('here');
       r.style.position = 'static';
-      tallest = Math.max(tallest, r.offsetHeight);
+      const n = r.offsetHeight;
       r.style.position = '';
+      // How far the sweep's leading rule has to travel. A percentage would resolve against the 2px rule itself.
+      r.style.setProperty('--role-h', n + 'px');
+      tallest = Math.max(tallest, n);
       if (!was) r.classList.remove('here');
     });
     deck.style.setProperty('--deck-h', tallest + 'px');
