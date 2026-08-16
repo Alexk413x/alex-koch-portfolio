@@ -189,7 +189,7 @@
     queued = false;
     const y = window.scrollY || window.pageYOffset || 0;
     morph(y);
-    loop(y);
+    if (!shortLoop.matches) loop(y);
     const e = ease((y - hold * vh) / (exit * vh));
 
     /* Opaque while it climbs, fading only once it is most of the way out. Fading from the first pixel would
@@ -232,10 +232,16 @@
      below that the section is a plain block showing the finished calculator. Matches the stylesheet's short query. */
   const short = window.matchMedia('(max-height: 620px)');
 
+  /* The loop scene needs more room than the morph does — its section is 687-727px of content at 1080px wide and
+     up, and about 840 once the two columns collapse below that. Its own query, matching the stylesheet's, so
+     the script stops driving exactly when the stylesheet stops pinning. */
+  const shortLoop = window.matchMedia('(max-height: 760px), (max-width: 1080px) and (max-height: 900px)');
+
   function apply() {
     window.removeEventListener('scroll', onScroll);
     window.removeEventListener('resize', onResize);
     if (reduced.matches || short.matches) { clear(); morphFinal(); loopFinal(); return; }
+    if (shortLoop.matches) loopFinal();
     measure();
     frame();
     window.addEventListener('scroll', onScroll, { passive: true });
@@ -244,7 +250,7 @@
 
   apply();
   // addListener is the pre-2021 Safari spelling; without it the fallback is simply that the rig never re-arms.
-  for (const q of [reduced, short]) {
+  for (const q of [reduced, short, shortLoop]) {
     if (q.addEventListener) q.addEventListener('change', apply);
     else if (q.addListener) q.addListener(apply);
   }
