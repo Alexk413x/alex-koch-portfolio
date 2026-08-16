@@ -866,13 +866,21 @@ section[id] { scroll-margin-top: 84px }
   --exp-beat: .3;
 }
 
-#exp-stage { position: sticky; top: 0; height: 100vh; height: 100dvh; overflow: hidden; display: grid; align-items: center }
+#exp-stage { position: sticky; top: 0; height: 100vh; height: 100dvh; overflow: hidden; display: grid }
 
-.exp-view { width: 100%; max-width: var(--content-max); margin: 0 auto; padding: 90px var(--pad-page) 60px }
+/* THE VIEW FILLS THE STAGE, in two rows: the strip sits a fixed distance under the bar, and the deck takes
+   everything left over with the role centred in it. Centring the whole block instead made the gap under the bar
+   a function of window height — 160px at 1080, 30px at 820 — so the section looked like a different design on
+   every screen, and on a tall one it read as a hole. */
+.exp-view {
+  width: 100%; max-width: var(--content-max); margin: 0 auto;
+  display: grid; grid-template-rows: auto 1fr;
+  padding: 104px var(--pad-page) 32px;
+}
 
 /* THE STRIP IS THE RAIL. It names every role and lights the one you are on, which is the only progress readout
    this section needs — a separate dial would be the duplication all over again. */
-.exp-strip { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 46px }
+.exp-strip { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 24px; align-content: start }
 .exp-strip button {
   font-family: var(--font-mono); font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase;
   padding: 7px 11px; border-radius: var(--radius-cta);
@@ -887,12 +895,12 @@ section[id] { scroll-margin-top: 84px }
    roles change under it — a viewer whose furniture jumps between entries reads as a page reloading. */
 .exp-deck { position: relative; min-height: var(--deck-h, 430px) }
 
-/* CENTRED IN THE DECK, not hung from its top. The deck is as tall as the longest role, so a short one left a
-   third of a screen of nothing under it while the strip stayed put. Centring costs nothing — the tallest role
-   still exactly fills the box, so this can never overflow the pin. */
+/* TOP OF THE DECK, every role. Centring each one in the leftover space moved the employer headline by 200px
+   between the longest role and the shortest, so stepping the viewer meant re-finding the headline each time.
+   Anchored, the strip and the employer are in the same place at every beat and only the text below them
+   changes length — which is the section having less to say about that job, not a hole. */
 .exp-deck .role {
-  position: absolute; inset: 0; padding: 0; max-width: 88ch;
-  display: flex; flex-direction: column; justify-content: center;
+  position: absolute; inset: 0 0 auto; display: block; padding: 0; max-width: 88ch;
   opacity: 0; transform: translateY(14px); pointer-events: none;
   transition: opacity .38s var(--ease-settle), transform .38s var(--ease-settle);
 }
@@ -1520,6 +1528,15 @@ footer a:hover { color: var(--accent) }
   .hero-foot { padding-bottom: 14px }
 }
 
+/* LESS ROOM, LESS TYPE. What the pin has to seat is fixed and the window it seats it in is not, so on a shorter
+   screen the body steps down rather than the tallest role being clipped. 860 is measured, not chosen: it is
+   where the longest role stops fitting at full size. */
+@media (max-height: 860px) {
+  .role .pts li, .role p { font-size: 13.5px; line-height: 1.55 }
+  .role .meta { font-size: 12px }
+  .exp-view { padding-top: 94px; padding-bottom: 26px }
+}
+
 /* NO PIN ON A PHONE, on EITHER measurement — a viewer that shows one role at a time needs a screen to show it
    on, and a phone on its side has 393px of one. Pinned there the deck is taller than the stage and the stage
    clips, so the reader gets a role's first two lines and no way to reach the rest.
@@ -1527,7 +1544,7 @@ footer a:hover { color: var(--accent) }
    along. The strip goes with the pin, because its jumps target scroll positions that no longer exist.
    ONE BLOCK, both conditions — 820 and 620 are the same pair #app-scroll and #loop-scroll collapse on, and the
    runway is a custom property rather than an inline height for exactly this rule's benefit. */
-@media (max-width: 820px), (max-height: 620px) {
+@media (max-width: 820px), (max-height: 720px) {
   #exp-scroll { height: auto }
   #exp-stage { position: static; height: auto; display: block; overflow: visible }
   .exp-strip { display: none }

@@ -392,6 +392,38 @@ def run(page, r):
     r.check('a jump shows the role it names', page.json(SHOWING)['who'],
             page.js("document.querySelectorAll('.exp-deck .role')[5].dataset.label"))
 
+    # THE PIN HAS TO SEAT ITS TALLEST ROLE, at every window it still claims to pin at. The content is fixed and
+    # the window is not, so this is the invariant the whole design rests on: 730 is one pixel above the height
+    # where the section gives up and becomes a stack, and 860 is where the body type steps down to keep it true.
+    for w, h in [(1600, 1000), (1440, 860), (1366, 768), (1280, 730), (860, 730)]:
+        page.viewport(w, h)
+        page.settle(0.5)
+        d = page.json("(()=>{const g=document.getElementById('exp-stage');"
+                      "const v=document.querySelector('.exp-view').getBoundingClientRect();"
+                      "const deck=document.querySelector('.exp-deck').getBoundingClientRect();"
+                      "const tall=Math.max(...[...document.querySelectorAll('.exp-deck .role')].map(e=>{"
+                      "const p=e.style.position;e.style.position='static';"
+                      "const n=e.offsetHeight;e.style.position=p;return n}));"
+                      "return JSON.stringify({pinned:getComputedStyle(g).position==='sticky',"
+                      "over:Math.round(v.height-g.getBoundingClientRect().height),"
+                      "slack:Math.round(deck.height-tall)})})()")
+        r.ok('the pin is still a pin at %dx%d' % (w, h), d['pinned'])
+        r.ok('and it seats its tallest role at %dx%d' % (w, h), d['over'] <= 0 and d['slack'] >= 0,
+             'view over by %dpx, deck slack %dpx' % (d['over'], d['slack']))
+
+    # The strip sits a FIXED distance under the bar at every height. Centring the whole view in the stage made
+    # that gap 160px at 1080 and 30px at 820 -- one design that looked like several.
+    gaps = []
+    for h in (1080, 1000, 900):
+        page.viewport(1600, h)
+        page.settle(0.4)
+        gaps.append(page.js("(()=>{const s=document.querySelector('.exp-strip').getBoundingClientRect();"
+                            "const n=document.getElementById('nav').getBoundingClientRect();"
+                            "return Math.round(s.top-n.bottom)})()"))
+    r.ok('the strip holds one distance under the bar at any height', len(set(gaps)) == 1, str(gaps))
+    page.viewport(1600, 1000)
+    page.settle(0.4)
+
     # AND THE PIN LETS GO. The viewer lives inside #experience, so past the last role the scroll has to carry on
     # into the section's own tail rather than hold -- a runway that outlasts its content reads as a stuck page.
     page.scroll(geo['top'] + geo['run'], pause=0.6)
