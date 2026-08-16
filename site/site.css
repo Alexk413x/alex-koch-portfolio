@@ -486,7 +486,6 @@ section[id] { scroll-margin-top: 84px }
 
 .phone:focus-visible { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--amber-focus), 0 30px 60px -24px rgba(0, 0, 0, .85) }
 
-
 /* The brushed plate the LCD is set into; it is the phone's screen surround by the end. */
 .rpn-readout {
   perspective: 700px;
@@ -674,8 +673,6 @@ section[id] { scroll-margin-top: 84px }
 /* f and g are the faceplate's own accents and have no counterpart in the app, so they only ever show in gold
    and blue while the old keyboard is still on screen. */
 
-
-
 .rpn-pad .k:hover { filter: brightness(1.25) }
 .rpn-pad .k.hit { background: var(--accent); color: var(--on-accent) }
 .rpn-pad .k:focus-visible { outline: none; box-shadow: inset 0 0 0 1px var(--accent) }
@@ -725,36 +722,33 @@ section[id] { scroll-margin-top: 84px }
  * conversation for later, and spending this screen on internals argues the wrong case to a reader who is here
  * to find out what it takes off their plate.
  */
-.covers { margin: 26px 0 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--hairline); border: 1px solid var(--hairline) }
+.covers { margin: 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--hairline); border: 1px solid var(--hairline) }
 
+/* A NAME AND NOTHING ELSE. Each of these carried a line of explanation and the same list appeared again lower
+   down the page with a paragraph each. A reader scanning for "does it do accessibility" is looking for the
+   word, not for a sentence about it. */
 .cover {
-  background: var(--ink); padding: 13px 15px;
+  background: var(--ink); padding: 15px 16px;
+  font-family: var(--font-mono); font-size: 11px; letter-spacing: .16em; text-transform: uppercase;
+  color: var(--text-muted);
   opacity: .28;
-  transition: opacity .3s var(--ease-settle), background .3s var(--ease-settle);
+  transition: opacity .3s var(--ease-settle), background .3s var(--ease-settle), color .3s var(--ease-settle);
 }
-
-.cover b { display: block; font-family: var(--font-mono); font-size: 10.5px; letter-spacing: .2em; text-transform: uppercase; color: var(--text-muted); transition: color .3s var(--ease-settle) }
-.cover span { display: block; margin-top: 7px; font-size: 13px; line-height: 1.5; color: var(--text-body) }
 
 /* A check that has run is lit and amber. Nothing here is a failure state: every one of them passes, which is
    the point being made. */
-.cover.on { opacity: 1; background: linear-gradient(180deg, rgba(221, 106, 32, .07), transparent) }
-.cover.on b { color: var(--amber) }
+.cover.on { opacity: 1; background: linear-gradient(180deg, rgba(221, 106, 32, .07), transparent); color: var(--amber) }
 
-/* SPANS BOTH COLUMNS, as the section's closing line. The three figures are what the argument lands on, and
-   each is now the only place its claim is made. */
-.loop-read { grid-column: 1 / -1; margin-top: 30px; display: flex; gap: 56px; align-items: baseline; flex-wrap: wrap }
-.loop-read .m i { display: block; font-style: normal; font-family: var(--font-mono); font-size: 10px; letter-spacing: .16em; text-transform: uppercase; color: var(--text-faint) }
-.loop-read .m b {
-  display: block; margin-top: 6px;
-  font-family: var(--font-display); font-weight: 800; font-size: 30px; letter-spacing: -.8px;
-  color: var(--text-strong); font-variant-numeric: tabular-nums;
+/* The one action the section offers, and the dot says it is a live page rather than a screenshot. */
+.demo-cta {
+  margin-top: 26px; display: inline-flex; align-items: center; gap: 10px;
+  padding: 11px 20px; border: 1px solid var(--border-accent); border-radius: var(--radius-cta);
+  font-family: var(--font-mono); font-size: 11px; letter-spacing: .16em; text-transform: uppercase;
+  color: var(--accent);
+  transition: background .2s var(--ease-settle), color .2s var(--ease-settle);
 }
-/* The cost is the one figure in accent, and it is the one that stays at zero. */
-.loop-read .m.hot b { color: var(--accent) }
-
-#capabilities { position: relative; padding: 0 var(--pad-page) 110px }
-#capabilities .inner > * { max-width: 1060px }
+.demo-cta:hover { background: var(--accent); color: var(--on-accent) }
+.demo-cta:hover .live-dot { background: var(--on-accent) }
 
 /* Narrower measure than the page's 1400, but capped on the CONTENT rather than on .inner: shrinking the
    container would centre it and pull the left edge in from every other section, and that misalignment is
@@ -771,47 +765,6 @@ section[id] { scroll-margin-top: 84px }
 
 .tagline + .sec-lede { margin-top: 20px }
 
-.anys { margin-top: 30px; display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 1px; background: var(--hairline); border: 1px solid var(--hairline) }
-.anys div { background: var(--ink); padding: 16px 17px; font-size: 13px; line-height: 1.55; color: var(--text-body) }
-.anys b { display: block; margin-bottom: 8px; font-family: var(--font-display); font-weight: 800; font-size: 17px; color: var(--accent) }
-
-/* THREE CLUSTERS, NOT NINE PEERS. Nine equal blurbs in one grid is a specification: a reader gets no ranking
-   out of it and takes none away. The three groups they already fall into read in a single pass, and the widths
-   are proportional to what each holds rather than equal, so the grid says something too. */
-.clusters { margin-top: 48px; display: grid; grid-template-columns: 2.2fr 1fr 1fr; gap: 40px }
-.cluster > b {
-  display: block; padding-bottom: 10px; margin-bottom: 20px;
-  border-bottom: 1px solid var(--hairline);
-  font-family: var(--font-display); font-weight: 800; font-size: 15px; letter-spacing: -.2px; color: var(--text-strong);
-}
-.cluster .cap + .cap { margin-top: 20px }
-
-.cap b { display: block; font-family: var(--font-mono); font-size: 10.5px; letter-spacing: .2em; text-transform: uppercase; color: var(--amber) }
-.cap p { margin: 8px 0 0; font-size: 13.5px; line-height: 1.6; color: var(--text-body) }
-.cap em { color: var(--text-strong); font-style: normal; font-family: var(--font-mono); font-size: 12.5px }
-
-/* Deliberately unfinished, and it says so. A placeholder that looks like content is worse than an empty slot. */
-.pending { margin-top: 56px; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; max-width: 620px }
-
-/* The whole card is the link, so the target is the card rather than a word inside it. */
-.slot {
-  display: flex; flex-direction: column; color: inherit;
-  padding: 22px; border: 1px dashed var(--border-accent); border-radius: var(--radius-card);
-  background: rgba(221, 106, 32, .03);
-  transition: border-color .18s var(--ease-settle), background .18s var(--ease-settle),
-              transform .18s var(--ease-settle);
-}
-
-.slot:hover {
-  color: inherit; border-style: solid; border-color: var(--accent);
-  background: rgba(221, 106, 32, .07); transform: translateY(-2px);
-}
-
-.slot b {
-  display: flex; align-items: center; gap: 11px;
-  font-family: var(--font-display); font-weight: 800; font-size: 17px; color: var(--text-strong);
-}
-
 /* A steady core with a halo leaving it, rather than a dot switching on and off. A blink reads as a fault light;
    a pulse going outward reads as something transmitting, which is the state being claimed. */
 .live-dot {
@@ -826,15 +779,6 @@ section[id] { scroll-margin-top: 84px }
   border-radius: 50%; background: var(--accent);
   animation: ak-halo 2.4s var(--ease-settle) infinite;
 }
-.slot p { margin: 8px 0 0; font-size: 13.5px; line-height: 1.6; color: var(--text-body) }
-.slot .go {
-  margin-top: auto; padding-top: 16px;
-  font-family: var(--font-mono); font-size: 10.5px; letter-spacing: .18em; color: var(--text-faint);
-  transition: color .18s var(--ease-settle);
-}
-
-.slot:hover .go { color: var(--accent) }
-
 /* ---------------- holding page ---------------- */
 
 .holding { min-height: 100vh; min-height: 100dvh; display: flex; align-items: center; padding: 0 var(--pad-page) }
@@ -975,7 +919,6 @@ section[id] { scroll-margin-top: 84px }
 
 .exp-deck .what { margin-top: 24px }
 
-
 /* THE SAME WORDS, LISTED. Each paragraph a role already carried becomes a point, so the body scans as what was
    done rather than reading as an essay — the prose still explains the how and the what, it just stops arriving
    as one block. Nothing here rewrites anything: the markup changed and the text did not. */
@@ -1078,7 +1021,6 @@ section[id] { scroll-margin-top: 84px }
    the other two ranks them without saying why. The row stretches, so the three come out the same height. */
 .lab-grid { display: grid; gap: 14px; grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: 40px }
 
-
 .lab-card {
   display: flex; flex-direction: column; padding: 20px 22px; color: inherit;
   background: linear-gradient(180deg, rgba(22, 15, 10, .86), rgba(11, 9, 12, .86));
@@ -1115,7 +1057,6 @@ section[id] { scroll-margin-top: 84px }
   padding: 90px var(--pad-page) 60px;
   background: linear-gradient(180deg, var(--ink), #140c06);
 }
-
 
 .contact-links {
   margin-top: 26px; display: flex; gap: 22px; flex-wrap: wrap;
@@ -1176,7 +1117,6 @@ footer {
 footer a { color: var(--text-faint) }
 footer a:hover { color: var(--accent) }
 
-
 /* ---------------- the instruments, as objects ---------------- */
 
 /* Three stylised solids in CSS 3D, one per lab. No canvas and no context: the page already runs one for the
@@ -1210,7 +1150,6 @@ footer a:hover { color: var(--accent) }
  * opacity, so the whole row is compositor work. Static transforms are the base state, which means the global
  * reduced-motion rule leaves each object composed rather than blank.
  */
-
 
 .obj { position: relative; width: 100%; aspect-ratio: 4 / 3; perspective: 560px; margin-bottom: 14px; overflow: hidden }
 .obj-3d { position: absolute; inset: 0; transform-style: preserve-3d }
@@ -1542,7 +1481,6 @@ footer a:hover { color: var(--accent) }
   .expertise b { min-width: 0; display: block }
   .covers { grid-template-columns: minmax(0, 1fr) }
   .modes { grid-template-columns: minmax(0, 1fr); gap: 20px }
-  .clusters { grid-template-columns: minmax(0, 1fr); gap: 34px }
   .lab-grid { grid-template-columns: minmax(0, 1fr) }
   .lockup { letter-spacing: -3px }
   /* Release the column with the grid. Pinned to 3 against a single-column template, the aside opens an implicit
@@ -1581,6 +1519,7 @@ footer a:hover { color: var(--accent) }
    they are worse. */
 @media (max-width: 1080px) {
   .loop-grid { grid-template-columns: minmax(0, 1fr); gap: 34px }
+  .covers { grid-template-columns: repeat(2, 1fr) }
 }
 
 @media (max-height: 500px) {

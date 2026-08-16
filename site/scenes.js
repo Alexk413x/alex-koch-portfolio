@@ -140,19 +140,12 @@
 
   const RUN_MS = 1500;      // the whole suite, so each check lands about a quarter-second apart
 
-  const out = {
-    kinds: document.getElementById('rd-kinds'),
-    cost: document.getElementById('rd-cost'),
-  };
 
   let running = -1, runAnim = 0, runT0 = 0;
 
   function paintRun(t) {
     const lit = Math.round(covers.length * clamp(t * 1.15));
     covers.forEach((el, i) => el.classList.toggle('on', i < lit));
-    if (out.kinds) out.kinds.textContent = lit + ' of ' + covers.length;
-    // Zero throughout, and that is the line: the cost is the figure that never moves while everything else does.
-    if (out.cost) out.cost.textContent = '0';
   }
 
   function runTo(n) {

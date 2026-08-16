@@ -332,9 +332,9 @@ def run(page, r):
          page.js("!document.getElementById('qr-dialog').hidden"))
     page.js("document.getElementById('qr-close').click();1")
 
-    # The scene's mechanism, not its wording. What has to hold is that the run starts idle, lights every check
-    # it has, keeps its readout agreeing with the DOM, and never writes a cost other than zero -- including
-    # part-way through, which is where a driver that only sets the final value would be caught.
+    # The scene's mechanism, not its wording. What has to hold is that the run starts idle and lights every
+    # check it has, and that it lights them PROGRESSIVELY -- part-way through is where a driver that only sets
+    # the final state would be caught.
     page.viewport(1600, 1000)
     loop_top = page.js("Math.round(document.getElementById('loop-scroll').getBoundingClientRect().top+scrollY)")
     run = page.js("document.getElementById('loop-scroll').offsetHeight"
@@ -342,21 +342,19 @@ def run(page, r):
     trip = page.js("parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--morph-trip'))")
 
     RUN = ("(()=>{const c=[...document.querySelectorAll('#covers .cover')];"
-           "return JSON.stringify({on:c.filter(e=>e.classList.contains('on')).length,total:c.length,"
-           "kinds:document.getElementById('rd-kinds').textContent,"
-           "cost:document.getElementById('rd-cost').textContent})})()")
+           "return JSON.stringify({on:c.filter(e=>e.classList.contains('on')).length,total:c.length})})()")
 
     page.scroll(loop_top, pause=1.1)
     r.check('the suite is idle at the top of the pin', page.json(RUN)['on'], 0)
 
     page.scroll(loop_top + round(run * trip) + 24, pause=0.45)
-    r.check('the cost is zero while it is still running', page.json(RUN)['cost'], '0')
+    part = page.json(RUN)
+    r.ok('and it lights progressively rather than all at once', part['on'] < part['total'],
+         '%d of %d already lit' % (part['on'], part['total']))
 
     page.until_ran()
     d = page.json(RUN)
     r.check('every check it has is lit by the end', d['on'], d['total'])
-    r.check('and the readout agrees with them', d['kinds'], '%d of %d' % (d['on'], d['total']))
-    r.check('and replaying still costs nothing', d['cost'], '0')
 
     # THE ROLES ARE A VIEWER, ONE AT A TIME. The mechanism, not the copy: exactly one role showing at any
     # position in the pin, the strip agreeing with it, and every role reachable -- including the last, which is

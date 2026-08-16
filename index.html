@@ -115,7 +115,7 @@
       <div class="loop-grid">
 
       <div class="loop-say">
-      <p class="tagline">Every check a release needs, for what a green run costs: nothing.</p>
+      <p class="tagline">AI only where judgement is needed.</p>
       <p class="sec-lede">
         One recorded suite covers the whole surface, heals itself when the app moves under it, and replays for
         free. Cost tracks change and breakage, not how many tests you own.
@@ -130,32 +130,27 @@
       </div>
 
       <div class="loop-show">
-      <!-- Reach, then coverage. The three Any claims answer "will it work with what we already have", which for
-           an enterprise is the question asked before any of the others. -->
-      <div class="anys">
-        <div><b>Any app</b>The map is walked out of the app, not hand-authored.</div>
-        <div><b>Any platform</b>Android, iOS and web behind one driver contract.</div>
-        <div><b>Any LLM</b>An author and an exception handler, never a runtime dependency.</div>
-      </div>
-
+      <!-- EVERY KIND OF CHECK A RUN COVERS, and nothing but their names. They were listed twice: here with a
+           line of explanation each, and again below in a three-cluster grid with a paragraph each. This is the
+           whole list, once, and the names are the claim -- a reader scanning for "does it do accessibility"
+           does not need a sentence to find out. They light in turn as the suite runs. -->
       <ol class="covers" id="covers">
-        <li class="cover"><b>End to end</b><span>Recorded once, replayed deterministically</span></li>
-        <li class="cover"><b>Visual regression</b><span>Diffed to changed regions, by script</span></li>
-        <li class="cover"><b>Accessibility</b><span>31 checkers over the a11y tree</span></li>
-        <li class="cover"><b>WCAG 2.2 AA</b><span>The standard EN 301 549 cites for EAA</span></li>
-        <li class="cover"><b>Performance</b><span>App time isolated from network wait</span></li>
-        <li class="cover"><b>Self-healing</b><span>Classified, then the code or the map is fixed</span></li>
+        <li class="cover">End to end</li>
+        <li class="cover">Visual regression</li>
+        <li class="cover">Accessibility</li>
+        <li class="cover">WCAG 2.2 AA</li>
+        <li class="cover">Performance</li>
+        <li class="cover">Self-healing</li>
+        <li class="cover">No silent green</li>
+        <li class="cover">Run history</li>
       </ol>
-      </div>
 
-      <!-- THE SECTION'S LAST LINE, spanning both columns: three figures, and the section is an argument that
-           ends on them. CARTOGRAPHER'S OWN NUMBERS ONLY -- the 500+ tests at a 95%+ pass rate belong to QAAI,
-           the platform at Yahoo!, and borrowing them here reads as one product when they are two. What is left
-           is what this tool can claim standing on its own, and all three are structural rather than measured. -->
-      <div class="loop-read">
-        <span class="m"><i>Kinds of check</i><b id="rd-kinds">0 of 6</b></span>
-        <span class="m hot"><i>Scripts hand-written</i><b>0</b></span>
-        <span class="m hot"><i>Token cost to replay</i><b id="rd-cost">0</b></span>
+      <!-- Deliberately unfinished, and the page it opens says so. The snapshot it will carry is a real run
+           against the RPN Dominator app; until that part of the plugin is refined enough to publish, this is a
+           walkable section of this site. -->
+      <a class="demo-cta" href="cartographer-demo.html">
+        <i class="live-dot" aria-hidden="true"></i>Live demo
+      </a>
       </div>
 
       </div>
@@ -163,44 +158,6 @@
   </section>
 </div>
 </div>
-
-<section id="capabilities">
-  <div class="inner">
-    <!-- THREE CLUSTERS, NOT NINE PEERS. Nine equal blurbs in one grid is a specification; a reader gets no
-         ranking from it and takes none away. They already fall into three groups, and three read in one pass. -->
-    <div class="clusters" data-reveal>
-      <div class="cluster">
-        <b>What it checks</b>
-        <div class="cap"><b>End to end</b><p>Recorded once, replayed deterministically: same actions, same order, same captures.</p></div>
-        <div class="cap"><b>Visual regression</b><p>Screenshots diffed against baseline into changed regions, by script.</p></div>
-        <div class="cap"><b>Accessibility</b><p>31 checkers over the a11y tree, plus contrast, reachability and focus order.</p></div>
-        <div class="cap"><b>WCAG 2.2 AA</b><p>The standard EN 301 549 cites for EAA. Reported as findings, not as a badge no tool can earn.</p></div>
-        <div class="cap"><b>Performance</b><p>Metrics against an averaged baseline, with app time isolated from network wait.</p></div>
-      </div>
-      <div class="cluster">
-        <b>What it does when it fails</b>
-        <div class="cap"><b>Self-healing</b><p>A flag is classified intended, regression or external, then the code or the map is fixed.</p></div>
-        <div class="cap"><b>No silent green</b><p>Missing evidence reports skipped or needs-review. Never pass, and not configurable.</p></div>
-      </div>
-      <div class="cluster">
-        <b>What it keeps</b>
-        <div class="cap"><b>Run history</b><p>Every run stored and viewable, with auditable data behind each verdict.</p></div>
-      </div>
-    </div>
-
-    <!-- Deliberately unfinished, and it says so. The snapshot it will carry is a real run against the RPN
-         Dominator app; until that part of the plugin is refined enough to publish, the slot names what is
-         coming rather than pretending to be it. -->
-    <div class="pending" data-reveal>
-      <a class="slot" href="cartographer-demo.html">
-        <b><i class="live-dot" aria-hidden="true"></i>Live demo</b>
-        <p>A testing snapshot from the RPN Dominator app, surveyed and replayed by Cartographer.
-           Standing in for it today: a walkable section of this site.</p>
-        <div class="go">OPEN →</div>
-      </a>
-    </div>
-  </div>
-</section>
 
 <!-- One calculator, not two. Scroll interpolates it from a replica faceplate into the shipped app; the DOM tree
      and the live stack machine behind it never change. -->
@@ -373,7 +330,6 @@
           <div class="meta"><b>Tools</b>Android Studio, Kotlin, Java, MVVM, Amazon Amplify with Cognito, Firebase, Git, Google ML Kit</div>
         </div>
       </article>
-
 
             <article class="role" data-year="2019" data-label="Viewpoint" data-lo="4.1" data-hi="9">
         <header class="role-head">
