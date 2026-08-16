@@ -335,6 +335,40 @@ def run(page, r):
     r.check('and the readout agrees with them', d['kinds'], '%d of %d' % (d['on'], d['total']))
     r.check('and replaying still costs nothing', d['cost'], '0')
 
+    # THE TIMELINE KEEPS ITS OWN SCROLL, and hands back at the ends. The mechanism, not the copy: scrolling the
+    # list must not move the page, the readout must follow the list, and the oldest role must be reachable --
+    # it is shorter than the panel, so a reading line fixed near the top can never be cleared by it.
+    page.viewport(1600, 1000)
+    page.scroll(page.js("Math.round(document.getElementById('experience').getBoundingClientRect().top+scrollY)"),
+                pause=0.6)
+    page_before = page.js('Math.round(scrollY)')
+
+    def at_inner(frac):
+        page.js("(()=>{const s=document.getElementById('tl-scroll');"
+                "s.scrollTop=(s.scrollHeight-s.clientHeight)*%s;return 1})()" % frac)
+        page.settle()
+        return page.json("(()=>{const r=document.querySelector('.tl-scroll .role.here');"
+                         "return JSON.stringify({idx:[...document.querySelectorAll('.tl-scroll .role')]"
+                         ".indexOf(r),year:document.querySelector('.tl-year').textContent,"
+                         "page:Math.round(scrollY)})})()")
+
+    top = at_inner(0)
+    r.check('the newest role is current at the top of the list', top['idx'], 0)
+    mid = at_inner(0.5)
+    r.ok('the readout follows the list', mid['idx'] > top['idx'], '%d -> %d' % (top['idx'], mid['idx']))
+    end = at_inner(1)
+    r.check('the oldest role is reachable at the bottom', end['idx'],
+            page.js("document.querySelectorAll('.tl-scroll .role').length") - 1)
+    r.check('and none of it moved the page', end['page'], page_before)
+
+    # The strip jumps the LIST, and the readout agrees with the button that was pressed -- which is only true
+    # while the reading line sits where a jump puts its target.
+    page.click_at('.tl-strip button:nth-child(8)', pause=1.2)
+    r.check('a jump selects the role it names',
+            page.js("(document.querySelector('.tl-strip button[aria-selected]')||{}).textContent"),
+            page.js("document.querySelectorAll('.tl-scroll .role')[7].dataset.label"))
+    r.check('and still does not move the page', page.js('Math.round(scrollY)'), page_before)
+
     # Every internal link resolves to something actually on disk.
     hrefs = page.json("JSON.stringify([...new Set([...document.querySelectorAll('a[href]')]"
                       '.map(a=>a.getAttribute("href"))'

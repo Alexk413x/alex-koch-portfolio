@@ -74,15 +74,13 @@
 
   /* ---- the stops ----
    *
-   * Everywhere worth being, in page order: the top of each section, BOTH states of the calculator, and every
-   * role on the timeline. The arrow keys step this list, so a press is always a whole beat rather than a fixed
-   * number of pixels — the reader chooses when it moves, and never lands halfway through anything.
+   * Everywhere worth being, in page order: the top of each section and each committed state of the two scenes
+   * that have them. The arrow keys step this list, so a press is always a whole beat rather than a fixed number
+   * of pixels — the reader chooses when it moves, and never lands halfway through anything.
    *
    * Built in the same pass as the section spans, from the same DOM, so the stepper and the meter cannot end up
    * with different ideas of where a thing is.
    */
-  const ROLE_PAD = 96;    // px of air above a role, so its heading clears the bar rather than hiding under it
-
   function buildStops() {
     const y = window.scrollY || window.pageYOffset || 0;
     const at = (el, pad) => Math.max(0, Math.min(maxScroll(),
@@ -129,9 +127,12 @@
       if (run > 0) list.push(Math.min(maxScroll(), pinTop + Math.round(run * trip) + 24));
     }
 
+    /* ONE stop for the timeline, not eleven. The roles used to be eleven page positions; inside their own
+       scroller they share a single one, and eleven stops there would be eleven presses that move nothing.
+       Travelling the roles is the timeline's own job now — the wheel does it under the pointer, and the strip
+       does it by name. */
     const exp = document.getElementById('experience');
     if (exp) list.push(at(exp));
-    for (const role of document.querySelectorAll('#experience .role')) list.push(at(role, ROLE_PAD));
 
     const labs = document.getElementById('labs');
     if (labs) list.push(at(labs));

@@ -841,6 +841,74 @@ section[id] { scroll-margin-top: 84px }
   text-transform: uppercase; color: var(--amber);
 }
 
+/* ---- the timeline ----
+ *
+ * Fourteen years was 39.6% of the page and the only stretch carrying no device at all. Contained, it is one
+ * screen you travel through rather than a document you fall down, and the section stops being the longest
+ * thing on the page by a factor of four.
+ */
+.tl { margin-top: 44px }
+
+/* The jump strip is EMPLOYERS, not years. A reader scanning for where someone has worked is scanning for
+   names, and asking them to decode a date first puts the wrong thing in front. */
+.tl-strip { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 22px }
+.tl-strip button {
+  font-family: var(--font-mono); font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase;
+  padding: 7px 11px; border-radius: var(--radius-cta);
+  border: 1px solid var(--hairline); background: none; color: var(--text-muted); cursor: pointer;
+  transition: border-color .2s var(--ease-settle), color .2s var(--ease-settle);
+}
+.tl-strip button:hover { border-color: var(--border-accent); color: var(--text-strong) }
+.tl-strip button[aria-selected="true"] { border-color: var(--accent); color: var(--accent) }
+.tl-strip button:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--amber-focus) }
+
+.tl-body { display: grid; grid-template-columns: 230px minmax(0, 1fr); gap: 0 40px; align-items: start }
+
+/* THE READOUT IS THE QUIET FLEX. Watching the band slide from 4.1 to 16 across one scroll IS the fourteen
+   years, stated once, in a form no paragraph can match. Sticky against the section, so it holds while the
+   roles run past it. */
+.tl-read { position: sticky; top: 96px }
+.tl-year {
+  font-family: var(--font-display); font-weight: 900; font-size: 54px; line-height: 1;
+  letter-spacing: -2px; color: var(--text-strong); font-variant-numeric: tabular-nums;
+}
+.tl-where { margin-top: 6px; font-weight: 600; font-size: 16px; color: var(--amber) }
+
+.tl-band { margin-top: 22px }
+.tl-band b {
+  display: block; margin-top: 8px;
+  font-family: var(--font-mono); font-size: 10px; font-weight: 500; letter-spacing: .14em;
+  text-transform: uppercase; color: var(--text-faint);
+}
+/* The bar is the whole Android era, 4.0 to 16, and the fill is the slice this role shipped against. Both ends
+   are written as percentages of that one scale, so two roles can be compared by eye. */
+.tl-bar { display: block; position: relative; height: 3px; background: var(--hairline) }
+.tl-bar i {
+  position: absolute; top: 0; bottom: 0;
+  left: var(--lo, 0%); right: calc(100% - var(--hi, 100%));
+  background: var(--accent);
+  transition: left .45s var(--ease-settle), right .45s var(--ease-settle);
+}
+.tl-band.none .tl-bar i { left: 0; right: 100% }
+.tl-band.none b { color: var(--text-faint) }
+
+/* ITS OWN SCROLL, handed back at the ends. overscroll-behavior: contain is what stops the wheel chaining to
+   the page the moment this list bottoms out, so the pointer decides which of the two is moving. */
+.tl-scroll {
+  height: 66vh; min-height: 420px; overflow-y: auto; overscroll-behavior: contain;
+  padding-right: 20px;
+  scrollbar-width: thin; scrollbar-color: var(--hairline) transparent;
+}
+.tl-scroll::-webkit-scrollbar { width: 6px }
+.tl-scroll::-webkit-scrollbar-thumb { background: var(--hairline); border-radius: 3px }
+.tl-scroll:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--amber-focus) }
+
+/* ARRIVAL. The role being read sits at full strength and its neighbours recede, so the section always has one
+   thing in focus and the eye is told where to be. */
+.tl-scroll .role { transition: opacity .35s var(--ease-settle) }
+.tl-scroll .role:not(.here) { opacity: .38 }
+.tl-scroll .role.here .when::before { background: var(--accent); border-color: var(--accent) }
+
 .roles { margin-top: 56px }
 
 /* A rail down the date column, with each role's marker sitting on it. One continuous line rather than a border
@@ -1415,6 +1483,13 @@ footer a:hover { color: var(--accent) }
   .app-grid { grid-template-columns: minmax(0, 1fr); gap: 40px }
 
   /* The date rail keeps its marker and line, but the role moves under it rather than beside it. */
+  /* NO INNER SCROLLER ON A PHONE. A scroll region inside a scrolling page is a trap on touch: there is no
+     pointer to say which one the flick was meant for. It becomes a plain list again. */
+  .tl-body { grid-template-columns: minmax(0, 1fr); gap: 24px }
+  .tl-read { position: static }
+  .tl-year { font-size: 40px }
+  .tl-scroll { height: auto; min-height: 0; overflow: visible; padding-right: 0 }
+  .tl-scroll .role:not(.here) { opacity: 1 }
   .role { grid-template-columns: minmax(0, 1fr); gap: 14px }
   .role .what { padding-left: 22px }
   .education { padding-left: 22px }
