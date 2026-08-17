@@ -1,11 +1,12 @@
 /* hero-core.js — the reactor lab's core, alone, behind scene 01.
  *
  * It IS the lab's core, at the lab's own STABLE settings: the same shader, the same simulation, the same state.
- * Two things are changed and no more — the ring assembly is switched off, and the colour comes from --accent.
+ * Changed and no more: the ring assembly is off, the colour comes from --accent, the render scale is its own,
+ * and the pulse runs at FORCE 13 with SUB VIS/TRB 0.
  *
- * The pointer does exactly two things. Its SPEED drives the two spins, and its speed and nearness together drive
- * VISCOSITY, which is what makes the surface roil. A click fires the lab's pulse at full force. Nothing else on
- * this canvas reacts to anything.
+ * The pointer does exactly two things, and both are read off its POSITION. The face turns to where it is, and
+ * how near it is drives VISCOSITY, which is what makes the surface roil. A click fires the lab's pulse. Nothing
+ * else on this canvas reacts to anything.
  */
 import { createQuad } from '../labs/kit/glquad.js';
 import { runLoop, fitCanvas } from '../labs/kit/lab.js';
@@ -19,59 +20,29 @@ import { sendUniforms } from '../labs/reactor/reactor-uniforms.js';
  * Nothing else is ramped: a hero with six values chasing the mouse reads as noise, not as a reaction. */
 const VISC_REST = 1.8, VISC_LIVE = 5.0;
 
-/* THE PULSE, and every number in it is measured rather than dialled by eye.
- *
- * A droplet has pinched off when the gap between its inner edge and the core's surface clears the shader's goo
- * blend, which is 0.16 of the core's radius. Between 0.08 and 0.16 the neck is a thread you can barely see;
- * under 0.08 it is a fat visible bridge; below zero the sub-core is still buried in the surface.
- *
- * FORCE moves how far they travel; SUB-CORE SIZE moves how big they are, and because a smaller sub-core's inner
- * edge sits further out, it ALSO clears the surface more readily at the same force. Measured over twelve fires
- * — free / thread / neck / buried:
- *
- *     FORCE 13, SIZE 0.6    0%   0%  13%  87%    shipped
- *     FORCE 13, SIZE 0.5    0%   4%  23%  73%
- *     FORCE 14, SIZE 0.5    0%  10%  35%  56%
- *     FORCE 15, SIZE 0.7    5%  16%  24%  55%    the first one where anything tears off
- *     FORCE 16, SIZE 0.7   23%  29%  28%  20%
- *     FORCE 16.5, SIZE 0.7 41%  31%  15%  13%    most break away
- *
- * Shipped is the one where a click STRAINS the surface: sub-cores swell out of it on fat necks and none get
- * away. The largest is 0.29 of the core's radius and the furthest reaches 1.52 of it.
- *
- * DURATION only stretches the spring in TIME — its peak is set by FORCE alone — so 2.0 makes the whole event a
- * slow strain rather than a snap. It also moves where the peak falls, which is why nothing that measures this
- * pulse may count a fixed number of frames to find it.
- *
- * SUB VIS/TRB IS ZERO ON PURPOSE. It is the term that adds the pulse's magnitude back into viscosity and
- * turbulence, so at anything above zero a click also roughens the surface. The pulse should pulse and nothing
- * else; viscosity belongs to the pointer. */
-const PULSE = { pulseAmp: 13, dropSize: 0.6, dropN: 10, pulseSize: 0.06, pulseDur: 2.0, subVT: 0 };
+/* The pulse values this scene does not take from the lab. subVT 0 keeps the pulse OUT of viscosity and
+   turbulence: the surface's roil is the pointer's distance and nothing else, so a click near the core does not
+   stack on top of it. SUB-CORE SURFACE stays the lab's, which is what keeps the sub-cores lumpy at subVT 0. */
+const PULSE = { pulseAmp: 13, subVT: 0 };
 
 const REACH = 0.7;         // how near counts as near, as a fraction of the smaller viewport axis
 const FOLLOW = 3.5;        // how fast the nearness reading chases the pointer, per second
-/* The spins take up a throw quickly and give it back slowly, which is the whole feel of the gesture: a flick
- * spins the core and then it runs down. One symmetrical constant makes it either sluggish to start or instantly
- * dead the moment the hand stops. */
-const SPIN_GRAB = 6.0, SPIN_COAST = 1.1;
 
-/* A pointer crossing the window in about half a second is the top of the range. Above it the spin is pinned:
- * a mouse can be thrown arbitrarily fast, and a core that answered every one of those would read as a strobe. */
-const MAX_SPEED = 1600;    // px/s
-/* The idle is deliberately far below the swing. At the lab's own SPIN Y of 10 against a swing of 34 the gesture
- * was not symmetrical: a throw one way added to a rotation already running, and a throw the other way had to
- * cancel it before anything visibly changed, so gentle movement did nothing at all and the core read as
- * ignoring the cursor. Small idle, large swing — the hand wins from the first pixel, in either direction. */
-const SPIN_IDLE = 3, SPIN_SWING = 40;      // RPM about Y, from a horizontal throw
-const TILT_IDLE = 1, TILT_SWING = 24;      // RPM about X, from a vertical one
+/* THE CORE FACES THE POINTER. Its angle is the pointer's POSITION, not its speed: the face turns to where the
+ * cursor is and stays there. Driving it off speed instead meant differentiating a bursty event stream and then
+ * smoothing the result twice, and it read as janky however the smoothing was tuned — the core moved at a
+ * different time from the hand.
+ * Radians at the edge of REACH, past which it is pinned. Y is the wider swing because horizontal movement is
+ * what a reader does most and the core has more to show around that axis. */
+const AIM_Y = 0.95, AIM_X = 0.55;
+const AIM_FOLLOW = 5.0;    // how fast the face chases that angle, per second
+
+// A slow drift under it all, so a core nobody is pointing at is not a still image.
+const SPIN_IDLE = 3, TILT_IDLE = 1;        // RPM
 
 const clamp01 = (v) => (v < 0 ? 0 : v > 1 ? 1 : v);
 const clamp11 = (v) => (v < -1 ? -1 : v > 1 ? 1 : v);
 const ease = (t) => { const x = clamp01(t); return x * x * (3 - 2 * x); };
-
-// One spin, one frame: grabs a faster throw, runs down out of a slower one.
-const chase = (cur, want, dt) =>
-  cur + (want - cur) * Math.min(1, dt * (Math.abs(want) > Math.abs(cur) ? SPIN_GRAB : SPIN_COAST));
 
 /* The linear red a lit surface on this core reaches, measured off the rendered frame: the brightest decile came
  * back at 154/255, which is this value through the tone map. It is the operating point the colour below is
@@ -125,9 +96,9 @@ function init() {
     orbit: 0, orbitX: 0, orbitZ: 0,
     ...PULSE,
     coreHex: preTonemap(accent),
-    // Well under the lab's pixel count, and lower again on integrated graphics: this is a seventy-step sphere
-    // trace running behind a page, not the instrument it was tuned as.
-    renderScale: R.gpu.integrated ? 0.5 : 0.6,
+    // 1 because #hero-core is capped at min(94vh, 900px): the buffer IS the CSS box, and above this is
+    // supersampling. Costs 6.8ms/frame of a 16.67ms budget on an Intel UHD 630, at any window size.
+    renderScale: 1,
   };
 
   const sim = createSim();
@@ -144,23 +115,36 @@ function init() {
 
   // ---------------------------------------------------------------- what the pointer is doing
   let target = 0, near = 0;          // how close, wanted and smoothed
-  let dx = 0, dy = 0;                // pixels travelled since the last frame
-  let spinY = 0, spinX = 0;          // the two smoothed throw rates, -1..1
-  let lastX = null, lastY = null;
+  let aimY = 0, aimX = 0;            // the angles the face is turning toward, radians
+  let faceY = 0, faceX = 0;          // and where it has got to
+  // The preset's own pose is the pointer's zero, so a core nobody is pointing at sits as the lab draws it.
+  const restY = state.coreAngle, restX = state.coreAngleX;
 
-  /* Movement is ACCUMULATED here and converted to a rate in the frame, rather than differentiated per event.
-   * Pointer events arrive in bursts and at their own cadence, so an instantaneous dx/dt off two of them is mostly
-   * a measurement of the event queue; and a pointer that stops sends nothing at all, which this decays to zero
-   * on its own because the next frame finds no pixels to divide. */
-  addEventListener('pointermove', (e) => {
-    if (lastX != null) { dx += e.clientX - lastX; dy += e.clientY - lastY; }
-    lastX = e.clientX; lastY = e.clientY;
+  /* THE HANDLER STORES AND DOES NOT MEASURE. getBoundingClientRect forces a synchronous reflow, and a fast mouse
+     delivers pointermove far faster than frames — with the scene rig invalidating layout every scroll frame,
+     one reflow per event took the page to a crawl. The position is read once per FRAME instead, below, where
+     layout has already settled. */
+  let ptrX = 0, ptrY = 0, ptrMoved = false;
+  addEventListener('pointermove', (e) => { ptrX = e.clientX; ptrY = e.clientY; ptrMoved = true; },
+                   { passive: true });
+
+  // Nothing to face and nothing to stir: the core returns to its resting pose and keeps only its idle drift.
+  document.addEventListener('pointerleave', () => { ptrMoved = false; target = aimY = aimX = 0; });
+
+  /* Everything the pointer does, from ONE reading of where it is: how near it is, and which way the face turns.
+     Both are positions, so both are exact — nothing here differentiates the event stream.
+     Only on a frame the pointer actually moved: that keeps the rect read off idle frames, and it leaves what
+     HERO.near and HERO.pose set alone, which reading unconditionally would overwrite a frame later. */
+  function readPointer() {
+    if (!ptrMoved) return;
+    ptrMoved = false;
     const b = canvas.getBoundingClientRect();
-    const d = Math.hypot(e.clientX - (b.left + b.width / 2), e.clientY - (b.top + b.height / 2));
-    target = ease(1 - d / (Math.min(innerWidth, innerHeight) * REACH));
-  }, { passive: true });
-
-  document.addEventListener('pointerleave', () => { target = 0; lastX = lastY = null; });
+    const ox = ptrX - (b.left + b.width / 2), oy = ptrY - (b.top + b.height / 2);
+    const s = Math.min(innerWidth, innerHeight) * REACH;
+    target = ease(1 - Math.hypot(ox, oy) / s);
+    aimY = clamp11(ox / s) * AIM_Y;      // measured, not reasoned: +Y carries the near face right,
+    aimX = clamp11(oy / s) * AIM_X;      // +X carries it down, which is also where clientY grows
+  }
 
   /* The lab's pulse at the lab's own force: sub-cores tear out of the surface and merge back as the spring
    * decays. Bound to the stage, not the canvas, which is pointer-transparent — the core sits behind the type and
@@ -168,7 +152,8 @@ function init() {
   stage.addEventListener('pointerdown', (e) => {
     if (e.target.closest('a, button, input, [role="button"]')) return;
     sim.firePulse(state);
-    target = 1;                       // a touch has no hover, so the tap itself is what brings the core up
+    // A tap has no hover behind it; the next frame reads the press position exactly as it would a hover.
+    ptrX = e.clientX; ptrY = e.clientY; ptrMoved = true;
   }, { passive: true });
 
   // ---------------------------------------------------------------- the loop
@@ -183,36 +168,23 @@ function init() {
       if (held) return;
       held = true;
       near = target = 0;
-      spinY = spinX = 0;
+      faceY = faceX = aimY = aimX = 0;
     } else {
       held = false;
       sec += dt;
-      near += (target - near) * Math.min(1, dt * FOLLOW);
-      /* GUARD THE DIVISION. runLoop clamps dt at zero from below, and a zero-length frame is not rare on the
-       * first one — the first rAF timestamp can precede the performance.now() the loop was built with. Divided
-       * by it, a frame that saw no movement gives 0/0, and the NaN does not stay local: it reaches the spin, the
-       * simulation integrates it into the rotation phase, and a NaN rotation makes every ray miss the core. The
-       * hero then renders its background and nothing else, for the life of the document. */
-      const perSec = dt > 1e-6 ? 1 / (dt * MAX_SPEED) : 0;
-      spinY = chase(spinY, clamp11(dx * perSec), dt);
-      spinX = chase(spinX, clamp11(dy * perSec), dt);
-      dx = dy = 0;
+      readPointer();                   // once per frame, not once per event
+      const k = Math.min(1, dt * FOLLOW), a = Math.min(1, dt * AIM_FOLLOW);
+      near += (target - near) * k;
+      faceY += (aimY - faceY) * a;
+      faceX += (aimX - faceX) * a;
     }
-    /* Rates, not angles: reactor-sim integrates both into a phase, so the core accelerates into a throw and
-     * coasts out of it rather than snapping to wherever that speed's multiple of the elapsed time would put it.
-     *
-     * BOTH SIGNS ARE PLUS, and that was measured rather than reasoned about. A single sub-core is fired out as a
-     * landmark and swept through a whole turn of each angle; the screen motion is averaged weighted by how near
-     * the landmark is, because a landmark on the far side travels the opposite way and a single sample cannot
-     * tell you which side it was on. That is the trap: an earlier reading off one pair of frames said the
-     * opposite, shipped, and the core spun AGAINST the cursor. A positive Y angle carries the near face right; a
-     * positive X angle carries it down, which is also where clientY grows. */
-    state.coreSpin = SPIN_IDLE + spinY * SPIN_SWING;
-    state.coreSpinX = TILT_IDLE + spinX * TILT_SWING;
-    // Nearness OR speed, whichever is greater: a pointer parked on the core keeps it roiling, and a pointer
-    // thrown past the edge of the screen still stirs it.
-    const stir = Math.max(near, Math.abs(spinY), Math.abs(spinX));
-    state.visc = VISC_REST + (VISC_LIVE - VISC_REST) * stir;
+    /* The idle drift is a RATE the sim integrates; the pointer's contribution is an ANGLE added on top of it, so
+       the hand moves the face directly and never has to overcome a rotation already running. */
+    state.coreSpin = SPIN_IDLE;
+    state.coreSpinX = TILT_IDLE;
+    state.coreAngle = restY + faceY;
+    state.coreAngleX = restX + faceX;
+    state.visc = VISC_REST + (VISC_LIVE - VISC_REST) * near;
     sendUniforms(R, state, sim.step(state, dt, sec), sec);
     R.draw();
   }
@@ -224,11 +196,14 @@ function init() {
    * front-most: Windows Chrome delivers no animation frames to one that is not. */
   /* `stop` is here for inspection, not for the page: with the loop running, a frame stepped by hand is overwritten
    * before it can be looked at, so a pulse cannot be photographed at its peak. Nothing calls it in normal use. */
-  /* `pulse` is the page's, not the inspector's: nav.js fires it when a wheel gesture or an arrow key steps onto
-     the reactor, so the object answers a keyboard the same way it answers a cursor. Same call as pointerdown,
-     including bringing the core up, because a key press has no hover to do that for it. */
+  /* `pulse` is the page's, not the inspector's: nav.js fires it when an arrow key steps onto the reactor. It
+     fires the pulse and nothing else — nearness is the pointer's, and a keyboard is not one. */
+  /* `pose` puts the face at an angle and holds it there. draw() writes coreAngle every frame, so setting that
+     on the state directly is overwritten before it can be rendered — anything sweeping the core has to come
+     through here. */
   window.HERO = { state, sim, R, renderNow: (dt) => loop.renderNow(dt), stop: () => loop.stop(),
-                  pulse: () => { sim.firePulse(state); target = 1; },
+                  pulse: () => { sim.firePulse(state); },
+                  pose: (y, x) => { aimY = faceY = y; aimX = faceX = x || 0; },
                   get onScreen() { return onScreen; },
                   get near() { return near; }, set near(v) { target = near = clamp01(v); } };
 }

@@ -18,6 +18,9 @@ export function sendUniforms(R, s, p, sec) {
   R.f('uRingLight', s.ringLight); R.f('uRingOn', s.ringOn ? 1 : 0);
   R.f('uRingRough', s.ringRough); R.f('uRingWear', s.ringWear);
   R.f('uSubVT', s.subVT != null ? s.subVT : 1);
+  // Defaulted: a state saved before this control existed has no subSurf, and undefined uploads NaN — which
+  // makes every droplet's SDF miss, so no sub-core renders at all.
+  R.f('uSubSurf', s.subSurf != null ? s.subSurf : 1);
   R.f('uSwellAmt', s.ventSwellPct != null ? s.ventSwellPct : 0.9);
 
   R.f('uPulse', p.pulse); R.f('uVent', p.vent); R.f('uVentBurst', p.ventBurst); R.f('uVentSwell', p.ventSwell);

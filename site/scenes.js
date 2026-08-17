@@ -4,8 +4,8 @@
  * block of custom properties onto the stage. Every scene reads those properties from a static rule, so a scroll
  * frame touches one element instead of re-rendering a tree, and nothing animates on a wall clock.
  *
- * Scene 01 owns the whole runway today. A scene is added by giving it its own envelope here and its own --oN /
- * --yN / --bN properties in site.css; the shape of the loop does not change.
+ * A scene is added by giving it its own envelope here and its own --oN / --yN / --bN properties in site.css; the
+ * shape of the loop does not change. Scene 01 is the hero's exit; scene 02 is Cartographer arriving under it.
  */
 (function () {
   const stage = document.getElementById('stage');
@@ -123,59 +123,32 @@
     writeMorph(1);
   }
 
-  /* ---- the run ----
+  /* ---- Cartographer's arrival ----
    *
-   * WHAT IT COVERS AND WHAT IT COSTS, not how it works. One gesture starts the suite: the six kinds of check
-   * light in turn and the figures climb, and the cost lands on zero while they do. The internals were built
-   * here first and taken out — they argue the wrong case to a reader who is deciding whether this takes work
-   * off their plate.
+   * THE SECTION ARRIVES, it does not merely slide up. Its stage is already rising behind the hero for a whole
+   * viewport before it is seated, and none of that was read: it moved at exactly the speed of the scroll, which
+   * is the one motion the eye discounts entirely. It now trails the scroll by a few dozen pixels and comes up to
+   * strength across the same range the reactor is struck over, so the strike and the arrival read as one
+   * hand-off rather than as two things that happen to overlap.
    *
-   * Same rig as the calculator: the scroll picks the beat, the beat runs to completion on its own clock.
-   * The figures are Cartographer's own and structural — 500+ tests at 95%+ belongs to QAAI, and putting
-   * it here read as one product where there are two.
+   * The checks themselves are NOT part of this. They used to sit at a third opacity and light in turn as the pin
+   * was scrubbed, and a list that cannot be read until it has been scrolled through is worse than no animation
+   * at all. What moves is the section arriving; once it is here, nothing does.
    */
   const loopStage = document.getElementById('loop-stage');
   const loopScroll = document.getElementById('loop-scroll');
-  const covers = Array.prototype.slice.call(document.querySelectorAll('#covers .cover'));
 
-  const RUN_MS = 1500;      // the whole suite, so each check lands about a quarter-second apart
-
-
-  let running = -1, runAnim = 0, runT0 = 0;
-
-  function paintRun(t) {
-    const lit = Math.round(covers.length * clamp(t * 1.15));
-    covers.forEach((el, i) => el.classList.toggle('on', i < lit));
-  }
-
-  function runTo(n) {
-    if (n === running) return;
-    running = n;
-    if (runAnim) { cancelAnimationFrame(runAnim); runAnim = 0; }
-    if (n <= 0) { paintRun(0); return; }
-    runT0 = 0;
-    const step = (ts) => {
-      if (!runT0) runT0 = ts;
-      const t = clamp((ts - runT0) / RUN_MS);
-      paintRun(t);
-      runAnim = t < 1 ? requestAnimationFrame(step) : 0;
-    };
-    runAnim = requestAnimationFrame(step);
-  }
+  const LOOP_LIFT = 80;   // px the section trails the scroll by when its arrival begins
+  const LOOP_IN = .8;     // fraction of the arrival it is up to full strength over. Reaching 1 exactly as it
+                          // seats would leave it still fading at the position it comes to rest in.
 
   function loop(y) {
-    if (!loopStage || !loopScroll || !covers.length) return;
-    const run = loopScroll.offsetHeight - loopStage.offsetHeight;
-    const p = run > 0 ? (y - loopScroll.offsetTop) / run : 1;
-    runTo(p >= trip ? 1 : 0);
-  }
-
-  // Reduced motion and short viewports get the finished run: every check lit, every figure at its value.
-  function loopFinal() {
-    if (!covers.length) return;
-    if (runAnim) { cancelAnimationFrame(runAnim); runAnim = 0; }
-    running = 1;
-    paintRun(1);
+    if (!loopStage || !loopScroll) return;
+    // One viewport of arrival, ending where the section is seated: it begins the moment its top edge crosses the
+    // bottom of the screen, which is the first frame any of it is visible.
+    const q = ease((y - (loopScroll.offsetTop - vh)) / vh);
+    loopStage.style.setProperty('--o2', clamp(q / LOOP_IN).toFixed(3));
+    loopStage.style.setProperty('--y2', ((1 - q) * LOOP_LIFT).toFixed(1) + 'px');
   }
 
   function frame() {
@@ -214,26 +187,34 @@
     frame();
   }
 
-  // Hands the stage back to the stylesheet's static end state, which is what the reduced-motion rules expect.
+  // Hands both stages back to the stylesheet's static end states, which is what the reduced-motion rules expect.
   function clear() {
     for (const p of ['--o1', '--y1', '--b1', '--e1', '--cue-o', '--core-s', '--halo-x', '--ring-o']) {
       stage.style.removeProperty(p);
     }
+    loopFinal();
+  }
+
+  // The seated section: full strength, no offset. The stylesheet's defaults, handed back by removing the writes.
+  function loopFinal() {
+    if (!loopStage) return;
+    loopStage.style.removeProperty('--o2');
+    loopStage.style.removeProperty('--y2');
   }
 
   /* A pinned, scrubbed morph needs a viewport tall enough to hold the scene. A landscape phone is 393px tall, so
      below that the section is a plain block showing the finished calculator. Matches the stylesheet's short query. */
   const short = window.matchMedia('(max-height: 620px)');
 
-  /* The loop scene needs more room than the morph does — its section is 687-727px of content at 1080px wide and
-     up, and about 840 once the two columns collapse below that. Its own query, matching the stylesheet's, so
-     the script stops driving exactly when the stylesheet stops pinning. */
+  /* Cartographer gives its pin back on a short or narrow window, and an arrival measured against a pin that is
+     not there lands nowhere. Its own query, matching the stylesheet's, so the script stops driving the section
+     exactly when the stylesheet stops pinning it. */
   const shortLoop = window.matchMedia('(max-height: 760px), (max-width: 1080px) and (max-height: 900px)');
 
   function apply() {
     window.removeEventListener('scroll', onScroll);
     window.removeEventListener('resize', onResize);
-    if (reduced.matches || short.matches) { clear(); morphFinal(); loopFinal(); return; }
+    if (reduced.matches || short.matches) { clear(); morphFinal(); return; }
     if (shortLoop.matches) loopFinal();
     measure();
     frame();

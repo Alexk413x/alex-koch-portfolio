@@ -201,41 +201,53 @@ def run(page, r):
     r.check('the last stop is the bottom', stops[-1], end)
     r.ok('no two stops are within a nudge of each other',
          all(b - a > 24 for a, b in zip(stops, stops[1:])))
-    r.ok('and none is more than a screen from the last',
-         all(b - a <= 1010 for a, b in zip(stops[1:], stops[2:])),
-         'widest gap below the hero is %d' % max([b - a for a, b in zip(stops[1:], stops[2:])] or [0]))
+    # A gap wider than a screen is allowed in exactly one place: beginning inside a pinned scene, where it is the
+    # scene LEAVING and holds nothing a reader could be stranded short of. Anywhere else it steps over content
+    # that can never be reached, which is the whole reason nav.js fills gaps at all.
+    # A screen plus a nudge, not a screen: a section whose height IS one viewport rounds to a gap of screen + 1.
+    ranges = page.json("JSON.stringify([...document.querySelectorAll('[data-range]')].map(e=>{"
+                       "const t=e.getBoundingClientRect().top+scrollY;"
+                       "return [Math.round(t), Math.round(t+e.offsetHeight)]}))")
+    wide = [(a, b) for a, b in zip(stops, stops[1:]) if b - a > 1024]
+    stray = [g for g in wide if not any(lo <= g[0] < hi for lo, hi in ranges)]
+    r.ok('and every gap wider than a screen is a scene leaving', not stray,
+         'gaps starting outside any scene: %s' % stray)
 
-    r.ok('a programmatic scroll is not carried', abs(page.js('Math.round(scrollY)')) < 6)
+    # THE SCROLL POSITION IS THE SCROLL POSITION. There is no carry, and four versions of one were built and
+    # removed before that was settled: on a boundary crossing, past the end of a pin, onto the beat a gesture
+    # reached, and one beat per push. Every one of them was defensible and every one felt the same from the seat
+    # -- you stop, the page sits, and then it takes over. Every scene here is scrubbed, so scrolling through one
+    # already plays it; there was never anything left to finish.
+    # Asserted at four strengths because a gentle flick and a hard one must be equally untouched: the earlier
+    # rules all behaved differently under momentum, which is how the skipping went unnoticed.
+    for strength in (300, 700, 1400, 2600):
+        page.scroll(0, pause=0.4)
+        page.flick(strength, pause=0.5)
+        landed = page.js('Math.round(scrollY)')
+        after = page.until_still(quiet=0.5)
+        r.check('a flick of %d is left exactly where it lands' % strength, after, landed)
 
-    # THE WHEEL IS THE READER'S. Momentum is allowed to overshoot a boundary -- taking the wheel away to make it
-    # exact was tried and reverted, because a page that stops moving while the hand is still moving feels dead.
-    # What the carry guarantees is where the reader ENDS UP once the scrolling stops.
-    # Resolved through [data-range], not off the section itself. A section inside a pinned stage has no page
-    # position of its own -- #cartographer now lives in one, and its own offset is where that stage comes to
-    # rest, which is 200px past where the carry correctly puts the reader.
-    sections = page.json("(()=>{const y=scrollY;return JSON.stringify(['cartographer','experience','labs']"
-                         ".map(i=>{const e=document.getElementById(i);"
-                         "return Math.round((e.closest('[data-range]')||e).getBoundingClientRect().top+y)}))})()")
-    cart = sections[0]
-
-    # Positioned by SECTION, not by a pixel. Whether a given offset is still inside the previous section is a
-    # function of the reading line and the page's height, and both move whenever the page does -- which made this
-    # check pass or fail depending on what had been edited that day rather than on whether the carry worked.
+    # ...including one that crosses a section boundary, which is where three of the four carries used to fire.
     page.scroll(stops[1], pause=0.4)
-    r.check('starting inside the first section', page.js('window.AKNAV.section()'), 0)
-    # A short tail so the dispatched wheel events are all PROCESSED before the wait begins. The harness can
-    # queue them faster than the browser drains them, and a straggler arriving after the carry has started
-    # cancels it exactly as a reader's own scroll would -- landing 59px into a 300px glide.
-    page.flick(700, pause=0.35)
-    landed = page.until_still()
-    r.check('the gesture crossed a boundary', page.js('window.AKNAV.section()'), 1)
-    r.near('and a real gesture past one is carried to the section top', landed, cart, 8)
+    page.flick(900, pause=0.5)
+    landed = page.js('Math.round(scrollY)')
+    r.check('crossing a boundary moves nothing extra', page.until_still(quiet=0.5), landed)
+    r.ok('and the reader is past the boundary they crossed', landed > stops[2] - 400,
+         'landed %d, boundary %d' % (landed, stops[2]))
 
-    # Inside the section it stays theirs: a nudge that crosses nothing must not be undone.
+    # The scenes still PLAY while that scroll happens -- scrubbed off position, so being left mid-hand-off is a
+    # legible frame rather than a stuck one. The morph is the one with a committed state to check.
+    page.scroll(stops[4] + 60, pause=0.6)
+    r.near('and the scenes still play from the scroll alone', page.until_morphed(), 1.0, 0.001)
+
+    # A NUDGE IS A NUDGE. The smallest thing a wheel can do must move the page by that much and no further; this
+    # is the check that would have caught every one of the four carries on the first run.
+    page.scroll(stops[2], pause=0.4)
     at = page.js('Math.round(scrollY)')
     page.wheel(200, pause=0)
-    after = page.until_still()
-    r.ok('scrolling inside a section is left alone', after > at + 100, 'moved from %d to %d' % (at, after))
+    after = page.until_still(quiet=0.5)
+    r.ok('a single nudge moves once and stops', at < after < at + 400,
+         'moved from %d to %d' % (at, after))
 
     # Contact's top is below the furthest the page can scroll, so the clamp parks the last section at the bottom.
     # A generous flick, so the clamp at the bottom is certain rather than a question of how much of the gesture
@@ -332,33 +344,64 @@ def run(page, r):
          page.js("!document.getElementById('qr-dialog').hidden"))
     page.js("document.getElementById('qr-close').click();1")
 
-    # The scene's mechanism, not its wording. What has to hold is that the run starts idle and lights every
-    # check it has, and that it lights them PROGRESSIVELY -- part-way through is where a driver that only sets
-    # the final state would be caught.
+    # Cartographer ARRIVES and then holds still. Two separate claims, and both have been broken here before:
+    # the section is scrubbed in across the viewport it rises through, and once it is seated NOTHING inside it is
+    # dimmed or waiting on a further scroll. The progressive light-up this used to assert is gone -- evidence a
+    # reader has to scroll through before they can read it is not evidence.
+    # quiesce first: the QR check above clicks with a real mouse, and the carry answers real input for two
+    # seconds afterwards, which would move the page out from under every position read below.
+    page.quiesce()
     page.viewport(1600, 1000)
     loop_top = page.js("Math.round(document.getElementById('loop-scroll').getBoundingClientRect().top+scrollY)")
-    run = page.js("document.getElementById('loop-scroll').offsetHeight"
-                  " - document.getElementById('loop-stage').offsetHeight")
-    trip = page.js("parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--morph-trip'))")
+    vh = page.js('innerHeight')
 
-    RUN = ("(()=>{const c=[...document.querySelectorAll('#covers .cover')];"
-           "return JSON.stringify({on:c.filter(e=>e.classList.contains('on')).length,total:c.length})})()")
+    # NOTHING STOPS IN THE HAND-OFF. The section is exactly one viewport tall, so its top and the calculator's
+    # round to a gap of screen + 1 -- and a gap-filling stop dropped in there lands the reader on the bottom half
+    # of this section and the top of the calculator, seating neither. It shipped that way once.
+    app_top = page.js("Math.round(document.getElementById('app-scroll').getBoundingClientRect().top+scrollY)")
+    all_stops = page.json('JSON.stringify(window.AKNAV.stops())')
+    between = [s for s in all_stops if loop_top < s < app_top]
+    r.ok('no stop lands between the section and the calculator', not between, 'stops at %s' % between)
 
-    page.scroll(loop_top, pause=1.1)
-    r.check('the suite is idle at the top of the pin', page.json(RUN)['on'], 0)
+    # THE CALCULATOR IS THREE PRESSES: one seats it, one commits the morph, and the third leaves. A fourth was
+    # landing 890px into the section's exit, showing the same played-out calculator the press before it did.
+    exp_top = page.js("Math.round(document.getElementById('experience').getBoundingClientRect().top+scrollY)")
+    inside = [s for s in all_stops if app_top <= s < exp_top]
+    r.check('the calculator is two stops, not three', len(inside), 2)
+    r.check('the first of them seats it', inside[0] if inside else -1, app_top)
+    nxt = [s for s in all_stops if s >= exp_top]
+    r.check('and the press after the morph leaves the section', nxt[0] if nxt else -1, exp_top)
+    ARRIVAL = ("(()=>{const s=getComputedStyle(document.getElementById('cartographer'));"
+               "return JSON.stringify({o:parseFloat(s.opacity),t:s.transform})})()")
 
-    page.scroll(loop_top + round(run * trip) + 24, pause=0.45)
-    part = page.json(RUN)
-    r.ok('and it lights progressively rather than all at once', part['on'] < part['total'],
-         '%d of %d already lit' % (part['on'], part['total']))
+    page.scroll(loop_top - vh, pause=0.4)
+    start = page.json(ARRIVAL)
+    r.ok('the section is still arriving where it first shows', start['o'] < 0.1,
+         'opacity %.3f at the foot of the screen' % start['o'])
 
-    page.until_ran()
-    d = page.json(RUN)
-    r.check('every check it has is lit by the end', d['on'], d['total'])
+    page.scroll(loop_top, pause=0.4)
+    seated = page.json(ARRIVAL)
+    r.check('and it is seated at full strength', round(seated['o'], 3), 1.0)
+    r.ok('with no offset left on it', seated['t'] in ('none', 'matrix(1, 0, 0, 1, 0, 0)'), seated['t'])
+
+    faint = page.js("[...document.querySelectorAll('#cartographer .checks li')]"
+                    ".filter(e=>parseFloat(getComputedStyle(e).opacity)<0.99).length")
+    total = page.js("document.querySelectorAll('#cartographer .checks li').length")
+    r.ok('every check is legible once it is', total > 0 and faint == 0,
+         '%d of %d under full opacity' % (faint, total))
+
+    # It fits the one screen the stage clips it to. Overflowing the pin is how a section loses its own CTA.
+    over = page.js("(()=>{const s=document.getElementById('cartographer');"
+                   "return Math.max(0, Math.round(s.getBoundingClientRect().height - innerHeight))})()")
+    r.ok('and the section fits the screen it is given', over == 0, '%dpx over' % over)
 
     # THE ROLES ARE A VIEWER, ONE AT A TIME. The mechanism, not the copy: exactly one role showing at any
     # position in the pin, the strip agreeing with it, and every role reachable -- including the last, which is
     # the one a floor()'d index is most likely to strand.
+    # quiesce first: the QR check above clicks with a real mouse, and the carry answers real input for two
+    # seconds afterwards. Every beat below is a scrollTo, so a carry still in flight lands one of them on the
+    # previous role and the run reports nine distinct roles out of ten.
+    page.quiesce()
     page.viewport(1600, 1000)
     # top is MEASURED, not read off offsetTop -- the section is position: relative, so offsetTop reports the
     # distance from the section rather than from the top of the document and every beat lands on role one.

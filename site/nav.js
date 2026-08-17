@@ -24,11 +24,13 @@
 
   /* The range a link owns is declared in the markup, not restated here. Scene 01 and the calculator are
      absolutely positioned inside sticky stages, so their own tops are not page positions at all; the scroll each
-     one occupies is its [data-range] container. */
+     one occupies is its [data-range] container.
+     `sec` is the section ITSELF and is a different question: the range says how much scroll a link owns, the
+     section says how much of it is on screen right now, and the carry needs the second one. */
   const items = links.map((a, i) => {
     a.style.setProperty('--i', i);
     const target = document.querySelector(a.getAttribute('href'));
-    return { a, el: target && (target.closest('[data-range]') || target) };
+    return { a, sec: target, el: target && (target.closest('[data-range]') || target) };
   }).filter((it) => it.el);
 
   if (!items.length) return;
@@ -38,28 +40,20 @@
   let current = -1;
   let queued = false;
 
-  /* ---- the carry ----
-   *
-   * Crossing a boundary hands the reader to the top of the section they landed in. Inside a section the scroll
-   * is theirs again, so a scrubbed scene stays playable — this only ever finishes a move the reader already
-   * started, and only once per crossing.
-   */
-  const SETTLE = 140;   // ms of stillness before it acts. Trackpad momentum keeps firing wheel events long after
-                        // the finger lifts; starting on the crossing itself means fighting that inertia.
-  const GLIDE = 620;    // ms of travel. Long enough to read as a hand-off, short enough not to feel taken over.
+  /* THE SCROLL POSITION IS THE SCROLL POSITION. Nothing waits for the reader to stop and then moves the page for
+     them; every scene is scrubbed, so scrolling through one already plays it. The keyboard keeps its stepping —
+     a press is one discrete decision with no position of its own. */
+  const GLIDE = 620;    // ms of travel for a keyboard step or an anchor jump. Long enough to read as a hand-off,
+                        // short enough not to feel taken over.
+  const NUDGE = 24;     // px. Two stops closer together than this are one stop as far as a press is concerned,
+                        // and a reader this close to a mark is on it. The stop list uses it both ways round.
 
-  /* Fine pointers, on a window with room. Touch momentum arrives in a stream the page cannot cancel, so on a
-   * phone the carry and the flick fight each other. The pair matches the breakpoints the stylesheet already uses.
-   */
+  // Keyboard stepping is a fine-pointer, roomy-window affordance; the same pair the stylesheet already uses.
   const roomy = window.matchMedia('(min-width: 821px) and (min-height: 501px)');
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
 
-  let parked = -1;      // the section the reader was last handed to; re-entry into it must not re-fire
   let glide = 0;        // the running rAF, and the flag that says this scrolling is ours rather than theirs
-  let settleTimer = 0;
-  let quietUntil = 0;   // an anchor jump is already a deliberate destination; do not follow it with a second move
-  let lastInput = -1e9; // when the reader last drove the page themselves
-  let stopIndex = -1;   // the stop we are at or gliding toward, so a second flick mid-flight advances by one
+  let stopIndex = -1;   // the stop we are at or gliding toward, so a second press mid-flight advances by one
   let orbY = 0;         // the stop where the reactor holds the frame alone
 
   /* Section BOUNDARIES, not section boxes: each span runs to the next section's top, so the gaps between them
@@ -96,7 +90,6 @@
       + (parseFloat(cs.getPropertyValue('--scene-exit')) || 0);
     orbY = Math.round(sceneRun * (window.innerHeight || 0));
     if (orbY > 24) list.push(orbY);
-    const heroCount = list.length;
 
     /* Two stops, like the calculator: the suite at rest, and the suite having run. Its trigger is
        --morph-trip, the one declaration both files read, so a change there cannot strand the stop short of
@@ -152,23 +145,30 @@
     list.push(maxScroll());
 
     // Sorted, and near-duplicates dropped: two stops a few pixels apart make one arrow press appear to do nothing.
-    const sorted = list.sort((a, b) => a - b).filter((v, i, a) => i === 0 || v - a[i - 1] > 24);
+    const sorted = list.sort((a, b) => a - b).filter((v, i, a) => i === 0 || v - a[i - 1] > NUDGE);
 
-    /* NO GAP WIDER THAN A SCREEN. The wheel steps between stops rather than scrolling, so anything sitting
-       between two stops further apart than the viewport could never be reached at all — Cartographer and Labs
-       both run a little over one screen.
-       THE WHOLE HERO IS EXEMPT. Its gaps hold the scene LEAVING and nothing to read, and the second of them —
-       the reactor alone to the next section — measures exactly one viewport by construction, since the stage's
-       runway and the stop are both derived from --scene-exit. A pixel of rounding at some window heights tips
-       that over the threshold and drops a stop into the middle of the strike, which halts the core and the ring
-       halfway out. Counted rather than hard-coded, so it still holds if the orb stop is ever dropped. */
+    /* A scene's exit runway is not content — nothing in it to be stranded short of — so gaps are measured from
+       where the [data-range] ENDS. From its last beat instead, real content after the scene goes uncovered. */
+    const scenes = Array.prototype.slice.call(document.querySelectorAll('[data-range]')).map((el) => {
+      const t = el.getBoundingClientRect().top + y;
+      return [t, t + el.offsetHeight];
+    });
+    function afterScene(a) {
+      let end = a;
+      for (const s of scenes) if (a >= s[0] - NUDGE && a < s[1]) end = Math.max(end, s[1]);
+      return end;
+    }
+
+    /* No gap wider than a screen, so nothing sits where no press can reach it. Plus a NUDGE of slack: a section
+       exactly 100dvh tall rounds to a gap of screen + 1, and filling that drops a stop mid-hand-off. */
     const screen = window.innerHeight || 1;
     const out = [sorted[0]];
     for (let i = 1; i < sorted.length; i++) {
-      const gap = sorted[i] - sorted[i - 1];
-      if (i > heroCount && gap > screen) {
+      const from = Math.min(afterScene(sorted[i - 1]), sorted[i]);
+      const gap = sorted[i] - from;
+      if (gap > screen + NUDGE) {
         const n = Math.ceil(gap / screen);
-        for (let s = 1; s < n; s++) out.push(Math.round(sorted[i - 1] + gap * s / n));
+        for (let s = 1; s < n; s++) out.push(Math.round(from + gap * s / n));
       }
       out.push(sorted[i]);
     }
@@ -198,9 +198,6 @@
     /* A step onto the reactor strikes it, the same way a click does. Only where it is actually on screen: a
        pulse fired into a scene that has already left is spent on nobody. */
     if (stops[t] <= orbY + 4 && window.HERO && window.HERO.pulse) window.HERO.pulse();
-    /* The carry watches for boundary crossings; a step is already a deliberate destination, so it must not be
-       followed by a second, unasked-for move once this one lands. */
-    quietUntil = performance.now() + GLIDE + 300;
     glideTo(stops[t]);
   }
 
@@ -235,15 +232,6 @@
   const maxScroll = () =>
     Math.max(0, document.documentElement.scrollHeight - (window.innerHeight || 1));
 
-  /* A section rests at its TOP, so the reader gets all of it and scrubs the rest themselves. Centring was the
-     obvious first answer and it is wrong for anything long: it drops the reader halfway down a 4,955px section
-     with half of it already behind them, and it lands the calculator mid-morph instead of on the faceplate.
-     The two ends need no special case. Section 0's top IS the top of the page, and contact's top sits below the
-     furthest the page can scroll, so the clamp parks it at the bottom on its own. */
-  function restFor(i) {
-    return Math.min(maxScroll(), Math.max(0, spans[i][0]));
-  }
-
   function stopGlide() {
     if (!glide) return;
     cancelAnimationFrame(glide);
@@ -264,42 +252,19 @@
          these 60 steps run its own smooth scroll makes the two easings compound into a crawl. */
       window.scrollTo({ top: Math.round(from + dist * e), behavior: 'instant' });
       glide = p < 1 ? requestAnimationFrame(step) : 0;
-      if (!glide) parked = current;
     };
     glide = requestAnimationFrame(step);
   }
 
-  /* Fires once the scrolling stops, not on the crossing itself. By then the reader has landed somewhere, so the
-     section they are carried into is the one they actually chose rather than the one they passed through. */
-  function park() {
-    settleTimer = 0;
-    if (glide || current < 0) return;
-    if (!roomy.matches || reduced.matches) { parked = current; return; }
-    if (performance.now() < quietUntil) { parked = current; return; }
-    /* ONLY EVER FINISH A MOVE THE READER MADE. A scroll the page did to itself — an anchor jump, a position
-       restored on reload, find-in-page, a script driving it — dispatches no wheel, touch or key, so it is left
-       exactly where it put itself. Without this the assist fights the browser, and it silently relocated the
-       page under four checks that had positioned it deliberately. */
-    if (performance.now() - lastInput > 2000) { parked = current; return; }
-    if (current === parked) return;
-    parked = current;
-    /* The stepper's index is only meaningful while the stepper is what is moving the page. A carry moves it for
-       a different reason, so the index is dropped and the next press re-reads the position — otherwise a press
-       arriving mid-carry steps from wherever the reader was BEFORE the carry, which is a stop away and possibly
-       most of the page away. */
-    stopIndex = -1;
-    glideTo(restFor(current));
-  }
-
+  /* A scroll updates the readout and NOTHING ELSE. No settle timer, no decision about where the reader ought to
+     have stopped. The stepper's index is dropped, though: once the page has been scrolled by hand, the stop it
+     was last heading for says nothing about where the next press should start from. */
   function onScroll() {
     if (!queued) {
       queued = true;
       requestAnimationFrame(frame);
     }
-    // Our own scrolling must not restart its own settle timer, or the carry can never finish.
-    if (glide) return;
-    clearTimeout(settleTimer);
-    settleTimer = setTimeout(park, SETTLE);
+    if (!glide) stopIndex = -1;
   }
 
   function remeasure() {
@@ -310,38 +275,27 @@
   /* The stop list, for anything that needs to know where the page can come to rest. The measurements are all
      derived — section spans, the morph trigger, the roles, the gap filling — so restating them anywhere else is
      a second description that can drift. The harness reads this rather than recomputing the geometry. */
-  /* `busy` is the page still DECIDING: either gliding, or counting down the settle before it decides whether to
-     carry. A reader cannot see the difference between that and a page at rest, but anything measuring one can
-     be fooled by it — a scroll that has stopped is not the same as a scroll that has finished. */
+  /* `busy` is the page moving itself — a keyboard step or an anchor jump still in flight. A reader cannot see
+     the difference between that and a page at rest, but anything measuring one can be fooled by it. */
   window.AKNAV = {
     stops: () => stops.slice(),
     index: () => stopIndex,
     section: () => current,
-    busy: () => glide !== 0 || settleTimer !== 0,
+    busy: () => glide !== 0,
   };
 
   remeasure();
-  parked = current;
   window.addEventListener('scroll', onScroll, { passive: true });
   window.addEventListener('resize', remeasure);
   // Web fonts land after this runs and reflow every section under the fold, so the first measurement is stale.
   window.addEventListener('load', remeasure);
 
-  /* The reader's own hands, recorded and answered in one place: the timestamp is what tells park() the movement
-     was theirs to finish, and cancelling any carry in flight is the difference between an assist and having the
-     page taken off them. Capture, so nothing further down can swallow it. */
-  function noteInput() {
-    lastInput = performance.now();
-    stopGlide();
-  }
-  /* THE WHEEL IS THE READER'S, MOMENTUM AND ALL. Reading it as discrete gestures — one flick, one stop — was
-     tried and reverted: it is exact, but a wheel that answers only the first event of a gesture and ignores the
-     rest feels unresponsive, because the page stops moving while the hand is still moving. The scroll stays
-     native and the carry tidies up where it lands, which overshoots sometimes and always feels alive.
-     The keyboard keeps the discrete stepping. A key press IS one discrete decision, so nothing is being
-     inferred there. */
+  /* THE WHEEL IS THE READER'S, MOMENTUM AND ALL, and it is now the only thing that decides where they end up.
+     The one job left here is to get out of the way: a hand on the wheel while a keyboard step is still gliding
+     cancels the glide, which is the difference between an assist and having the page taken off you.
+     Capture, so nothing further down can swallow it. */
   for (const ev of ['wheel', 'touchmove', 'pointerdown']) {
-    window.addEventListener(ev, noteInput, { passive: true, capture: true });
+    window.addEventListener(ev, stopGlide, { passive: true, capture: true });
   }
 
   /* ---- the arrow keys ----
@@ -360,7 +314,6 @@
   }
 
   window.addEventListener('keydown', (e) => {
-    lastInput = performance.now();
     const space = e.key === ' ' || e.key === 'Spacebar';
     // Shift+Space is the browser's own "back a page", so it keeps that meaning here.
     const dir = space && e.shiftKey ? -1 : STEP_KEYS[e.key];
@@ -372,8 +325,7 @@
     stepTo(dir);
   });
 
-  /* An anchor click already names a destination, so the carry must not follow it with a second, unasked-for
-     move. And for the two pinned scenes it has to name a different destination than the browser would.
+  /* An anchor click names a destination the browser would get wrong for the pinned scenes.
      A SCENE INSIDE A STICKY STAGE HAS NO PAGE POSITION OF ITS OWN. #alex resolves to where the stage comes to
      rest, which is the END of the hero's runway — the words have already climbed out and the frame is empty, so
      the browser's own jump lands on nothing. #app has the same shape. The page position is the RANGE's, which
@@ -381,7 +333,6 @@
   document.addEventListener('click', (e) => {
     const a = e.target.closest && e.target.closest('a[href^="#"]');
     if (!a) return;
-    quietUntil = performance.now() + 1400;
 
     const hash = a.getAttribute('href');
     if (!hash || hash.length < 2) return;

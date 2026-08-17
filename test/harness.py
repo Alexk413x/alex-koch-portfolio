@@ -169,14 +169,6 @@ class Page:
             time.sleep(0.05)
         return self.js('Math.round(scrollY)')
 
-    def until_ran(self, timeout=5.0):
-        """Waits for the Cartographer suite to finish its run.
-
-        It lights on its own 1.5s clock once the scroll lands, so reading when the page has merely stopped
-        moving catches it part-way -- five checks of six. The grid is the only readout it has."""
-        self.until("(()=>{const c=document.querySelectorAll('#covers .cover');"
-                   "return c.length>0 && [...c].every(e=>e.classList.contains('on'))})()", timeout=timeout)
-
     def until_morphed(self, timeout=4.0):
         """Waits for the calculator to reach a PURE state.
 

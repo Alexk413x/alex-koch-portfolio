@@ -679,9 +679,12 @@ section[id] { scroll-margin-top: 84px }
 
 /* ---------------- cartographer ---------------- */
 
-/* The scene's pin, in viewport heights, and the only declaration of it. One beat to commit and then the way
-   out, so it is shorter than the calculator's: the scene is read, not scrubbed. */
-:root { --loop-run: .9 }
+/* ZERO run, and the only declaration of it. The pin used to buy the beat that lit the checks in turn; with that
+   gone it bought most of a screen of scrolling during which nothing moved, which reads as a stuck page. The
+   section arrives, and arriving is the whole of its motion. The stage stays — nav.js resolves the section
+   through its [data-range] container, and the stylesheet still clips it to one screen. Give this a value again
+   and the section is pinned again; the stop list, the carry and the section spans all derive from it. */
+:root { --loop-run: 0 }
 
 #loop-scroll {
   position: relative;
@@ -689,9 +692,22 @@ section[id] { scroll-margin-top: 84px }
   height: calc(100dvh + var(--loop-run) * 100dvh);
 }
 
-#loop-stage { position: sticky; top: 0; height: 100vh; height: 100dvh; overflow: hidden; display: grid; align-items: center }
+/* --o2 / --y2 default to the SEATED state HERE, on the element scenes.js writes to: an inline style outranks
+   this, so the rig can drive the arrival, while no-JS, reduced motion and a short window all inherit a section
+   that is simply here. Declaring them on #cartographer instead would shadow the inherited value and pin the
+   arrival at its start forever. */
+#loop-stage {
+  --o2: 1;
+  --y2: 0px;
+  position: sticky; top: 0; height: 100vh; height: 100dvh; overflow: hidden; display: grid; align-items: center;
+}
 
-#cartographer { position: relative; padding: 70px var(--pad-page) 44px; width: 100% }
+/* The section trails the scroll and comes up to strength as the reactor is struck above it, so the two read as
+   one hand-off. Scrubbed, so it carries no transition of its own — the easing is applied once, in scenes.js. */
+#cartographer {
+  position: relative; padding: 70px var(--pad-page) 44px; width: 100%;
+  opacity: var(--o2); transform: translateY(var(--y2));
+}
 
 /* TWO COLUMNS, ONE COMPOSITION. Stacked, this section ran 915px of content against a 768px laptop screen, and
    six blocks in a row read as a pile of sections rather than as one. The claim and the payoff it lands on sit
@@ -730,34 +746,26 @@ section[id] { scroll-margin-top: 84px }
 
 /* ---- what a run covers ----
  *
- * Three clusters, not nine peers. Nine equal blurbs in one grid is a specification: a reader gets no ranking
- * out of it and takes none away. The three groups they already fall into read in a single pass, and the widths
- * are proportional to what each holds rather than equal, so the grid says something too.
- *
- * NO BOXES. Every entry used to be a bordered cell that lit with an orange gradient wash, which is a lot of
- * furniture around eight short labels and reads as decoration rather than as instrumentation. What the run
- * lights now is the TEXT: dim until its check has run, full strength and amber after.
+ * A LIST, AND FULLY LEGIBLE AT REST. Every entry used to be a label with a sentence under it, dimmed to a third
+ * opacity until the scroll had lit it. Both went: eight sentences argue one case eight times, and evidence a
+ * reader cannot read until they have scrolled past it is not evidence. Names only, at full strength, always.
  */
-/* Cluster one spans both rows, the other two stack beside it. Left to wrap on its own, the third cluster fell
-   under the first -- the tallest of the three -- and the block grew by the height of a whole group for nothing. */
-.clusters { display: grid; grid-template-columns: 1.3fr 1fr; grid-template-rows: auto auto; gap: 26px 40px; align-content: start }
-.cluster:first-child { grid-row: 1 / span 2 }
-.cluster > b {
-  display: block; padding-bottom: 9px; margin-bottom: 16px;
+.checks { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 26px 40px; align-content: start }
+.checks > div > b {
+  display: block; padding-bottom: 9px; margin-bottom: 14px;
   border-bottom: 1px solid var(--hairline);
   font-family: var(--font-display); font-weight: 800; font-size: 14px; letter-spacing: -.2px; color: var(--text-strong);
 }
-.cluster .cap + .cap { margin-top: 14px }
 
-.cap b { display: block; font-family: var(--font-mono); font-size: 10.5px; letter-spacing: .2em; text-transform: uppercase; color: var(--text-muted); transition: color .3s var(--ease-settle) }
-.cap p { margin: 5px 0 0; font-size: 12.5px; line-height: 1.5; color: var(--text-body) }
-.cap em { color: var(--text-strong); font-style: normal; font-family: var(--font-mono); font-size: 12.5px }
+/* The marker is the amber rule down the left, not a bullet glyph: a disc at this type size reads as a bug on
+   the screen, and the rule gives the list one edge to scan instead of eight. */
+.checks ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 10px }
+.checks li {
+  padding-left: 14px; border-left: 2px solid var(--accent);
+  font-size: 13.5px; line-height: 1.45; color: var(--text-body);
+}
 
-/* The run's only mark on them, and nothing here is a failure state: every one of them passes, which is the
-   point being made. */
-.cap.cover { opacity: .34; transition: opacity .3s var(--ease-settle) }
-.cap.cover.on { opacity: 1 }
-.cap.cover.on b { color: var(--amber) }
+.demo-note { margin: 10px 0 0; font-size: 12.5px; color: var(--text-faint) }
 
 .demo-cta {
   margin-top: 30px; display: inline-flex; align-items: center; gap: 10px;
@@ -1537,7 +1545,7 @@ footer a:hover { color: var(--accent) }
    they are worse. */
 @media (max-width: 1080px) {
   .loop-grid { grid-template-columns: minmax(0, 1fr); gap: 34px }
-  .clusters { grid-template-columns: minmax(0, 1fr); gap: 26px }
+  .checks { grid-template-columns: minmax(0, 1fr); gap: 26px }
 }
 
 @media (max-height: 500px) {

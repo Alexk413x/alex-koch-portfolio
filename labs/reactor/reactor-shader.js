@@ -21,7 +21,7 @@ export const UNIFORMS = [
   'uPhSpin', 'uRingAngleY',
   'uPhOrbitX', 'uRingAngleX', 'uWobbleX', 'uPhWobX',
   'uPhOrbitZ', 'uRingAngleZ', 'uWobbleZ', 'uPhWobZ',
-  'uScatter', 'uShape', 'uShieldExpand', 'uSize', 'uSubVT', 'uSwellAmt',
+  'uScatter', 'uShape', 'uShieldExpand', 'uSize', 'uSubSurf', 'uSubVT', 'uSwellAmt',
   'uSwellRingBase', 'uSwellTarget', 'uTime', 'uTurb', 'uVent', 'uVentBright', 'uVentBurst', 'uVentSize',
   'uVentSwell', 'uVisc', 'uZoom'
 ];
@@ -36,7 +36,9 @@ uniform vec3 uCoreCol;        // CORE COLOUR picker — the scene's only light, 
 uniform float uVentSwell;    // VENT SWELL envelope: 0..1 animation ramp
 uniform float uSwellAmt;     // VENT SWELL target: signed fraction (+1 = ring, +2 = past, -1 = shrink to 0)
 uniform float uSwellRingBase; // original ring radius used as the SWELL target (so the ring can expand separately)
-uniform float uSubVT;        // sub-core (droplet) viscosity/turbulence multiplier
+uniform float uSubVT;        // SUB VIS/TRB: how much a pulse feeds back into viscosity/turbulence (CPU-side)
+uniform float uSubSurf;      // SUB-CORE SURFACE: how much of the core's displaced surface the droplets carry.
+                             // 0 renders them as smooth spheres, which reads as round objects leaving a lumpy one
 uniform float uSwellTarget;  // the (break-expanded) ring radius the SWELL reaches toward
 uniform float uScatter;      // break-scatter distance: flings each of the 9 pieces off in a random direction with a random tumble
 uniform float uShieldExpand; // shield ring balloons outward as it dies during a break
@@ -105,7 +107,7 @@ float coreSDF(vec3 p){
     for(int i=0;i<20;i++){
       if(i>=int(uDropN)) break;
       vec4 D=uDropData[i];                              // center.xyz, radius.w (CPU-precomputed — no per-step hashing/trig)
-      float db=shapeSDF(p - D.xyz, D.w) - disp*0.7*uSubVT;    // droplets share the core's turbulent surface (SUB VIS/TRB scales it)
+      float db=shapeSDF(p - D.xyz, D.w) - disp*0.7*uSubSurf;  // droplets share the core's turbulent surface (SUB-CORE SURFACE scales it)
       d=smin(d, db, 0.16*R);                           // stretching goo bridge that thins & pinches off
     }
   }

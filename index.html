@@ -102,8 +102,9 @@
 
 <!-- WHAT A RUN COVERS AND WHAT IT COSTS, not how it works. The reader is an enterprise trying to take cost out
      of QA; the internals are a conversation for later, and showing them here spends the section's one screen on
-     the wrong argument. One gesture starts the suite: every kind of check lights in turn and the figures count
-     up, and the cost lands on zero while they do. Every number here is off the shipped record. -->
+     the wrong argument. The checks are named and left legible: they used to sit at a third opacity and light in
+     turn as the pin was scrolled, which made the section's own evidence unreadable until it had been scrolled
+     through. Nothing here animates now. -->
 <div id="loop-scroll" data-range>
 <div id="loop-stage">
   <section id="cartographer">
@@ -138,27 +139,27 @@
       </div>
 
       <div class="loop-show">
-      <!-- THREE CLUSTERS, NOT NINE PEERS. Nine equal blurbs in one grid is a specification; a reader gets no
-           ranking from it and takes none away. They already fall into three groups, and three read in one pass.
-           Each cap carries `cover` too, which is the handle the run lights them by: the list and the thing the
-           scene animates are one set of elements, not two descriptions of the same set. -->
-      <div class="clusters" id="covers">
-        <div class="cluster">
-          <b>What it checks</b>
-          <div class="cap cover"><b>End to end</b><p>Recorded once, replayed deterministically: same actions, same order, same captures.</p></div>
-          <div class="cap cover"><b>Visual regression</b><p>Screenshots diffed against baseline into changed regions, by script.</p></div>
-          <div class="cap cover"><b>Accessibility</b><p>31 checkers over the a11y tree, plus contrast, reachability and focus order.</p></div>
-          <div class="cap cover"><b>WCAG 2.2 AA</b><p>The standard EN 301 549 cites for EAA. Reported as findings, not as a badge no tool can earn.</p></div>
-          <div class="cap cover"><b>Performance</b><p>Metrics against an averaged baseline, with app time isolated from network wait.</p></div>
+      <!-- A LIST OF NAMES, NOT A SPECIFICATION. Every entry used to carry a sentence explaining itself, which is
+           eight sentences arguing the same case in a column already holding a lede and five more. The names are
+           what a reader scans for; the detail is one click away in the report the demo opens. -->
+      <div class="checks">
+        <div>
+          <b>What every run checks</b>
+          <ul>
+            <li>End-to-end flows</li>
+            <li>Screenshot / visual regression</li>
+            <li>Performance</li>
+            <li>Accessibility &mdash; a11y tree, contrast, focus order</li>
+            <li>WCAG 2.2 AA</li>
+          </ul>
         </div>
-        <div class="cluster">
-          <b>What it does when it fails</b>
-          <div class="cap cover"><b>Self-healing</b><p>A flag is classified intended, regression or external, then the code or the map is fixed.</p></div>
-          <div class="cap cover"><b>No silent green</b><p>Missing evidence reports skipped or needs-review. Never pass, and not configurable.</p></div>
-        </div>
-        <div class="cluster">
-          <b>What it keeps</b>
-          <div class="cap cover"><b>Run history</b><p>Every run stored and viewable, with auditable data behind each verdict.</p></div>
+        <div>
+          <b>What it does with the result</b>
+          <ul>
+            <li>Self-heals the map when the app moves</li>
+            <li>No silent green &mdash; missing evidence reports skipped</li>
+            <li>Every run stored, viewable and auditable</li>
+          </ul>
         </div>
       </div>
 
@@ -168,6 +169,7 @@
       <a class="demo-cta" href="cartographer-demo.html">
         <i class="live-dot" aria-hidden="true"></i>Live demo
       </a>
+      <p class="demo-note">A full report for a real application.</p>
       </div>
 
       </div>
@@ -241,7 +243,10 @@
          Pinned, and the scroll chooses WHICH role rather than how far down a list you are, so the section is a
          viewer you step through instead of a document you fall down. The strip is the rail: it names every role
          and lights the one you are on, which is the only progress readout the section needs. -->
-<div id="exp-scroll">
+<!-- data-range for the same reason the other three carry it, even though no link resolves to it: nav.js reads
+     these to find where a pinned scene ENDS, and the runway between a scene's last beat and its end is the scene
+     leaving. Without it a stop lands in the middle of the deck sliding away. -->
+<div id="exp-scroll" data-range>
 <div id="exp-stage">
   <div class="exp-view">
     <div class="exp-strip" role="tablist" aria-label="Jump to a role"></div>

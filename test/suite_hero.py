@@ -33,18 +33,22 @@ FRAME = """(()=>{
   return JSON.stringify({peak, lit:lit/(w*h), r:sr/Math.max(n,1), g:sg/Math.max(n,1), b:sb/Math.max(n,1)});
 })()"""
 
-# One synthetic throw, stepped by hand through renderNow so the result does not depend on whether this window
-# happens to be getting animation frames -- Windows Chrome delivers none to a window that is not front-most.
-THROW = """(()=>{
-  const move=(x,y)=>dispatchEvent(new PointerEvent('pointermove',{clientX:x,clientY:y}));
-  const out={};
-  let x=240; for(let i=0;i<10;i++){ x+=26; move(x,400); HERO.renderNow(1/60); }
-  out.right=+HERO.state.coreSpin.toFixed(2);
-  for(let i=0;i<25;i++) HERO.renderNow(1/60);
-  out.coasted=+HERO.state.coreSpin.toFixed(2);
-  let y=520; for(let i=0;i<10;i++){ y-=26; move(x,y); HERO.renderNow(1/60); }
-  out.up=+HERO.state.coreSpinX.toFixed(2);
-  return JSON.stringify(out);
+# The face follows the pointer's POSITION. Stepped by hand through renderNow so the result does not depend on
+# whether this window is getting animation frames -- Windows Chrome delivers none to one that is not front-most.
+# Angles are read as an OFFSET from the resting pose, because the preset carries a base tilt on X.
+FOLLOW = """(()=>{
+  const b=document.getElementById('hero-core').getBoundingClientRect();
+  const cx=b.left+b.width/2, cy=b.top+b.height/2;
+  const off=Math.min(innerWidth,innerHeight)*0.35;
+  // 90 frames: the face chases its angle exponentially, so a short settle leaves a residual that the "still
+  // pointer" check below would then read as drift.
+  const put=(x,y)=>{ dispatchEvent(new PointerEvent('pointermove',{clientX:x,clientY:y}));
+                     for(let i=0;i<90;i++) HERO.renderNow(1/60);
+                     return {y:HERO.state.coreAngle, x:HERO.state.coreAngleX}; };
+  const mid=put(cx,cy), right=put(cx+off,cy), left=put(cx-off,cy), up=put(cx,cy-off);
+  for(let i=0;i<60;i++) HERO.renderNow(1/60);          // hand still, pointer unmoved
+  const drift=Math.abs(HERO.state.coreAngle-up.y);
+  return JSON.stringify({right:right.y-mid.y, left:left.y-mid.y, up:up.x-mid.x, drift});
 })()"""
 
 
@@ -64,10 +68,10 @@ SPLIT = """(()=>{
   for(let f=0;f<8;f++){
     HERO.near=0;
     for(let i=0;i<60;i++) HERO.renderNow(0.05);          // let the last one, and any throw, decay out
-    const calm=s.visc;                                   // read AFTER settling, so only the pulse can move it
+    const calm=HERO.sim.step(s,0,0).visc;      // the sim's OUTPUT: s.visc is never written back
     HERO.sim.firePulse(s);
     const p=toPeak();                                    // NOT a fixed frame count: DURATION moves the peak
-    moved=Math.max(moved, Math.abs(s.visc-calm));
+    moved=Math.max(moved, p.visc-calm);
     const R=s.size + p.pulse*s.pulseSize;
     for(let i=0;i<p.dropN;i++){
       const d=p.dropData, c=Math.hypot(d[i*4],d[i*4+1],d[i*4+2]);
@@ -103,7 +107,8 @@ DIRECTION = """(()=>{
       if(Math.max(px[i],px[i+1],px[i+2])>90){ sx+=x; n++; } }
     return {x:n?sx/n:0, area:n}; };
   const once=()=>{
-    Object.assign(s,{dropN:1, dropSize:1.4, pulseAmp:18, glow:1.6, coreAngle:0});
+    Object.assign(s,{dropN:1, dropSize:1.4, pulseAmp:18, glow:1.6});
+    HERO.pose(0, 0);
     HERO.near=0;
     for(let i=0;i<60;i++) HERO.renderNow(0.05);
     HERO.sim.firePulse(s);
@@ -111,7 +116,8 @@ DIRECTION = """(()=>{
     for(let i=0;i<120;i++){ HERO.renderNow(1/60);
       const q=HERO.sim.step(s,0,0); if(q.pulse<prev) break; prev=q.pulse; }
     const N=32, sw=[];
-    for(let k=0;k<N;k++){ s.coreAngle=k*Math.PI*2/N; HERO.renderNow(0); sw.push(look()); }
+    // pose(), not s.coreAngle: draw() writes that every frame from the pointer's angle and would overwrite it.
+    for(let k=0;k<N;k++){ HERO.pose(k*Math.PI*2/N, 0); HERO.renderNow(0); sw.push(look()); }
     const mean=sw.reduce((a,v)=>a+v.area,0)/N;
     let acc=0; for(let k=0;k<N;k++) acc += (sw[k].area-mean)*(sw[(k+1)%N].x - sw[(k+N-1)%N].x);
     return acc/(N*mean); };
@@ -184,20 +190,37 @@ def run(page, r):
                        "return JSON.stringify({p:HERO.sim.step(HERO.state,0,0).pulse})})()")
     r.ok('a click on the stage fires a pulse', pulsed['p'] > 0.02, 'pulse %.3f' % pulsed['p'])
 
-    # The pulse has to BREAK, and it has to break only about half. Whole fires are measured inside one evaluate,
-    # because the page's own loop advances the spring between two of them.
+    # And it changes nothing else: a click answers with what a hover at that point would say, so viscosity is not
+    # left pinned at MELTDOWN once the spring has decayed.
+    HOVER = ("(()=>{const b=document.getElementById('hero-core').getBoundingClientRect();"
+             "return JSON.stringify({x:Math.round(b.left+b.width/2+420), y:Math.round(b.top+b.height/2+260)})})()")
+    at = page.json(HOVER)
+    page.cdp.call('Input.dispatchMouseEvent', {'type': 'mouseMoved', 'x': at['x'], 'y': at['y']})
+    page.js('(()=>{for(let i=0;i<90;i++) HERO.renderNow(1/60);})()')
+    hovered = page.js('+HERO.near.toFixed(3)')
+    for kind in ('mousePressed', 'mouseReleased'):
+        page.cdp.call('Input.dispatchMouseEvent',
+                      {'type': kind, 'x': at['x'], 'y': at['y'], 'button': 'left', 'clickCount': 1})
+    page.js('(()=>{for(let i=0;i<120;i++) HERO.renderNow(1/60);})()')   # past the end of the spring
+    clicked = page.js('+HERO.near.toFixed(3)')
+    r.near('a click leaves the surface where hovering left it', clicked, hovered, 0.02)
+
+    # These bounds describe the INSTRUMENT: FORCE is the only pulse value this scene sets itself, so if they need
+    # moving, the lab moved and this scene has to be looked at again.
+    # Whole fires are measured inside one evaluate, because the page's own loop advances the spring between two.
     split = page.json(SPLIT)
-    # A pulse STRAINS the surface: sub-cores pull out on necks, and none of them get away. Both halves matter —
-    # nothing emerging is a wobble, everything separating is a burst of unrelated balls, and the tuning that
-    # produced each of those is recorded in hero-core.js.
-    # Measured on how far they REACH rather than on a bucket count: at the shipped force most sub-cores are still
-    # rooted in the surface, so the buckets are lopsided by design and only the extent says the pulse happened.
     r.ok('a pulse strains sub-cores out of the surface', split['reach'] > 1.25,
          'furthest reaches %.2f core radii' % split['reach'])
-    r.ok('a pulse does not throw them clear of the core', split['free'] < 0.1,
-         '%.0f%% fully free of %d' % (split['free'] * 100, split['n']))
-    r.ok('sub-cores stay well under the core', split['biggest'] < 0.4,
+    # Analytic -- droplet centres against the core radius, two ideal spheres. It pins the droplet TABLE against
+    # the settings and says nothing about the picture, where the displacement field and the blend decide.
+    r.ok('the droplet table keeps them within the blend', split['free'] < 0.1,
+         '%.0f%% of %d clear the blend' % (split['free'] * 100, split['n']))
+    # Half the core radius. They are meant to READ as part of it, and above this they are a second object.
+    r.ok('sub-cores stay well under the core', split['biggest'] < 0.5,
          'largest is %.2f of the core radius' % split['biggest'])
+    # SUB VIS/TRB is 0 here: the surface's roil is the pointer's distance and nothing else, so a click near the
+    # core cannot stack turbulence on top of it. Read off the sim's OUTPUT -- s.visc is never written back, so
+    # reading the state compares a number with itself and reports 0 whatever the setting is.
     r.ok('a pulse does not roughen the surface', abs(split['viscMoved']) < 0.01,
          'viscosity moved %.3f' % split['viscMoved'])
 
@@ -208,13 +231,14 @@ def run(page, r):
     r.ok('a positive Y angle carries the near face right', d['positive'] == 3,
          '%d of 3 runs positive: %s' % (d['positive'], [round(v, 2) for v in d['runs']]))
 
-    t = page.json(THROW)
-    r.ok('a throw to the right spins the face right', t['right'] > 2, 'coreSpin %.2f RPM' % t['right'])
-    # Toward the idle rate, not toward zero, and from above — so this is a decrease.
-    r.ok('a throw runs down when the hand stops', t['coasted'] < t['right'] - 1,
-         '%.2f -> %.2f RPM' % (t['right'], t['coasted']))
+    t = page.json(FOLLOW)
+    r.ok('the face turns right when the pointer is right', t['right'] > 0.2, 'angle Y %+.2f rad' % t['right'])
+    r.ok('and left when it is left', t['left'] < -0.2, 'angle Y %+.2f rad' % t['left'])
     # Upward is where clientY SHRINKS, and a positive X angle carries the near face down, so this one is negative.
-    r.ok('a throw upward tips the face up', t['up'] < -2, 'coreSpinX %.2f RPM' % t['up'])
+    r.ok('and tips up when it is above', t['up'] < -0.1, 'angle X %+.2f rad' % t['up'])
+    # THE POINT OF DRIVING IT OFF POSITION: a still hand is a still face. The velocity model this replaced kept
+    # coasting after the pointer stopped, which is what read as janky.
+    r.ok('a still pointer leaves the face still', t['drift'] < 0.01, 'drifted %.4f rad' % t['drift'])
 
     # Viscosity is the ONE value nearness moves, and it must move at both ends. Settled first, because a throw
     # also stirs the core and the one above is still running down — the coast is deliberately slow.
