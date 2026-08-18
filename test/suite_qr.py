@@ -60,11 +60,25 @@ def run(page, r):
     data = page.js("document.getElementById('qr-canvas').toDataURL('image/png').split(',')[1]")
     img = cv2.imdecode(np.frombuffer(base64.b64decode(data), np.uint8), cv2.IMREAD_COLOR)
     want = 'https://' + page.js("document.querySelector('.qr-url').textContent.trim()")
-    got, _, _ = detector.detectAndDecode(img)
+
+    # POLARITY IS NORMALISED FIRST, and that is a cost, not a formality. The page draws light modules on a dark
+    # ground; OpenCV's detector reads dark-on-light only and returns nothing from the canvas as drawn, measured
+    # at both 246px and 180px. Phone cameras that invert for themselves still read it, and this cannot check
+    # that. Inverting here tests the modules and the centre stamp, which is what this file is for.
+    def flip(im):
+        return cv2.cvtColor(255 - cv2.cvtColor(im, cv2.COLOR_BGR2GRAY), cv2.COLOR_GRAY2BGR)
+
+    got, _, _ = detector.detectAndDecode(flip(img))
     r.check('the rendered canvas decodes', got, want)
     small = cv2.resize(img, (180, 180), interpolation=cv2.INTER_AREA)
-    got_small, _, _ = detector.detectAndDecode(small)
+    got_small, _, _ = detector.detectAndDecode(flip(small))
     r.check('...and still decodes at 180px', got_small, want)
+
+    # A missing favicon.svg leaves a clean hole that still decodes, so the decode above cannot catch it. Only
+    # the mark puts accent-red pixels in the middle of the code.
+    mid = img.shape[0] // 2
+    core = img[mid - 20:mid + 20, mid - 20:mid + 20, 2]
+    r.ok('the centre carries the mark', bool((core > 150).any()))
 
     page.js("document.getElementById('qr-close').click();1")
     r.ok('close hides the dialog', page.js("document.getElementById('qr-dialog').hidden"))

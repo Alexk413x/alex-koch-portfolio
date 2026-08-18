@@ -83,7 +83,7 @@ import { sendUniforms } from './reactor-uniforms.js';
 
 const stage = document.getElementById('stage');
 const R = createQuad(document.getElementById('core'), {
-  frag: FRAG, uniforms: UNIFORMS, ext: ['OES_standard_derivatives'], onRestore: () => fit(true),
+  frag: FRAG, uniforms: UNIFORMS, onRestore: () => fit(true),
 });
 if (!R) { reportNoGL(); throw new Error('WebGL unavailable'); }
 

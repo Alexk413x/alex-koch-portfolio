@@ -13,30 +13,28 @@
  * the middle of a shader.
  */
 export const UNIFORMS = [
-  'uAmp', 'uBreakBurst', 'uCamAngle', 'uCamEl', 'uCoreAngle', 'uCoreAngleX', 'uCoreCol', 'uDropData', 'uDropN',
-  'uGlow', 'uOct', 'uPhCam', 'uPhCoreX', 'uPhCoreY', 'uPhRate',
+  'uAmp', 'uBreakBurst', 'uCamAngle', 'uCamEl', 'uCoreCol', 'uDropData', 'uDropN', 'uRingM', 'uCoreM',
+  'uGlow', 'uOct', 'uPhCam', 'uPhRate',
   'uPulse', 'uPulseBright', 'uPulseSize', 'uRate', 'uRes', 'uRingGlow',
   'uRingLight', 'uRingOn', 'uRingR', 'uRingRough', 'uRingWear',
-  // the three ring axes: a spin in its own plane, and a tumble about each of world X and Z
-  'uPhSpin', 'uRingAngleY',
-  'uPhOrbitX', 'uRingAngleX', 'uWobbleX', 'uPhWobX',
-  'uPhOrbitZ', 'uRingAngleZ', 'uWobbleZ', 'uPhWobZ',
-  'uScatter', 'uShape', 'uShieldExpand', 'uSize', 'uSubSurf', 'uSubVT', 'uSwellAmt',
+  
+  'uScatter', 'uShape', 'uShieldExpand', 'uSize', 'uSubSurf', 'uSwellAmt',
   'uSwellRingBase', 'uSwellTarget', 'uTime', 'uTurb', 'uVent', 'uVentBright', 'uVentBurst', 'uVentSize',
   'uVentSwell', 'uVisc', 'uZoom'
 ];
 
-export const FRAG = `
-#extension GL_OES_standard_derivatives : enable
+export const FRAG = `#version 300 es
 precision highp float;
-uniform vec2 uRes; uniform float uTime,uSize,uVisc,uTurb,uRate,uGlow,uZoom,uPulse,uVent,uVentBurst,uRingR,uRingLight,uRingGlow,uRingOn,uOct,uCamAngle,uCamEl,uAmp,uPulseBright,uVentSize,uVentBright,uShape,uWobbleX,uCoreAngle,uCoreAngleX,uPulseSize,uDropN,uPhSpin,uPhWobX,uPhCam,uPhCoreY,uPhCoreX,uPhRate,uRingAngleY,uRingAngleX,uPhOrbitX;
+out vec4 fragColor;
+uniform vec2 uRes; uniform float uTime,uSize,uVisc,uTurb,uRate,uGlow,uZoom,uPulse,uVent,uVentBurst,uRingR,uRingLight,uRingGlow,uRingOn,uOct,uCamAngle,uCamEl,uAmp,uPulseBright,uVentSize,uVentBright,uShape,uPulseSize,uDropN,uPhCam,uPhRate;
 
 uniform vec4 uDropData[20];   // per-droplet center.xyz + radius.w, precomputed on CPU each frame
+uniform mat3 uRingM;          // world -> ring space, composed on CPU each frame (see ringSpace)
+uniform mat3 uCoreM;          // world -> core space, composed on CPU each frame (see coreSDF)
 uniform vec3 uCoreCol;        // CORE COLOUR picker — the scene's only light, and every surface is read through it
 uniform float uVentSwell;    // VENT SWELL envelope: 0..1 animation ramp
 uniform float uSwellAmt;     // VENT SWELL target: signed fraction (+1 = ring, +2 = past, -1 = shrink to 0)
 uniform float uSwellRingBase; // original ring radius used as the SWELL target (so the ring can expand separately)
-uniform float uSubVT;        // SUB VIS/TRB: how much a pulse feeds back into viscosity/turbulence (CPU-side)
 uniform float uSubSurf;      // SUB-CORE SURFACE: how much of the core's displaced surface the droplets carry.
                              // 0 renders them as smooth spheres, which reads as round objects leaving a lumpy one
 uniform float uSwellTarget;  // the (break-expanded) ring radius the SWELL reaches toward
@@ -45,7 +43,6 @@ uniform float uShieldExpand; // shield ring balloons outward as it dies during a
 uniform float uBreakBurst;    // seconds since a break began (>=1.3 = inactive) - drives the shockwave flashes
 uniform float uRingRough;    // RING ROUGHNESS: 0 = mirror alloy, 1 = satin. Widens the specular lobe.
 uniform float uRingWear;     // RING WEAR: bare metal on the machined lips, grime pooled in the recessed bays
-uniform float uRingAngleZ, uPhOrbitZ, uWobbleZ, uPhWobZ;   // the second tumble axis, mirroring the X set
 float hash(vec3 p){ p=fract(p*0.3183099+0.1); p*=17.0; return fract(p.x*p.y*p.z*(p.x+p.y+p.z)); }
 float noise(vec3 x){
   vec3 p=floor(x),f=fract(x); f=f*f*(3.0-2.0*f);
@@ -57,8 +54,6 @@ float noise(vec3 x){
 float fbm(vec3 p){ float v=0.0,a=0.5; for(int i=0;i<6;i++){ if(i>=int(uOct)) break; v+=a*noise(p); p=p*2.02+vec3(1.7); a*=0.5; } return v; }
 float fbm3(vec3 p){ float v=0.0,a=0.5; for(int i=0;i<4;i++){ v+=a*noise(p); p=p*2.03+vec3(1.7); a*=0.5; } return v; }  // fixed 4-octave (for the ring's land/water map — independent of DETAIL)
 mat3 rotY(float a){ float c=cos(a),s=sin(a); return mat3(c,0.,-s, 0.,1.,0., s,0.,c); }
-mat3 rotX(float a){ float c=cos(a),s=sin(a); return mat3(1.,0.,0., 0.,c,-s, 0.,s,c); }
-mat3 rotZ(float a){ float c=cos(a),s=sin(a); return mat3(c,-s,0., s,c,0., 0.,0.,1.); }
 vec3 ringSpace(vec3 p);   // forward declaration
 float caust(vec2 p){                 // cheap sunlight-through-water caustic
   float t=uTime*0.5; vec2 q=p; float v=0.0;
@@ -92,8 +87,10 @@ float coreRadius(){
   return max(base + clamp(uVentSwell,0.0,1.0)*delta, 0.0);   // VENT SWELL animates the core size during a vent
 }
 float coreSDF(vec3 p){
-  p = rotY(uCoreAngle + uPhCoreY) * p;               // core rotation Y
-  p = rotX(uCoreAngleX + uPhCoreX) * p;              // core rotation X
+  /* One CPU-composed matrix, for the same reason as uRingM. Both angles come from uniforms, so the two
+     rotations resolve to the same matrix for every pixel. This is called once per march step and four more
+     times by the normal estimator, so a 70-step ray built it 74 times to get one answer. */
+  p = uCoreM * p;
   float t=uTime*(0.35+uRate*0.12);
   vec3 q=p*uVisc + vec3(0.0,t,0.0);
   float n=fbm(q + fbm(q*0.5+t*0.3)*1.2);
@@ -125,16 +122,15 @@ float boxTorus(vec3 p,float R,vec2 he,float rad){
  *
  * The two tumbles are about world X and world Z. Between them the ring's axis reaches
  * (-sin g cos b, cos g cos b, sin b), which is the whole sphere — the ring can present any face to the core. */
-vec3 ringSpace(vec3 p){
-  vec3 q = rotZ(uRingAngleZ + uPhOrbitZ + uWobbleZ*sin(uPhWobZ)) * p;   // tumble Z
-  q = rotX(uRingAngleX + uPhOrbitX + uWobbleX*sin(uPhWobX)) * q;        // tumble X
-  return rotY(uRingAngleY + uPhSpin) * q;                               // spin, in the ring's own plane
-}
-vec3 ringToWorld(vec3 q){            // inverse of ringSpace (ring-local -> world), so the order reverses
-  vec3 p = rotY(-(uRingAngleY + uPhSpin)) * q;
-  p = rotX(-(uRingAngleX + uPhOrbitX + uWobbleX*sin(uPhWobX))) * p;
-  return rotZ(-(uRingAngleZ + uPhOrbitZ + uWobbleZ*sin(uPhWobZ))) * p;
-}
+/* ONE MATRIX, BUILT ON THE CPU. Every angle in this transform comes from a uniform, so the three rotations
+   resolve to the same mat3 for every pixel and every march step. Composing them in the shader cost eight
+   transcendentals and three matrix multiplies PER CALL, and ringSDF and shieldSDF each call it once inside the
+   march loop -- so a 70-step ray paid for it 140 times to get an answer that never changed.
+   reactor-uniforms.js builds uRingM. Same treatment, and the same reason, as uDropData. */
+vec3 ringSpace(vec3 p){ return uRingM * p; }
+
+// Inverse of ringSpace. A composition of rotations is orthonormal, so the transpose IS the inverse.
+vec3 ringToWorld(vec3 q){ return transpose(uRingM) * q; }
 float ringSDF(vec3 p){
   if(uRingOn<0.5) return 1e5;
   vec3 pr=ringSpace(p);
@@ -374,8 +370,9 @@ void main(){
     float mottA=noise(vec3(arc*7.0, pr.y*9.0, 1.0));
     vec3 alloy=mix(vec3(0.052,0.058,0.068), vec3(0.105,0.112,0.126), grain*0.65+mottA*0.35);
     vec3 alb=mix(alloy*1.3, alloy*0.7, S.bay);           // the recessed bay is painted darker than its frame
-    float patch=noise(vec3(arc*2.3, pr.y*3.0, 7.0));     // low frequency, so some lips are worn bare and others are not
-    float wear=uRingWear*S.rim*(0.12+0.88*smoothstep(0.30,0.72,patch*0.7+grain*0.3));
+    // Named blotch, not patch: patch is a RESERVED WORD in GLSL ES 3.00 and will not compile.
+    float blotch=noise(vec3(arc*2.3, pr.y*3.0, 7.0));     // low frequency, so some lips are worn bare and others are not
+    float wear=uRingWear*S.rim*(0.12+0.88*smoothstep(0.30,0.72,blotch*0.7+grain*0.3));
     float grime=uRingWear*S.bay*(0.30+0.70*mottA)*(1.0-S.rim);
     alb=mix(alb, vec3(0.46,0.48,0.51), wear);
     alb=mix(alb, alb*0.55, grime*0.5);
@@ -493,5 +490,5 @@ void main(){
   }
   col=col/(col+0.85); col=pow(col,vec3(0.85));
   col += (hash(vec3(gl_FragCoord.xy, fract(uTime)))-0.5)/160.0;   // dither: smooths the bloom gradient banding
-  gl_FragColor=vec4(col,1.0);
+  fragColor=vec4(col,1.0);
 }`;

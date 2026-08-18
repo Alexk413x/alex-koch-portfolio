@@ -28,7 +28,11 @@ function stage(gl, type, src) {
   return sh;
 }
 
-const VERT = 'attribute vec2 p; void main(){ gl_Position = vec4(p, 0.0, 1.0); }';
+// ES 3.00, like every fragment shader this compiles: a WebGL2 context will not link a 1.00 vertex shader to a
+// 3.00 fragment one, and the pair must agree on the language before either compiles.
+// A template literal, because #version has to sit on its own line and an escape would hide that.
+const VERT = `#version 300 es
+in vec2 p; void main(){ gl_Position = vec4(p, 0.0, 1.0); }`;
 
 /* A LOOKUP TABLE FOR 3D VALUE NOISE, PACKED INTO ONE 2D TEXTURE.
  *
@@ -42,7 +46,8 @@ const VERT = 'attribute vec2 p; void main(){ gl_Position = vec4(p, 0.0, 1.0); }'
  * channel is slice z+1 of that same address, and one fetch returns both — the caller only has to mix them by the
  * fractional z. The offset is coprime with the size, so slices decorrelate rather than repeating.
  *
- * 256 is a power of two, which WebGL1 requires for REPEAT wrapping.
+ * 256 is a power of two. WebGL2 wraps NPOT textures happily, so this is no longer a requirement — but the
+ * shader addresses slices by adding a coprime offset and wrapping, and that arithmetic assumes this size.
  */
 export function valueNoiseTexture(size = 256, seed = 1) {
   const n = size * size;
@@ -139,12 +144,14 @@ function blueNoiseTile(size) {
 
 /* Builds the renderer, or returns null if WebGL is unavailable or the shader will not compile.
  *
- *   const R = createQuad(canvas, { frag: FRAG, uniforms: ['uRes'], ext: ['OES_standard_derivatives'] });
+ *   const R = createQuad(canvas, { frag: FRAG, uniforms: ['uRes'] });
  *   R.resize(w, h, 0.7);  R.f('uTime', t);  R.draw();
  *
  * `onRestore` fires after a lost context is rebuilt, so the caller can re-send anything it only sets on change.
- * A shader using `fwidth` must pass `ext: ['OES_standard_derivatives']` AND carry the matching `#extension`
- * directive as its first line, or it compiles to nothing and this returns null.
+ *
+ * `fwidth` and the derivatives NEED NOTHING. They are core in WebGL2, so the OES_standard_derivatives dance —
+ * an `ext` entry plus a `#extension` directive as the shader's first line — is gone from every caller. `ext` is
+ * kept for extensions that are still extensions here, EXT_color_buffer_float being the one likely to matter.
  *
  * `textures` maps a sampler name to { data, w, h } — see valueNoiseTexture. They are uploaded on build, so a
  * restored context recreates them along with everything else.
@@ -155,10 +162,24 @@ function blueNoiseTile(size) {
  */
 export function createQuad(canvas, { frag, uniforms = [], ext = [], textures = {}, onRestore = null,
                                      variant = null } = {}) {
-  const gl = canvas.getContext('webgl', { alpha: false, antialias: false, depth: false, stencil: false,
-                                          premultipliedAlpha: false, preserveDrawingBuffer: false,
-                                          powerPreference: 'high-performance' })
-          || canvas.getContext('experimental-webgl');
+  /* WEBGL2, and only WebGL2. There is no WebGL1 fallback and that is deliberate: `experimental-webgl` was a 2013
+     spelling for browsers that no longer exist, and a silent downgrade path is worse than none — a shader using
+     a core-in-2 feature would compile to nothing on the fallback and the page would show black with no error
+     worth reading.
+     THIS IS NOT A SPEED CHANGE. Every lab here draws one fullscreen triangle, so the frame cost is fragment
+     shader arithmetic and the context version does not touch it. What 2 buys is that derivatives, textureLod,
+     texelFetch, round() and NPOT textures are all core, so a shader can use them without an extension dance.
+     The measured cost of each lab before and after this move is the same. */
+  /* `alpha: false` STAYS, and the reason is that removing it has NOT been shown to help. MDN warns the flag makes
+     the browser composite the canvas as though it were opaque "at a significant performance cost" and says to
+     write 1.0 from the shader instead — which these shaders already do, so it looks like free money.
+     It was tried. The run without it came back slower, but the same build measured 56.4 ms and 37.8 ms on two
+     runs an hour apart on this machine, so a ~10% effect is far inside the noise and NOTHING was demonstrated
+     either way. Left as it was, because an unmeasured change to a working default is not an improvement.
+     If you want the real answer: interleave A/B/A/B on an idle machine, several runs each. */
+  const gl = canvas.getContext('webgl2', { alpha: false, antialias: false, depth: false, stencil: false,
+                                           premultipliedAlpha: false, preserveDrawingBuffer: false,
+                                           powerPreference: 'high-performance' });
   if (!gl) return null;
 
   /* ONE RENDERER, SEVERAL PROGRAMS. A fragment shader pays for code it does not run: in this project's wormhole,
@@ -193,9 +214,10 @@ export function createQuad(canvas, { frag, uniforms = [], ext = [], textures = {
     return prog;
   };
 
-  /* Makes a linked program current. The attribute binding and the sampler units are BOTH per program — WebGL1
-   * has no vertex array object to remember the first, and a sampler uniform lives in the program like any other
-   * — so both are re-applied on every switch rather than once at build.
+  /* Makes a linked program current. The attribute binding and the sampler units are BOTH re-applied on every
+   * switch rather than once at build: a sampler uniform lives in the program like any other, and no vertex array
+   * object is bound here to remember the attribute. WebGL2 has VAOs and this could use one; it does not, because
+   * one program drawing one triangle has nothing to gain from it.
    *
    * `last` is per program and is NOT cleared here: uniform values live in the program object and survive being
    * switched away from, so a returning program's cache is still telling the truth.
@@ -322,6 +344,10 @@ export function createQuad(canvas, { frag, uniforms = [], ext = [], textures = {
     },
     // Uncached: an array uniform here is a per-frame animation table, so comparing costs what uploading costs.
     fv4(name, arr) { gl.uniform4fv(cur.U[name], arr); },
+
+    // Uncached for the same reason as fv4: nine floats compare for what they cost to send. Column-major, which
+    // is what GLSL expects and what mat3(a,b,c, d,e,f, g,h,i) builds.
+    m3(name, arr) { gl.uniformMatrix3fv(cur.U[name], false, arr); },
 
     // Sizes the buffer to a CSS box at a fraction of it, reporting whether anything moved. dpr is capped at 1 on
     // top of `scale`: these are soft, noisy fields where the extra samples buy nothing visible.

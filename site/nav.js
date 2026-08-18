@@ -22,6 +22,16 @@
 
   const clamp = (v) => (v < 0 ? 0 : v > 1 ? 1 : v);
 
+  /* Cartographer's running-graph position, from the file that owns the envelope. Guarded rather than assumed:
+     scenes.js disarms itself under reduced motion and on a short window, and this must not take the nav down
+     with it if the handle is ever absent. */
+  function loopIdle() {
+    const s = window.AKSCENE;
+    if (!s || typeof s.cartographerIdleY !== 'function') return null;
+    const y = s.cartographerIdleY();
+    return y > 0 ? y : null;
+  }
+
   /* The range a link owns is declared in the markup, not restated here. Scene 01 and the calculator are
      absolutely positioned inside sticky stages, so their own tops are not page positions at all; the scroll each
      one occupies is its [data-range] container.
@@ -91,18 +101,15 @@
     orbY = Math.round(sceneRun * (window.innerHeight || 0));
     if (orbY > 24) list.push(orbY);
 
-    /* Two stops, like the calculator: the suite at rest, and the suite having run. Its trigger is
-       --morph-trip, the one declaration both files read, so a change there cannot strand the stop short of
-       the beat it is meant to land on. */
+    /* ONE stop, and the graph's running position is deliberately NOT a second one. This section is a viewport
+       tall, so anything between its top and the calculator's seats neither of them — suite_layout guards that,
+       and it shipped broken once. The anchor click below still lands on the running graph, because a click is
+       a destination the reader named rather than a place the page may come to rest on its own. */
     const loopScroll = document.getElementById('loop-scroll');
-    const loopStage = document.getElementById('loop-stage');
     const trip = parseFloat(getComputedStyle(document.documentElement)
       .getPropertyValue('--morph-trip')) || .14;
-    if (loopScroll && loopStage) {
-      const pinTop = at(loopScroll);
-      const run = loopScroll.offsetHeight - loopStage.offsetHeight;
-      list.push(pinTop);
-      if (run > 0) list.push(Math.min(maxScroll(), pinTop + Math.round(run * trip) + 24));
+    if (loopScroll) {
+      list.push(at(loopScroll));
     } else {
       const cart = document.getElementById('cartographer');
       if (cart) list.push(at(cart));
@@ -342,8 +349,15 @@
 
     e.preventDefault();
     stopIndex = -1;
-    glideTo(Math.max(0, Math.min(maxScroll(),
-      Math.round(range.getBoundingClientRect().top + (window.scrollY || window.pageYOffset || 0)))));
+
+    /* CARTOGRAPHER IS THE ONE SCENE WHOSE TOP IS NOT ITS DESTINATION. The top of its range is the section
+       arriving with nothing drawn — a reader who asks for Cartographer and is put there sees an empty frame and
+       has to scroll to find out what they clicked. Land on the running graph instead, which is what the section
+       is FOR. Every other range still goes to its top, because for those the top is the scene. */
+    let y = Math.round(range.getBoundingClientRect().top + (window.scrollY || window.pageYOffset || 0));
+    if (hash === '#cartographer') y = loopIdle() || y;
+
+    glideTo(Math.max(0, Math.min(maxScroll(), y)));
     if (history.replaceState) history.replaceState(null, '', hash);
   }, true);
 })();

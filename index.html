@@ -6,6 +6,9 @@
 <title>Alex Koch, Agentic Mobile Engineer</title>
 <meta name="description" content="Alex Koch, agentic mobile engineer. 14 years shipping mobile at scale with Yahoo!, Target, Kohl's and Vacasa. Now building QAAI, a multi-agent QA platform.">
 <meta name="color-scheme" content="dark">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon.ico" sizes="48x48 32x32 16x16">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
@@ -41,7 +44,7 @@
     </a>
     <!-- One dialog, two triggers. share.js binds every [data-qr-open], so this and the contact button are two
          doors into the same drawn-once canvas rather than two descriptions of it. -->
-    <button type="button" data-qr-open aria-label="Show QR code for this site">
+    <button class="tip" data-tip="Show QR code" type="button" data-qr-open aria-label="Show QR code for this site">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3h8v8H3zm2 2v4h4V5zM13 3h8v8h-8zm2 2v4h4V5zM3 13h8v8H3zm2 2v4h4v-4zM13 13h3v3h-3zm5 0h3v3h-3zm-5 5h3v3h-3zm5 0h3v3h-3z"/></svg>
     </button>
   </div>
@@ -100,65 +103,56 @@
 </div>
 </div>
 
-<!-- WHAT A RUN COVERS AND WHAT IT COSTS, not how it works. The reader is an enterprise trying to take cost out
-     of QA; the internals are a conversation for later, and showing them here spends the section's one screen on
-     the wrong argument. The checks are named and left legible: they used to sit at a third opacity and light in
-     turn as the pin was scrolled, which made the section's own evidence unreadable until it had been scrolled
-     through. Nothing here animates now. -->
+<!-- WORDS ON THE LEFT, THE MECHANISM ON THE RIGHT. What a run covers and what it costs, not how it works. The
+     prose was eight sentences arguing one case eight times; the terms are what a reader scans for, and the
+     detail is one click away in the report the demo opens. The flow graph carries the shape of a run, which is
+     the one thing a list of terms cannot say. -->
 <div id="loop-scroll" data-range>
 <div id="loop-stage">
   <section id="cartographer">
     <div class="inner">
-      <h2 class="sec-title">QA<br><span style="color:var(--accent)">CARTOGRAPHER</span></h2>
-      <!-- TWO COLUMNS, ONE COMPOSITION. Stacked, the six blocks ran 915px against a 768px laptop screen and
-           read as a pile of sections rather than one. Split, the claim and its payoff sit on the left and the
-           evidence for it on the right, and the section fits the screen it is pinned to. Nothing was cut. -->
       <div class="loop-grid">
 
+      <!-- THE TITLE IS IN THE COLUMN, not above the grid. Outside it, the grid centred the graph against the
+           prose alone and the title's height was never counted — which is why the phones hung a title's worth too
+           low against everything on the left. -->
       <div class="loop-say">
+      <h2 class="sec-title">QA<br><span style="color:var(--accent)">CARTOGRAPHER</span></h2>
       <p class="tagline">AI only where judgement is needed.</p>
       <p class="sec-lede">
         One recorded suite covers the whole surface, heals itself when the app moves under it, and replays for
-        free. Cost tracks change and breakage, not how many tests you own.
+        free.
       </p>
 
-      <!-- Two ways to run it, and the pair is the differentiator: the same tool discovers the surface and then
-           replays it deterministically, so nobody writes the first script and nothing drifts afterwards. -->
-      <div class="modes">
-        <div><b>Exploratory crawl</b>Walks the app and builds the map itself. No script written first.</div>
-        <div><b>Scripted replay</b>Runs the compiled map deterministically. Same actions, same order, every time.</div>
-      </div>
+      <!-- Reach, before coverage, and as a claim rather than as a row of the spec sheet: "will it work with what
+           we already have" is the question an enterprise asks before any of the others.
+           Three spans rather than one string, so the gap between the claims is set rather than being whatever a
+           space character happens to measure at this size — and so a narrow window breaks it between claims. -->
+      <p class="reach"><span>Any Platform.</span><span>Any App.</span><span>Any LLM.</span></p>
 
-      <!-- Reach, before coverage. The three Any claims answer "will it work with what we already have", which
-           for an enterprise is the question asked before any of the others. -->
-      <div class="anys">
-        <div><b>Any app</b>The map is walked out of the app, not hand-authored.</div>
-        <div><b>Any platform</b>Android, iOS and web behind one driver contract.</div>
-        <div><b>Any LLM</b>An author and an exception handler, never a runtime dependency.</div>
-      </div>
-      </div>
-
-      <div class="loop-show">
-      <!-- A LIST OF NAMES, NOT A SPECIFICATION. Every entry used to carry a sentence explaining itself, which is
-           eight sentences arguing the same case in a column already holding a lede and five more. The names are
-           what a reader scans for; the detail is one click away in the report the demo opens. -->
-      <div class="checks">
-        <div>
-          <b>What every run checks</b>
-          <ul>
-            <li>End-to-end flows</li>
-            <li>Screenshot / visual regression</li>
-            <li>Performance</li>
-            <li>Accessibility &mdash; a11y tree, contrast, focus order</li>
-            <li>WCAG 2.2 AA</li>
-          </ul>
+      <!-- One word list per row. HOW IT RUNS AND WHAT COMES BACK FIRST, then the list of what it covers: the
+           first two are the argument and the third is the evidence, and evidence read before the claim is just a
+           list. Testing is last and is the only enumerated row — six numbered names read as a count, which is
+           what makes them scannable without a second weight competing with the two rows above. -->
+      <div class="terms">
+        <div class="term">
+          <b>Runs</b>
+          <ul><li>Exploratory crawl</li><li>Scripted replay</li></ul>
         </div>
-        <div>
-          <b>What it does with the result</b>
-          <ul>
-            <li>Self-heals the map when the app moves</li>
-            <li>No silent green &mdash; missing evidence reports skipped</li>
-            <li>Every run stored, viewable and auditable</li>
+        <div class="term">
+          <b>Result</b>
+          <ul><li>Self-healing</li><li>No silent green</li><li>Every run audited</li></ul>
+        </div>
+        <div class="term">
+          <b>Testing</b>
+          <!-- Read ACROSS, not down: the grid is row-major, so this order is the pairing on screen. -->
+          <ul class="checks">
+            <li>End-to-end</li>
+            <li>Accessibility</li>
+            <li>Performance</li>
+            <li>WCAG 2.2 AA</li>
+            <li>Screenshot</li>
+            <li>EAA</li>
           </ul>
         </div>
       </div>
@@ -169,7 +163,113 @@
       <a class="demo-cta" href="cartographer-demo.html">
         <i class="live-dot" aria-hidden="true"></i>Live demo
       </a>
-      <p class="demo-note">A full report for a real application.</p>
+      </div>
+
+      <!-- ONE SCALAR BUILDS ALL OF IT. scenes.js writes --g on the stage; every rectangle and every track
+           derives its own progress from that and its own --d, so a scroll frame still touches a single element.
+           The only per-element numbers here are --d (build order), --dx/--dy (where a rectangle arrives from)
+           and --sd (a pulse's place in the shared cycle).
+           --d IS THE STORY: a row's track reaches out, its second rectangle lands on the end of it, the track
+           carries on, the third lands. Then the next row. Top to bottom, one row at a time.
+           DEPTH IS DRAWN, NOT PROJECTED. The second and third rectangles are the same object; the third is
+           smaller and nearer the eye line because it is further back. One vanishing point, no matrix to keep in
+           step with the layout. -->
+      <div class="loop-show">
+      <svg class="flow" viewBox="0 0 660 662" role="img"
+           aria-label="One recorded screen branches into three replayed paths, each running back through two more screens.">
+        <defs>
+          <!-- Stop colours are set in the stylesheet, not here: var() does not substitute inside a presentation
+               attribute, so a stop-color attribute would silently paint black. -->
+          <radialGradient id="cartoPool">
+            <stop class="p0" offset="0" stop-opacity=".3"/>
+            <stop class="p1" offset=".5" stop-opacity=".1"/>
+            <stop class="p2" offset="1" stop-opacity="0"/>
+          </radialGradient>
+        </defs>
+
+        <!-- THE DEPTH IS IN THE COORDINATES, and it has to be: an SVG subtree is a FLAT rendering context, so a
+             CSS perspective() on a group here is applied as one uniform scale rather than per vertex. Measured --
+             with perspective(400px) rotateY(45deg) the near rank and the far rank came out the same height, at
+             every perspective distance.
+             So these are PROJECTED. ONE phone, a face 74 x 156 turned 2.5 degrees about its own vertical axis,
+             drawn seven times at three depths through a short lens. The ranks behind come out smaller because
+             they sit further away. Nothing here is drawn smaller by hand. -->
+
+        <!-- THE FLOOR MEETS THE FEET AND GOES NO HIGHER. Its top edge sits at 614, which is the bottom of the
+             lowest phone in the picture -- high enough that the devices are standing ON it rather than in front
+             of a glow, low enough that it is not washing up THROUGH a row of them. Most of it lies below the
+             frame, which is correct: it is the ground in front, and the frame is not where it ends.
+             NINE TO ONE, not five. A pool that is nearly circular reads as a light source hanging behind the
+             scene; a plane seen from close to its own level is a long flat smear, and that is what says floor. -->
+        <ellipse class="fg-floor" cx="300" cy="722" rx="485" ry="50" style="--d:0;--df:.40"/>
+
+        <!-- CENTRE TO CENTRE, and drawn UNDER the phones — which is what dims the stretch of a line that is
+             genuinely behind one. The fan out of the near phone curves because it changes row; the run from the
+             second rank to the third is straight, because it does not. -->
+        <g class="fg-edges">
+          <path class="fg-edge" pathLength="100" style="--d:.24;--df:.00" d="M132.0,330 C260.6,330 271.4,115 400,115"/>
+          <path class="fg-edge" pathLength="100" style="--d:.33;--df:.12" d="M406.2,115 L570,140.8"/>
+          <path class="fg-edge" pathLength="100" style="--d:.42;--df:.26" d="M132.0,330 L400,330"/>
+          <path class="fg-edge" pathLength="100" style="--d:.51;--df:.38" d="M406.2,330 L570,330.0"/>
+          <path class="fg-edge" pathLength="100" style="--d:.60;--df:.52" d="M132.0,330 C260.6,330 271.4,545 400,545"/>
+          <path class="fg-edge" pathLength="100" style="--d:.69;--df:.64" d="M406.2,545 L570,519.2"/>
+        </g>
+
+        <g class="fg-nodes">
+          <g class="fg-node z1" style="--d:0;--df:.78;--dy:-20">
+            <path class="edges" d="M236.1,144.1 L233.5,131.3 L226.0,120.7 L214.9,113.9 L201.8,111.9 L64.1,118.0 L51.9,121.1 L41.5,128.6 L34.6,139.4 L32.2,151.9 L32.2,508.1 L34.6,520.6 L41.5,531.4 L51.9,538.9 L64.1,542.0 L201.8,548.1 L214.9,546.1 L226.0,539.3 L233.5,528.7 L236.1,515.9 Z M222.1,144.1 L236.1,144.1 M187.8,111.9 L201.8,111.9 M50.1,118.0 L64.1,118.0 M18.2,151.9 L32.2,151.9 M18.2,508.1 L32.2,508.1 M50.1,542.0 L64.1,542.0 M187.8,548.1 L201.8,548.1 M222.1,515.9 L236.1,515.9"/>
+            <path class="face" d="M222.1,144.1 L219.5,131.3 L212.0,120.7 L200.9,113.9 L187.8,111.9 L50.1,118.0 L37.9,121.1 L27.5,128.6 L20.6,139.4 L18.2,151.9 L18.2,508.1 L20.6,520.6 L27.5,531.4 L37.9,538.9 L50.1,542.0 L187.8,548.1 L200.9,546.1 L212.0,539.3 L219.5,528.7 L222.1,515.9 Z"/>
+          </g>
+
+          <g class="fg-node z2" style="--d:.30;--df:.06;--dx:-54">
+            <path class="edges" d="M451.4,34.2 L450.3,28.6 L447.1,23.9 L442.3,20.8 L436.6,19.8 L376.1,21.0 L370.6,22.2 L365.9,25.4 L362.8,30.2 L361.7,35.7 L361.7,194.3 L362.8,199.8 L365.9,204.6 L370.6,207.8 L376.1,209.0 L436.6,210.2 L442.3,209.2 L447.1,206.1 L450.3,201.4 L451.4,195.8 Z M445.3,34.2 L451.4,34.2 M430.5,19.8 L436.6,19.8 M369.9,21.0 L376.1,21.0 M355.6,35.7 L361.7,35.7 M355.6,194.3 L361.7,194.3 M369.9,209.0 L376.1,209.0 M430.5,210.2 L436.6,210.2 M445.3,195.8 L451.4,195.8"/>
+            <path class="face" d="M445.3,34.2 L444.1,28.6 L440.9,23.9 L436.1,20.8 L430.5,19.8 L369.9,21.0 L364.4,22.2 L359.8,25.4 L356.7,30.2 L355.6,35.7 L355.6,194.3 L356.7,199.8 L359.8,204.6 L364.4,207.8 L369.9,209.0 L430.5,210.2 L436.1,209.2 L440.9,206.1 L444.1,201.4 L445.3,195.8 Z"/>
+          </g>
+          <g class="fg-node z3" style="--d:.39;--df:.18;--dx:-40">
+            <path class="edges" d="M615.2,69.8 L614.2,64.9 L611.4,60.7 L607.2,58.0 L602.2,57.1 L548.9,58.0 L544.1,59.1 L540.0,61.9 L537.2,66.1 L536.3,70.9 L536.3,210.7 L537.2,215.5 L540.0,219.7 L544.1,222.5 L548.9,223.6 L602.2,224.5 L607.2,223.6 L611.4,220.9 L614.2,216.7 L615.2,211.8 Z M609.8,69.8 L615.2,69.8 M596.8,57.1 L602.2,57.1 M543.5,58.0 L548.9,58.0 M530.9,70.9 L536.3,70.9 M530.9,210.7 L536.3,210.7 M543.5,223.6 L548.9,223.6 M596.8,224.5 L602.2,224.5 M609.8,211.8 L615.2,211.8"/>
+            <path class="face" d="M609.8,69.8 L608.8,64.9 L606.0,60.7 L601.8,58.0 L596.8,57.1 L543.5,58.0 L538.7,59.1 L534.6,61.9 L531.8,66.1 L530.9,70.9 L530.9,210.7 L531.8,215.5 L534.6,219.7 L538.7,222.5 L543.5,223.6 L596.8,224.5 L601.8,223.6 L606.0,220.9 L608.8,216.7 L609.8,211.8 Z"/>
+          </g>
+          <g class="fg-node z2" style="--d:.48;--df:.32;--dx:-54">
+            <path class="edges" d="M451.4,249.2 L450.3,243.6 L447.1,238.9 L442.3,235.8 L436.6,234.8 L376.1,236.0 L370.6,237.2 L365.9,240.4 L362.8,245.2 L361.7,250.7 L361.7,409.3 L362.8,414.8 L365.9,419.6 L370.6,422.8 L376.1,424.0 L436.6,425.2 L442.3,424.2 L447.1,421.1 L450.3,416.4 L451.4,410.8 Z M445.3,249.2 L451.4,249.2 M430.5,234.8 L436.6,234.8 M369.9,236.0 L376.1,236.0 M355.6,250.7 L361.7,250.7 M355.6,409.3 L361.7,409.3 M369.9,424.0 L376.1,424.0 M430.5,425.2 L436.6,425.2 M445.3,410.8 L451.4,410.8"/>
+            <path class="face" d="M445.3,249.2 L444.1,243.6 L440.9,238.9 L436.1,235.8 L430.5,234.8 L369.9,236.0 L364.4,237.2 L359.8,240.4 L356.7,245.2 L355.6,250.7 L355.6,409.3 L356.7,414.8 L359.8,419.6 L364.4,422.8 L369.9,424.0 L430.5,425.2 L436.1,424.2 L440.9,421.1 L444.1,416.4 L445.3,410.8 Z"/>
+          </g>
+          <g class="fg-node z3" style="--d:.57;--df:.44;--dx:-40">
+            <path class="edges" d="M615.2,259.0 L614.2,254.1 L611.4,249.9 L607.2,247.2 L602.2,246.3 L548.9,247.2 L544.1,248.3 L540.0,251.1 L537.2,255.3 L536.3,260.1 L536.3,399.9 L537.2,404.7 L540.0,408.9 L544.1,411.7 L548.9,412.8 L602.2,413.7 L607.2,412.8 L611.4,410.1 L614.2,405.9 L615.2,401.0 Z M609.8,259.0 L615.2,259.0 M596.8,246.3 L602.2,246.3 M543.5,247.2 L548.9,247.2 M530.9,260.1 L536.3,260.1 M530.9,399.9 L536.3,399.9 M543.5,412.8 L548.9,412.8 M596.8,413.7 L602.2,413.7 M609.8,401.0 L615.2,401.0"/>
+            <path class="face" d="M609.8,259.0 L608.8,254.1 L606.0,249.9 L601.8,247.2 L596.8,246.3 L543.5,247.2 L538.7,248.3 L534.6,251.1 L531.8,255.3 L530.9,260.1 L530.9,399.9 L531.8,404.7 L534.6,408.9 L538.7,411.7 L543.5,412.8 L596.8,413.7 L601.8,412.8 L606.0,410.1 L608.8,405.9 L609.8,401.0 Z"/>
+          </g>
+          <g class="fg-node z2" style="--d:.66;--df:.58;--dx:-54">
+            <path class="edges" d="M451.4,464.2 L450.3,458.6 L447.1,453.9 L442.3,450.8 L436.6,449.8 L376.1,451.0 L370.6,452.2 L365.9,455.4 L362.8,460.2 L361.7,465.7 L361.7,624.3 L362.8,629.8 L365.9,634.6 L370.6,637.8 L376.1,639.0 L436.6,640.2 L442.3,639.2 L447.1,636.1 L450.3,631.4 L451.4,625.8 Z M445.3,464.2 L451.4,464.2 M430.5,449.8 L436.6,449.8 M369.9,451.0 L376.1,451.0 M355.6,465.7 L361.7,465.7 M355.6,624.3 L361.7,624.3 M369.9,639.0 L376.1,639.0 M430.5,640.2 L436.6,640.2 M445.3,625.8 L451.4,625.8"/>
+            <path class="face" d="M445.3,464.2 L444.1,458.6 L440.9,453.9 L436.1,450.8 L430.5,449.8 L369.9,451.0 L364.4,452.2 L359.8,455.4 L356.7,460.2 L355.6,465.7 L355.6,624.3 L356.7,629.8 L359.8,634.6 L364.4,637.8 L369.9,639.0 L430.5,640.2 L436.1,639.2 L440.9,636.1 L444.1,631.4 L445.3,625.8 Z"/>
+          </g>
+          <g class="fg-node z3" style="--d:.75;--df:.70;--dx:-40">
+            <path class="edges" d="M615.2,448.2 L614.2,443.3 L611.4,439.1 L607.2,436.4 L602.2,435.5 L548.9,436.4 L544.1,437.5 L540.0,440.3 L537.2,444.5 L536.3,449.3 L536.3,589.1 L537.2,593.9 L540.0,598.1 L544.1,600.9 L548.9,602.0 L602.2,602.9 L607.2,602.0 L611.4,599.3 L614.2,595.1 L615.2,590.2 Z M609.8,448.2 L615.2,448.2 M596.8,435.5 L602.2,435.5 M543.5,436.4 L548.9,436.4 M530.9,449.3 L536.3,449.3 M530.9,589.1 L536.3,589.1 M543.5,602.0 L548.9,602.0 M596.8,602.9 L602.2,602.9 M609.8,590.2 L615.2,590.2"/>
+            <path class="face" d="M609.8,448.2 L608.8,443.3 L606.0,439.1 L601.8,436.4 L596.8,435.5 L543.5,436.4 L538.7,437.5 L534.6,440.3 L531.8,444.5 L530.9,449.3 L530.9,589.1 L531.8,593.9 L534.6,598.1 L538.7,600.9 L543.5,602.0 L596.8,602.9 L601.8,602.0 L606.0,599.3 L608.8,595.1 L609.8,590.2 Z"/>
+          </g>
+        </g>
+
+        <!-- THE GLOW. Per device: the phone's own outline grows from the middle of its front plane to its front
+             edges, runs bodily front-to-back along the sides, then closes from the back edges in on the middle of
+             the back. Then a bead down the line to the next one, and the same again.
+             Three paths take turns on a 20.7s cycle of three even 6.9s slots, so only one is ever crossing -- but
+             the NEAR phone is on all three of them, so it runs on a 6.9s cycle of its own and fires every beat. One clock for both would mean either the near phone lighting once in three, or three beads
+             crossing at once. A delay longer than its own cycle simply wraps, which is what lets the far end of
+             a path keep counting past the slot it started in. -->
+        <g class="fg-sparks" aria-hidden="true">
+          <path class="fg-wave beat" style="--wd:14.0px;--wj:.05;--tb:.44s;--wk:1.0;--wo:1.0" d="M222.1,144.1 L219.5,131.3 L212.0,120.7 L200.9,113.9 L187.8,111.9 L50.1,118.0 L37.9,121.1 L27.5,128.6 L20.6,139.4 L18.2,151.9 L18.2,508.1 L20.6,520.6 L27.5,531.4 L37.9,538.9 L50.1,542.0 L187.8,548.1 L200.9,546.1 L212.0,539.3 L219.5,528.7 L222.1,515.9 Z"/>
+          <path class="fg-spark" pathLength="100" style="--sd:1.6s;--wk:0.9" d="M132.0,330 C260.6,330 271.4,115 400,115"/>
+          <path class="fg-wave" style="--wd:6.2px;--wj:.09;--tb:.37s;--wk:0.7;--wo:0.8;--sd:2.5s" d="M445.3,34.2 L444.1,28.6 L440.9,23.9 L436.1,20.8 L430.5,19.8 L369.9,21.0 L364.4,22.2 L359.8,25.4 L356.7,30.2 L355.6,35.7 L355.6,194.3 L356.7,199.8 L359.8,204.6 L364.4,207.8 L369.9,209.0 L430.5,210.2 L436.1,209.2 L440.9,206.1 L444.1,201.4 L445.3,195.8 Z"/>
+          <path class="fg-spark" pathLength="100" style="--sd:4.0s;--wk:0.7" d="M406.2,115 L570,140.8"/>
+          <path class="fg-wave fade" style="--wd:5.4px;--wj:.04;--tb:.51s;--wk:0.7;--wo:0.8;--sd:4.9s" d="M609.8,69.8 L608.8,64.9 L606.0,60.7 L601.8,58.0 L596.8,57.1 L543.5,58.0 L538.7,59.1 L534.6,61.9 L531.8,66.1 L530.9,70.9 L530.9,210.7 L531.8,215.5 L534.6,219.7 L538.7,222.5 L543.5,223.6 L596.8,224.5 L601.8,223.6 L606.0,220.9 L608.8,216.7 L609.8,211.8 Z"/>
+          <path class="fg-spark" pathLength="100" style="--sd:8.5s;--wk:0.9" d="M132.0,330 L400,330"/>
+          <path class="fg-wave" style="--wd:6.2px;--wj:.11;--tb:.41s;--wk:0.7;--wo:0.8;--sd:9.4s" d="M445.3,249.2 L444.1,243.6 L440.9,238.9 L436.1,235.8 L430.5,234.8 L369.9,236.0 L364.4,237.2 L359.8,240.4 L356.7,245.2 L355.6,250.7 L355.6,409.3 L356.7,414.8 L359.8,419.6 L364.4,422.8 L369.9,424.0 L430.5,425.2 L436.1,424.2 L440.9,421.1 L444.1,416.4 L445.3,410.8 Z"/>
+          <path class="fg-spark" pathLength="100" style="--sd:10.9s;--wk:0.7" d="M406.2,330 L570,330.0"/>
+          <path class="fg-wave fade" style="--wd:5.4px;--wj:.06;--tb:.58s;--wk:0.7;--wo:0.8;--sd:11.8s" d="M609.8,259.0 L608.8,254.1 L606.0,249.9 L601.8,247.2 L596.8,246.3 L543.5,247.2 L538.7,248.3 L534.6,251.1 L531.8,255.3 L530.9,260.1 L530.9,399.9 L531.8,404.7 L534.6,408.9 L538.7,411.7 L543.5,412.8 L596.8,413.7 L601.8,412.8 L606.0,410.1 L608.8,405.9 L609.8,401.0 Z"/>
+          <path class="fg-spark" pathLength="100" style="--sd:15.4s;--wk:0.9" d="M132.0,330 C260.6,330 271.4,545 400,545"/>
+          <path class="fg-wave" style="--wd:6.2px;--wj:.08;--tb:.34s;--wk:0.7;--wo:0.8;--sd:16.3s" d="M445.3,464.2 L444.1,458.6 L440.9,453.9 L436.1,450.8 L430.5,449.8 L369.9,451.0 L364.4,452.2 L359.8,455.4 L356.7,460.2 L355.6,465.7 L355.6,624.3 L356.7,629.8 L359.8,634.6 L364.4,637.8 L369.9,639.0 L430.5,640.2 L436.1,639.2 L440.9,636.1 L444.1,631.4 L445.3,625.8 Z"/>
+          <path class="fg-spark" pathLength="100" style="--sd:17.8s;--wk:0.7" d="M406.2,545 L570,519.2"/>
+          <path class="fg-wave fade" style="--wd:5.4px;--wj:.13;--tb:.47s;--wk:0.7;--wo:0.8;--sd:18.7s" d="M609.8,448.2 L608.8,443.3 L606.0,439.1 L601.8,436.4 L596.8,435.5 L543.5,436.4 L538.7,437.5 L534.6,440.3 L531.8,444.5 L530.9,449.3 L530.9,589.1 L531.8,593.9 L534.6,598.1 L538.7,600.9 L543.5,602.0 L596.8,602.9 L601.8,602.0 L606.0,599.3 L608.8,595.1 L609.8,590.2 Z"/>
+        </g>
+      </svg>
       </div>
 
       </div>
@@ -198,8 +298,9 @@
 
         <div class="cta-row">
           <a class="primary" href="https://play.google.com/store/apps/details?id=com.gmail.alexk413x.RPN_Dominator_Calculator" target="_blank" rel="noopener">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.6 1.85a1.5 1.5 0 0 0-.45 1.06v18.18c0 .42.17.8.45 1.06l.06.06 10.18-10.18v-.24L3.66 1.79zM17.2 15.5l-3.36-3.36v-.24l3.36-3.37.08.05 4.02 2.28c1.15.65 1.15 1.72 0 2.38l-4.02 2.27zM17.28 15.45L13.84 12 3.6 22.15c.38.4 1 .45 1.7.05l11.98-6.75M17.28 8.55L5.3 1.8c-.7-.4-1.32-.35-1.7.05L13.84 12z"/></svg>
-            LAUNCH ON PLAY
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.68 2.23L13.72 7.96L13.72 11.88L3.68 11.88Z"/><path d="M3.68 12.12L13.72 12.12L13.72 16.04L3.68 21.77Z"/><path d="M13.98 8.04L20.83 11.95L13.98 11.95Z"/><path d="M13.98 12.05L20.83 12.05L13.98 15.96Z"/></svg>
+            GET ON PLAYSTORE
+            <svg class="ext" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3h7v7h-2V6.41l-9.3 9.3-1.41-1.42 9.29-9.29H14zM5 5h5v2H6v11h11v-4h2v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1"/></svg>
           </a>
         </div>
       </div>
@@ -235,6 +336,403 @@
         Jetpack, JIRA, Firebase, Microsoft Azure, JUnit, Espresso, Xamarin, Git, Photoshop</div>
     </div>
 
+    <!-- THE BACK CATALOGUE. The product leads and the employer is withheld until one is picked — the shelf is
+         what was shipped, and who paid for it is the answer rather than the heading.
+         NOT PINNED. Each rack is a plain horizontal scroller, so sideways belongs to the shelf and down always
+         belongs to the page; scrolling past this section is never converted into driving it.
+         EVERY PROOF IS WRITTEN OUT HERE. shelf.js is what collapses them, so a crawler running no JavaScript —
+         which is most of the AI ones — reads all seventeen records in full. Nothing is built from an array. -->
+    <div class="shelf-intro" data-reveal>
+      <div class="sec-label">THE BACK CATALOGUE</div>
+      <h3>SEVENTEEN SHIPPED PRODUCTS<br><span>ACROSS FOUR ACTS</span></h3>
+      <p>Pick one and it proves itself before it says who paid for it. The dates and the employers are all
+        still here &mdash; they are just no longer the first thing you have to read.</p>
+    </div>
+
+    <div class="shelf" id="shelf">
+
+      <!-- ONE ROW, oldest at the far end. Newest first because the section below it is newest first, because
+           that is how a resume is read, and because the strongest work must not be off-screen on arrival.
+           The act is a label on each spine rather than a divider standing between them: a divider in a single
+           horizontal row can only be read sideways, and one row was the point. -->
+      <div class="rack-wrap">
+        <div class="rack" role="group" aria-label="Shipped products, newest first">
+
+
+          <article class="spine">
+            <button class="spine-face" type="button" aria-expanded="false" aria-controls="pf-qaai">
+              <span class="cover" data-domain="agentic" aria-hidden="true"></span>
+              <span class="p-name">QAAI</span>
+              <span class="p-marks"><i>Multi-agent</i><i>CI/CD</i><i>All platforms</i></span>
+              <span class="p-domain">Act IV &middot; Scale, then agents</span>
+            </button>
+          </article>
+          <article class="spine">
+            <button class="spine-face" type="button" aria-expanded="false" aria-controls="pf-mail">
+              <span class="cover" data-domain="consumer" aria-hidden="true"></span>
+              <span class="p-name">Yahoo! Mail</span>
+              <span class="p-marks"><i>Android</i><i>Compose</i><i>A11y</i></span>
+              <span class="p-domain">Act IV &middot; Scale, then agents</span>
+            </button>
+          </article>
+          <article class="spine">
+            <button class="spine-face" type="button" aria-expanded="false" aria-controls="pf-sc">
+              <span class="cover" data-domain="agentic" aria-hidden="true"></span>
+              <span class="p-name">Store Companion</span>
+              <span class="p-marks"><i>Android</i><i>Gen AI</i><i>Scanner</i></span>
+              <span class="p-domain">Act IV &middot; Scale, then agents</span>
+            </button>
+          </article>
+          <article class="spine">
+            <button class="spine-face" type="button" aria-expanded="false" aria-controls="pf-myday">
+              <span class="cover" data-domain="retail" aria-hidden="true"></span>
+              <span class="p-name">myDay</span>
+              <span class="p-marks"><i>Android</i><i>Compose</i><i>Zebra</i></span>
+              <span class="p-domain">Act IV &middot; Scale, then agents</span>
+            </button>
+          </article>
+
+
+          <article class="spine">
+            <button class="spine-face" type="button" aria-expanded="false" aria-controls="pf-self">
+              <span class="cover" data-domain="retail" aria-hidden="true"></span>
+              <span class="p-name">Self Pickup</span>
+              <span class="p-marks"><i>Web</i></span>
+              <span class="p-domain">Act III &middot; Money and the store floor</span>
+            </button>
+          </article>
+          <article class="spine">
+            <button class="spine-face" type="button" aria-expanded="false" aria-controls="pf-pick">
+              <span class="cover" data-domain="retail" aria-hidden="true"></span>
+              <span class="p-name">Pickup</span>
+              <span class="p-marks"><i>Android</i><i>Offline</i><i>Zebra</i></span>
+              <span class="p-domain">Act III &middot; Money and the store floor</span>
+            </button>
+          </article>
+          <article class="spine">
+            <button class="spine-face" type="button" aria-expanded="false" aria-controls="pf-isu">
+              <span class="cover" data-domain="retail" aria-hidden="true"></span>
+              <span class="p-name">ISU</span>
+              <span class="p-marks"><i>Android</i><i>Core library</i></span>
+              <span class="p-domain">Act III &middot; Money and the store floor</span>
+            </button>
+          </article>
+          <article class="spine">
+            <button class="spine-face" type="button" aria-expanded="false" aria-controls="pf-oro">
+              <span class="cover" data-domain="fintech" aria-hidden="true"></span>
+              <span class="p-name">ORO Pay</span>
+              <span class="p-marks"><i>Android</i><i>Camera</i><i>GPS</i></span>
+              <span class="p-domain">Act III &middot; Money and the store floor</span>
+            </button>
+          </article>
+          <article class="spine">
+            <button class="spine-face" type="button" aria-expanded="false" aria-controls="pf-merch">
+              <span class="cover" data-domain="fintech" aria-hidden="true"></span>
+              <span class="p-name">ORO Merchant</span>
+              <span class="p-marks"><i>Android</i><i>QR</i><i>ML Kit</i></span>
+              <span class="p-domain">Act III &middot; Money and the store floor</span>
+            </button>
+          </article>
+
+
+          <article class="spine">
+            <button class="spine-face" type="button" aria-expanded="false" aria-controls="pf-fv">
+              <span class="cover" data-domain="field" aria-hidden="true"></span>
+              <span class="p-name">FieldView</span>
+              <span class="p-marks"><i>Android</i><i>iOS</i><i>Windows</i><i>Offline</i></span>
+              <span class="p-domain">Act II &middot; Into the field</span>
+            </button>
+          </article>
+          <article class="spine">
+            <button class="spine-face" type="button" aria-expanded="false" aria-controls="pf-team">
+              <span class="cover" data-domain="field" aria-hidden="true"></span>
+              <span class="p-name">Team</span>
+              <span class="p-marks"><i>Android</i><i>iOS</i><i>Windows</i></span>
+              <span class="p-domain">Act II &middot; Into the field</span>
+            </button>
+          </article>
+          <article class="spine">
+            <button class="spine-face" type="button" aria-expanded="false" aria-controls="pf-tab">
+              <span class="cover" data-domain="consumer" aria-hidden="true"></span>
+              <span class="p-name">TabbedOut</span>
+              <span class="p-marks"><i>Android</i></span>
+              <span class="p-domain">Act II &middot; Into the field</span>
+            </button>
+          </article>
+          <article class="spine">
+            <button class="spine-face" type="button" aria-expanded="false" aria-controls="pf-house">
+              <span class="cover" data-domain="field" aria-hidden="true"></span>
+              <span class="p-name">Housekeeping</span>
+              <span class="p-marks"><i>Android</i><i>Offline</i><i>GPS</i></span>
+              <span class="p-domain">Act II &middot; Into the field</span>
+            </button>
+          </article>
+
+
+          <article class="spine">
+            <button class="spine-face" type="button" aria-expanded="false" aria-controls="pf-rexel">
+              <span class="cover" data-domain="retail" aria-hidden="true"></span>
+              <span class="p-name">Rexel USA</span>
+              <span class="p-marks"><i>Android</i><i>iOS</i><i>Scanner</i></span>
+              <span class="p-domain">Act I &middot; Learning the hardware</span>
+            </button>
+          </article>
+          <article class="spine">
+            <button class="spine-face" type="button" aria-expanded="false" aria-controls="pf-123">
+              <span class="cover" data-domain="consumer" aria-hidden="true"></span>
+              <span class="p-name">123 Calling</span>
+              <span class="p-marks"><i>iOS</i><i>Localised</i></span>
+              <span class="p-domain">Act I &middot; Learning the hardware</span>
+            </button>
+          </article>
+          <article class="spine">
+            <button class="spine-face" type="button" aria-expanded="false" aria-controls="pf-kiosk">
+              <span class="cover" data-domain="consumer" aria-hidden="true"></span>
+              <span class="p-name">Asian Art Museum Kiosk</span>
+              <span class="p-marks"><i>Android</i><i>Kiosk</i></span>
+              <span class="p-domain">Act I &middot; Learning the hardware</span>
+            </button>
+          </article>
+          <article class="spine">
+            <button class="spine-face" type="button" aria-expanded="false" aria-controls="pf-ink">
+              <span class="cover" data-domain="tooling" aria-hidden="true"></span>
+              <span class="p-name">Ink Usage Dashboard</span>
+              <span class="p-marks"><i>Web</i><i>Graphs</i></span>
+              <span class="p-domain">Act I &middot; Learning the hardware</span>
+            </button>
+          </article>
+
+        </div>
+      </div>
+
+      <!-- ONE BAY for the whole shelf. Every proof is written out here and shelf.js is what collapses them, so a
+           crawler running no JavaScript reads all seventeen records in full. Nothing is built from an array. -->
+      <div class="bay">
+
+        <div class="proof" id="pf-qaai">
+          <div class="proof-fig"><span data-count="500">500</span><i>+</i></div>
+          <p class="proof-say">Tests generated, executed and self-healed from natural language, at a 95%+ pass rate in CI/CD.</p>
+          <div class="proof-at">
+            <span class="pa-label">Built at</span>
+            <h4>Yahoo!</h4>
+            <span class="pa-role">Agentic Engineer</span>
+            <time datetime="2025-09/2026-07">Sep 2025 &ndash; Jul 2026</time>
+          </div>
+          <p class="proof-more">App-, platform- and LLM-agnostic: one test case runs unchanged on iOS, Android and
+            Web. Saves executives, project managers, QA and developers across every app team hundreds of hours weekly.</p>
+        </div>
+
+        <div class="proof" id="pf-mail">
+          <div class="proof-fig said">Accessible by law</div>
+          <p class="proof-say">Features built to EAA compliance, and the QA pain points taken out behind them.</p>
+          <div class="proof-at">
+            <span class="pa-label">Built at</span>
+            <h4>Yahoo!</h4>
+            <span class="pa-role">Agentic Engineer</span>
+            <time datetime="2025-09/2026-07">Sep 2025 &ndash; Jul 2026</time>
+          </div>
+          <p class="proof-more">Developed and maintained features on Yahoo! Mail alongside the agentic plugin work,
+            with a focus on accessibility.</p>
+        </div>
+
+        <div class="proof" id="pf-sc">
+          <div class="proof-fig said">Tens of thousands of documents, one question</div>
+          <p class="proof-say">Generative AI answering store team members straight out of Target&rsquo;s own documentation.</p>
+          <div class="proof-at">
+            <span class="pa-label">Built at</span>
+            <h4>Target</h4>
+            <span class="pa-role">Lead Android Developer</span>
+            <time datetime="2022-08/2025-04">Aug 2022 &ndash; Apr 2025</time>
+          </div>
+          <p class="proof-more">Created the chat experience for free-form questions &mdash; viewing responses, giving
+            feedback on the AI&rsquo;s answers, and scanning barcodes to enquire about items or guest orders.</p>
+        </div>
+
+        <div class="proof" id="pf-myday">
+          <div class="proof-fig"><span data-count="100000">100,000</span><i>+</i></div>
+          <p class="proof-say">Daily active team members, completing in-store tasks, generating billions of calls a day.</p>
+          <div class="proof-at">
+            <span class="pa-label">Built at</span>
+            <h4>Target</h4>
+            <span class="pa-role">Lead Android Developer</span>
+            <time datetime="2022-08/2025-04">Aug 2022 &ndash; Apr 2025</time>
+          </div>
+          <p class="proof-more">Led the myDay team through updating and maintaining a multi-module monolith,
+            mentoring on Compose and Kotlin and working with other teams on shared components and the backing APIs.</p>
+        </div>
+
+        <div class="proof" id="pf-self">
+          <div class="proof-fig said">Zero associates</div>
+          <p class="proof-say">Walk into the store, enter a code, collect the order, walk out.</p>
+          <div class="proof-at">
+            <span class="pa-label">Built at</span>
+            <h4>Kohl&rsquo;s</h4>
+            <span class="pa-role">Senior Android Developer</span>
+            <time datetime="2021-01/2022-08">Jan 2021 &ndash; Aug 2022</time>
+          </div>
+          <p class="proof-more">Designed and developed a web app letting customers collect online orders with no
+            staff involved. The customer gets an email when the order is ready.</p>
+        </div>
+
+        <div class="proof" id="pf-pick">
+          <div class="proof-fig said">Works with the signal down</div>
+          <p class="proof-say">In-store, drive-up and self-pickup orders, found by scan or by customer details &mdash; online or off.</p>
+          <div class="proof-at">
+            <span class="pa-label">Built at</span>
+            <h4>Kohl&rsquo;s</h4>
+            <span class="pa-role">Senior Android Developer</span>
+            <time datetime="2021-01/2022-08">Jan 2021 &ndash; Aug 2022</time>
+          </div>
+          <p class="proof-more">A redesign of the associate-facing app to simplify adoption, increase productivity
+            and add offline capability.</p>
+        </div>
+
+        <div class="proof" id="pf-isu">
+          <div class="proof-fig said">The library every app depends on</div>
+          <p class="proof-say">Inventory, stock and unload &mdash; plus the core library sitting under every associate app Kohl&rsquo;s ships.</p>
+          <div class="proof-at">
+            <span class="pa-label">Built at</span>
+            <h4>Kohl&rsquo;s</h4>
+            <span class="pa-role">Senior Android Developer</span>
+            <time datetime="2021-01/2022-08">Jan 2021 &ndash; Aug 2022</time>
+          </div>
+          <p class="proof-more">Focused on reducing tech debt and bringing the core library up to current practice,
+            with automated testing added to the apps and their build pipeline.</p>
+        </div>
+
+        <div class="proof" id="pf-oro">
+          <div class="proof-fig said">Banking without a bank</div>
+          <p class="proof-say">Card accounts for the underbanked in Brazil &mdash; store money, send it and spend it with no bank account and no credit card.</p>
+          <div class="proof-at">
+            <span class="pa-label">Built at</span>
+            <h4>i2020 Fintech</h4>
+            <span class="pa-role">Senior Android Developer</span>
+            <time datetime="2019-08/2020-09">Aug 2019 &ndash; Sep 2020</time>
+          </div>
+          <p class="proof-more">An ORO Store for digital goods, Lot&eacute;rica and ATM transfers, and in-app phone
+            top-ups &mdash; then a greenfield Kotlin rewrite with Cognito login and a new card carousel.</p>
+        </div>
+
+        <div class="proof" id="pf-merch">
+          <div class="proof-fig said">Paid by pointing a camera</div>
+          <p class="proof-say">A QR renderer paired with Google ML Kit scanning, for peer-to-peer transfers at a merchant.</p>
+          <div class="proof-at">
+            <span class="pa-label">Built at</span>
+            <h4>i2020 Fintech</h4>
+            <span class="pa-role">Senior Android Developer</span>
+            <time datetime="2019-08/2020-09">Aug 2019 &ndash; Sep 2020</time>
+          </div>
+          <p class="proof-more">The merchant side of ORO, taking payments from ORO Pay and from card readers at
+            Brazilian businesses.</p>
+        </div>
+
+        <div class="proof" id="pf-fv">
+          <div class="proof-fig"><span data-count="10000">10,000</span><i>+</i></div>
+          <p class="proof-say">Active devices globally, on sites, in an app dating back to the Pocket PC days.</p>
+          <div class="proof-at">
+            <span class="pa-label">Built at</span>
+            <h4>Viewpoint</h4>
+            <span class="pa-role">Mobile Developer</span>
+            <time datetime="2017-07/2019-03">Jul 2017 &ndash; Mar 2019</time>
+          </div>
+          <p class="proof-more">Construction personnel navigate a site in real time, file forms, complete task lists
+            and track progress &mdash; so companies can record who completed what and compile a digital record of
+            all activity.</p>
+        </div>
+
+        <div class="proof" id="pf-team">
+          <div class="proof-fig said">Three platforms, every month</div>
+          <p class="proof-say">Android, iOS and Windows shipping the same feature set in every monthly release.</p>
+          <div class="proof-at">
+            <span class="pa-label">Built at</span>
+            <h4>Viewpoint</h4>
+            <span class="pa-role">Mobile Developer</span>
+            <time datetime="2017-07/2019-03">Jul 2017 &ndash; Mar 2019</time>
+          </div>
+          <p class="proof-more">Team lets users raise RFIs &mdash; requests for information &mdash; to get what they
+            need to finish a job on site. Xamarin for Windows and iOS, native on Android.</p>
+        </div>
+
+        <div class="proof" id="pf-tab">
+          <div class="proof-fig said">Consistent at any size</div>
+          <p class="proof-say">The UI fixed across every screen size, and the crashes stopped.</p>
+          <div class="proof-at">
+            <span class="pa-label">Built at</span>
+            <h4>Rave</h4>
+            <span class="pa-role">Android Developer</span>
+            <time datetime="2017-03/2017-05">Mar 2017 &ndash; May 2017</time>
+          </div>
+          <p class="proof-more">A contract through a partnership between the two companies, maintaining and updating
+            the app&rsquo;s features.</p>
+        </div>
+
+        <div class="proof" id="pf-house">
+          <div class="proof-fig said">The whole job, in one place</div>
+          <p class="proof-say">Cleaning details, hours worked, maintenance tickets, supplies, directions and the key house details.</p>
+          <div class="proof-at">
+            <span class="pa-label">Built at</span>
+            <h4>Vacasa</h4>
+            <span class="pa-role">Android Developer</span>
+            <time datetime="2015-03/2017-01">Mar 2015 &ndash; Jan 2017</time>
+          </div>
+          <p class="proof-more">An internal Android app for Vacasa&rsquo;s housekeepers, with the data it runs on
+            designed alongside the API team.</p>
+        </div>
+
+        <div class="proof" id="pf-rexel">
+          <div class="proof-fig said">One codebase, every brand</div>
+          <p class="proof-say">All of Rexel&rsquo;s brands and their languages out of a single Titanium build.</p>
+          <div class="proof-at">
+            <span class="pa-label">Built at</span>
+            <h4>Rexel</h4>
+            <span class="pa-role">Mobile Application Developer</span>
+            <time datetime="2014-07/2015-02">Jul 2014 &ndash; Feb 2015</time>
+          </div>
+          <p class="proof-more">A mobile e-commerce app leaning on device hardware &mdash; a barcode scanner among
+            it &mdash; to make buying on a phone worth doing.</p>
+        </div>
+
+        <div class="proof" id="pf-123">
+          <div class="proof-fig said">English, taught in Chinese</div>
+          <p class="proof-say">An iOS app converted to Simplified Chinese so Chinese students could use it to learn English.</p>
+          <div class="proof-at">
+            <span class="pa-label">Built at</span>
+            <h4>Itsy Bitsy Stories</h4>
+            <span class="pa-role">Mobile / Web Developer</span>
+            <time datetime="2012-05/2014-07">May 2012 &ndash; Jul 2014</time>
+          </div>
+          <p class="proof-more">The first mobile role, and the start of the fourteen years.</p>
+        </div>
+
+        <div class="proof" id="pf-kiosk">
+          <div class="proof-fig said">Installed beside the art</div>
+          <p class="proof-say">A tablet in the gallery, letting visitors open up the work in front of them.</p>
+          <div class="proof-at">
+            <span class="pa-label">Built at</span>
+            <h4>Itsy Bitsy Stories</h4>
+            <span class="pa-role">Mobile / Web Developer</span>
+            <time datetime="2012-05/2014-07">May 2012 &ndash; Jul 2014</time>
+          </div>
+          <p class="proof-more">Ran on an Android tablet placed beside a piece at the San Francisco Asian Art Museum,
+            letting visitors select and learn more about aspects of the work and zoom in on close-up detail.</p>
+        </div>
+
+        <div class="proof" id="pf-ink">
+          <div class="proof-fig said">Hours &rarr; minutes</div>
+          <p class="proof-say">Weekly graph production, cut from an afternoon to a coffee break.</p>
+          <div class="proof-at">
+            <span class="pa-label">Built at</span>
+            <h4>Hewlett-Packard</h4>
+            <span class="pa-role">Software Engineer Intern</span>
+            <time datetime="2012-06/2012-08">Jun 2012 &ndash; Aug 2012</time>
+          </div>
+          <p class="proof-more">An internal web page displaying and graphing printhead and ink usage, with a new
+            heat-map graph for analysing usage trends.</p>
+        </div>
+
+      </div>
+    </div>
+
   </div>
 
   <!-- ONE ROLE AT A TIME. Three columns and a sticky year readout said the same things twice; this says each
@@ -256,7 +754,7 @@
         <header class="role-head">
           <div class="role-where">Yahoo!<i>Contract: Mindlance</i></div>
           <h3>Agentic Engineer</h3>
-          <div class="role-meta"><span class="role-apps">Yahoo! Mail &middot; QAAI (internal)</span><span class="role-when">Sep 2025 &ndash; Present</span></div>
+          <div class="role-meta"><span class="role-apps">Yahoo! Mail &middot; QAAI (internal)</span><span class="role-when">Sep 2025 &ndash; Jul 2026</span></div>
         </header>
         <div class="what">
           <ul class="pts">
@@ -475,15 +973,9 @@
     <div class="education" data-reveal>
       <b>Education</b>
       <div class="ed-line">
-        <span class="ed-place">Northern Arizona University</span>
         <span class="ed-degree">BS Computer Science</span>
+        <span class="ed-place">Northern Arizona University</span>
       </div>
-      <p>Senior project, Group Wrangler: an automated grouping website with an intuitive, easy-to-learn experience
-        for creating and managing groups in a social community. Group management combines members by common
-        attributes and grouping rules; an analysis tool filters, graphs and tracks user and group data; and the
-        codebase was written so future developers could adapt it to any organisation's needs.</p>
-      <div class="meta"><b>Coursework</b>Advanced User Interfaces (Android / UI), CS 477 Software Engineering, CS 376 Software Development Processes, CS 413 Virtual Worlds (game design), CS 430 Computer Graphics (OpenGL ES 2.0), Web Development</div>
-      <div class="meta"><b>Tools</b>Ruby on Rails, JavaScript, HTML, CSS, Bootstrap, Agile</div>
     </div>
 
     <div class="offbeat" data-reveal>
@@ -498,18 +990,12 @@
 
 <section id="labs">
   <div class="inner">
-    <div class="sec-label">MODULE 01 // BEHIND THE SCENES</div>
-    <h2 class="sec-title">BEHIND<br><span style="color:var(--accent)">THE GLASS</span></h2>
+    <h2 class="sec-title">BEHIND<br><span style="color:var(--accent)">THE SCENES</span></h2>
     <p class="sec-lede">
       Where the technique gets proven before it reaches anything that ships. Each one is an instrument,
       hand-authored with no framework and no build step, built to make something physical <em>measurable</em>
       rather than merely to look like it.
     </p>
-    <div class="spec">
-      <span>WebGL2</span><span>Pure ES modules</span><span>No build step</span>
-      <span>Frame cost measured, not estimated</span>
-    </div>
-
     <div class="lab-grid">
       <a class="lab-card" href="labs/crt/CRT%20Lab.html">
         <div class="obj crt cold"><div class="obj-3d">
@@ -527,7 +1013,7 @@
         <div class="obj rx cold"><div class="obj-3d">
           <div class="blob"><div class="core"><b></b><b></b><b></b></div></div>
         </div></div>
-        <div class="tag">WEBGL</div>
+        <div class="tag">WEBGL2</div>
         <div class="name">Reactor Lab</div>
         <p>A containment core, sphere-traced: a goo core with sub-cores torn out of it by a pulse, nine alloy
            ring fragments, and a shield that fails on a schedule.</p>
@@ -535,19 +1021,13 @@
       </a>
       <a class="lab-card" href="labs/wormhole/Wormhole.html">
         <div class="obj wh"><div class="obj-3d"><div class="roll"></div></div></div>
-        <div class="tag">WEBGL</div>
+        <div class="tag">WEBGL2</div>
         <div class="name">Wormhole Lab</div>
         <p>A domain-warped noise tunnel down the throat of a wormhole, in three flavours.</p>
         <div class="go">INSPECT →</div>
       </a>
     </div>
 
-    <div class="note">
-      <strong>Best on desktop.</strong> These are instruments laid out at around 1560&times;1100. On a narrow
-      screen the control panel folds away behind a chevron so the picture gets the screen to itself, but the
-      control density is still built for a large window. Every lab is WebGL and demanding; if one struggles,
-      <strong>RENDER SCALE</strong> in its panel is the lever, and it already starts lower on integrated graphics.
-    </div>
   </div>
 </section>
 
@@ -575,15 +1055,6 @@
   </div>
 </div>
 
-<footer>
-  <a href="Alex%20Koch%20Portfolio.dc.html">PORTFOLIO</a>
-  <a href="Alex%20Koch%20Cinematic%20Intro.dc.html">CINEMATIC INTRO</a>
-  <a href="Alex%20Koch%20Console%20OS.dc.html">CONSOLE OS</a>
-  <a href="Portfolio%20Directions.dc.html">DIRECTIONS</a>
-  <a href="Realistic%20Light%20Roadmap.dc.html">LIGHT ROADMAP</a>
-  <a href="https://github.com/Alexk413x/alex-koch-portfolio">SOURCE</a>
-</footer>
-
 <script src="site/display-lockup.js"></script>
 <script src="site/scenes.js"></script>
 <script src="site/nav.js"></script>
@@ -592,6 +1063,7 @@
 <script src="site/rpn.js"></script>
 <script src="site/rpn-demo.js"></script>
 <script src="site/lab-objects.js"></script>
+<script src="site/shelf.js"></script>
 <script src="site/timeline.js"></script>
 <script type="module" src="site/hero-core.js"></script>
 </body>

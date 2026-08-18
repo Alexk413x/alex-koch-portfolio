@@ -1,17 +1,30 @@
 /* share.js — the share dialog: a scannable QR code for the site, drawn in the page from qr.js.
  *
- * Dark modules on cream, NOT the brand orange on near-black. An inverted or low-contrast code is the one design
- * flourish that can stop a scanner resolving it at all, and a QR that does not scan is decoration. Both colours
- * are still design-system values, so it reads as part of the site rather than a pasted-in widget.
+ * Accent modules on near-black, with the site mark stamped over the middle, so the code and the mark are the
+ * one orange. --accent measures 5.7:1 against --ink, which clears what a binarisation step needs. The other
+ * margin is error-correction level H, which recovers 30% of the symbol against level M's 15%; the stamp covers
+ * 11.1% of the modules, well inside that budget.
+ *
+ * MEASURED: inverted polarity is the part that costs something. OpenCV's detector reads nothing from this
+ * canvas as drawn, and reads it every time once the polarity is flipped — so the modules and the stamp are
+ * sound and the inversion alone is what a strict decoder refuses. Phone cameras invert for themselves. To go
+ * back to a code every decoder reads without leaving the palette, swap MODULE and GROUND: dark modules on an
+ * amber ground decode as drawn, verified at 246px and 180px.
  */
 (function () {
   'use strict';
 
   // The www host, deliberately: the apex alexk413x.com does not resolve, so a code encoding it scans to nothing.
   const SITE_URL = 'https://www.alexk413x.com';
-  const DARK = '#341706';      // --orange-950
-  const LIGHT = '#fff4ec';     // --orange-100
+  const MODULE = '#dd6a20';    // --accent, the same orange the mark is drawn in
+  const GROUND = '#0c0c0e';    // --ink
+  const LEVEL = 'H';           // the recovery budget the centre stamp spends
   const QUIET = 4;             // modules of margin the spec requires around the code
+
+  /* The favicon, not a second drawing of it: the mark is one file and the canvas loads it. Same-origin SVG does
+     not taint the canvas, so SAVE PNG still works. */
+  const stamp = new Image();
+  stamp.src = 'favicon.svg';
 
   const dlg = document.getElementById('qr-dialog');
   const canvas = document.getElementById('qr-canvas');
@@ -26,25 +39,46 @@
   // An explicit flag, not canvas.width: an undrawn canvas reports the default 300, which reads as "already done".
   let drawn = false;
 
+  /* How many modules the mark covers, and how many are cleared around it. Both odd so the block centres exactly
+     on a symbol, whose size is always odd. The cleared ring is what keeps the scanner from reading a module
+     that the mark has half-covered. */
+  function stampSpan(size) {
+    const clear = 2 * Math.round((size * 0.33 - 1) / 2) + 1;
+    return { clear, mark: clear - 2 };
+  }
+
   /* Draws the matrix at whole-pixel module size. A QR scaled to a fractional module width gets antialiased
      edges, and a soft edge is exactly what a scanner's binarisation step gets wrong. */
   function draw() {
-    const { size, modules } = window.AKQR.encode(SITE_URL);
+    const { size, modules } = window.AKQR.encode(SITE_URL, LEVEL);
     const total = size + QUIET * 2;
     const css = 260;
     const scale = Math.max(1, Math.floor((css * (window.devicePixelRatio || 1)) / total));
     const px = total * scale;
+    const { clear } = stampSpan(size);
+    const lo = (size - clear) / 2, hi = lo + clear - 1;
 
     canvas.width = px;
     canvas.height = px;
     canvas.style.width = canvas.style.height = (total * Math.max(1, Math.floor(css / total))) + 'px';
 
     const g = canvas.getContext('2d');
-    g.fillStyle = LIGHT;
+    g.fillStyle = GROUND;
     g.fillRect(0, 0, px, px);
-    g.fillStyle = DARK;
-    for (let r = 0; r < size; r++) for (let c = 0; c < size; c++)
+    g.fillStyle = MODULE;
+    for (let r = 0; r < size; r++) for (let c = 0; c < size; c++) {
+      if (r >= lo && r <= hi && c >= lo && c <= hi) continue;
       if (modules[r][c]) g.fillRect((c + QUIET) * scale, (r + QUIET) * scale, scale, scale);
+    }
+    drawStamp(size, scale);
+  }
+
+  // Separate from draw() because the SVG may still be loading when the dialog first opens.
+  function drawStamp(size, scale) {
+    if (!stamp.complete || !stamp.naturalWidth) return;
+    const { mark } = stampSpan(size);
+    const at = (QUIET + (size - mark) / 2) * scale;
+    canvas.getContext('2d').drawImage(stamp, at, at, mark * scale, mark * scale);
   }
 
   function open() {
@@ -73,6 +107,9 @@
       stops[e.shiftKey ? stops.length - 1 : 0].focus();
     }
   }
+
+  // Redraws whole rather than stamping in place: draw() is cheap, and it needs no scale carried between calls.
+  stamp.addEventListener('load', () => { if (drawn) draw(); });
 
   openBtns.forEach((btn) => btn.addEventListener('click', open));
   closeBtn.addEventListener('click', close);

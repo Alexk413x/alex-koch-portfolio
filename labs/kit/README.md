@@ -75,8 +75,11 @@ Five things in there are not decoration:
   range) and a section master (not a row) are invisible to it.
 - **Rebuild the panel when something outside it writes state.** Rows read state once and own their DOM afterwards —
   that is why a drag costs nothing measurable, and the price is that a preset leaves every row stale.
-- **`fwidth` needs `ext: ['OES_standard_derivatives']`** *and* the `#extension` directive as the shader's first
-  line. Without both, WebGL1 compiles nothing, `createQuad` returns null, and the page simply never starts.
+- **`glquad` creates a WebGL2 context and has no WebGL1 fallback.** So `fwidth`, `textureLod`, `texelFetch`,
+  `round()` and NPOT textures are all core and need nothing declared. The old two-part dance — an
+  `ext: ['OES_standard_derivatives']` entry on the host *and* a `#extension` directive as the shader's first
+  line — is gone; it was two halves that had to agree across two files, and when they did not the page simply
+  never started. `ext` still exists for what really are extensions here, `EXT_color_buffer_float` chiefly.
 
 ## Persistence
 

@@ -41,6 +41,7 @@ export const UNIFORMS = [
  */
 const BODY = `
 precision highp float;
+out vec4 fragColor;
 
 uniform vec2 uRes;
 uniform float uTime, uSteps, uSpread, uBend, uBendFlow, uBendScale;
@@ -587,7 +588,7 @@ void main(){
   col *= mix(1.0, smoothstep(1.4, 0.1, r), uVignette);
   col *= uExposure;
   col = col / (col + 1.0);
-  gl_FragColor = vec4(pow(col, vec3(0.85)), 1.0);
+  fragColor = vec4(pow(col, vec3(0.85)), 1.0);
 }`;
 
 /* A SHADER PER LAYER SET, because a layer costs whether or not it runs.
@@ -604,7 +605,10 @@ void main(){
  * derive one from the other — never keep two lists.
  */
 export function fragFor(neb, ls, pl) {
-  return (neb ? '#define HAVE_NEB 1\n' : '')
+  /* THE VERSION LEADS THE DEFINES. #version must precede everything but comments and whitespace, and this
+     function is the only place the pieces are joined — so it is the only place that can guarantee the order. */
+  return '#version 300 es\n'
+       + (neb ? '#define HAVE_NEB 1\n' : '')
        + (ls ? '#define HAVE_LS 1\n' : '')
        + (pl ? '#define HAVE_PL 1\n' : '')
        + BODY;

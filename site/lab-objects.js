@@ -34,9 +34,6 @@
     const e = Math.pow(t, 1.8);
     const w = 178 - 154 * e;
     const h = 134 - 116 * e;
-    const shade = 1 - .3 * t;
-    const hi = (c) => Math.round(c * shade);
-
     const plate = document.createElement('div');
     plate.className = 'fn';
     plate.style.width = w.toFixed(1) + 'px';
@@ -44,16 +41,21 @@
     plate.style.margin = (-h / 2).toFixed(1) + 'px 0 0 ' + (-w / 2).toFixed(1) + 'px';
     plate.style.transform = 'translateZ(' + (12 - 168 * t).toFixed(1) + 'px)';
     plate.style.borderRadius = (44 - 33 * e).toFixed(1) + 'px';
-    /* NO filter on these. A filter forces an element out of its preserve-3d context and flattens it, which
-       silently collapses the whole cone into the plane of the face. The shading is baked into the colour. */
-    plate.style.background = 'linear-gradient(160deg, rgb(' + hi(66) + ',' + hi(56) + ',' + hi(46) +
-      '), rgb(' + hi(30) + ',' + hi(25) + ',' + hi(21) + ') 56%, rgb(' + hi(18) + ',' + hi(15) + ',' + hi(13) + '))';
+    /* WIREFRAME, like the Cartographer's phones: the funnel is its edges and nothing else. Twenty-eight unfilled
+       rounded rects stepping back IS how a cone is drawn in wireframe, so the plate count that used to build a
+       solid wall now builds the contour lines instead.
+       The faces stay unfilled rather than taking the phones' transparent black, because twenty-eight of them
+       stacked would compound to opaque and the object would be solid again by accident. Only the front frame
+       carries the fill. --e fades the edge with depth so the far end of the cone recedes.
+       NO filter on these. A filter forces an element out of its preserve-3d context and flattens it, which
+       silently collapses the whole cone into the plane of the face. */
+    plate.style.setProperty('--e', (.62 - .42 * t).toFixed(3));
     tube.insertBefore(plate, tube.firstChild);
   }
 
   // ---------------------------------------------------------------- the throat
   const throat = wh.querySelector('.roll');
-  const RINGS = 14, CYCLE = 3.6, R = 79, DEG = 180 / Math.PI;
+  const RINGS = 14, R = 79, DEG = 180 / Math.PI;
   const STATIONS = 18, BLADES = 8;
 
   /* ONE description of the centreline, read by both the rings and the wall. u is depth: 0 at the camera, 1 at
@@ -112,8 +114,10 @@
     /* POSITIVE delays, one slot each, with the animation paused. In steady state that is identical to negative
        ones; the difference is the first cycle, where the throat fills from the far end forward rather than
        arriving complete. animation-play-state pauses the DELAY too, which is why nothing counts down while the
-       section is off screen. */
-    rg.style.animationDelay = ((w * CYCLE) / RINGS).toFixed(3) + 's';
+       section is off screen.
+       A FRACTION of --fly rather than a number of seconds: hover rescales the cycle, and a delay that did not
+       scale with it would leave the train unevenly spaced at one of the two speeds. */
+    rg.style.animationDelay = 'calc(var(--fly) * ' + (w / RINGS).toFixed(4) + ')';
     const rp = pose(w / (RINGS - 1));
     rg.style.transform = 'translate3d(' + rp.x.toFixed(1) + 'px,' + rp.y.toFixed(1) + 'px,' + rp.z.toFixed(1) +
       'px) rotateY(' + rp.ry.toFixed(1) + 'deg) rotateX(' + rp.rx.toFixed(1) + 'deg)';

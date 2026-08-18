@@ -115,6 +115,19 @@
     else if (p <= trip * RELEASE) setMorph(0);
   }
 
+  /* THE PAD'S STATE IS ESTABLISHED, not inherited. --m defaults to 1 in the stylesheet so that no-JS and reduced
+     motion get the shipped app, and setMorph() early-returns when the target is unchanged — so on a normal load
+     the first write never happened and the CSS default stood. The pad sat in the APP layout while every other
+     signal said faceplate, and crossing the trigger then snapped it back to the faceplate before morphing it
+     forward again. Reading the scroll position once, here, is what makes the resting state agree with itself. */
+  function morphInit(y) {
+    if (!morphStage || !morphScroll) return;
+    const run = morphScroll.offsetHeight - morphStage.offsetHeight;
+    const p = run > 0 ? (y - morphScroll.offsetTop) / run : 1;
+    mValue = mTarget = mFrom = p >= trip ? 1 : 0;
+    writeMorph(mValue);
+  }
+
   // Everything reaches its shipped state and stays there: no pin, no trigger.
   function morphFinal() {
     if (!morphStage) return;
@@ -131,9 +144,14 @@
    * strength across the same range the reactor is struck over, so the strike and the arrival read as one
    * hand-off rather than as two things that happen to overlap.
    *
-   * The checks themselves are NOT part of this. They used to sit at a third opacity and light in turn as the pin
-   * was scrubbed, and a list that cannot be read until it has been scrolled through is worse than no animation
-   * at all. What moves is the section arriving; once it is here, nothing does.
+   * The WORDS are not part of this. They used to sit at a third opacity and light in turn as the pin was
+   * scrubbed, and a list that cannot be read until it has been scrolled through is worse than no animation at
+   * all. What moves is the section arriving, and the flow graph beside it building.
+   *
+   * THE GRAPH IS ONE SCALAR, AND IT COMES BACK DOWN. --g rises across the approach so the flow extends as the
+   * section enters frame, holds while it is seated, then falls again as it leaves — which plays the same build
+   * backwards into a collapse. There is no separate exit description that can disagree with the entrance, and a
+   * reader who reverses gets the graph running back from where it actually is, because position is the clock.
    */
   const loopStage = document.getElementById('loop-stage');
   const loopScroll = document.getElementById('loop-scroll');
@@ -142,13 +160,45 @@
   const LOOP_IN = .8;     // fraction of the arrival it is up to full strength over. Reaching 1 exactly as it
                           // seats would leave it still fading at the position it comes to rest in.
 
+  /* IN VIEWPORT HEIGHTS, AND TIMED AGAINST WHERE THE GRAPH ACTUALLY IS, not against the section's runway. The
+     section is a screen tall and the graph sits in the middle of it, so its top edge does not cross the bottom
+     of the window until the approach is nearly half over and it has left through the top again half a screen
+     after the section seats. Run either envelope across the whole runway instead and most of the build happens
+     below the fold and most of the collapse above it — which was the first shape of this and it read as a graph
+     that was simply already there and then simply gone. */
+  /* STARTS LATE AND RUNS LONG, so the screens are seen sliding out rather than found already out. The graph's top
+     edge crosses the bottom of the window at .31 of the approach and it is not wholly in frame until .93, so a
+     build that began at .46 spent its first third below the fold. It now waits until half the graph is showing
+     and carries a tenth of a screen PAST the seated position — the section is barely off the top there, and it is
+     the only runway left, because this scene gave its pin back. */
+  const BUILD_AT = .45;     // into the approach, where half the graph is above the bottom of the window
+  const BUILD_SPAN = 1.20;  // and well INTO the pin: the last row lands two thirds of the way through it, on a
+                            // section that has been at rest for half a screen of scrolling
+  const FALL_AT = .72;      // past the seated position — still inside the pin, so the strike starts in frame
+  const FALL_SPAN = .52;    // and finishes as the pin releases
+
   function loop(y) {
     if (!loopStage || !loopScroll) return;
     // One viewport of arrival, ending where the section is seated: it begins the moment its top edge crosses the
     // bottom of the screen, which is the first frame any of it is visible.
-    const q = ease((y - (loopScroll.offsetTop - vh)) / vh);
+    const top = loopScroll.offsetTop;
+    const q = ease((y - (top - vh)) / vh);
     loopStage.style.setProperty('--o2', clamp(q / LOOP_IN).toFixed(3));
     loopStage.style.setProperty('--y2', ((1 - q) * LOOP_LIFT).toFixed(1) + 'px');
+
+    const built = ease((y - (top - vh * (1 - BUILD_AT))) / (vh * BUILD_SPAN));
+    const struck = ease((y - (top + vh * FALL_AT)) / (vh * FALL_SPAN));
+    /* TWO SCALARS, because arriving and leaving are two orders. Each element delays off --gb for the one and
+       --gf for the other, so the top row can lead both — on one scalar the last thing in is the first thing out.
+       --g is still written for the gate below: it is the pair combined, which is what "is the graph whole" means. */
+    loopStage.style.setProperty('--gb', built.toFixed(3));
+    loopStage.style.setProperty('--gf', struck.toFixed(3));
+    const g = built * (1 - struck);
+    loopStage.style.setProperty('--g', g.toFixed(3));
+    /* The idle waits for the LAST SCREEN TO LAND, and not a frame longer. The furthest device carries --d .75
+       against a .16 window, so the graph is whole at g = .91 — holding out for 1 kept the circuit off through the
+       tail of the build for nothing, and also waiting on the section to seat held it off further still. */
+    loopStage.classList.toggle('is-drawing', g < .92);
   }
 
   function frame() {
@@ -195,11 +245,17 @@
     loopFinal();
   }
 
-  // The seated section: full strength, no offset. The stylesheet's defaults, handed back by removing the writes.
+  /* The seated section with its graph fully drawn: the stylesheet's defaults, handed back by removing the writes.
+     The class goes with them, so the idle circuit runs — and reduced motion, which also lands here, has its own
+     rule turning that off rather than a second flag to keep in step. */
   function loopFinal() {
     if (!loopStage) return;
     loopStage.style.removeProperty('--o2');
     loopStage.style.removeProperty('--y2');
+    loopStage.style.removeProperty('--g');
+    loopStage.style.removeProperty('--gb');
+    loopStage.style.removeProperty('--gf');
+    loopStage.classList.remove('is-drawing');
   }
 
   /* A pinned, scrubbed morph needs a viewport tall enough to hold the scene. A landscape phone is 393px tall, so
@@ -211,12 +267,37 @@
      exactly when the stylesheet stops pinning it. */
   const shortLoop = window.matchMedia('(max-height: 760px), (max-width: 1080px) and (max-height: 900px)');
 
+  /* WHERE THE GRAPH IS WHOLE AND THE CIRCUIT IS RUNNING — the position anything that wants to SHOW somebody
+   * Cartographer should aim at, rather than the top of a pin where nothing has been drawn yet.
+   *
+   * The plateau is bounded by the two envelopes above: it opens the frame `built` reaches 1, which is the last
+   * screen landing, and closes the frame `struck` begins. Between them the graph is complete and nothing is
+   * collapsing, which is the only stretch of this scene that is a state rather than a transition. This returns
+   * its centre.
+   *
+   * DERIVED FROM THE SAME FOUR CONSTANTS the scrub runs on, and exported rather than restated, for the reason
+   * every measurement on this page is: a fraction copied into nav.js would go silently wrong the first time
+   * BUILD_SPAN moved, and the failure would look like a nav bug rather than a stale number.
+   *
+   * On a short or narrow window the scene has given its pin back and there is no plateau to find — the graph is
+   * simply drawn — so the honest answer there is the top of the section. */
+  function loopIdleY() {
+    if (!loopScroll) return 0;
+    const top = loopScroll.offsetTop;
+    if (shortLoop.matches) return top;
+    const whole = BUILD_AT + BUILD_SPAN - 1;
+    return Math.round(top + vh * (whole + FALL_AT) / 2);
+  }
+
+  window.AKSCENE = { cartographerIdleY: loopIdleY };
+
   function apply() {
     window.removeEventListener('scroll', onScroll);
     window.removeEventListener('resize', onResize);
     if (reduced.matches || short.matches) { clear(); morphFinal(); return; }
     if (shortLoop.matches) loopFinal();
     measure();
+    morphInit(window.scrollY || window.pageYOffset || 0);
     frame();
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', onResize);

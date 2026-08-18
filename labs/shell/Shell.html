@@ -96,9 +96,7 @@ import { PRESETS, defaultPreset, matchIdx } from './shell-presets.js';
 // 1 — THE RENDERER. Returns null when WebGL is unavailable; say so on the page rather than showing black.
 const stage = document.getElementById('stage');
 const R = createQuad(document.getElementById('subject'), {
-  // `ext` IS NOT OPTIONAL WHEN THE SHADER USES fwidth: WebGL1 has no derivatives without it, the shader compiles
-  // to nothing, and the page simply never starts. See the note at the top of shell-shader.js.
-  frag: FRAG, uniforms: UNIFORMS, ext: ['OES_standard_derivatives'], onRestore: () => fit(true),
+  frag: FRAG, uniforms: UNIFORMS, onRestore: () => fit(true),
 });
 if (!R) { reportNoGL(); throw new Error('WebGL unavailable'); }
 

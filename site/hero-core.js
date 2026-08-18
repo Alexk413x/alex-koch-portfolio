@@ -79,7 +79,7 @@ function init() {
 
   // Without WebGL the element simply stays empty. A hero is not worth an error message.
   const R = createQuad(canvas, {
-    frag: FRAG, uniforms: UNIFORMS, ext: ['OES_standard_derivatives'], onRestore: () => fit(true),
+    frag: FRAG, uniforms: UNIFORMS, onRestore: () => fit(true),
   });
   if (!R) return;
 

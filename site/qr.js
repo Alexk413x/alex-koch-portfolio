@@ -1,4 +1,4 @@
-/* qr.js — a QR encoder: byte mode, error-correction level M, versions 1 to 10.
+/* qr.js — a QR encoder: byte mode, error-correction levels M and H, versions 1 to 10.
  *
  * Written rather than pulled from a CDN because this site loads nothing at runtime but its own files and the
  * fonts, and a share code that fails when someone else's CDN is down is worse than no share code.
@@ -19,16 +19,31 @@
 
   const mul = (a, b) => (a === 0 || b === 0 ? 0 : EXP[LOG[a] + LOG[b]]);
 
-  // Data codewords available at level M, versions 1..10.
-  const CAPACITY = [16, 28, 44, 64, 86, 108, 124, 154, 182, 216];
-  // [ec codewords per block, group1 blocks, group1 data, group2 blocks, group2 data] at level M.
-  const BLOCKS = [
-    [10, 1, 16, 0, 0], [16, 1, 28, 0, 0], [26, 1, 44, 0, 0], [18, 2, 32, 0, 0], [24, 2, 43, 0, 0],
-    [16, 4, 27, 0, 0], [18, 4, 31, 0, 0], [22, 2, 38, 2, 39], [22, 3, 36, 2, 37], [26, 4, 43, 1, 44],
-  ];
+  /* Two error-correction levels, versions 1..10 each. H recovers 30% of the symbol where M recovers 15%, which
+     is what makes room for something drawn over the middle of the code; it costs capacity, so the same string
+     lands two versions higher and the modules come out smaller.
+       capacity  data codewords
+       blocks    [ec codewords per block, group1 blocks, group1 data, group2 blocks, group2 data]
+       format    pre-computed BCH format strings, one per mask, already XORed with 0x5412 */
+  const LEVELS = {
+    M: {
+      capacity: [16, 28, 44, 64, 86, 108, 124, 154, 182, 216],
+      blocks: [
+        [10, 1, 16, 0, 0], [16, 1, 28, 0, 0], [26, 1, 44, 0, 0], [18, 2, 32, 0, 0], [24, 2, 43, 0, 0],
+        [16, 4, 27, 0, 0], [18, 4, 31, 0, 0], [22, 2, 38, 2, 39], [22, 3, 36, 2, 37], [26, 4, 43, 1, 44],
+      ],
+      format: [0x5412, 0x5125, 0x5e7c, 0x5b4b, 0x45f9, 0x40ce, 0x4f97, 0x4aa0],
+    },
+    H: {
+      capacity: [9, 16, 26, 36, 46, 60, 66, 86, 100, 122],
+      blocks: [
+        [17, 1, 9, 0, 0], [28, 1, 16, 0, 0], [22, 2, 13, 0, 0], [16, 4, 9, 0, 0], [22, 2, 11, 2, 12],
+        [28, 4, 15, 0, 0], [26, 4, 13, 1, 14], [26, 4, 14, 2, 15], [24, 4, 12, 4, 13], [28, 6, 15, 2, 16],
+      ],
+      format: [0x1689, 0x13be, 0x1ce7, 0x19d0, 0x0762, 0x0255, 0x0d0c, 0x083b],
+    },
+  };
   const ALIGN = [[], [6, 18], [6, 22], [6, 26], [6, 30], [6, 34], [6, 22, 38], [6, 24, 42], [6, 26, 46], [6, 28, 50]];
-  // Pre-computed BCH format strings for level M, one per mask, already XORed with 0x5412.
-  const FORMAT_M = [0x5412, 0x5125, 0x5e7c, 0x5b4b, 0x45f9, 0x40ce, 0x4f97, 0x4aa0];
   // Version information, versions 7..10. Below version 7 the field does not exist.
   const VERSION_INFO = { 7: 0x07c94, 8: 0x085bc, 9: 0x09a99, 10: 0x0a4d3 };
 
@@ -83,8 +98,8 @@
   /* Splits the data into blocks, computes each block's EC, then reads the blocks column-wise. The interleave is
      the whole point of blocking: a scratch across the printed code damages one codeword in each block rather
      than destroying one block outright, and every block can then still be corrected. */
-  function interleave(words, version) {
-    const [ecLen, n1, d1, n2, d2] = BLOCKS[version - 1];
+  function interleave(words, version, table) {
+    const [ecLen, n1, d1, n2, d2] = table[version - 1];
     const blocks = [], eccs = [];
     let at = 0;
     for (let i = 0; i < n1 + n2; i++) {
@@ -207,8 +222,8 @@
   /* The 15 format bits are written MOST significant first: bit 14 lands at (8,0), bit 0 at (0,8). Writing them
      LSB-first mirrors the string, the decoder's BCH check fails, and it cannot recover which mask was used —
      so the symbol renders perfectly and scans as nothing at all. */
-  function applyFormat(m, size, mask) {
-    const f = FORMAT_M[mask];
+  function applyFormat(m, size, mask, format) {
+    const f = format[mask];
     for (let i = 0; i < 15; i++) {
       const bit = (f >> (14 - i)) & 1;
       if (i < 6) m[8][i] = bit;
@@ -221,19 +236,22 @@
     }
   }
 
-  /* Encodes `text` and returns { size, modules } where modules is a size x size array of 0/1, quiet zone NOT
-     included — the caller decides the margin because it depends on how the code is being drawn. Throws if the
-     text is longer than a version-10 level-M code can carry. */
-  function encode(text) {
+  /* Encodes `text` at error-correction level `level` ('M' or 'H', default M) and returns
+     { size, version, level, modules } where modules is a size x size array of 0/1, quiet zone NOT included —
+     the caller decides the margin because it depends on how the code is being drawn. Throws if the text is
+     longer than a version-10 code at that level can carry. */
+  function encode(text, level) {
+    const name = LEVELS[level] ? level : 'M';
+    const { capacity, blocks, format } = LEVELS[name];
     const bytes = Array.from(new TextEncoder().encode(text));
     let version = 0;
     for (let v = 1; v <= 10; v++) {
       const header = 4 + (v < 10 ? 8 : 16);
-      if (bytes.length * 8 + header <= CAPACITY[v - 1] * 8) { version = v; break; }
+      if (bytes.length * 8 + header <= capacity[v - 1] * 8) { version = v; break; }
     }
-    if (!version) throw new Error('qr: ' + bytes.length + ' bytes exceeds what a version-10 level-M code holds');
+    if (!version) throw new Error('qr: ' + bytes.length + ' bytes exceeds a version-10 level-' + name + ' code');
 
-    const stream = interleave(bitstream(bytes, version, CAPACITY[version - 1]), version);
+    const stream = interleave(bitstream(bytes, version, capacity[version - 1]), version, blocks);
     const { m, fn, size } = skeleton(version);
     place(m, fn, size, stream);
 
@@ -242,11 +260,11 @@
       const trial = m.map((row) => Array.from(row));
       for (let r = 0; r < size; r++) for (let c = 0; c < size; c++)
         if (!fn[r][c] && MASKS[mask](r, c)) trial[r][c] ^= 1;
-      applyFormat(trial, size, mask);
+      applyFormat(trial, size, mask, format);
       const s = penalty(trial, size);
       if (!best || s < best.score) best = { score: s, modules: trial };
     }
-    return { size, version, modules: best.modules };
+    return { size, version, level: name, modules: best.modules };
   }
 
   window.AKQR = { encode };

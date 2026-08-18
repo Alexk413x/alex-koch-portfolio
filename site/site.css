@@ -13,6 +13,7 @@
   --accent: #dd6a20;
   --accent-hover: #f0894f;
   --amber: #eda863;
+  --scenery: #6e3413;
   --ink: #0c0c0e;
   --ink-deep: #0a0908;
   --ink-panel: #100b08;
@@ -184,8 +185,8 @@ a:hover { color: var(--accent-hover) }
 }
 #nav .tools svg { width: 15px; height: 15px; display: block; fill: currentColor }
 
-/* An icon that opens a mail client should say which address it opens before it is clicked. Right-aligned to the
-   mark, because this cluster sits against the page edge and a centred label would hang off it. */
+/* A mark should say where it goes, or what it opens, before it is clicked. Right-aligned to the mark, because
+   this cluster sits against the page edge and a centred label would hang off it. */
 #nav .tools .tip { position: relative }
 #nav .tools .tip::after {
   content: attr(data-tip);
@@ -218,6 +219,9 @@ section[id] { scroll-margin-top: 84px }
 /* FLAT, not a radial gradient. It carried a warm pool centred at 50% 42% — which is exactly where the core
    sits, so the object read as having a second, softer glow parked behind it that nothing in the scene was
    casting. The core brings its own light; the stage should bring none. */
+/* ONE GROUND FOR THE WHOLE PAGE. --ink here and on every section below, so nothing between the hero and the
+   footer paints its own shade — a section that is a step darker reads as a panel laid on the page rather than
+   as more of the page, and the boundaries were doing that four times over. */
 #stage {
   position: sticky; top: 0; height: 100vh; height: 100dvh; overflow: hidden;
   background: var(--ink);
@@ -251,7 +255,7 @@ section[id] { scroll-margin-top: 84px }
   fill: none;
   /* Far below --accent on purpose. It is scenery, and it sits behind a lockup that has to stay the brightest
      thing in the frame. */
-  stroke: #6e3413; stroke-width: 1.5;
+  stroke: var(--scenery); stroke-width: 1.5;
   vector-effect: non-scaling-stroke;
 }
 
@@ -359,7 +363,7 @@ section[id] { scroll-margin-top: 84px }
 
 #app {
   position: relative; width: 100%; padding: 90px var(--pad-page) 60px;
-  background: linear-gradient(180deg, var(--ink), var(--ink-panel) 60%, var(--ink));
+  background: var(--ink);
 }
 
 /* Every fallback is the SHIPPED state, so with no JS, reduced motion, or a short viewport the calculator is the
@@ -382,27 +386,14 @@ section[id] { scroll-margin-top: 84px }
 #app-stage.is-new .now { color: var(--text-body) }
 #app-stage.is-new .now b { color: var(--accent) }
 
-/* auto, not a fraction: the phone is a fixed 280px, so a fractional column pads it with dead space on both
-   sides and the gap reads as a hole rather than a gutter. */
-/* Capped and centred, NOT a 1fr track. With the copy on a fraction of a 1400px container the text ends around
-   810px while the phone sits past 1100, and the leftover track reads as a hole with both halves shoved against
-   opposite edges of the screen. Sizing the copy to its measure and centring the pair makes it one composed
-   shot, which is what a pinned scene should be. */
+/* RAIL TO RAIL, like every other section, with the phone CENTRED in what is left. The copy is capped at its own
+   measure so a fractional track cannot set the text width; the second track takes the remainder and phone-wrap
+   centres in it. Pushed to the far edge instead the phone sat against the right margin with the gap all on one
+   side, which is what made this section read as leaning. */
 .app-grid {
-  display: grid; grid-template-columns: minmax(0, 600px) auto;
-  gap: clamp(30px, 4.5vw, 68px); align-items: center; justify-content: center;
+  display: grid; grid-template-columns: minmax(0, 600px) 1fr;
+  gap: clamp(30px, 4.5vw, 68px); align-items: center;
 }
-
-/* A hairline data strip, not three cards. The 1px gap over a hairline background IS the rule between cells,
-   so the numbers sit in the layout instead of in boxes. */
-.stats {
-  display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 1px; margin-top: 30px; background: var(--hairline); border: 1px solid var(--hairline);
-}
-
-.stats div { background: var(--ink); padding: 16px 18px }
-.stats b { display: block; font-family: var(--font-display); font-weight: 900; font-size: 26px; letter-spacing: -1px; color: var(--accent) }
-.stats span { display: block; margin-top: 4px; font-family: var(--font-mono); font-size: 10px; letter-spacing: .16em; text-transform: uppercase; color: var(--text-muted) }
 
 .cta-row { display: flex; gap: 12px; margin-top: 26px; flex-wrap: wrap }
 
@@ -416,8 +407,14 @@ section[id] { scroll-margin-top: 84px }
 
 /* The store's own mark, in the button's ink rather than in its four brand colours: the row is one accent slab
    and a full-colour logo dropped into it reads as a pasted-in badge. currentColor also means it follows the
-   label on hover instead of needing its own rule. */
+   label on hover instead of needing its own rule.
+   FOUR WEDGES, NOT ONE SHAPE. Drawn as a single path with abutting subpaths it filled into a plain triangle and
+   stopped being the Play mark at all; each wedge is its own path, pulled slightly toward its own centre, and the
+   gaps that opens are what the logo is made of. */
 .cta-row .primary svg { width: 16px; height: 16px; flex: none; fill: currentColor }
+/* The out-arrow, smaller than the store mark and set after the label: it says the link LEAVES, which is
+   a different fact from which store it goes to, and reading it at the mark's weight makes two badges. */
+.cta-row .primary .ext { width: 13px; height: 13px; margin-left: -2px; opacity: .75 }
 
 .cta-row .primary:hover { background: var(--accent-hover); color: var(--on-accent) }
 
@@ -599,10 +596,16 @@ section[id] { scroll-margin-top: 84px }
  * factoring the powers and the offsets into readable intermediates measured 40.74ms a frame against 18.52ms
  * with them inlined. Legibility loses this one.
  *
- * Colours do NOT animate. A color-mix on every key's fill and text, recomputed each frame, repaints all
- * fifty-one keys on every frame of the scrub; swapped once at the halfway class instead, the keys are
- * transform-and-opacity only, which is work the compositor can do. The swap lands while the plates are
- * mid-flight and turning, so there is nothing to notice. */
+ * COLOURS INTERPOLATE ON THE KEY'S OWN --e, which is the same number that moves it. They used to swap as a
+ * block at a halfway class, on the reasoning that a per-frame color-mix repaints all fifty-one keys on every
+ * frame of the SCRUB. That reasoning was sound while the morph was scrubbed across 1.8 viewport heights; it is
+ * now a 900ms one-shot, so the repaint happens for those 900ms and not for the length of a scroll.
+ * The swap also assumed nothing would be settled when it fired. It was not true: the keys are staggered, so at
+ * the halfway point the shared ones are already 60% of the way across and the faceplate-only ones have gone —
+ * the pad reads as the app in faceplate colours, and scrolling past at the wrong moment caught it there.
+ * Sharing --e means shape and colour cannot disagree, at any position, by construction.
+ * clamp() guards the mix: --e carries an overshoot term and peaks near 1.04, and a color-mix percentage outside
+ * 0-100 is invalid, which would drop the background declaration and leave the key unpainted. */
 .rpn-pad .k {
   --p: clamp(0, calc((var(--m) - var(--d)) * var(--rate)), 1);
   --e: calc(
@@ -627,15 +630,16 @@ section[id] { scroll-margin-top: 84px }
   font-family: var(--font-mono);
   font-size: 14px;
   line-height: 1;
-  background: #b4530e;
-  color: #fff;
+  --mixed: calc(clamp(0, 1 - var(--e), 1) * 100%);
+  background: color-mix(in oklab, #232326 var(--mixed), #b4530e);
+  color: color-mix(in oklab, #f2f2f0 var(--mixed), #fff);
   transition: filter .12s var(--ease-settle);
 }
 
-/* Faceplate livery, swapped as a block at the halfway class rather than mixed per frame. */
-#app-stage:not(.is-new) .rpn-pad .k { background: #232326; color: #f2f2f0 }
-#app-stage:not(.is-new) .rpn-pad .k-shift-f { background: #c8961e }
-#app-stage:not(.is-new) .rpn-pad .k-shift-g { background: #3f8fc4 }
+/* The faceplate's own accents. f and g have no app counterpart — they fade out as they travel — so they mix
+   toward the pad's base rather than to a colour they never reach. */
+.rpn-pad .k-shift-f { background: color-mix(in oklab, #c8961e var(--mixed), #b4530e) }
+.rpn-pad .k-shift-g { background: color-mix(in oklab, #3f8fc4 var(--mixed), #b4530e) }
 
 /* Undoes the plate's non-uniform scale so the glyph stays proportional, and carries the type size itself:
    0.68 of 14px is the 9.5px the faceplate legends want. max() guards the divide — a vanishing key scales to
@@ -665,10 +669,10 @@ section[id] { scroll-margin-top: 84px }
     scale(var(--sx), var(--sy));
 }
 
-#app-stage.is-new .rpn-pad .k-util { background: #5c2a0d }
-#app-stage.is-new .rpn-pad .k-fn2  { background: #a04a0c }
-#app-stage.is-new .rpn-pad .k-op,
-#app-stage.is-new .rpn-pad .k-ent  { background: #a04a0c }
+.rpn-pad .k-util { background: color-mix(in oklab, #232326 var(--mixed), #5c2a0d) }
+.rpn-pad .k-fn2,
+.rpn-pad .k-op,
+.rpn-pad .k-ent { background: color-mix(in oklab, #232326 var(--mixed), #a04a0c) }
 
 /* f and g are the faceplate's own accents and have no counterpart in the app, so they only ever show in gold
    and blue while the old keyboard is still on screen. */
@@ -679,12 +683,14 @@ section[id] { scroll-margin-top: 84px }
 
 /* ---------------- cartographer ---------------- */
 
-/* ZERO run, and the only declaration of it. The pin used to buy the beat that lit the checks in turn; with that
-   gone it bought most of a screen of scrolling during which nothing moved, which reads as a stuck page. The
-   section arrives, and arriving is the whole of its motion. The stage stays — nav.js resolves the section
-   through its [data-range] container, and the stylesheet still clips it to one screen. Give this a value again
-   and the section is pinned again; the stop list, the carry and the section spans all derive from it. */
-:root { --loop-run: 0 }
+/* THE PIN IS BACK, and this time it is carrying something. It was zeroed when the check list stopped lighting in
+   turn, because it then bought most of a screen of scrolling during which nothing moved. The flow graph moves:
+   seven devices and six tracks build in sequence and are struck in sequence, and with no pin the whole of that
+   had to fit in whatever approach scroll was left before the section seated — which is why the last row was
+   still landing as the section slid past. This is the runway the sequence needs.
+   The only declaration of it. Everything else derives: the container's height here, the section spans and the
+   stop list in nav.js, and the build/strike envelopes in scenes.js, which are written in units of it. */
+:root { --loop-run: .9 }
 
 #loop-scroll {
   position: relative;
@@ -692,13 +698,16 @@ section[id] { scroll-margin-top: 84px }
   height: calc(100dvh + var(--loop-run) * 100dvh);
 }
 
-/* --o2 / --y2 default to the SEATED state HERE, on the element scenes.js writes to: an inline style outranks
-   this, so the rig can drive the arrival, while no-JS, reduced motion and a short window all inherit a section
-   that is simply here. Declaring them on #cartographer instead would shadow the inherited value and pin the
-   arrival at its start forever. */
+/* --o2 / --y2 / --g default to the SEATED, BUILT state HERE, on the element scenes.js writes to: an inline style
+   outranks this, so the rig can drive the arrival, while no-JS, reduced motion and a short window all inherit a
+   section that is simply here with its graph fully drawn. Declaring them on #cartographer instead would shadow
+   the inherited value and pin the arrival at its start forever. */
 #loop-stage {
   --o2: 1;
   --y2: 0px;
+  --g: 1;
+  --gb: 1;
+  --gf: 0;
   position: sticky; top: 0; height: 100vh; height: 100dvh; overflow: hidden; display: grid; align-items: center;
 }
 
@@ -710,72 +719,299 @@ section[id] { scroll-margin-top: 84px }
 }
 
 /* TWO COLUMNS, ONE COMPOSITION. Stacked, this section ran 915px of content against a 768px laptop screen, and
-   six blocks in a row read as a pile of sections rather than as one. The claim and the payoff it lands on sit
-   together on the left; the evidence for them is on the right. It is also the only way the section fits the
-   screen it is pinned to without losing a word.
+   six blocks in a row read as a pile of sections rather than as one. The terms sit on the left; the shape of a
+   run — the one thing a list of terms cannot say — is on the right. It is also the only way the section fits
+   the screen it is given without losing a word.
    Wider than the section's 1060 measure cap, because a two-column grid needs the room and each column is
    already a narrow measure on its own. */
-.loop-grid { margin-top: 26px; display: grid; grid-template-columns: 5fr 7fr; gap: 46px; align-items: start }
+.loop-grid { display: grid; grid-template-columns: 5fr 6fr; gap: 46px; align-items: center }
 #cartographer .inner > .loop-grid { max-width: none }
 
 /* The blocks that lead their column lose the top margin they carried as stack members. */
 .loop-say > :first-child, .loop-show > :first-child { margin-top: 0 }
 
-/* The two run modes, which are a pair and read as one claim: discovery AND deterministic replay out of the same
-   tool. Set apart from the Any row above it by weight rather than by another box — the section already has
-   enough edges. */
-.modes { margin-top: 22px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 26px }
-.modes div { font-size: 13.5px; line-height: 1.55; color: var(--text-body) }
-.modes b {
-  display: block; margin-bottom: 5px;
-  font-family: var(--font-mono); font-size: 10.5px; letter-spacing: .2em; text-transform: uppercase;
-  color: var(--amber);
-}
-
-/* THE REACH CLAIMS, in the prose column and stacked: a label and a line each. Three across would give each of
-   them a third of an already narrow column. Same treatment as the run modes above them, and no boxes — the
-   bordered cells they used to be sat directly on the check list's bordered cells and the pair read as one
-   undifferentiated slab. */
-.anys { margin-top: 26px; display: grid; gap: 13px }
-.anys div { font-size: 13.5px; line-height: 1.55; color: var(--text-body) }
-.anys b {
-  display: block; margin-bottom: 4px;
-  font-family: var(--font-mono); font-size: 10.5px; letter-spacing: .2em; text-transform: uppercase;
-  color: var(--amber);
-}
-
-/* ---- what a run covers ----
+/* ---- the spec rows ----
  *
- * A LIST, AND FULLY LEGIBLE AT REST. Every entry used to be a label with a sentence under it, dimmed to a third
- * opacity until the scroll had lit it. Both went: eight sentences argue one case eight times, and evidence a
- * reader cannot read until they have scrolled past it is not evidence. Names only, at full strength, always.
+ * WORDS, NOT SENTENCES. Every row used to be a label with a sentence under it, and four rows of that is one case
+ * argued four times in a column that already carries a lede. A reader scans for the terms; the sentences are in
+ * the report the demo opens. Nothing here is dimmed or waiting on a scroll — legible at rest, always.
  */
-.checks { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 26px 40px; align-content: start }
-.checks > div > b {
-  display: block; padding-bottom: 9px; margin-bottom: 14px;
-  border-bottom: 1px solid var(--hairline);
-  font-family: var(--font-display); font-weight: 800; font-size: 14px; letter-spacing: -.2px; color: var(--text-strong);
+.terms { margin-top: 28px; display: grid; gap: 20px }
+.term > b {
+  display: block; margin-bottom: 9px;
+  font-family: var(--font-mono); font-size: 10.5px; letter-spacing: .2em; text-transform: uppercase;
+  color: var(--text-faint);
+}
+.term ul { margin: 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 6px 14px }
+
+/* RUNS and RESULT are the argument, not a footnote to it — they sit above the coverage list and are set to be
+   read, at the same weight as the names in it rather than at the caption size they used to carry. */
+.term li { font-size: 15.5px; line-height: 1.45; color: var(--text-strong) }
+
+/* A slash between terms rather than a box around each: at four rows the boxes stacked into one undifferentiated
+   slab, and the section already has enough edges.
+   On the LEADING item, not the following one. Each li is a flex item, so a wrap breaks between them — carried on
+   ::before the separator starts the next line, which reads as a bullet nobody asked for. */
+.term li:not(:last-child)::after { content: '/'; margin-left: 14px; color: var(--hairline) }
+
+/* THE REACH CLAIM, and the only line of prose in the column set in accent. It answers "will it work with what we
+   already have", which is asked before anything the spec rows below it say, so it is read before them. Set as a
+   row of three rather than as a sentence, because three separated claims are what it is. */
+/* Three equal tracks, each claim centred in its own. auto-fit rather than a fixed three: on a phone the rail is
+   too narrow for three of these side by side, and an empty track collapses so the ones that remain still split
+   the width evenly.
+   CAPPED TO THE LEDE'S MEASURE. Given the whole rail the three tracks ran well past the sentence above, which
+   wraps at 620 — so the outer two sat beyond anything else in the column and the centring read as drift rather
+   than as alignment. */
+.reach {
+  margin: 24px 0 0; max-width: 620px;
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 6px; text-align: center;
+  font-family: var(--font-display); font-weight: 800; font-size: clamp(19px, 1.9vw, 25px); letter-spacing: -.3px;
+  color: var(--accent);
 }
 
-/* The marker is the amber rule down the left, not a bullet glyph: a disc at this type size reads as a bug on
-   the screen, and the rule gives the list one edge to scan instead of eight. */
-.checks ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 10px }
-.checks li {
-  padding-left: 14px; border-left: 2px solid var(--accent);
-  font-size: 13.5px; line-height: 1.45; color: var(--text-body);
+/* TESTING is a GRID rather than a wrapped line: six names in two columns of three is a list you count, where a
+   wrapped row is a sentence you read past. Two columns also buy back the height one-per-row cost.
+   max-content, not 1fr: split into equal halves of the column the pair sits 230px apart and stops reading as one
+   list. minmax(0,·) so a narrow window can still shrink them rather than overflow.
+   NUMBERED, NOT RULED. The accent bar down each name read as six unfinished underlines and gave this row a
+   second weight competing with the two above it. An index says the same thing — a fixed list, and how long it
+   is — in the quietest mark available. */
+.term ul.checks {
+  display: grid; grid-template-columns: repeat(2, minmax(0, max-content)); gap: 12px 44px;
+  counter-reset: chk;
 }
+.term ul.checks li {
+  display: flex; align-items: baseline; gap: 11px; counter-increment: chk;
+  padding-left: 0; border-left: 0;
+  font-weight: 700; font-size: 19.5px; line-height: 1.25; letter-spacing: -.2px; color: var(--text-strong);
+}
+.term ul.checks li::before {
+  content: counter(chk, decimal-leading-zero);
+  font-family: var(--font-mono); font-size: 11px; letter-spacing: .06em; color: var(--amber); opacity: .6;
+}
+.checks li:not(:last-child)::after { content: none }
 
-.demo-note { margin: 10px 0 0; font-size: 12.5px; color: var(--text-faint) }
-
+/* A TARGET, not a label with a border. It is the section's only way out and the last thing under a column of
+   terms, so it is sized to be hit rather than to be read — the same reasoning the play button in the calculator
+   section already gets. It takes the rail's width up to a cap, and the cap is well short of the column: a bar
+   that runs the whole rail stops reading as a button. The border carries the weight instead — 1.5px at .6 of the
+   accent, where the hairline it had was losing against the names above it. */
 .demo-cta {
-  margin-top: 30px; display: inline-flex; align-items: center; gap: 10px;
-  padding: 11px 20px; border: 1px solid var(--border-accent); border-radius: var(--radius-cta);
-  font-family: var(--font-mono); font-size: 11px; letter-spacing: .16em; text-transform: uppercase;
+  margin: 34px auto 0; display: flex; align-items: center; justify-content: center; gap: 12px;
+  width: 100%; max-width: 380px; padding: 17px 30px;
+  border: 1.5px solid rgba(221, 106, 32, .6); border-radius: var(--radius-cta);
+  font-family: var(--font-mono); font-size: 12.5px; letter-spacing: .18em; text-transform: uppercase;
   color: var(--accent);
   transition: background .2s var(--ease-settle), color .2s var(--ease-settle);
 }
 .demo-cta:hover { background: var(--accent); color: var(--on-accent) }
 .demo-cta:hover .live-dot { background: var(--on-accent) }
+
+/* ---- the flow graph ----
+ *
+ * ONE WRITTEN PROPERTY BUILDS ALL OF IT. scenes.js writes --g on the stage and every node and edge computes its
+ * own progress from that scalar and its own --d, so a scroll frame touches one element rather than twenty-three.
+ * Collapsing is not a second description: --g falls again on the way out and the same expression plays it back.
+ * The only per-element numbers in the markup are --d (build order), --dx/--dy (where a card comes from) and --sd
+ * (a spark's place in the idle circuit).
+ */
+/* Sized off the SHORTER axis as well as the column, because a cap in px alone grows the graph's height with the
+   column and pushes the section past the one screen it is given on a laptop. It is allowed to stand TALLER than
+   the words beside it — the only thing that has to hold is the section fitting its own screen, and 66vh is that
+   constraint expressed where it binds. */
+.flow { display: block; width: 100%; max-width: min(760px, 66vh); height: auto; overflow: visible; margin: 0 auto }
+
+/* BUILDING AND STRIKING ARE TWO ORDERS, NOT ONE READ BACKWARDS. On a single scalar the last thing to arrive is
+   the first thing to leave, which put the BOTTOM row out first on the way down — the reverse of how it came in.
+   So the rig writes two: --gb rises as the graph builds, --gf rises as it is struck, and each element carries a
+   delay for each. Both lists run top row first, and the graph now leaves the way it arrived.
+   6.25 is 1/0.16 — the window as a rate, because calc cannot divide by a variable. min() of the two, so whichever
+   phase is holding an element back wins. */
+.fg-node, .fg-edge, .fg-floor {
+  --d: 0; --df: 0; --dx: 0; --dy: 0;
+  --p: min(clamp(0, (var(--gb) - var(--d)) * 6.25, 1),
+           clamp(0, 1 - (var(--gf) - var(--df)) * 6.25, 1));
+}
+
+/* Screens arrive FROM the one that feeds them — each rank slides out of the rank in front of it — so the build
+   reads as a path extending rather than as boxes fading up in place. --z is the depth dim, applied on the same
+   opacity as the build so a far screen is never brighter than a near one at any point in either. */
+.fg-node {
+  transform-box: fill-box; transform-origin: center;
+  opacity: calc(var(--p) * var(--z, 1));
+  transform:
+    translate(calc(var(--dx) * (1 - var(--p)) * 1px), calc(var(--dy) * (1 - var(--p)) * 1px))
+    scale(calc(.84 + .16 * var(--p)));
+}
+/* THE ONE PROJECTION. Everything inside is laid out flat and square, and this turns the whole scene once — so a
+   rectangle's border and the track that wraps it are the same shape after the transform as before it, which is
+   the only reason they can be trusted to stay glued together. Foreshortening the coordinates by hand instead
+   gives two descriptions of one surface, and this project's whole bug history is two descriptions drifting.
+   The back ranks are the SAME rectangle at the SAME three heights as each other: they come out smaller and
+   nearer the eye line because the perspective divide puts them further away, not because they were drawn that
+   way. That is what stops it reading flat. */
+/* Barely dimmed. Depth is carried by SIZE here — these are the same phone at 2.4x the distance — and dimming a
+   wireframe past this point takes the lines with it, which is the one thing it is made of. */
+.fg-node.z2 { --z: .94 }
+
+/* WIREFRAME, in the hero arches' line colour, and SEE-THROUGH. No screen inside, no speaker, no content: the
+   outline is what says "a phone", and a drawn UI inside a 60-unit box is a texture nobody reads.
+   ONE OBJECT, ONE LINE. Every edge of the box is the same stroke at the same weight. What makes the far ones
+   read as far is the GLASS: the face carries a translucent black fill, so whatever lies behind it is knocked
+   back by exactly the surface it is seen through — no second colour deciding which edges are hidden, and nothing
+   to disagree with the geometry when a number moves. */
+.fg-node > * { vector-effect: non-scaling-stroke; stroke: var(--scenery); stroke-width: 1.4 }
+.fg-node .edges { fill: none }
+.fg-node .face { fill: rgba(0, 0, 0, .25) }
+
+/* THE FLOOR. One pool under the whole thing and barely there: nine separate pools lit nine spots and read as
+   nine objects, where one reads as the ground they are all standing on. Redder than the accent and dimmer than
+   anything else in the section on purpose — it is the only element here that is not meant to be looked at. */
+.fg-floor { fill: url(#cartoPool); opacity: calc(var(--p) * .34) }
+#cartoPool .p0, #cartoPool .p1, #cartoPool .p2 { stop-color: #b03c10 }
+
+/* pathLength normalises every track to 100 units, so one dasharray draws all three at the same rate whatever
+   their real geometry — and the numbers here stay readable instead of tracking bezier arc lengths. */
+.fg-edge {
+  fill: none; stroke: var(--scenery); stroke-width: 1.25;
+  stroke-dasharray: 100; stroke-dashoffset: calc(100 * (1 - var(--p)));
+  filter: drop-shadow(0 0 5px rgba(221, 106, 32, .3));
+}
+
+/* THE IDLE. A DOT, NOT A STREAK: the dash is one normalised unit against a stroke five wide, so the round caps
+   close over it and what travels is a bead of light. A dash long enough to read as a line reads as the track
+   being redrawn; a dot reads as something moving along it, which is the whole claim.
+   TWO CLOCKS, because two things are being timed. The three paths take turns on a 4.2s cycle of three even 1.4s
+   slots — one pulse crossing at a time, never two. The near phone is on ALL THREE of those paths, so its own
+   spread runs on a 1.4s cycle and fires every beat. One cycle for both would mean either the near phone lighting
+   once in three, or three pulses crossing at once. */
+/* opacity 0 IN THE BASE STATE, and the keyframes turn it on. Before its delay elapses an animated element shows
+   its ordinary styles — which for a dashed path is the dash sitting at the start of it, a stationary dot on every
+   line until its first turn came round. The dash pattern does the hiding once running; this covers the wait. */
+/* THE SAME LIGHT AS THE WAVEFRONT. Same core colour, same chained halo, same --wk depth factor — a bead in a
+   different orange with a flat glow reads as a second effect borrowing the first one's path. */
+.fg-spark {
+  fill: none; stroke: var(--accent-hover); stroke-linecap: round;
+  stroke-dasharray: 1 2273; opacity: 0;
+  filter: drop-shadow(0 0 calc(4px * var(--wk, 1)) var(--accent-hover))
+          drop-shadow(0 0 calc(13px * var(--wk, 1)) var(--accent))
+          drop-shadow(0 0 calc(26px * var(--wk, 1)) var(--accent));
+  animation: ak-flow 20.7s linear var(--sd, 0s) infinite;
+}
+
+/* THINNER AND DIMMER AS IT GOES, because it is going away. Only the two dashoffset keyframes carry the position,
+   so the bead still crosses at a constant rate; everything between them is the taper and the flicker. The
+   flicker is deliberate and uneven — a bead that pulses on a clean beat is a metronome, not energy. */
+@keyframes ak-flow {
+  0%    { stroke-dashoffset: 0; stroke-width: calc(5.4px * var(--wk, 1)); opacity: 1 }
+  0.81% { stroke-width: calc(5px * var(--wk, 1)); opacity: .66 }
+  1.58% { stroke-width: calc(4.5px * var(--wk, 1)); opacity: 1 }
+  2.27% { stroke-width: calc(4.2px * var(--wk, 1)); opacity: .72 }
+  3.11% { stroke-width: calc(3.8px * var(--wk, 1)); opacity: .95 }
+  3.85% { stroke-width: calc(3.4px * var(--wk, 1)); opacity: .6 }
+  4.44% { stroke-width: calc(3.1px * var(--wk, 1)); opacity: .8 }
+  100%  { stroke-dashoffset: -2274; stroke-width: calc(3.1px * var(--wk, 1)); opacity: .8 }
+}
+
+/* THE WAVEFRONT ACROSS A DEVICE. A ring, not a disc and not spokes: it leaves the middle of the face and runs
+   out to the furthest corner of the BOX — the clip is the whole silhouette, so it carries off the front, across
+   the side and onto the back rather than stopping at the front rim.
+   SCREEN, which is the difference between energy and a tint. Blended this way the ring ADDS to whatever it
+   crosses, so the wireframe's own lines flare as it passes over them; painted normally it is a coloured shape
+   sitting on top of the device, which is exactly what it should not look like.
+   --wr is written per phone from its own geometry, so a small one behind lights in the same beat a big one in
+   front does. `r` animates as a CSS property — an SVG2 geometry property, which is why this needs no script. */
+/* THE OBJECT'S OWN SHAPE, not the viewer's. The wavefront is a copy of that phone's face path, so it arrives at
+   the device already keystoned and already at its angle — a circle was wrong twice over.
+   non-scaling-stroke is what makes the scaling work: without it the line is a hairline while the front is small
+   and a slab once it reaches the rim, which reads as a shape inflating rather than as a wave crossing. */
+/* Two haloes rather than one hard line: a tight hot one on the leading colour and a wide soft one on the accent.
+   That falloff is the gradient — a single flat stroke reads as an outline being switched on, where a bright core
+   bleeding into a wash reads as something with energy in it.
+   opacity 0 IN THE BASE STATE for the same reason the beads carry it: until its delay elapses an element shows
+   its ordinary styles, which here is a full-size lit outline sitting exactly on the phone. Every device looked
+   lit at once, and none of them were animating yet. */
+/* TWO ANIMATIONS ON ONE ELEMENT: the crossing, and a throb of the line's own weight while it crosses. The throb
+   runs on its own clock at a duration set per device, which is most of what stops seven of these reading as one
+   mechanism ticking. */
+.fg-wave {
+  fill: none; stroke: var(--accent-hover); opacity: 0;
+  vector-effect: non-scaling-stroke;
+  /* Three, and chained: each takes the previous one's halo as its input, so the falloff compounds outward
+     instead of three rings sitting on top of each other. That is what makes the glow long rather than tight. */
+  filter: drop-shadow(0 0 calc(5px * var(--wk, 1)) var(--accent-hover))
+          drop-shadow(0 0 calc(17px * var(--wk, 1)) var(--accent))
+          drop-shadow(0 0 calc(36px * var(--wk, 1)) var(--accent));
+  mix-blend-mode: screen;
+  transform-box: fill-box; transform-origin: center;
+  animation: ak-wave 20.7s linear var(--sd, 0s) infinite,
+             ak-throb var(--tb, .44s) ease-in-out infinite;
+}
+.fg-wave.fade { animation-name: ak-fade, ak-throb }
+.fg-wave.beat { animation-name: ak-beat, ak-throb; animation-duration: 6.9s, var(--tb, .44s) }
+
+@keyframes ak-throb {
+  0%, 100% { stroke-width: calc(1.8px * var(--wk, 1)) }
+  50% { stroke-width: calc(3.6px * var(--wk, 1)) }
+}
+
+/* THREE LEGS OF ONE TRANSFORM, which is why one element does all of it: out from the middle of the front plane
+   to the front edges, then bodily front-to-back along the sides at full size, then closed from the back edges in
+   on the middle of the back. --wd is the phone's own depth, so the middle leg lands exactly on its back ring.
+   NOT LINEAR, and not landing flat on the rim. It leaves fast and decelerates into an overshoot of --wj past its
+   own outline, settles back onto it, then goes. A front that grows at a constant rate and stops dead on the edge
+   is the stiff version of this, and no amount of slowing it down fixes that.
+   THE LEGS ARE NOT EVEN. Out to the rim takes 0.56s, the settle 0.17s, front-to-back 0.32s -- and the close onto
+   the back centre takes 0.5s, still the longest leg of the four. It is the beat the eye follows longest and the
+   one that reads as the device absorbing the pulse rather than passing it on. It is also not linear: it breaks
+   away fast and eases off, but it does NOT crawl the last of it -- the curve keeps speed into the dot, because
+   a front that decelerates all the way in reads as running out rather than as arriving.
+   IT SNAPS OUT, IT DOES NOT FADE. Full strength the whole way down to a dot, then gone in a frame — a front that
+   dims as it shrinks reads as the light running out, where a hard cut reads as it having gone somewhere. The one
+   exception is the LAST device on a path, which has nowhere to hand off to, so ak-fade lets that one dissolve.
+   Two clocks, so two keyframes: the same 1.55s crossing is 7.5% of the shared 20.7s cycle and 22.5% of the near
+   phone's own 6.9s one. THE SLOT IS LONGER THAN THE CHAIN ON PURPOSE -- a path takes 6.49s to run from the near
+   phone to the far rank, and at any slot shorter than that the front re-lit while the previous one was still
+   arriving. Every percentage here is a fraction of a cycle, so retiming the whole thing is three durations.
+   Never quite zero -- a stroked path at scale 0 has no box to draw. */
+@keyframes ak-wave {
+  0%     { transform: translateX(0) scale(.02); opacity: var(--wo, 1); animation-timing-function: cubic-bezier(.1,.8,.3,1) }
+  2.71%  { transform: translateX(0) scale(calc(1 + var(--wj, .06)), calc(1 + var(--wj, .06) * .4)); animation-timing-function: cubic-bezier(.4,0,.3,1) }
+  3.53%  { transform: translateX(0) scale(1); animation-timing-function: cubic-bezier(.55,0,.45,1) }
+  5.07%  { transform: translateX(var(--wd)) scale(1); opacity: var(--wo, 1); animation-timing-function: cubic-bezier(.14,.7,.62,.94) }
+  7.49%  { transform: translateX(var(--wd)) scale(.02); opacity: var(--wo, 1) }
+  7.55%  { transform: translateX(var(--wd)) scale(.02); opacity: 0 }
+  100%   { transform: translateX(var(--wd)) scale(.02); opacity: 0 }
+}
+@keyframes ak-beat {
+  0%     { transform: translateX(0) scale(.02); opacity: var(--wo, 1); animation-timing-function: cubic-bezier(.1,.8,.3,1) }
+  8.12%  { transform: translateX(0) scale(calc(1 + var(--wj, .06)), calc(1 + var(--wj, .06) * .4)); animation-timing-function: cubic-bezier(.4,0,.3,1) }
+  10.6%  { transform: translateX(0) scale(1); animation-timing-function: cubic-bezier(.55,0,.45,1) }
+  15.2%  { transform: translateX(var(--wd)) scale(1); opacity: var(--wo, 1); animation-timing-function: cubic-bezier(.14,.7,.62,.94) }
+  22.5%  { transform: translateX(var(--wd)) scale(.02); opacity: var(--wo, 1) }
+  22.7%  { transform: translateX(var(--wd)) scale(.02); opacity: 0 }
+  100%   { transform: translateX(var(--wd)) scale(.02); opacity: 0 }
+}
+/* The end of the line, and the only one that dissolves. */
+@keyframes ak-fade {
+  0%     { transform: translateX(0) scale(.02); opacity: var(--wo, 1); animation-timing-function: cubic-bezier(.1,.8,.3,1) }
+  2.71%  { transform: translateX(0) scale(calc(1 + var(--wj, .06)), calc(1 + var(--wj, .06) * .4)); animation-timing-function: cubic-bezier(.4,0,.3,1) }
+  3.53%  { transform: translateX(0) scale(1); animation-timing-function: cubic-bezier(.55,0,.45,1) }
+  5.07%  { transform: translateX(var(--wd)) scale(1); opacity: var(--wo, 1); animation-timing-function: cubic-bezier(.14,.7,.62,.94) }
+  7.49%  { transform: translateX(var(--wd)) scale(.02); opacity: 0 }
+  100%   { transform: translateX(var(--wd)) scale(.02); opacity: 0 }
+}
+
+/* Nothing idles while the graph is being drawn or struck. A circuit running through half-built edges reads as
+   two animations fighting, and the pause holds its phase so it resumes where it left off.
+   THE FADE IS ON THE GROUP, not on the pulses. Each of those has opacity under keyframe control, and a running
+   animation outranks a transition — so hiding them individually can only ever be a cut. The layer above them is
+   free, and fading that is what turns "gone" into "went out". */
+.fg-sparks { transition: opacity .16s linear }
+#loop-stage.is-drawing .fg-sparks { opacity: 0 }
+#loop-stage.is-drawing .fg-spark,
+#loop-stage.is-drawing .fg-wave { animation-play-state: paused }
 
 /* Narrower measure than the page's 1400, but capped on the CONTENT rather than on .inner: shrinking the
    container would centre it and pull the left edge in from every other section, and that misalignment is
@@ -814,7 +1050,7 @@ section[id] { scroll-margin-top: 84px }
 
 /* ---------------- experience ---------------- */
 
-#experience { position: relative; padding: 110px var(--pad-page); background: var(--ink-deep) }
+#experience { position: relative; padding: 110px var(--pad-page); background: var(--ink) }
 
 /* The viewer breaks OUT of the section's padding rather than the section going without it: it is pinned, so it
    has to be able to fill the screen, and a sticky child of a padded column is pinned to that column. Moving the
@@ -833,6 +1069,218 @@ section[id] { scroll-margin-top: 84px }
   display: inline-block; min-width: 92px;
   font-family: var(--font-mono); font-size: 10px; font-weight: 500; letter-spacing: .18em;
   text-transform: uppercase; color: var(--amber);
+}
+
+/* ---- the back catalogue ----
+ *
+ * Seventeen shipped products on four shelves. The product leads and the employer is withheld until one is
+ * picked, which is the opposite of every other way this page has told this story.
+ *
+ * NOT PINNED, and that is the load-bearing decision. Each rack is a plain overflow-x scroller, so sideways
+ * belongs to the shelf and DOWN ALWAYS BELONGS TO THE PAGE. Nothing here intercepts a wheel event. A reader
+ * scrolling past the section never has their descent converted into somebody else's animation.
+ */
+.shelf-intro { margin-top: 74px }
+.shelf-intro h3 {
+  margin: 14px 0 0; font-family: var(--font-display); font-weight: 900;
+  font-size: clamp(26px, 3.4vw, 44px); line-height: 1; letter-spacing: -1.6px; color: var(--text-strong);
+}
+.shelf-intro h3 span { color: var(--accent) }
+.shelf-intro p { margin: 16px 0 0; max-width: 64ch; font-size: 14.5px; line-height: 1.65; color: var(--text-body) }
+
+.shelf { margin-top: 40px; position: relative }
+
+/* The act is a LABEL ON THE SPINE, not a divider between spines. A divider standing in a single horizontal row
+   can only be read sideways, and one row was the whole point — see .p-domain, which carries it. */
+
+/* ---- the rack ----
+ * Breaks the page rail on both sides so a shelf runs off the edge of the screen the way a shelf does, and pads
+ * itself back to the rail so the first spine still lines up with the heading above it. */
+.rack {
+  margin: 20px calc(-1 * var(--pad-page)) 0;
+  padding: 4px var(--pad-page) 18px;
+  display: flex; gap: 14px;
+  overflow-x: auto; overflow-y: hidden;
+  scroll-snap-type: x proximity;
+  overscroll-behavior-x: contain;   /* a rack that has run out does not hand the gesture to the page sideways */
+  scrollbar-width: thin; scrollbar-color: var(--border-accent) transparent;
+  /* Every spine the height of the tallest. A two-line product name would otherwise shorten its own card and the
+     covers would step up and down the row instead of sitting on one shelf. */
+  align-items: stretch;
+}
+.rack::-webkit-scrollbar { height: 5px }
+.rack::-webkit-scrollbar-track { background: var(--hairline) }
+.rack::-webkit-scrollbar-thumb { background: var(--border-accent); border-radius: 3px }
+.rack::-webkit-scrollbar-thumb:hover { background: var(--accent) }
+
+.spine { flex: 0 0 auto; scroll-snap-align: start }
+
+/* Seventeen products do not stop at the edge of the window, and the 5px scrollbar is easy to miss. The fade is
+   the only thing saying there is more shelf — drawn only on the side that actually has more, which is why
+   shelf.js writes the two classes rather than the fades being permanent.
+   Its own wrapper rather than sitting on .shelf, so the gradient covers the rack and stops: on .shelf it would
+   have run the full height of the proof bay underneath and dimmed the reading. */
+.rack-wrap { position: relative }
+.rack-wrap::before, .rack-wrap::after {
+  content: ''; position: absolute; top: 0; bottom: 22px; width: 68px;
+  pointer-events: none; opacity: 0; transition: opacity .25s var(--ease-settle); z-index: 2;
+}
+/* --ink, matching the page's one ground. These fade INTO the section behind them, so a colour of their own
+   draws the seam they exist to hide. */
+.rack-wrap::before { left: calc(-1 * var(--pad-page)); background: linear-gradient(to right, var(--ink), transparent) }
+.rack-wrap::after { right: calc(-1 * var(--pad-page)); background: linear-gradient(to left, var(--ink), transparent) }
+.more-left .rack-wrap::before, .more-right .rack-wrap::after { opacity: 1 }
+
+.spine-face {
+  display: flex; flex-direction: column; height: 100%;
+  width: 172px; padding: 0; cursor: pointer; text-align: left;
+  background: var(--ink-panel); border: 1px solid var(--hairline); border-radius: var(--radius-chip);
+  color: inherit; font: inherit;
+  transition: border-color .2s var(--ease-settle), transform .2s var(--ease-settle),
+              background .2s var(--ease-settle);
+}
+.spine-face:hover { border-color: var(--border-accent); transform: translateY(-4px) }
+.spine-face:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--amber-focus) }
+.spine.picked .spine-face {
+  border-color: var(--accent); background: var(--ink-hot); transform: translateY(-6px);
+}
+
+/* ---- the cover ----
+ * GENERATED, NOT PHOTOGRAPHED. Almost all of this work is internal or under NDA and there are no screenshots to
+ * use, so a cover is built from the product's own facts instead: [data-domain] picks the pattern.
+ * WIREFRAME, in the same vocabulary as the Cartographer's phones and the CRT — warm lines over transparent
+ * black, nothing filled. That is what makes seventeen covers, a flow graph and a tube read as one page rather
+ * than three. Nothing here reproduces any real interface.
+ * --wire is brighter than the phones' bare --scenery on purpose: a stroke that reads at 300px in the flow graph
+ * disappears at 150px, and these are 150px. */
+.cover {
+  display: block; aspect-ratio: 1; margin: 10px 10px 0; border-radius: 2px;
+  background-color: rgba(0, 0, 0, .25);
+  border: 1px solid var(--scenery);
+  position: relative; overflow: hidden;
+  --wire: rgba(237, 168, 99, .34);
+  --wire-lit: rgba(221, 106, 32, .72);
+}
+
+/* Internal tooling: a plotted grid with a trace across it, which is literally what the HP job produced. */
+.cover[data-domain="tooling"] {
+  background-image:
+    linear-gradient(74deg, transparent calc(50% - 1px), var(--wire-lit) calc(50% - 1px), var(--wire-lit) calc(50% + 1px), transparent calc(50% + 1px)),
+    linear-gradient(to right, var(--wire) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--wire) 1px, transparent 1px);
+  background-size: 100% 100%, 15px 15px, 15px 15px;
+}
+/* Consumer: open rings, the friendliest figure on the shelf. */
+.cover[data-domain="consumer"] {
+  background-image:
+    repeating-radial-gradient(circle at 42% 40%, transparent 0 13px, var(--wire) 13px 14px);
+}
+/* Field: contours running off a corner. Offline, GPS, terrain. */
+.cover[data-domain="field"] {
+  background-image:
+    repeating-radial-gradient(circle at 26% 112%, transparent 0 11px, var(--wire) 11px 12px);
+}
+/* Fintech: hatching on the diagonal with one lit band for the balance. */
+.cover[data-domain="fintech"] {
+  background-image:
+    linear-gradient(0deg, transparent 58%, var(--wire-lit) 58%, var(--wire-lit) 60%, transparent 60%),
+    repeating-linear-gradient(115deg, var(--wire) 0 1px, transparent 1px 11px);
+}
+/* Retail: the barcode. Every one of these has a scanner in it. */
+.cover[data-domain="retail"] {
+  background-image:
+    linear-gradient(to bottom, transparent 76%, var(--wire-lit) 76%, var(--wire-lit) 78%, transparent 78%),
+    repeating-linear-gradient(90deg,
+      var(--wire) 0 1px, transparent 1px 5px,
+      var(--wire) 5px 7px, transparent 7px 14px);
+}
+/* Agentic: rings around a core — the reactor's own figure, for the work that made this site. */
+.cover[data-domain="agentic"] {
+  background-image:
+    radial-gradient(circle at 50% 50%, var(--wire-lit) 0 5%, transparent 5%),
+    repeating-radial-gradient(circle at 50% 50%, transparent 0 12px, var(--wire) 12px 13px);
+}
+
+.spine-face .p-name {
+  display: block; margin: 12px 12px 0;
+  font-family: var(--font-display); font-weight: 800; font-size: 15px; line-height: 1.15;
+  letter-spacing: -.3px; color: var(--text-strong);
+}
+.p-marks { display: flex; flex-wrap: wrap; gap: 4px; margin: 9px 12px 0 }
+.p-marks i {
+  font-style: normal; font-family: var(--font-mono); font-size: 8.5px; letter-spacing: .12em;
+  text-transform: uppercase; padding: 3px 6px; border: 1px solid var(--hairline); color: var(--text-faint);
+}
+.spine.picked .p-marks i { border-color: var(--border-accent); color: var(--amber) }
+/* THE ACT, as a plain label at the foot of the card. Pinned to the bottom so it sits on one level across the
+   whole shelf however many lines the product name above it took — which is what lets four labels repeating down
+   the row read as chapter markers rather than as clutter. */
+.p-domain {
+  display: block; margin: 10px 12px 12px; margin-top: auto; padding-top: 10px;
+  border-top: 1px solid var(--hairline);
+  font-family: var(--font-mono); font-size: 8.5px; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--text-faint);
+}
+.spine.picked .p-domain { border-top-color: var(--border-accent); color: var(--amber) }
+
+/* ---- the bay ----
+ * AUTHORED OPEN. Every proof is written out in the markup and shelf.js is what hides them, so a crawler that
+ * runs no JavaScript reads all seventeen records. The `hidden` attribute only ever appears under .js-shelf. */
+.bay { margin-top: 4px }
+.js-shelf .bay { border-top: 1px solid var(--hairline); padding-top: 26px }
+
+.proof + .proof { margin-top: 34px }
+.js-shelf .proof + .proof { margin-top: 0 }
+
+.proof-fig {
+  display: flex; align-items: baseline; gap: 2px;
+  font-family: var(--font-display); font-weight: 900;
+  font-size: clamp(38px, 7vw, 84px); line-height: .92; letter-spacing: -3px;
+  color: var(--text-strong);
+  font-variant-numeric: tabular-nums;
+}
+.proof-fig i { font-style: normal; color: var(--accent) }
+/* The wordless proofs — the ones with no metric — set smaller, because a phrase at 84px wraps into a wall. */
+.proof-fig.said { font-size: clamp(24px, 3.4vw, 40px); letter-spacing: -1.2px; line-height: 1.06; max-width: 22ch }
+
+.proof-say { margin: 14px 0 0; font-size: 16px; line-height: 1.5; color: var(--amber); max-width: 56ch }
+
+.proof-at {
+  margin-top: 26px; padding-top: 20px; border-top: 1px solid var(--hairline);
+  display: flex; align-items: baseline; flex-wrap: wrap; gap: 6px 18px;
+}
+.pa-label {
+  width: 100%; font-family: var(--font-mono); font-size: 9.5px; letter-spacing: .2em;
+  text-transform: uppercase; color: var(--text-faint);
+}
+.proof-at h4 {
+  margin: 4px 0 0; font-family: var(--font-display); font-weight: 900; font-size: 28px;
+  letter-spacing: -1px; color: var(--text-strong);
+}
+.pa-role { font-size: 14px; font-weight: 600; color: var(--accent) }
+.proof-at time {
+  font-family: var(--font-mono); font-size: 10.5px; letter-spacing: .12em; color: var(--text-muted);
+}
+.proof-more { margin: 16px 0 0; font-size: 14.5px; line-height: 1.65; color: var(--text-body); max-width: 72ch }
+
+/* The panel lands rather than appearing: an amber rule wipes it open, the same gesture the role viewer below
+   uses, so the two halves of this section share one vocabulary. */
+.js-shelf .proof.landing { animation: bay-in .42s var(--ease-settle) both }
+@keyframes bay-in {
+  from { opacity: 0; transform: translateY(10px); clip-path: inset(0 0 100% 0) }
+  to { opacity: 1; transform: none; clip-path: inset(0 0 0 0) }
+}
+
+@media (max-width: 820px), (max-height: 500px) {
+  .shelf-intro { margin-top: 52px }
+  .spine-face { width: 138px }
+  .spine-face .p-name { font-size: 13.5px }
+  .proof-at h4 { font-size: 23px }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spine-face, .spine.picked .spine-face { transform: none }
+  .js-shelf .proof.landing { animation: none }
 }
 
 /* ---- the roles, one at a time ----
@@ -990,18 +1438,12 @@ section[id] { scroll-margin-top: 84px }
   text-transform: uppercase; color: var(--amber);
 }
 
-/* The institution and the degree read as one line and wrap as two, so the pair never separates awkwardly. */
+/* THE DEGREE LEADS. It is the qualification; the institution that issued it is the attribution, so it carries
+   the display weight and the university drops to the mono line. One line that wraps as two, so the pair never
+   separates awkwardly. */
 .education .ed-line { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px }
-.education .ed-place { font-family: var(--font-display); font-weight: 800; font-size: 21px; letter-spacing: -.3px; color: var(--text-strong) }
-.education .ed-degree { font-family: var(--font-mono); font-size: 11px; letter-spacing: .1em; color: var(--amber) }
-
-.education p { margin: 14px 0 0; font-size: 14.5px; line-height: 1.65; color: var(--text-body); max-width: 74ch }
-.education .meta { margin-top: 12px; font-size: 12.5px; line-height: 1.6; color: var(--text-muted); max-width: 74ch }
-.education .meta b {
-  display: inline-block; margin-right: 8px;
-  font-family: var(--font-mono); font-size: 10px; font-weight: 500; letter-spacing: .18em;
-  text-transform: uppercase; color: var(--text-faint);
-}
+.education .ed-degree { font-family: var(--font-display); font-weight: 800; font-size: 21px; letter-spacing: -.3px; color: var(--text-strong) }
+.education .ed-place { font-family: var(--font-mono); font-size: 11px; letter-spacing: .1em; color: var(--amber) }
 
 .offbeat { margin-top: 30px; display: grid; gap: 6px; font-size: 13.5px; line-height: 1.6; color: var(--text-muted) }
 
@@ -1014,7 +1456,7 @@ section[id] { scroll-margin-top: 84px }
 
 /* Its own section rather than the timeline's tail. Neither half is a job: a degree has no employer and no
    duration worth reading, and the off-hours list is not work at all. */
-#background { position: relative; padding: 110px var(--pad-page); background: var(--ink-deep) }
+#background { position: relative; padding: 110px var(--pad-page); background: var(--ink) }
 #background .sec-title { margin-bottom: 44px }
 
 /* ---------------- labs ---------------- */
@@ -1032,15 +1474,6 @@ section[id] { scroll-margin-top: 84px }
 }
 
 .sec-lede { font-size: clamp(14px, 1.5vw, 17px); line-height: 1.65; color: var(--text-body); margin: 18px 0 0; max-width: 620px }
-
-/* The machine voice, stating what these are made of. Mono, tracked out, quietest thing in the section. */
-/* Gaps, not middle-dots. Four facts chained with "·" reads as one run-on line and is the separator tic every
-   generated page has; spacing separates them just as well and stays quiet. */
-.spec {
-  margin-top: 20px; display: flex; flex-wrap: wrap; gap: 8px 28px;
-  font-family: var(--font-mono); font-size: 10.5px; letter-spacing: .16em;
-  color: var(--text-faint); text-transform: uppercase;
-}
 
 /* Asymmetric on purpose: CRT GL is the flagship and three identical tiles say the three are interchangeable.
    Exactly three cells for exactly three instruments. */
@@ -1070,23 +1503,18 @@ section[id] { scroll-margin-top: 84px }
 
 .lab-card:hover .go { color: var(--accent) }
 
-.note {
-  margin-top: 34px; padding: 16px 18px; max-width: 92ch;
-  border-left: 2px solid var(--accent); background: rgba(221, 106, 32, .06);
-  color: var(--text-body); font-size: 13.5px; line-height: 1.65;
-}
-
-.note strong { color: var(--text-strong) }
-
 /* ---------------- contact ---------------- */
 
+/* THE LAST THING ON THE PAGE, and it ends the page. Centred, because a left-railed block with nothing under it
+   reads as unfinished. */
 #contact {
-  padding: 90px var(--pad-page) 60px;
-  background: linear-gradient(180deg, var(--ink), #140c06);
+  padding: 100px var(--pad-page) 96px;
+  background: var(--ink);
+  text-align: center;
 }
 
 .contact-links {
-  margin-top: 26px; display: flex; gap: 22px; flex-wrap: wrap;
+  margin-top: 30px; display: flex; gap: 22px; flex-wrap: wrap; justify-content: center;
   font-family: var(--font-mono); font-size: 13px; letter-spacing: .06em;
 }
 
@@ -1132,17 +1560,6 @@ section[id] { scroll-margin-top: 84px }
 }
 
 .qr-actions button:hover { border-color: var(--accent); color: var(--accent) }
-
-/* ---------------- footer ---------------- */
-
-footer {
-  padding: 22px var(--pad-page) 40px; max-width: var(--content-max); margin: 0 auto;
-  display: flex; flex-wrap: wrap; gap: 10px 26px;
-  font-family: var(--font-mono); font-size: 11px; letter-spacing: .1em; color: var(--text-faint);
-}
-
-footer a { color: var(--text-faint) }
-footer a:hover { color: var(--accent) }
 
 /* ---------------- the instruments, as objects ---------------- */
 
@@ -1213,6 +1630,14 @@ footer a:hover { color: var(--accent) }
   75% { transform: rotateY(0deg) rotateX(-5deg) }
   100% { transform: rotateY(6deg) rotateX(0deg) }
 }
+/* ONE description of the ring cycle. The script spaces the fourteen delays across it as FRACTIONS, because an
+   even train needs delay = index x duration / 14 at both speeds — delays fixed in seconds would bunch the
+   rings into the first half of the tube the moment the duration changed. */
+.wh { --fly: 7.2s }
+/* Hover runs the travel at the speed it used to run at always, alongside the wall. Every ring is identical and
+   the train is a full even lattice, so rescaling the cycle slides the whole set by less than one gap rather
+   than scattering it. */
+.wh:hover { --fly: 3.6s }
 .wh .rg {
   width: 158px; height: 158px; margin: -79px 0 0 -79px;
   border: 1px solid var(--accent); border-radius: 50%;
@@ -1225,7 +1650,7 @@ footer a:hover { color: var(--accent) }
      animation-play-state pauses the delay as well as the animation, which is the whole reason this works:
      nothing counts down while the section is off screen. Negative delays would place every ring somewhere
      along the path at load, and the tunnel would simply be there. */
-  animation: wh-fly 3.6s linear infinite;
+  animation: wh-fly var(--fly) linear infinite;
   animation-play-state: paused;
 }
 .wh.on .rg { animation-play-state: running }
@@ -1383,16 +1808,16 @@ footer a:hover { color: var(--accent) }
 /* A Predicta tube on its own: no cabinet, no stand, nothing on the face but the glass and a hairline of trim.
    The funnel behind it is half the object and is built in the script, off a single interpolation. */
 .crt .tube { position: absolute; left: 50%; top: 50%; width: 0; height: 0; transform-style: preserve-3d }
-.crt .tube > * { position: absolute; left: 0; top: 0; border: 1px solid rgba(0, 0, 0, .45) }
+.crt .tube > * { position: absolute; left: 0; top: 0; border: 1px solid var(--scenery) }
 
+/* WIREFRAME, in the Cartographer's own vocabulary: --scenery edges over transparent black, which is what the
+   projected phones are made of. The tube is now drawn the way the flow graph's devices are, so the two objects
+   on this page that are both "a device seen in space" finally agree about what a device looks like.
+   ONLY THE GLASS IS EXEMPT. .face keeps its gradient, its scanlines and its phosphor untouched — it is the one
+   surface that is a picture rather than a form. */
 .crt .fr {
   width: 180px; height: 136px; margin: -68px 0 0 -90px; transform: translateZ(15px); border-radius: 44px;
-  background: radial-gradient(132% 118% at 26% 4%, #453b32, #281f1a 44%, #120f0c 100%);
-}
-/* A single lit edge along the top. It is the whole difference between a moulded shell and a flat panel. */
-.crt .fr::before {
-  content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
-  background: linear-gradient(177deg, rgba(255, 230, 204, .22) 0 1.5px, rgba(255, 230, 204, .05) 10%, transparent 28%);
+  background: rgba(0, 0, 0, .25);
 }
 /* No rim panels. Four quads around the edge of the face read as arms bracketing the screen rather than as the
    side of a tube, so the plate stack starts flush with the face and forms its own rim on the way back. */
@@ -1407,9 +1832,12 @@ footer a:hover { color: var(--accent) }
 /* The lit top edge is doing more work here than the fill is. Stacked plates are perceived through the slivers
    of each one that the plate in front does not cover, so a bright edge per plate accumulates into a highlight
    running the length of the cone. Without it a dark form on a dark ground is just a hole. */
+/* Contour lines, not plates. Unfilled — twenty-eight transparent-black faces stacked would compound back to
+   opaque and quietly rebuild the solid cone this replaced. --e is written per plate by lab-objects.js so the
+   edges fade with depth. */
 .crt .fn {
-  position: absolute; left: 0; top: 0; border: 0;
-  box-shadow: inset 0 1px 0 rgba(255, 232, 208, .13), inset -1px 0 0 rgba(255, 232, 208, .05);
+  position: absolute; left: 0; top: 0; background: none;
+  border: 1px solid color-mix(in srgb, var(--scenery) calc(var(--e, .5) * 100%), transparent);
 }
 
 /* The glass reaches the shell. An 8px ring is the entire bezel and the trim inside it is one hairline, warm
@@ -1452,7 +1880,33 @@ footer a:hover { color: var(--accent) }
 .crt .face u.b { color: rgba(72, 132, 255, .3) }
 .crt .face { transition: transform .3s var(--ease-settle), background-color .55s var(--ease-settle) }
 .crt .face::before, .crt s { transition: opacity .55s var(--ease-settle) }
-.crt:hover .face { transform: skewX(.9deg) scale(1.015, .99) }
+/* THE TUBE GOES UNSTABLE UNDER THE POINTER. It dims and flickers the way one with a failing supply does, which
+   is the same reading as the convergence error below it: approach the thing and it stops holding a picture.
+   BRIGHTNESS ONLY. The hover already owns .face's transform for the skew, and a flicker animating transform too
+   would replace it — the convergence error would vanish at exactly the moment it is supposed to appear.
+   steps(1, end), not linear: a supply that is failing snaps between levels. Eased, it reads as a slow pulse.
+   Safe on .face specifically — the warning about filters flattening preserve-3d applies to the funnel plates,
+   which are 3D siblings; crt-on and crt-off already animate filter on this element. */
+@keyframes crt-flicker {
+  0%, 4%   { filter: brightness(.84) }
+  5%       { filter: brightness(.52) }
+  7%       { filter: brightness(.9) }
+  9%       { filter: brightness(.58) }
+  11%, 36% { filter: brightness(.82) }
+  38%      { filter: brightness(1.04) }
+  40%      { filter: brightness(.55) }
+  43%, 62% { filter: brightness(.85) }
+  64%      { filter: brightness(.48) }
+  66%, 88% { filter: brightness(.83) }
+  90%      { filter: brightness(.6) }
+  92%, 100% { filter: brightness(.84) }
+}
+.crt:hover .face {
+  transform: skewX(.9deg) scale(1.015, .99);
+  /* 3.1s against the scanline's 4.2s, so the two clocks drift and the loop never lands on the same frame twice
+     in a row. One clock for both and the flicker would visibly repeat. */
+  animation: crt-flicker 3.1s steps(1, end) infinite;
+}
 /* All three guns, orbiting rather than parked. One keyframe and three negative delays a third of a cycle
    apart, so red, green and blue are always 120 degrees around the circle from each other and every one of them
    passes through view while the pointer is down. Screened together they return to neutral where they overlap,
@@ -1506,7 +1960,6 @@ footer a:hover { color: var(--accent) }
 
   .exp-view { padding: 60px var(--pad-page) }
   .expertise b { min-width: 0; display: block }
-  .modes { grid-template-columns: minmax(0, 1fr); gap: 20px }
   .lab-grid { grid-template-columns: minmax(0, 1fr) }
   .lockup { letter-spacing: -3px }
   /* Release the column with the grid. Pinned to 3 against a single-column template, the aside opens an implicit
@@ -1541,11 +1994,29 @@ footer a:hover { color: var(--accent) }
   #cartographer { padding: 110px var(--pad-page) 40px }
 }
 
-/* Two columns stop paying here: measured at 1080px wide they are within 20px of a single column, and below it
-   they are worse. */
-@media (max-width: 1080px) {
+/* LESS ROOM, TIGHTER RHYTHM. The pin holds down to 760px and the terms column is now the taller of the two — one
+   test per row is six rows where the wrapped version was two — so between there and 880 it overflows the one
+   screen the stage clips it to, and a pinned section taller than its stage loses its own CTA off the bottom.
+   Nothing is dropped and nothing is resized: the air between the blocks comes out, which is what was surplus at
+   full height in the first place. Measured: 66px over at 780 before this, 40 under after. */
+@media (max-height: 880px) {
+  #cartographer { padding-top: 48px; padding-bottom: 30px }
+  .tagline { margin-top: 12px }
+  .reach { margin-top: 16px }
+  .terms { margin-top: 20px; gap: 14px }
+  .term ul.checks { gap: 9px 44px }
+  .demo-cta { margin-top: 22px; padding: 13px 30px }
+}
+
+/* Two columns stop paying here. 1080 was measured against a column of six prose blocks; the terms and the graph
+   are both narrow, and they still hold a pair of columns 160px lower. Not the same number as the pin's 1080
+   below — that pair is about whether there is room to seat the section, this one about whether there is room
+   for two of it side by side. */
+@media (max-width: 920px) {
   .loop-grid { grid-template-columns: minmax(0, 1fr); gap: 34px }
-  .checks { grid-template-columns: minmax(0, 1fr); gap: 26px }
+  /* The graph goes under the copy, and stops being the widest thing on the page: at full column width its cards
+     outgrow the type they are labelled in. */
+  .flow { max-width: 460px; margin: 0 }
 }
 
 @media (max-height: 500px) {
@@ -1589,6 +2060,11 @@ footer a:hover { color: var(--accent) }
   .exp-deck .role.here { animation: none }
   .exp-deck .role.here::after { display: none }
 
+  /* A FLICKERING SCREEN IS THE ONE EFFECT ON THIS PAGE THAT CAN HARM SOMEBODY. Repeated luminance steps are a
+     photosensitivity trigger, so the hover flicker is cut here rather than merely slowed. The dim stays: it is
+     the state change, and a static dim carries the hover perfectly well without any flashing. */
+  .crt:hover .face { animation: none; filter: brightness(.84) }
+
   html { scroll-behavior: auto }
   #scroll { height: auto }
   #stage { position: static; height: auto; min-height: 100vh }
@@ -1601,6 +2077,8 @@ footer a:hover { color: var(--accent) }
   .scene { position: static; min-height: 100vh; opacity: 1; transform: none; filter: none }
   .kicker, .aside, .lockup span { animation: none }
   .cue span, .live-dot::after { animation: none }
+  /* The graph keeps its shape and loses its circuit: --g defaults to 1 here, so it is simply drawn. */
+  .fg-spark, .fg-wave { animation: none; opacity: 0 }
   [data-reveal] { opacity: 1; transform: none; transition: none }
   /* The rule APPEARS rather than draws: the same clamp, multiplied hard enough that entering a section is a
      step to full. Position is information, so the readout itself never turns off. */
