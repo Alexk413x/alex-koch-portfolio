@@ -70,13 +70,36 @@
    * its own clock, so it always lands on a pure state and cannot be held part-played — the holds are not needed,
    * because there is no longer a position that means "halfway". The remaining pin is the way out.
    */
+  /* FORWARD AND BACK ARE NOT THE SAME LENGTH, because they are not the same act. Arriving, the reader is coming
+     to a stop and the calculator has the whole pin below it to turn in. Leaving upward, they are already going,
+     and the reverse has only the space between the release and the pin's top to finish in — at 900ms it was
+     still turning while the section slid off, or never started. Half the time is what fits that space. */
   const MORPH_MS = 900;
+  const MORPH_BACK_MS = 460;
   const RELEASE = .57;    // where scrolling back up releases it, as a fraction of the commit point. Two lines
                           // rather than one, so a reader parked on the trigger cannot flap the mechanism back
                           // and forth on a pixel of movement.
   let trip = .14;         // read from the stylesheet in measure(); nav.js reads the same declaration
 
-  let mValue = 0, mTarget = 0, mFrom = 0, mStart = 0, mAnim = 0;
+  let mValue = 0, mTarget = 0, mFrom = 0, mStart = 0, mAnim = 0, mSettle = 0;
+
+  /* THE MORPH IS GUARANTEED TO LAND, on a timer as well as on frames.
+     It plays on requestAnimationFrame, and Chrome runs NO frames in a window that is not visible — so a reader
+     who switches away mid-morph comes back to it frozen part-played. That is not just an unfinished animation:
+     the keypad is pointer-events: none until writeMorph sets is-live, which only happens at a settled value, so
+     a stalled morph leaves every key on the calculator dead to hover and to clicks.
+     Timers keep running where frames do not, so one set a little past the morph's own length finishes the job
+     whatever the frame loop did. It is a backstop, not the mechanism: a morph that ran normally clears it. */
+  function settleSoon() {
+    clearTimeout(mSettle);
+    mSettle = setTimeout(() => {
+      mSettle = 0;
+      if (mValue === mTarget) return;
+      if (mAnim) { cancelAnimationFrame(mAnim); mAnim = 0; }
+      mValue = mFrom = mTarget;
+      writeMorph(mValue);
+    }, MORPH_MS + 250);
+  }
 
   function writeMorph(v) {
     morphStage.style.setProperty('--m', v.toFixed(4));
@@ -91,10 +114,12 @@
 
   function tick(ts) {
     if (!mStart) mStart = ts;
-    const p = clamp((ts - mStart) / MORPH_MS);
+    const p = clamp((ts - mStart) / (mTarget ? MORPH_MS : MORPH_BACK_MS));
     mValue = mFrom + (mTarget - mFrom) * ease(p);
     writeMorph(mValue);
-    mAnim = p < 1 ? requestAnimationFrame(tick) : 0;
+    if (p < 1) { mAnim = requestAnimationFrame(tick); return; }
+    mAnim = 0;
+    clearTimeout(mSettle); mSettle = 0;
   }
 
   /* Re-based rather than resumed when the target flips, so a reader who reverses mid-flight gets the morph
@@ -104,6 +129,7 @@
     mTarget = target;
     mFrom = mValue;
     mStart = 0;
+    settleSoon();
     if (!mAnim) mAnim = requestAnimationFrame(tick);
   }
 
@@ -131,6 +157,7 @@
   // Everything reaches its shipped state and stays there: no pin, no trigger.
   function morphFinal() {
     if (!morphStage) return;
+    clearTimeout(mSettle); mSettle = 0;
     if (mAnim) { cancelAnimationFrame(mAnim); mAnim = 0; }
     mValue = mTarget = mFrom = 1;
     writeMorph(1);

@@ -120,34 +120,29 @@
       <h2 class="sec-title">QA<br><span style="color:var(--accent)">CARTOGRAPHER</span></h2>
       <p class="tagline">AI only where judgement is needed.</p>
       <p class="sec-lede">
-        One recorded suite covers the whole surface, heals itself when the app moves under it, and replays for
-        free.
+        One recorded app flow covers the whole surface, and replays for free.
       </p>
 
       <!-- Reach, before coverage, and as a claim rather than as a row of the spec sheet: "will it work with what
            we already have" is the question an enterprise asks before any of the others.
            Three spans rather than one string, so the gap between the claims is set rather than being whatever a
            space character happens to measure at this size — and so a narrow window breaks it between claims. -->
-      <p class="reach"><span>Any Platform.</span><span>Any App.</span><span>Any LLM.</span></p>
+      <p class="reach"><span>Any Platform</span><span>Any App</span><span>Any LLM</span></p>
 
-      <!-- One word list per row. HOW IT RUNS AND WHAT COMES BACK FIRST, then the list of what it covers: the
-           first two are the argument and the third is the evidence, and evidence read before the claim is just a
-           list. Testing is last and is the only enumerated row — six numbered names read as a count, which is
-           what makes them scannable without a second weight competing with the two rows above. -->
+      <!-- How it runs and what comes back, as prose; the list below is what it covers. The argument is read
+           before the evidence, and evidence read before the claim is just a list. -->
+      <p class="sec-lede">
+        Explore, guide, and replay test cases. AI will automatically create and repair tests as the app evolves.
+      </p>
+
+      <!-- Testing is the only enumerated row — six numbered names read as a count, which is what makes them
+           scannable. -->
       <div class="terms">
         <div class="term">
-          <b>Runs</b>
-          <ul><li>Exploratory crawl</li><li>Scripted replay</li></ul>
-        </div>
-        <div class="term">
-          <b>Result</b>
-          <ul><li>Self-healing</li><li>No silent green</li><li>Every run audited</li></ul>
-        </div>
-        <div class="term">
-          <b>Testing</b>
+          <b>Test Coverage</b>
           <!-- Read ACROSS, not down: the grid is row-major, so this order is the pairing on screen. -->
           <ul class="checks">
-            <li>End-to-end</li>
+            <li>End-to-End</li>
             <li>Accessibility</li>
             <li>Performance</li>
             <li>WCAG 2.2 AA</li>
@@ -287,13 +282,14 @@
       <div class="app-copy">
         <h2 class="sec-title">RPN DOMINATOR<br><span style="color:var(--accent)">CALCULATOR</span></h2>
         <p class="sec-lede">
-          Most RPN calculators on the store replicate the HP 15c faceplate down to the button images. This one
-          uses the vertical space a phone actually has.
+          Most RPN calculators on the store replicate the HP 15c exactly, from the functions down to the look of
+          the buttons. This one takes full advantage of the touch screen and the hardware to better optimise the
+          user experience for modern devices.
         </p>
 
         <div class="then-now">
-          <div class="tn then"><b>Then</b>39 keys, one line of display, a 1982 faceplate in your pocket</div>
-          <div class="tn now"><b>Now</b>A stack you scroll and handle directly: reorder, swap, delete, undo</div>
+          <div class="tn then"><b>Then</b>A 1982 fossil that survived with one display row and no modern comforts</div>
+          <div class="tn now"><b>Now</b>A supercomputer in your pocket that uses everything today's tech offers</div>
         </div>
 
         <div class="cta-row">
@@ -307,6 +303,11 @@
 
       <div class="phone-wrap">
         <div class="phone" id="rpn" tabindex="0" role="group" aria-label="Working RPN calculator demo">
+          <!-- The slab's four edges. Elements rather than pseudo-elements because the chassis has only two of
+               those and the back outline holds one; the turn shows the left edge at one end of the morph and the
+               right at the other, and the tilt shows the top or the bottom, so all four have to exist. -->
+          <i class="edge l" aria-hidden="true"></i><i class="edge r" aria-hidden="true"><i class="pwr"></i></i>
+          <i class="edge t" aria-hidden="true"></i><i class="edge b" aria-hidden="true"></i>
           <div class="phone-inner">
             <div class="rpn-readout">
               <div class="rpn-row"><span class="n">4</span><span class="v"></span></div>

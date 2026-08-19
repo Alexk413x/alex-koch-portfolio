@@ -65,12 +65,19 @@
      The dead zones that used to sit at each end are gone with the scrub. The morph is no longer tracked to the
      scroll: crossing a trigger commits it and it runs to completion on its own clock, so both pure states are
      reachable by construction and there is nothing to hold still FOR. That took the runway from 1.8 viewport
-     heights, 40% of which moved nothing at all, to 0.9 — one nudge plays it, the rest is the way out. */
-  --morph-run: .9;
+     heights, 40% of which moved nothing at all, to a half — one nudge plays it, the rest is the way out. */
+  --morph-run: .7;
   /* Where in that pin the morph commits, as a fraction. Declared here because TWO files need it and neither
      may guess: scenes.js triggers on it, and nav.js places the finished calculator's arrow-key stop just past
-     it. Restated in either one, a change to the trigger would silently strand that stop before it. */
-  --morph-trip: .14;
+     it. Restated in either one, a change to the trigger would silently strand that stop before it.
+     THE TWO NUMBERS ARE READ TOGETHER, as the pixels either side of the commit. At .14 of a .9 runway the morph
+     went off 128px after the section seated and left 782px of pin with nothing in it — early, and then a long
+     empty scroll to leave.
+     HALFWAY, and the runway sized so that half is enough. On a 1010px window: 353px of seated calculator before
+     it turns, 353px to watch it in. The commit's position is also what the RELEASE has to live under — scenes.js
+     puts that at a fraction of this number, and it is the space between the release and the pin's top that the
+     reverse gets to play in on the way back up. Moving the commit later moves that ceiling up with it. */
+  --morph-trip: .5;
 }
 
 *, *::before, *::after { box-sizing: border-box }
@@ -426,18 +433,32 @@ section[id] { scroll-margin-top: 84px }
      while the calculator animates -- the copy is being read, the phone is not. */
   width: min(470px, 82vw);
   display: flex; flex-direction: column; align-items: center; gap: 16px;
-  perspective: 1600px;
+  /* LONG, and the length is what makes the extrusion readable. A near perspective shrinks the back plane hard —
+     at 1050 it drew 8% smaller than the front, and the silhouette lines, which end on that real plane, ran in to
+     meet it while the outline sat outside them. At 2400 the shrink is under 4% and the four lines close. It is a
+     long lens rather than a wide one: the chassis foreshortens less, and the object reads as drawn rather than
+     as photographed, which is the same choice the flow graph makes. */
+  perspective: 2400px;
 }
 
 /* Light thrown on the wall BEHIND the device, not a rim around it. Pushed back in Z so the perspective spreads
-   it wider than the phone, which is what makes it read as a room rather than an outline. */
+   it wider than the phone, which is what makes it read as a room rather than an outline.
+   LIT FOR THE WHOLE SCRUB, not faded in on --m. The wall does not care which object is standing in front of it,
+   and a glow that arrives with the phone reads as the phone's own halo rather than as the room it sits in.
+   THE SAME LAMP AS THE CARTOGRAPHER FLOOR POOL, stood up against a wall: #b03c10 at .3, half strength at the
+   midpoint, out by the edge. Two pools of light in one scroll that are nearly but not quite the same colour read
+   as two mistakes, so this one carries #cartoPool's numbers rather than the accent's. */
 .phone-wrap::before {
   content: ''; position: absolute; z-index: 0; pointer-events: none;
   left: 50%; top: 46%; width: 190%; height: 120%;
   transform: translate(-50%, -50%) translateZ(-260px);
-  background: radial-gradient(closest-side, rgba(221, 106, 32, .30), rgba(221, 106, 32, .09) 48%, transparent 72%);
+  background: radial-gradient(closest-side, rgba(176, 60, 16, .3), rgba(176, 60, 16, .1) 50%, transparent);
+  /* The floor pool's own .34, lifted: that figure is set against an SVG ellipse a third of this one's size and
+     drawn on the section's ground, where this is blurred across the whole wall. Same lamp, further away. */
+  opacity: .7;
+  /* Kept, unlike the floor pool: this gradient is stretched over ~900px where the SVG one covers 300, and a
+     radial ramp that wide bands visibly on an 8-bit display without it. */
   filter: blur(34px);
-  opacity: var(--m);
 }
 
 .phone { position: relative; z-index: 1 }
@@ -453,28 +474,119 @@ section[id] { scroll-margin-top: 84px }
   /* The padding IS the chassis. A faceplate needs a case around its plate, not just a hairline, or it reads as a
      picture of a calculator; a phone needs a wider one. Both get a frame, the phone's is deeper. */
   padding: calc(6px + var(--m) * 4px);
-  border-radius: calc((6 + (38 - 6) * var(--m)) * 1px);
+  --r: calc((6 + (38 - 6) * var(--m)) * 1px);
+  /* ONE WEIGHT FOR EVERY LINE ON THE OBJECT: the back outline, the four edges and the power key all read it, so
+     none of them can drift from the others.
+     2px rather than the graph's 1.4. The side edges run near-horizontal and hold a hairline cleanly, but the top
+     and bottom ones are steep diagonals, and a 1.4px diagonal is spread over two pixel columns by the
+     anti-aliasing and renders visibly fainter than the same weight drawn square. The extra half pixel is what
+     makes six lines look like one set. */
+  --line: 2px;
+  border-radius: var(--r);
   background: #16161a;
   background: color-mix(in srgb, #2b2b2d var(--mix), #16161a);
   border: 1px solid rgba(221, 106, 32, .3);
   border-color: color-mix(in srgb, #74777a var(--mix), rgba(221, 106, 32, .3));
-  /* Turned toward the viewer as it becomes an object. transform-style stays flat, so this is a projection of a
-     2D element rather than a 3D scene -- text stays crisp and hit-testing follows the transform, which is why
-     the keys are still clickable at an angle. */
+  /* Turned toward the viewer as it becomes an object, and given thickness to turn against. preserve-3d is what
+     puts the outline below at a real distance behind the front; hit-testing still follows the transform, so
+     every key is clickable at an angle.
+     --dep is that distance, and it is deliberately nothing like a real device's thickness. The turn is 18 degrees
+     at most, so the outline clears the chassis by sin(18) of the depth — under a third — and an honest 9mm phone
+     would put the line 3px out, which reads as a printing slip rather than as an object.
+     UNITLESS, because the edges take it as a width and the outline as a Z offset. */
+  --dep: calc(110 + (95 - 110) * var(--m));
+  transform-style: preserve-3d;
   /* Starts left and turned one way, sweeps through flat and ends facing the other. The travel is what sells the
      object as a thing on a surface rather than a picture that changed colour. */
   transform:
     translateX(calc((-24 + (0 - -24) * var(--m)) * 1px))
     rotateY(calc((18 + (-15 - 18) * var(--m)) * 1deg))
-    rotateX(calc(var(--m) * 3.5deg));
+    /* TILTED AT BOTH ENDS, where this used to be flat at the faceplate and 3.5 degrees at the phone. The top and
+       bottom edges bridge the vertical offset, and the vertical offset IS this angle — at zero they project onto
+       the front's own edge and there is nothing to see. Six degrees puts 11px of top face on the faceplate and
+       10 on the phone, which is enough for the two lines to read without the object looking dropped. */
+    rotateX(calc((6 + (5 - 6) * var(--m)) * 1deg));
   box-shadow:
     0 calc(24px + var(--m) * 26px) calc(50px + var(--m) * 40px) -22px rgba(0, 0, 0, .9),
     inset 0 1px 0 rgba(255, 255, 255, calc(var(--m) * .07));
 }
 
+/* THE OBJECT'S BACK EDGE, drawn the way the flow graph draws its phones: one --scenery line over a dark face.
+   Panelled side faces were tried and are wrong twice over — a rectangle cannot follow a 38px corner radius, so
+   the chassis ended in a square corner it does not have, and a shaded slab is a different vocabulary from the
+   ruled outlines this page uses everywhere else.
+   border-radius: inherit is the whole fix for the corners: the outline is the same box as the chassis, at the
+   same radius, standing --dep behind it. The perspective does the rest — the turn slides it out to one side, and
+   the two rounded rectangles read as one object with depth rather than as a picture with a border. */
+.phone::before {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  /* The flow graph's node exactly: --scenery outline over a quarter-black face. The face is what closes the
+     shape — an outline alone left two loose lines beside the chassis where the graph's screens read as boxes. */
+  background: rgba(0, 0, 0, .25);
+  border-radius: inherit;
+  border: var(--line) solid var(--scenery);
+  /* NOTHING BUT THE DEPTH. This used to carry a scale that cancelled the perspective's shrink so the back
+     measured the same as the front — and that is precisely what broke the silhouette lines, which end on the
+     REAL back plane rather than on a corrected drawing of it. One description of where the back is, and the
+     lines close on it. The few pixels it comes up short are the perspective, and are what say it is behind. */
+  transform: translateZ(calc(var(--dep) * -1px));
+}
+
+/* THE STRAIGHT LINES OF THE EXTRUSION, front corner-bend to back corner-bend, on all four sides.
+   Each edge is a plane standing perpendicular to the front, --dep deep, with only the two borders that run
+   front-to-back painted: the plane itself is invisible, and what is drawn is the pair of straight segments an
+   extruded rounded rect shows on its silhouette. Each is inset at both ends by --r, the same radius the chassis
+   rounds by, so a line starts exactly where the front's curve starts and ends where the back's does.
+   All four exist because the object turns on both axes: rotateY shows the left edge at one end of the morph and
+   the right at the other, rotateX shows the top or the bottom. Whichever edge faces away lands inside the front
+   plane and is occluded by it, and an edge seen exactly end-on projects to nothing, which is correct — there is
+   no offset on that axis to bridge. */
+.phone > .edge {
+  position: absolute; pointer-events: none;
+  border: 0 solid var(--scenery);
+}
+.phone > .edge.l, .phone > .edge.r {
+  top: var(--r); bottom: var(--r); width: calc(var(--dep) * 1px);
+  border-top-width: var(--line); border-bottom-width: var(--line);
+}
+.phone > .edge.t, .phone > .edge.b {
+  left: var(--r); right: var(--r); height: calc(var(--dep) * 1px);
+  border-left-width: var(--line); border-right-width: var(--line);
+}
+.phone > .edge.l { left: 0; transform-origin: left center; transform: rotateY(90deg) }
+.phone > .edge.r { right: 0; transform-origin: right center; transform: rotateY(-90deg) }
+.phone > .edge.t { top: 0; transform-origin: center top; transform: rotateX(-90deg) }
+.phone > .edge.b { bottom: 0; transform-origin: center bottom; transform: rotateX(90deg) }
+
+/* The power key, drawn ON the right edge's plane so it turns with the object rather than being a pill painted
+   beside it. Only the phone has one, and only the phone shows this edge, so it rides --m rather than being
+   switched: at the faceplate it is a calculator's side and there is nothing there.
+   Inset from both ends of the depth rather than filling it, because a key that runs the full thickness reads as
+   a slot. Placed a quarter down, where a phone's is. */
+.phone > .edge.r > .pwr {
+  position: absolute; left: 24%; right: 24%; top: 12%; height: 36px;
+  /* THE SAME --line EVERY OTHER LINE ON THIS OBJECT CARRIES. It was set to 3 to compensate for the plane
+     standing almost end-on, and that compensation is the wrong trade: one heavier line among six reads as a
+     mistake far louder than a faint one reads as missing. */
+  border: var(--line) solid var(--scenery);
+  /* A rounded rectangle, not a capsule: 999px made a stadium that read as a lozenge stuck to the side. */
+  border-radius: 9px;
+  opacity: var(--m);
+}
+
 /* The screen inside the chassis. Its own clip, so the stack's banded rows and the keypad both stop at the
    bezel's inner curve instead of squaring off against it. */
 .phone-inner {
+  /* FLAT, inside a preserve-3d parent. The chassis needs a 3D context so its back outline can stand behind the
+     front; the keypad does not, and leaving the keys in that context puts fifty-one planes into the browser's
+     3D sort. Flattening here keeps the outline's depth and gives the keys their ordinary plane back.
+     ONE PIXEL FORWARD, and this is not cosmetic — it is what makes half the keypad clickable. The four edge
+     planes stand ON the front face, so their front border shares z = 0 with the screen, and Chrome's compositor
+     hit-test cannot resolve who owns a point on a plane two surfaces both occupy: real hover stopped dead at
+     .phone-inner across the half of the pad the visible edge is on, while elementFromPoint still reported the
+     key. Separating them breaks the tie. Verified by hover, not by hit-testing APIs, which disagreed. */
+  transform-style: flat;
+  transform: translateZ(1px);
   overflow: hidden;
   border-radius: calc((4 + (26 - 4) * var(--m)) * 1px);
   background: #0b0b0d;
@@ -712,8 +824,11 @@ section[id] { scroll-margin-top: 84px }
 }
 
 /* The section trails the scroll and comes up to strength as the reactor is struck above it, so the two read as
-   one hand-off. Scrubbed, so it carries no transition of its own — the easing is applied once, in scenes.js. */
+   one hand-off. Scrubbed, so it carries no transition of its own — the easing is applied once, in scenes.js.
+   --claim-gap is the ONE horizontal gap in this column. The reach row and the coverage grid are the only
+   multi-column rows here, and two different gaps between two lists of short phrases read as a mistake. */
 #cartographer {
+  --claim-gap: 56px;
   position: relative; padding: 70px var(--pad-page) 44px; width: 100%;
   opacity: var(--o2); transform: translateY(var(--y2));
 }
@@ -757,28 +872,28 @@ section[id] { scroll-margin-top: 84px }
 /* THE REACH CLAIM, and the only line of prose in the column set in accent. It answers "will it work with what we
    already have", which is asked before anything the spec rows below it say, so it is read before them. Set as a
    row of three rather than as a sentence, because three separated claims are what it is. */
-/* Three equal tracks, each claim centred in its own. auto-fit rather than a fixed three: on a phone the rail is
-   too narrow for three of these side by side, and an empty track collapses so the ones that remain still split
-   the width evenly.
-   CAPPED TO THE LEDE'S MEASURE. Given the whole rail the three tracks ran well past the sentence above, which
-   wraps at 620 — so the outer two sat beyond anything else in the column and the centring read as drift rather
-   than as alignment. */
+/* ONE SET GAP BETWEEN CLAIMS, not three equal tracks. The claims are three different lengths, so equal tracks
+   put a different amount of air after each one and the row read as unevenly spaced. A flex row with a fixed
+   column gap measures the space where it is actually seen — from the end of one claim to the start of the next.
+   Wraps rather than shrinking, so a narrow rail breaks between claims.
+   CAPPED TO THE LEDE'S MEASURE, so the row cannot run past the sentence above it, which wraps at 620. */
 .reach {
   margin: 24px 0 0; max-width: 620px;
-  display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 6px; text-align: center;
+  display: flex; flex-wrap: wrap; gap: 8px var(--claim-gap); text-align: left;
   font-family: var(--font-display); font-weight: 800; font-size: clamp(19px, 1.9vw, 25px); letter-spacing: -.3px;
   color: var(--accent);
 }
 
 /* TESTING is a GRID rather than a wrapped line: six names in two columns of three is a list you count, where a
    wrapped row is a sentence you read past. Two columns also buy back the height one-per-row cost.
-   max-content, not 1fr: split into equal halves of the column the pair sits 230px apart and stops reading as one
-   list. minmax(0,·) so a narrow window can still shrink them rather than overflow.
+   max-content, not 1fr: split into equal halves of the column the pair drifts apart and stops reading as one
+   list, and the gap between the columns stops matching the reach row above. minmax(0,·) so a narrow window can
+   still shrink them rather than overflow.
    NUMBERED, NOT RULED. The accent bar down each name read as six unfinished underlines and gave this row a
    second weight competing with the two above it. An index says the same thing — a fixed list, and how long it
    is — in the quietest mark available. */
 .term ul.checks {
-  display: grid; grid-template-columns: repeat(2, minmax(0, max-content)); gap: 12px 44px;
+  display: grid; grid-template-columns: repeat(2, minmax(0, max-content)); gap: 12px var(--claim-gap);
   counter-reset: chk;
 }
 .term ul.checks li {
@@ -788,7 +903,7 @@ section[id] { scroll-margin-top: 84px }
 }
 .term ul.checks li::before {
   content: counter(chk, decimal-leading-zero);
-  font-family: var(--font-mono); font-size: 11px; letter-spacing: .06em; color: var(--amber); opacity: .6;
+  font-family: var(--font-mono); font-size: 13.5px; letter-spacing: .06em; color: var(--amber); opacity: .72;
 }
 .checks li:not(:last-child)::after { content: none }
 
@@ -798,8 +913,8 @@ section[id] { scroll-margin-top: 84px }
    that runs the whole rail stops reading as a button. The border carries the weight instead — 1.5px at .6 of the
    accent, where the hairline it had was losing against the names above it. */
 .demo-cta {
-  margin: 34px auto 0; display: flex; align-items: center; justify-content: center; gap: 12px;
-  width: 100%; max-width: 380px; padding: 17px 30px;
+  margin: 34px 0 0; display: inline-flex; align-items: center; gap: 12px;
+  padding: 14px 26px;
   border: 1.5px solid rgba(221, 106, 32, .6); border-radius: var(--radius-cta);
   font-family: var(--font-mono); font-size: 12.5px; letter-spacing: .18em; text-transform: uppercase;
   color: var(--accent);
@@ -2004,8 +2119,8 @@ section[id] { scroll-margin-top: 84px }
   .tagline { margin-top: 12px }
   .reach { margin-top: 16px }
   .terms { margin-top: 20px; gap: 14px }
-  .term ul.checks { gap: 9px 44px }
-  .demo-cta { margin-top: 22px; padding: 13px 30px }
+  .term ul.checks { gap: 9px var(--claim-gap) }
+  .demo-cta { margin-top: 22px; padding: 12px 22px }
 }
 
 /* Two columns stop paying here. 1080 was measured against a column of six prose blocks; the terms and the graph
