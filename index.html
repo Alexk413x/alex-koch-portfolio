@@ -108,6 +108,10 @@
      detail is one click away in the report the demo opens. The flow graph carries the shape of a run, which is
      the one thing a list of terms cannot say. -->
 <div id="loop-scroll" data-range>
+<!-- THE SCENE'S HARD STOP. A one-pixel snap target that scenes.js positions at the scroll offset where
+     the graph is whole; scroll-snap-stop: always is what stops a fling on it instead of letting the
+     gesture carry past the only moment this section is worth seeing. -->
+<i id="loop-snap" aria-hidden="true"></i>
 <div id="loop-stage">
   <section id="cartographer">
     <div class="inner">
@@ -196,47 +200,47 @@
              frame, which is correct: it is the ground in front, and the frame is not where it ends.
              NINE TO ONE, not five. A pool that is nearly circular reads as a light source hanging behind the
              scene; a plane seen from close to its own level is a long flat smear, and that is what says floor. -->
-        <ellipse class="fg-floor" cx="300" cy="722" rx="485" ry="50" style="--d:0;--df:.40"/>
+        <ellipse class="fg-floor" cx="300" cy="722" rx="485" ry="50" style="--d:0;--df:.42"/>
 
         <!-- CENTRE TO CENTRE, and drawn UNDER the phones — which is what dims the stretch of a line that is
              genuinely behind one. The fan out of the near phone curves because it changes row; the run from the
              second rank to the third is straight, because it does not. -->
         <g class="fg-edges">
-          <path class="fg-edge" pathLength="100" style="--d:.24;--df:.00" d="M132.0,330 C260.6,330 271.4,115 400,115"/>
-          <path class="fg-edge" pathLength="100" style="--d:.33;--df:.12" d="M406.2,115 L570,140.8"/>
-          <path class="fg-edge" pathLength="100" style="--d:.42;--df:.26" d="M132.0,330 L400,330"/>
-          <path class="fg-edge" pathLength="100" style="--d:.51;--df:.38" d="M406.2,330 L570,330.0"/>
-          <path class="fg-edge" pathLength="100" style="--d:.60;--df:.52" d="M132.0,330 C260.6,330 271.4,545 400,545"/>
-          <path class="fg-edge" pathLength="100" style="--d:.69;--df:.64" d="M406.2,545 L570,519.2"/>
+          <path class="fg-edge" pathLength="100" style="--d:.24;--df:.23" d="M132.0,330 C260.6,330 271.4,115 400,115"/>
+          <path class="fg-edge" pathLength="100" style="--d:.33;--df:.03" d="M406.2,115 L570,140.8"/>
+          <path class="fg-edge" pathLength="100" style="--d:.42;--df:.28" d="M132.0,330 L400,330"/>
+          <path class="fg-edge" pathLength="100" style="--d:.51;--df:.08" d="M406.2,330 L570,330.0"/>
+          <path class="fg-edge" pathLength="100" style="--d:.60;--df:.33" d="M132.0,330 C260.6,330 271.4,545 400,545"/>
+          <path class="fg-edge" pathLength="100" style="--d:.69;--df:.13" d="M406.2,545 L570,519.2"/>
         </g>
 
         <g class="fg-nodes">
-          <g class="fg-node z1" style="--d:0;--df:.78;--dy:-20">
+          <g class="fg-node z1" style="--d:0;--df:.46;--dy:-20">
             <path class="edges" d="M236.1,144.1 L233.5,131.3 L226.0,120.7 L214.9,113.9 L201.8,111.9 L64.1,118.0 L51.9,121.1 L41.5,128.6 L34.6,139.4 L32.2,151.9 L32.2,508.1 L34.6,520.6 L41.5,531.4 L51.9,538.9 L64.1,542.0 L201.8,548.1 L214.9,546.1 L226.0,539.3 L233.5,528.7 L236.1,515.9 Z M222.1,144.1 L236.1,144.1 M187.8,111.9 L201.8,111.9 M50.1,118.0 L64.1,118.0 M18.2,151.9 L32.2,151.9 M18.2,508.1 L32.2,508.1 M50.1,542.0 L64.1,542.0 M187.8,548.1 L201.8,548.1 M222.1,515.9 L236.1,515.9"/>
             <path class="face" d="M222.1,144.1 L219.5,131.3 L212.0,120.7 L200.9,113.9 L187.8,111.9 L50.1,118.0 L37.9,121.1 L27.5,128.6 L20.6,139.4 L18.2,151.9 L18.2,508.1 L20.6,520.6 L27.5,531.4 L37.9,538.9 L50.1,542.0 L187.8,548.1 L200.9,546.1 L212.0,539.3 L219.5,528.7 L222.1,515.9 Z"/>
           </g>
 
-          <g class="fg-node z2" style="--d:.30;--df:.06;--dx:-54">
+          <g class="fg-node z2" style="--d:.30;--df:.20;--dx:-54">
             <path class="edges" d="M451.4,34.2 L450.3,28.6 L447.1,23.9 L442.3,20.8 L436.6,19.8 L376.1,21.0 L370.6,22.2 L365.9,25.4 L362.8,30.2 L361.7,35.7 L361.7,194.3 L362.8,199.8 L365.9,204.6 L370.6,207.8 L376.1,209.0 L436.6,210.2 L442.3,209.2 L447.1,206.1 L450.3,201.4 L451.4,195.8 Z M445.3,34.2 L451.4,34.2 M430.5,19.8 L436.6,19.8 M369.9,21.0 L376.1,21.0 M355.6,35.7 L361.7,35.7 M355.6,194.3 L361.7,194.3 M369.9,209.0 L376.1,209.0 M430.5,210.2 L436.6,210.2 M445.3,195.8 L451.4,195.8"/>
             <path class="face" d="M445.3,34.2 L444.1,28.6 L440.9,23.9 L436.1,20.8 L430.5,19.8 L369.9,21.0 L364.4,22.2 L359.8,25.4 L356.7,30.2 L355.6,35.7 L355.6,194.3 L356.7,199.8 L359.8,204.6 L364.4,207.8 L369.9,209.0 L430.5,210.2 L436.1,209.2 L440.9,206.1 L444.1,201.4 L445.3,195.8 Z"/>
           </g>
-          <g class="fg-node z3" style="--d:.39;--df:.18;--dx:-40">
+          <g class="fg-node z3" style="--d:.39;--df:.00;--dx:-40">
             <path class="edges" d="M615.2,69.8 L614.2,64.9 L611.4,60.7 L607.2,58.0 L602.2,57.1 L548.9,58.0 L544.1,59.1 L540.0,61.9 L537.2,66.1 L536.3,70.9 L536.3,210.7 L537.2,215.5 L540.0,219.7 L544.1,222.5 L548.9,223.6 L602.2,224.5 L607.2,223.6 L611.4,220.9 L614.2,216.7 L615.2,211.8 Z M609.8,69.8 L615.2,69.8 M596.8,57.1 L602.2,57.1 M543.5,58.0 L548.9,58.0 M530.9,70.9 L536.3,70.9 M530.9,210.7 L536.3,210.7 M543.5,223.6 L548.9,223.6 M596.8,224.5 L602.2,224.5 M609.8,211.8 L615.2,211.8"/>
             <path class="face" d="M609.8,69.8 L608.8,64.9 L606.0,60.7 L601.8,58.0 L596.8,57.1 L543.5,58.0 L538.7,59.1 L534.6,61.9 L531.8,66.1 L530.9,70.9 L530.9,210.7 L531.8,215.5 L534.6,219.7 L538.7,222.5 L543.5,223.6 L596.8,224.5 L601.8,223.6 L606.0,220.9 L608.8,216.7 L609.8,211.8 Z"/>
           </g>
-          <g class="fg-node z2" style="--d:.48;--df:.32;--dx:-54">
+          <g class="fg-node z2" style="--d:.48;--df:.25;--dx:-54">
             <path class="edges" d="M451.4,249.2 L450.3,243.6 L447.1,238.9 L442.3,235.8 L436.6,234.8 L376.1,236.0 L370.6,237.2 L365.9,240.4 L362.8,245.2 L361.7,250.7 L361.7,409.3 L362.8,414.8 L365.9,419.6 L370.6,422.8 L376.1,424.0 L436.6,425.2 L442.3,424.2 L447.1,421.1 L450.3,416.4 L451.4,410.8 Z M445.3,249.2 L451.4,249.2 M430.5,234.8 L436.6,234.8 M369.9,236.0 L376.1,236.0 M355.6,250.7 L361.7,250.7 M355.6,409.3 L361.7,409.3 M369.9,424.0 L376.1,424.0 M430.5,425.2 L436.6,425.2 M445.3,410.8 L451.4,410.8"/>
             <path class="face" d="M445.3,249.2 L444.1,243.6 L440.9,238.9 L436.1,235.8 L430.5,234.8 L369.9,236.0 L364.4,237.2 L359.8,240.4 L356.7,245.2 L355.6,250.7 L355.6,409.3 L356.7,414.8 L359.8,419.6 L364.4,422.8 L369.9,424.0 L430.5,425.2 L436.1,424.2 L440.9,421.1 L444.1,416.4 L445.3,410.8 Z"/>
           </g>
-          <g class="fg-node z3" style="--d:.57;--df:.44;--dx:-40">
+          <g class="fg-node z3" style="--d:.57;--df:.05;--dx:-40">
             <path class="edges" d="M615.2,259.0 L614.2,254.1 L611.4,249.9 L607.2,247.2 L602.2,246.3 L548.9,247.2 L544.1,248.3 L540.0,251.1 L537.2,255.3 L536.3,260.1 L536.3,399.9 L537.2,404.7 L540.0,408.9 L544.1,411.7 L548.9,412.8 L602.2,413.7 L607.2,412.8 L611.4,410.1 L614.2,405.9 L615.2,401.0 Z M609.8,259.0 L615.2,259.0 M596.8,246.3 L602.2,246.3 M543.5,247.2 L548.9,247.2 M530.9,260.1 L536.3,260.1 M530.9,399.9 L536.3,399.9 M543.5,412.8 L548.9,412.8 M596.8,413.7 L602.2,413.7 M609.8,401.0 L615.2,401.0"/>
             <path class="face" d="M609.8,259.0 L608.8,254.1 L606.0,249.9 L601.8,247.2 L596.8,246.3 L543.5,247.2 L538.7,248.3 L534.6,251.1 L531.8,255.3 L530.9,260.1 L530.9,399.9 L531.8,404.7 L534.6,408.9 L538.7,411.7 L543.5,412.8 L596.8,413.7 L601.8,412.8 L606.0,410.1 L608.8,405.9 L609.8,401.0 Z"/>
           </g>
-          <g class="fg-node z2" style="--d:.66;--df:.58;--dx:-54">
+          <g class="fg-node z2" style="--d:.66;--df:.30;--dx:-54">
             <path class="edges" d="M451.4,464.2 L450.3,458.6 L447.1,453.9 L442.3,450.8 L436.6,449.8 L376.1,451.0 L370.6,452.2 L365.9,455.4 L362.8,460.2 L361.7,465.7 L361.7,624.3 L362.8,629.8 L365.9,634.6 L370.6,637.8 L376.1,639.0 L436.6,640.2 L442.3,639.2 L447.1,636.1 L450.3,631.4 L451.4,625.8 Z M445.3,464.2 L451.4,464.2 M430.5,449.8 L436.6,449.8 M369.9,451.0 L376.1,451.0 M355.6,465.7 L361.7,465.7 M355.6,624.3 L361.7,624.3 M369.9,639.0 L376.1,639.0 M430.5,640.2 L436.6,640.2 M445.3,625.8 L451.4,625.8"/>
             <path class="face" d="M445.3,464.2 L444.1,458.6 L440.9,453.9 L436.1,450.8 L430.5,449.8 L369.9,451.0 L364.4,452.2 L359.8,455.4 L356.7,460.2 L355.6,465.7 L355.6,624.3 L356.7,629.8 L359.8,634.6 L364.4,637.8 L369.9,639.0 L430.5,640.2 L436.1,639.2 L440.9,636.1 L444.1,631.4 L445.3,625.8 Z"/>
           </g>
-          <g class="fg-node z3" style="--d:.75;--df:.70;--dx:-40">
+          <g class="fg-node z3" style="--d:.75;--df:.10;--dx:-40">
             <path class="edges" d="M615.2,448.2 L614.2,443.3 L611.4,439.1 L607.2,436.4 L602.2,435.5 L548.9,436.4 L544.1,437.5 L540.0,440.3 L537.2,444.5 L536.3,449.3 L536.3,589.1 L537.2,593.9 L540.0,598.1 L544.1,600.9 L548.9,602.0 L602.2,602.9 L607.2,602.0 L611.4,599.3 L614.2,595.1 L615.2,590.2 Z M609.8,448.2 L615.2,448.2 M596.8,435.5 L602.2,435.5 M543.5,436.4 L548.9,436.4 M530.9,449.3 L536.3,449.3 M530.9,589.1 L536.3,589.1 M543.5,602.0 L548.9,602.0 M596.8,602.9 L602.2,602.9 M609.8,590.2 L615.2,590.2"/>
             <path class="face" d="M609.8,448.2 L608.8,443.3 L606.0,439.1 L601.8,436.4 L596.8,435.5 L543.5,436.4 L538.7,437.5 L534.6,440.3 L531.8,444.5 L530.9,449.3 L530.9,589.1 L531.8,593.9 L534.6,598.1 L538.7,600.9 L543.5,602.0 L596.8,602.9 L601.8,602.0 L606.0,599.3 L608.8,595.1 L609.8,590.2 Z"/>
           </g>
@@ -771,7 +775,7 @@
             accessibility (EAA compliance) and eliminating QA pain points.</li>
           </ul>
           <div class="meta"><b>Features</b>Android 9&ndash;16</div>
-          <div class="meta"><b>Tools</b>Claude Code, Cursor, Codex, Copilot, LLM Agents, Kotlin, Compose, Android Studio, Python</div>
+          <div class="meta"><b>Tools</b>Claude Code, Cursor, Codex, Copilot, LLM Agents, Kotlin, Compose, Android Studio, Python, GCP</div>
         </div>
       </article>
 
@@ -1044,15 +1048,11 @@
   </div>
 </section>
 
-<div id="qr-dialog" role="dialog" aria-modal="true" aria-labelledby="qr-title" hidden>
+<div id="qr-dialog" role="dialog" aria-modal="true" aria-labelledby="qr-title" tabindex="-1" hidden>
   <div class="qr-panel">
     <div class="sec-label" id="qr-title">SCAN TO OPEN</div>
-    <canvas id="qr-canvas" aria-label="QR code linking to www.alexk413x.com"></canvas>
+    <img id="qr-image" alt="QR code linking to www.alexk413x.com">
     <div class="qr-url">www.alexk413x.com</div>
-    <div class="qr-actions">
-      <button id="qr-save" type="button">SAVE PNG ↓</button>
-      <button id="qr-close" type="button">CLOSE</button>
-    </div>
   </div>
 </div>
 

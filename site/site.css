@@ -564,13 +564,14 @@ section[id] { scroll-margin-top: 84px }
    Inset from both ends of the depth rather than filling it, because a key that runs the full thickness reads as
    a slot. Placed a quarter down, where a phone's is. */
 .phone > .edge.r > .pwr {
-  position: absolute; left: 24%; right: 24%; top: 12%; height: 36px;
-  /* THE SAME --line EVERY OTHER LINE ON THIS OBJECT CARRIES. It was set to 3 to compensate for the plane
-     standing almost end-on, and that compensation is the wrong trade: one heavier line among six reads as a
-     mistake far louder than a faint one reads as missing. */
-  border: var(--line) solid var(--scenery);
-  /* A rounded rectangle, not a capsule: 999px made a stadium that read as a lozenge stuck to the side. */
-  border-radius: 9px;
+  position: absolute; left: 35%; right: 35%; top: 12%; height: 36px;
+  /* FILLED, where this was a 2px outline. The plane stands almost end-on, so its lines land faint; a solid key
+     carries --scenery at full strength without making one line on the object heavier than the other five. */
+  background: var(--scenery);
+  /* ELLIPTICAL, not a circle: full rounding across the width, 3px of it along the length. The plane stands
+     almost end-on, so its width projects to about a fifth of what it measures — a circular cap keeps its full
+     height while its width collapses, and lands as a tapered point rather than a round end. */
+  border-radius: 50% / 3px;
   opacity: var(--m);
 }
 
@@ -795,19 +796,45 @@ section[id] { scroll-margin-top: 84px }
 
 /* ---------------- cartographer ---------------- */
 
-/* THE PIN IS BACK, and this time it is carrying something. It was zeroed when the check list stopped lighting in
-   turn, because it then bought most of a screen of scrolling during which nothing moved. The flow graph moves:
-   seven devices and six tracks build in sequence and are struck in sequence, and with no pin the whole of that
-   had to fit in whatever approach scroll was left before the section seated — which is why the last row was
-   still landing as the section slid past. This is the runway the sequence needs.
+/* THE PIN IS ALMOST NOTHING NOW, and that is the whole design. It used to buy the scroll the build and the
+   strike were played over, which meant both of them happened while the section stood still: coming down, the
+   graph faded for half a screen before the section began to move; going back up, it un-built for a third of a
+   screen the same way. Two beats, on both sides, where the scene has one.
+   The build now ends where the section seats and the strike begins there, so every frame of either happens while
+   the section is travelling. What the pin is left carrying is the stopping point itself — the dwell the reader
+   gets there comes from the snap target below and the rig's hold, not from bought scroll.
+   AND IT IS ZERO, so nothing stands still at all. The stopping point is this pin's midpoint, derived in
+   scenes.js rather than written down; at zero that midpoint is the section's own seat and every frame of the
+   build and the strike happens while the section is travelling, in both directions. A pin of any length would
+   only buy scroll during which an envelope runs and the section does not move, which is the artifact this whole
+   scene has been shedding — it was never a plateau the graph rested on.
+   The dwell the reader gets at the point is TIME, not distance: the snap target below stops the gesture there
+   and the rig's hold returns them to it, so they stay as long as they stay.
    The only declaration of it. Everything else derives: the container's height here, the section spans and the
    stop list in nav.js, and the build/strike envelopes in scenes.js, which are written in units of it. */
-:root { --loop-run: .9 }
+:root { --loop-run: 0 }
 
 #loop-scroll {
   position: relative;
   height: calc(100vh + var(--loop-run) * 100vh);
   height: calc(100dvh + var(--loop-run) * 100dvh);
+}
+
+/* THE HARD STOP, and the reason it is CSS rather than a settle in the rig: a script can only correct where a
+   gesture ENDED, and a flick that carries past the graph has already missed it by the time anything can react.
+   scroll-snap-stop: always is the one primitive that arrests the fling itself, in both directions, and it costs
+   the reader nothing afterwards — the next gesture carries straight on past.
+   PROXIMITY, not mandatory: this is the only element on the page that declares an alignment, so it is the only
+   place the page snaps, and every other scrubbed scene keeps its continuous scroll.
+   scenes.js sets `top` in pixels, from the same FALL_AT the scrub runs on. A vh here would be a second
+   description of the same position and would disagree with the rig the first time dvh and vh differed. */
+html { scroll-snap-type: y proximity }
+
+#loop-snap {
+  /* Sized to nothing and painting nothing, but NOT visibility: hidden — an invisible box is not a snap area,
+     and the stop silently stops existing. */
+  position: absolute; left: 0; top: 0; width: 1px; height: 1px; pointer-events: none;
+  scroll-snap-align: start; scroll-snap-stop: always;
 }
 
 /* --o2 / --y2 / --g default to the SEATED, BUILT state HERE, on the element scenes.js writes to: an inline style
@@ -937,16 +964,25 @@ section[id] { scroll-margin-top: 84px }
    constraint expressed where it binds. */
 .flow { display: block; width: 100%; max-width: min(760px, 66vh); height: auto; overflow: visible; margin: 0 auto }
 
-/* BUILDING AND STRIKING ARE TWO ORDERS, NOT ONE READ BACKWARDS. On a single scalar the last thing to arrive is
-   the first thing to leave, which put the BOTTOM row out first on the way down — the reverse of how it came in.
-   So the rig writes two: --gb rises as the graph builds, --gf rises as it is struck, and each element carries a
-   delay for each. Both lists run top row first, and the graph now leaves the way it arrived.
-   6.25 is 1/0.16 — the window as a rate, because calc cannot divide by a variable. min() of the two, so whichever
-   phase is holding an element back wins. */
+/* BUILDING AND STRIKING ARE TWO ORDERS, NOT ONE READ BACKWARDS. The rig writes two scalars: --gb rises as the
+   graph builds, --gf rises as it is struck, and each element carries a delay for each.
+   --d builds it OUTWARD: the source first, then each rank sliding out of the one in front of it, top row first.
+   --df strikes it BACK TO FRONT: the far rank goes, then the near rank, then the source and the ground under it.
+   The graph therefore retreats along the path it extended along rather than unwinding it, and the thing the eye
+   is left on last is the phone the whole flow starts from.
+   --df is also packed tighter than --d — .46 of spread against .75 — so the ranks clear quickly enough that the
+   source is still visibly going as the section leaves frame. scenes.js carries that .46 as STRUCK and spans the
+   strike against it; changing a --df here without changing that there ends the collapse in the wrong place.
+   THE TWO WINDOWS ARE NOT THE SAME EITHER. A rate is 1/window, because calc cannot divide by a variable: 6.25 is
+   the build's 0.16, and 6.9 is the strike's 0.145 — which puts one element's exit at about 225px of scrolling on
+   a laptop window, close enough to the build's that the ranks read as going the way they came, and far enough
+   apart that the far rank has cleared before the near one starts. Both rates feed scenes.js — the build's as
+   WHOLE, the strike's as STRUCK — and neither can move alone.
+   min() of the two, so whichever phase is holding an element back wins. */
 .fg-node, .fg-edge, .fg-floor {
   --d: 0; --df: 0; --dx: 0; --dy: 0;
   --p: min(clamp(0, (var(--gb) - var(--d)) * 6.25, 1),
-           clamp(0, 1 - (var(--gf) - var(--df)) * 6.25, 1));
+           clamp(0, 1 - (var(--gf) - var(--df)) * 6.9, 1));
 }
 
 /* Screens arrive FROM the one that feeds them — each rank slides out of the rank in front of it — so the build
@@ -1647,9 +1683,11 @@ section[id] { scroll-margin-top: 84px }
 /* Blur is for floating chrome over live content, which is exactly what this is. */
 #qr-dialog {
   position: fixed; inset: 0; z-index: 120;
-  display: flex; align-items: center; justify-content: center; padding: 24px;
+  display: flex; align-items: center; justify-content: center; padding: 24px; cursor: pointer;
   background: rgba(6, 5, 9, .82); backdrop-filter: blur(6px);
 }
+
+#qr-dialog:focus { outline: none }
 
 #qr-dialog[hidden] { display: none }
 
@@ -1660,21 +1698,11 @@ section[id] { scroll-margin-top: 84px }
   box-shadow: 0 24px 60px -20px rgba(0, 0, 0, .5);
 }
 
-/* image-rendering:pixelated — the canvas is drawn at whole-module pixels, and letting the browser smooth it
+/* image-rendering:pixelated — the PNG is rendered at whole-module pixels, and letting the browser smooth it
    back up softens the module edges a scanner needs to threshold cleanly. */
-#qr-canvas { display: block; border-radius: 4px; image-rendering: pixelated }
+#qr-image { display: block; border-radius: 4px; image-rendering: pixelated }
 
 .qr-url { font-family: var(--font-mono); font-size: 12px; letter-spacing: .1em; color: var(--text-muted) }
-.qr-actions { display: flex; gap: 10px }
-
-.qr-actions button {
-  font-family: var(--font-mono); font-size: 11px; letter-spacing: .16em; cursor: pointer;
-  background: none; border: 1px solid var(--border-neutral); border-radius: var(--radius-cta);
-  color: var(--text-body); padding: 8px 14px;
-  transition: border-color .18s var(--ease-settle), color .18s var(--ease-settle);
-}
-
-.qr-actions button:hover { border-color: var(--accent); color: var(--accent) }
 
 /* ---------------- the instruments, as objects ---------------- */
 
