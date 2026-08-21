@@ -1,0 +1,14 @@
+/* preview.css — where changes to the shelf get written, and nothing else.
+ *
+ * THE FILE IS NEARLY EMPTY ON PURPOSE. preview.html serves the shelf exactly as index.html does: same markup,
+ * same rules out of site.css, same shelf.js. So what loads first is the CURRENT design rather than an
+ * interpretation of it, and every rule that lands below reads as a DIFF against the shipped section instead of
+ * being mixed into it.
+ *
+ * When a change is settled it moves one way — the rule folds into site.css, the markup into index.html — and
+ * this file empties again. It is a workbench, not a second stylesheet for the site.
+ */
+
+/* On the site this section is preceded by four screens and followed by more. Standing alone it needs its own
+   clearance under the bar that is not here. Nothing else below is chrome. */
+#experience.work { padding-top: 110px }

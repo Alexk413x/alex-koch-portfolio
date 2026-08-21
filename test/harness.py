@@ -180,11 +180,10 @@ class Page:
         return float(self.js("document.getElementById('app-stage').style.getPropertyValue('--m') || '0'"))
 
     def quiesce(self):
-        """Lets the page forget the reader touched it.
+        """Waits out the rail: its settle, and any glide the settle started.
 
-        The carry only ever finishes a movement the READER made, so it ignores a scrollTo unless real input
-        arrived in the last two seconds. Anything that drives the page programmatically and does not want to
-        race a carry waits this out first."""
+        The rail answers a scrollTo as readily as a gesture, so anything that drives the page programmatically
+        and then measures a position has to let that finish first, or it reads a page still moving."""
         time.sleep(2.1)
 
     def flick(self, total=900, events=24, spacing=0.016, pause=1.1):
@@ -203,7 +202,10 @@ class Page:
     VK = {'ArrowDown': 40, 'ArrowUp': 38, 'ArrowLeft': 37, 'ArrowRight': 39, ' ': 32}
 
     def key(self, name, pause=0.95):
-        """A real key press. The default pause covers the page's glide, which is what an arrow starts."""
+        """A real key press.
+
+        A press starts a glide whose length depends on the DISTANCE to the next stop, so no fixed pause covers
+        it. Anything measuring where the press landed calls until_still(), which waits on AKNAV.busy()."""
         for kind in ('keyDown', 'keyUp'):
             self.cdp.call('Input.dispatchKeyEvent',
                           {'type': kind, 'key': name, 'code': name,

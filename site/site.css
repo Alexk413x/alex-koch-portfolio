@@ -67,17 +67,22 @@
      reachable by construction and there is nothing to hold still FOR. That took the runway from 1.8 viewport
      heights, 40% of which moved nothing at all, to a half — one nudge plays it, the rest is the way out. */
   --morph-run: .7;
-  /* Where in that pin the morph commits, as a fraction. Declared here because TWO files need it and neither
-     may guess: scenes.js triggers on it, and nav.js places the finished calculator's arrow-key stop just past
-     it. Restated in either one, a change to the trigger would silently strand that stop before it.
+  /* Where in that pin the morph commits, as a fraction. Declared here rather than in scenes.js because it is
+     read by the checks as well as by the rig, and a copy in either one goes stale the moment this moves: the
+     morph suite carried .14 of its own for a while after this became a half, and the nudge it built then landed
+     SHORT of the trigger, which reads as a morph that will not play rather than as a test aimed wrong.
      THE TWO NUMBERS ARE READ TOGETHER, as the pixels either side of the commit. At .14 of a .9 runway the morph
      went off 128px after the section seated and left 782px of pin with nothing in it — early, and then a long
      empty scroll to leave.
      HALFWAY, and the runway sized so that half is enough. On a 1010px window: 353px of seated calculator before
      it turns, 353px to watch it in. The commit's position is also what the RELEASE has to live under — scenes.js
      puts that at a fraction of this number, and it is the space between the release and the pin's top that the
-     reverse gets to play in on the way back up. Moving the commit later moves that ceiling up with it. */
+     reverse gets to play in on the way back up. Moving the commit later moves that ceiling up with it.
+     IT MUST STAY ABOVE THE RAIL'S OWN THRESHOLD, which commits at .35 of the gap between two beats. The rail's
+     decision therefore always comes first and its glide always carries the reader across this line, so the morph
+     cannot be committed by a gesture the rail is about to undo. */
   --morph-trip: .5;
+
 }
 
 *, *::before, *::after { box-sizing: border-box }
@@ -113,7 +118,29 @@ a:hover { color: var(--accent-hover) }
 @keyframes ak-spin-r { to { transform: rotate(-360deg) } }
 @keyframes ak-bounce { 0%, 100% { transform: translateY(0) } 50% { transform: translateY(9px) } }
 @keyframes ak-blink { 0%, 49% { opacity: 1 } 50%, 100% { opacity: 0 } }
-@keyframes ak-halo { 0% { transform: scale(1); opacity: .5 } 70% { opacity: 0 } 100% { transform: scale(2.8); opacity: 0 } }
+/* LINEAR, with the shape written into the keyframes. Run on an ease-out the ring did nearly all of its fade in
+   the first quarter of the cycle and then sat at a few percent of an opacity for the rest of it — the gap between
+   pulses measured as a fifth of the cycle and read as most of it. Stepping the scale and the opacity by hand
+   keeps the emission quick and the drift slow while the ring stays visible until it is actually spent. */
+@keyframes ak-halo {
+  0%   { transform: scale(1);   opacity: .78 }
+  35%  { transform: scale(1.9); opacity: .50 }
+  85%  { transform: scale(2.7); opacity: 0 }
+  100% { transform: scale(2.9); opacity: 0 }
+}
+
+/* The core, on the same clock. It falls back between pulses and is at full strength on the frame the next ring
+   leaves, so what catches the eye is a change rather than a light that is simply on. Colour and glow rather than
+   opacity, because opacity here would take the halo down with it — it is a child of this element.
+   IT HOLDS FULL FOR THE FIRST THIRD and only falls to .58, not to a third. A deeper trough reached sooner made
+   the dot read as going out and coming back rather than as a light that pulses, and an indicator that spends most
+   of its cycle dim stops claiming the thing it is there to claim. Linear, like the ring: on an ease-out the drop
+   front-loads, which undoes the hold this is built around. */
+@keyframes ak-live {
+  0%, 30%  { background: var(--accent); box-shadow: 0 0 13px var(--accent) }
+  62%, 88% { background: rgba(221, 106, 32, .58); box-shadow: 0 0 6px rgba(221, 106, 32, .7) }
+  100%     { background: var(--accent); box-shadow: 0 0 13px var(--accent) }
+}
 
 /* Sections below the sticky stage rise in as they arrive. Driven by IntersectionObserver, not by the scroll
    listener — the stage's listener runs on every frame of a scroll and this needs to fire once per element. */
@@ -146,13 +173,32 @@ a:hover { color: var(--accent-hover) }
   background: linear-gradient(180deg, rgba(12, 12, 14, .92), rgba(12, 12, 14, 0));
 }
 
+/* The bar's left zone: ONE cell of the grid holding two things, so the mark keeps its place against the viewport
+   while a second item sits beside it. baseline, not centre — the two are different sizes and their tops and
+   bottoms would disagree either way, but their baselines are the line the eye reads them on. */
+/* NO min-width: 0 HERE. The bar's outer columns are 1fr, which is minmax(auto, 1fr) — they refuse to shrink
+   below their own content, and that floor is the only thing keeping the left zone off the centre links. Zeroing
+   it let the column shrink to 55px around 77px of wordmark at 830, and the mark overlapped ALEX by 2px. */
+#nav .brand { justify-self: start; display: flex; align-items: baseline; gap: 14px }
+
 /* The same grey as the marks opposite it, so the two ends of the bar weigh the same and the lit section is the
    only thing in the row asking to be read. */
 #nav .mark {
-  justify-self: start; color: var(--text-faint); font-weight: 700;
+  color: var(--text-faint); font-weight: 700;
   transition: color .2s var(--ease-settle);
 }
 #nav .mark:hover { color: var(--accent) }
+
+/* TEMPORARY, AND IT LOOKS IT. A dashed rule under it rather than the solid fill a section link earns, so the bar
+   reads as having something parked in it rather than as having seven destinations. It is the only route to
+   experience.html and it leaves with that page when the section replacing the role viewer lands. */
+#nav .temp {
+  font-size: 11px; letter-spacing: .1em; white-space: nowrap;
+  color: var(--text-faint);
+  border-bottom: 1px dashed var(--hairline); padding-bottom: 3px;
+  transition: color .2s var(--ease-settle), border-color .2s var(--ease-settle);
+}
+#nav .temp:hover { color: var(--accent); border-bottom-color: var(--accent) }
 #nav .links { display: flex; justify-content: center; gap: 24px; align-items: center }
 /* nowrap, or a two-word label breaks inside its own box, grows taller than its neighbours and reads as a
    two-line nav even though the row itself never wrapped. */
@@ -640,8 +686,6 @@ section[id] { scroll-margin-top: 84px }
     var(--p) * var(--p) * var(--p) * (var(--p) * (var(--p) * 6 - 15) + 10)
     + .25 * var(--p) * var(--p) * var(--p) * (1 - var(--p))
   );
-  --kmix: calc((1 - var(--e)) * 100%);
-
   display: flex; justify-content: space-between; align-items: center; overflow: hidden;
   height: calc((18 + (34 - 18) * var(--m)) * 1px);
   padding: 0 16px;
@@ -830,21 +874,23 @@ section[id] { scroll-margin-top: 84px }
    description of the same position and would disagree with the rig the first time dvh and vh differed. */
 html { scroll-snap-type: y proximity }
 
-#loop-snap {
+/* Every beat, one rule: the reactor holding the frame alone, the graph whole, and the calculator's two resting
+   states at the ends of its pin. scenes.js sets each one's `top` in pixels, from the same numbers its scrubs run
+   on, and clears the alignment where a scene has given its runway back. */
+#hero-snap, #loop-snap, #app-snap-old, #app-snap-app {
   /* Sized to nothing and painting nothing, but NOT visibility: hidden — an invisible box is not a snap area,
      and the stop silently stops existing. */
   position: absolute; left: 0; top: 0; width: 1px; height: 1px; pointer-events: none;
   scroll-snap-align: start; scroll-snap-stop: always;
 }
 
-/* --o2 / --y2 / --g default to the SEATED, BUILT state HERE, on the element scenes.js writes to: an inline style
-   outranks this, so the rig can drive the arrival, while no-JS, reduced motion and a short window all inherit a
-   section that is simply here with its graph fully drawn. Declaring them on #cartographer instead would shadow
-   the inherited value and pin the arrival at its start forever. */
+/* --o2 / --y2 / --gb / --gf default to the SEATED, BUILT state HERE, on the element scenes.js writes to: an
+   inline style outranks this, so the rig can drive the arrival, while no-JS, reduced motion and a short window
+   all inherit a section that is simply here with its graph fully drawn. Declaring them on #cartographer instead
+   would shadow the inherited value and pin the arrival at its start forever. */
 #loop-stage {
   --o2: 1;
   --y2: 0px;
-  --g: 1;
   --gb: 1;
   --gf: 0;
   position: sticky; top: 0; height: 100vh; height: 100dvh; overflow: hidden; display: grid; align-items: center;
@@ -948,11 +994,13 @@ html { scroll-snap-type: y proximity }
   transition: background .2s var(--ease-settle), color .2s var(--ease-settle);
 }
 .demo-cta:hover { background: var(--accent); color: var(--on-accent) }
-.demo-cta:hover .live-dot { background: var(--on-accent) }
+/* Steady while the button is under the pointer. animation-name, not background: an animation's declarations
+   outrank a normal one whatever the selector, so the running keyframes would otherwise win the colour back. */
+.demo-cta:hover .live-dot { background: var(--on-accent); animation-name: none }
 
 /* ---- the flow graph ----
  *
- * ONE WRITTEN PROPERTY BUILDS ALL OF IT. scenes.js writes --g on the stage and every node and edge computes its
+ * TWO WRITTEN PROPERTIES BUILD ALL OF IT. scenes.js writes --gb and --gf on the stage, and every node and edge computes its
  * own progress from that scalar and its own --d, so a scroll frame touches one element rather than twenty-three.
  * Collapsing is not a second description: --g falls again on the way out and the same expression plays it back.
  * The only per-element numbers in the markup are --d (build order), --dx/--dy (where a card comes from) and --sd
@@ -1186,12 +1234,15 @@ html { scroll-snap-type: y proximity }
   width: 9px; height: 9px; border-radius: 50%;
   background: var(--accent);
   box-shadow: 0 0 10px var(--accent);
+  animation: ak-live 1.9s linear infinite;
 }
 
+/* THE SAME DURATION IS THE SYNC. Two animations on one clock rather than one driving the other, so the brightest
+   core and the leaving ring are the same frame; give them different lengths and they drift apart within seconds. */
 .live-dot::after {
   content: ''; position: absolute; inset: 0;
   border-radius: 50%; background: var(--accent);
-  animation: ak-halo 2.4s var(--ease-settle) infinite;
+  animation: ak-halo 1.9s linear infinite;
 }
 /* ---------------- holding page ---------------- */
 
@@ -1202,6 +1253,16 @@ html { scroll-snap-type: y proximity }
 /* ---------------- experience ---------------- */
 
 #experience { position: relative; padding: 110px var(--pad-page); background: var(--ink) }
+
+/* experience.html only: the masthead and the parked role viewer, in one section for the same reason
+   #experience holds both. #exp-scroll carries negative margins sized to --pad-page so it can break OUT and fill
+   the screen it is pinned to, and those only cancel inside a parent that HAS that padding — free-standing it is
+   80px wider than the window and the page scrolls sideways.
+   The bar's height is added on top because this is the FIRST thing on its page and nothing else holds it clear.
+   Temporary, and it leaves with that page. */
+.exp-ref { position: relative; padding: 160px var(--pad-page) 0; background: var(--ink) }
+.exp-ref .sec-title { margin: 14px 0 18px }
+.exp-ref .inner { padding-bottom: 40px }
 
 /* The viewer breaks OUT of the section's padding rather than the section going without it: it is pinned, so it
    has to be able to fill the screen, and a sticky child of a padded column is pinned to that column. Moving the
@@ -1862,9 +1923,6 @@ html { scroll-snap-type: y proximity }
    from the viewer exactly as it reached toward them. A separate property because an inline delay would win
    over any rule, and because the two directions want different durations. */
 .wh:not(.on) .wb { transition: opacity .4s var(--ease-settle) var(--dr, 0s), background-color .35s var(--ease-settle) }
-/* Replay and reset only: no transition at all for one frame, so the wall is at zero before the rebuild. */
-.wh.reset .wb { transition: none }
-
 /* ---- the core ----
  * Goo, and nothing else in the frame. Three stacked layers each carry a fixed asymmetric border-radius and turn
  * at a different rate, so the silhouette never repeats; the container squashes and stretches on top of that.
@@ -2127,6 +2185,13 @@ html { scroll-snap-type: y proximity }
   #app { padding: 90px var(--pad-page) }
 }
 
+/* THE PARKED LINK NEEDS ROOM THE BAR STOPS HAVING. Measured against the centre links: the gap between the
+   left zone and the first of them closes at 1040px and is 33px at 1080. A provisional reference page is the
+   first thing in the bar that should give up its space, and 1080 is a threshold this stylesheet already keeps. */
+@media (max-width: 1080px) {
+  #nav .temp { display: none }
+}
+
 /* THE LOOP SCENE NEEDS MORE ROOM THAN THE MORPH DOES, so it pins on two conditions rather than one. Measured:
    687-727px of content at 1080px wide and up, and about 840 once the two columns collapse below that — against
    the morph, which is one calculator being scrubbed. scenes.js checks this same pair; if the two disagree the
@@ -2209,6 +2274,8 @@ html { scroll-snap-type: y proximity }
   .crt:hover .face { animation: none; filter: brightness(.84) }
 
   html { scroll-behavior: auto }
+  /* The beats go with the rigs. scenes.js clears them too, but the stylesheet is what a reader with JS off has. */
+  #hero-snap, #loop-snap, #app-snap-old, #app-snap-app { scroll-snap-align: none }
   #scroll { height: auto }
   #stage { position: static; height: auto; min-height: 100vh }
   #app-scroll { height: auto }
@@ -2219,8 +2286,10 @@ html { scroll-snap-type: y proximity }
   .tn { transition: none }
   .scene { position: static; min-height: 100vh; opacity: 1; transform: none; filter: none }
   .kicker, .aside, .lockup span { animation: none }
-  .cue span, .live-dot::after { animation: none }
-  /* The graph keeps its shape and loses its circuit: --g defaults to 1 here, so it is simply drawn. */
+  /* Both halves of the live dot, for the reason above it: the core's pulse is a repeated luminance step, which
+     is the one thing on this page that can harm somebody. It rests at full strength, which reads as live. */
+  .cue span, .live-dot, .live-dot::after { animation: none }
+  /* The graph keeps its shape and loses its circuit: --gb defaults to 1 and --gf to 0, so it is simply drawn. */
   .fg-spark, .fg-wave { animation: none; opacity: 0 }
   [data-reveal] { opacity: 1; transform: none; transition: none }
   /* The rule APPEARS rather than draws: the same clamp, multiplied hard enough that entering a section is a

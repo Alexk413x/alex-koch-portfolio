@@ -68,11 +68,21 @@ def run(page, r):
 
     # ONE NUDGE PLAYS THE WHOLE THING. Barely past the trigger is enough; the morph owns its own clock from
     # there, so how far the reader scrolled has no bearing on where it stops.
-    nudge = int(run_px * 0.14) + 20
+    # THE TRIGGER IS READ, NOT RESTATED. --morph-trip is declared once in site.css because three files need it,
+    # and this is the fourth: a copy here went stale the moment the commit moved from .14 to halfway, and the
+    # nudge then landed SHORT of the trigger -- which reads as a morph that will not play rather than as a test
+    # measuring the wrong place.
+    trip = float(page.js("getComputedStyle(document.documentElement).getPropertyValue('--morph-trip')"))
+    r.ok('the trigger is declared in the stylesheet', 0 < trip < 1, '--morph-trip: %s' % trip)
+    nudge = int(run_px * trip) + 20
     at(0.0)
     page.scroll(top + nudge, pause=0.15)
     r.near('one nudge past the trigger plays it to completion', page.until_morphed(), 1.0, 0.001)
-    r.ok('and the nudge really was small', nudge < vh * 0.2, '%dpx' % nudge)
+    # A fifth of a screen PAST the trigger, not a fifth of a screen of scrolling: the commit sits halfway down
+    # the pin by design, so what has to stay small is the distance the reader travels beyond it before the
+    # mechanism takes over.
+    r.ok('and the nudge really was small', nudge - run_px * trip < vh * 0.2,
+         '%dpx past a trigger at %dpx' % (nudge - run_px * trip, run_px * trip))
 
     # It is played, not jumped: a moment after the trigger it must be part way through.
     at(0.0)

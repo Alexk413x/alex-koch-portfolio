@@ -14,14 +14,16 @@ def run(page, r):
 
     # The nav must be ONE row at every desktop width. A two-word label without nowrap breaks inside its own box,
     # grows taller than its neighbours, and reads as a two-line nav even though the row never wrapped.
+    # The clearance is measured off the LEFT ZONE's right edge, not the mark's: the zone holds the mark and
+    # whatever is parked beside it, and it is the zone that can collide with the centre links.
     for w in WIDTHS:
         page.viewport(w, 950)
         d = page.json("(()=>{const l=[...document.querySelectorAll('#nav .links a')];"
                       "const tops=new Set(l.map(a=>Math.round(a.getBoundingClientRect().top)));"
-                      "const mark=document.querySelector('#nav .mark').getBoundingClientRect();"
+                      "const brand=document.querySelector('#nav .brand').getBoundingClientRect();"
                       "return JSON.stringify({rows:tops.size,"
                       "h:Math.round(document.getElementById('nav').getBoundingClientRect().height),"
-                      "gap:Math.round(l[0].getBoundingClientRect().left-mark.right)})})()")
+                      "gap:Math.round(l[0].getBoundingClientRect().left-brand.right)})})()")
         r.check('nav is one row at %d' % w, d['rows'], 1)
         r.ok('nav stays under 80px at %d' % w, d['h'] <= 80, '%dpx' % d['h'])
         r.ok('nav clears the wordmark at %d' % w, d['gap'] > 0, '%dpx' % d['gap'])
@@ -60,19 +62,6 @@ def run(page, r):
                       "return !(a.top>=l.bottom||a.bottom<=l.top||a.left>=l.right||a.right<=l.left)})()")
         r.ok('aside never overlaps the lockup on %s' % label, not hit)
 
-        # AND THE ROLE VIEWER GIVES UP ITS PIN. Pinned at 393px the deck is taller than the stage, the stage
-        # clips, and the reader gets a role's first two lines with no way to reach the rest -- a phone on its
-        # side passes every width-only test while doing exactly that. Unpinned it is a plain stack, so the
-        # check is that every role is on the page at once and none of them is cut off.
-        d = page.json("(()=>{const g=document.getElementById('exp-stage');"
-                      "const all=[...document.querySelectorAll('.exp-deck .role')];"
-                      "const lit=all.filter(e=>+getComputedStyle(e).opacity>0.05);"
-                      "const cut=all.some(e=>e.scrollHeight-e.clientHeight>2);"
-                      "return JSON.stringify({sticky:getComputedStyle(g).position==='sticky',"
-                      "n:all.length,lit:lit.length,cut:cut})})()")
-        r.ok('the role viewer stops pinning on %s' % label, not d['sticky'])
-        r.check('and shows every role at once on %s' % label, d['lit'], d['n'])
-        r.ok('with none of them clipped on %s' % label, not d['cut'])
     page.reset_viewport()
 
     # Reduced motion collapses both rigs rather than pinning a scene nothing is driving.
@@ -196,7 +185,10 @@ def run(page, r):
     # description that drifts the moment any of them moves.
     stops = page.json('JSON.stringify(window.AKNAV.stops())')
     end = page.js('Math.round(document.documentElement.scrollHeight - innerHeight)')
-    r.ok('the page has a stop list', len(stops) > 12, '%d stops' % len(stops))
+    # A LOWER BOUND, not a count. It was 12 while the ten roles were each a stop and they now live on their
+    # own page, so the number this guards against is a list that failed to build at all: the five beats, a stop
+    # per section, and the bottom.
+    r.ok('the page has a stop list', len(stops) >= 8, '%d stops' % len(stops))
     r.check('the first stop is the top', stops[0], 0)
     r.check('the last stop is the bottom', stops[-1], end)
     r.ok('no two stops are within a nudge of each other',
@@ -213,40 +205,118 @@ def run(page, r):
     r.ok('and every gap wider than a screen is a scene leaving', not stray,
          'gaps starting outside any scene: %s' % stray)
 
-    # THE SCROLL POSITION IS THE SCROLL POSITION. There is no carry, and four versions of one were built and
-    # removed before that was settled: on a boundary crossing, past the end of a pin, onto the beat a gesture
-    # reached, and one beat per push. Every one of them was defensible and every one felt the same from the seat
-    # -- you stop, the page sits, and then it takes over. Every scene here is scrubbed, so scrolling through one
-    # already plays it; there was never anything left to finish.
-    # Asserted at four strengths because a gentle flick and a hard one must be equally untouched: the earlier
-    # rules all behaved differently under momentum, which is how the skipping went unnoticed.
+    # THE RAIL, AND WHAT IS OUTSIDE IT.
+    #
+    # Five positions on this page are worth resting on -- the hero with its words up, the reactor holding the
+    # frame alone once they have left, Cartographer with its graph whole, and the calculator at each end of its
+    # pin -- and everything between them is an envelope playing. A gesture that comes to rest between two beats
+    # is carried onto one; a gesture that stops anywhere else is left exactly where it stopped.
+    #
+    # That second half is not a detail. Four carries covering the WHOLE page were built and removed before this
+    # was settled -- on a boundary crossing, past the end of a pin, onto the beat a gesture reached, and one beat
+    # per push -- and every one of them felt the same from the seat: you stop, the page sits, and then it takes
+    # over. What is different here is that the rail covers named positions and then releases, so a reader below
+    # it keeps their own scroll.
+    #
+    # The beats are read off the rig rather than restated, for the reason every measurement in these suites is:
+    # a fraction copied in here goes silently wrong the first time an envelope moves.
+    M = "document.getElementById('app-stage').style.getPropertyValue('--m')"
+    beats = page.json('JSON.stringify(AKSCENE.beats())')
+    vh = page.js('innerHeight')
+    r.check('the rig reports five beats', len(beats), 5)
+    r.ok('and they are in page order', all(a < b for a, b in zip(beats, beats[1:])), str(beats))
+    r.check('the first beat is the top of the page', beats[0], 0)
+    r.ok('and every beat is also an arrow stop',
+         all(any(abs(b - s) <= 8 for s in stops) for b in beats), '%s against %s' % (beats, stops[:6]))
+    # Nothing wider than the rail's reach, or a carry becomes a haul across a screen of unread content rather
+    # than the finish of a hand-off. The rig refuses those gaps; this is the check that the page has none.
+    gaps = [b - a for a, b in zip(beats, beats[1:])]
+    r.ok('and no two beats are more than a screen and a quarter apart',
+         all(g <= vh * 1.25 for g in gaps), '%s against a %dpx viewport' % (gaps, vh))
+
+    # A flick that stops short of a beat is carried onto it: the hero's exit is FINISHED for the reader rather
+    # than left with the lockup half faded off the top.
+    page.scroll(0, pause=0.6)
+    page.flick(300, pause=0.4)
+    r.near('a flick off the hero lands on the reactor', page.until_still(quiet=0.5), beats[1], 8)
+
+    # And one that commits carries the whole way to the next beat, striking the reactor on the way past.
+    page.scroll(beats[1], pause=0.9)
+    page.flick(900, pause=0.4)
+    r.near('and a flick off the reactor lands on Cartographer', page.until_still(quiet=0.5), beats[2], 8)
+
+    # A NUDGE IS A NUDGE, and on the rail that means it is UNDONE rather than kept: under a third of the way to
+    # the next beat is not a decision to leave, so the reader is put back on the one they were on.
+    page.scroll(beats[1], pause=0.9)
+    page.wheel(200, pause=0)
+    r.near('a nudge off a beat is put back on it', page.until_still(quiet=0.5), beats[1], 8)
+
+    # UPWARD IS THE SAME LIST, BACKWARDS. Going back, the checkpoint is the beat behind rather than wherever the
+    # gesture happened to run out.
+    page.scroll(beats[2], pause=0.9)
+    page.flick(-900, pause=0.4)
+    r.near('and it walks back up the same beats', page.until_still(quiet=0.5), beats[1], 8)
+    page.flick(-900, pause=0.4)
+    r.near('all the way to the hero', page.until_still(quiet=0.5), beats[0], 8)
+
+    # THE CALCULATOR IS ITS PIN'S TWO ENDS, and both of them are PURE states of the morph: the faceplate the
+    # section arrives at, and the shipped app it leaves as. Nothing between them is a place to be -- the
+    # mechanism is either still or in flight -- so the rail stops on both, from both directions, and the turn
+    # happens on the way between. A reader could be left mid-morph before this, with half a keypad in each
+    # keyboard, which is the one frame of that scene nobody chose to look at.
+    page.scroll(beats[2], pause=0.9)
+    page.flick(900, pause=0.4)
+    r.near('a flick off Cartographer lands on the faceplate', page.until_still(quiet=0.5), beats[3], 8)
+    r.near('and the faceplate beat is a pure state', page.until_morphed(), 0.0, 0.001)
+
+    page.flick(500, pause=0.4)
+    r.near('a flick off the faceplate lands on the app', page.until_still(quiet=0.5), beats[4], 8)
+    r.near('and the app beat is the other pure state', page.until_morphed(), 1.0, 0.001)
+
+    # Under a third of the way down the pin is not a decision to turn it, so the reader is put back AND the
+    # calculator is still the faceplate. Both halves: the rail's threshold sits below the morph's trigger by
+    # design, so a gesture the rail is about to undo can never have committed the mechanism.
+    page.scroll(beats[3], pause=0.9)
+    page.wheel(160, pause=0)
+    r.near('a nudge inside the pin is put back on the faceplate', page.until_still(quiet=0.5), beats[3], 8)
+    r.near('and the calculator never started turning', page.until_morphed(), 0.0, 0.001)
+
+    # ...and it plays backwards the same way, which is the half that used to have nowhere to land.
+    page.scroll(beats[4], pause=0.9)
+    page.flick(-500, pause=0.4)
+    r.near('back up from the app lands on the faceplate', page.until_still(quiet=0.5), beats[3], 8)
+    r.near('and the calculator turned back', page.until_morphed(), 0.0, 0.001)
+
+    # LEAVING IS FREE, and this is the check that caught the worst version of it. `scroll-snap-stop: always` under
+    # the reader does not merely refuse to carry them PAST a beat, it refuses to let them OFF it: Chrome answers
+    # each event of a trackpad's decaying stream as its own gesture and pulls every tick straight back onto the
+    # target. Measured before the fix, a 900px flick off the reactor moved 48px and returned, every time.
+    page.scroll(beats[-1], pause=0.9)
+    page.flick(1400, pause=0.4)
+    left = page.until_still(quiet=0.5)
+    r.ok('a decisive gesture leaves the last beat', left > beats[-1] + 600,
+         'landed %d, beat %d' % (left, beats[-1]))
+
+    # ...and past the release the scroll position is the scroll position again. Asserted at four strengths
+    # because a gentle flick and a hard one must be equally untouched: the four old carries all behaved
+    # differently under momentum, which is how the skipping went unnoticed.
+    below = beats[-1] + vh
+    r.ok('there is page below the rail to test on', below < end - 200,
+         'rail ends at %d, page at %d' % (beats[-1], end))
     for strength in (300, 700, 1400, 2600):
-        page.scroll(0, pause=0.4)
+        page.scroll(below, pause=0.4)
         page.flick(strength, pause=0.5)
         landed = page.js('Math.round(scrollY)')
         after = page.until_still(quiet=0.5)
-        r.check('a flick of %d is left exactly where it lands' % strength, after, landed)
+        r.check('a flick of %d below the rail is left where it lands' % strength, after, landed)
 
-    # ...including one that crosses a section boundary, which is where three of the four carries used to fire.
-    page.scroll(stops[1], pause=0.4)
-    page.flick(900, pause=0.5)
-    landed = page.js('Math.round(scrollY)')
-    r.check('crossing a boundary moves nothing extra', page.until_still(quiet=0.5), landed)
-    r.ok('and the reader is past the boundary they crossed', landed > stops[2] - 400,
-         'landed %d, boundary %d' % (landed, stops[2]))
-
-    # The scenes still PLAY while that scroll happens -- scrubbed off position, so being left mid-hand-off is a
-    # legible frame rather than a stuck one. The morph is the one with a committed state to check.
-    page.scroll(stops[4] + 60, pause=0.6)
-    r.near('and the scenes still play from the scroll alone', page.until_morphed(), 1.0, 0.001)
-
-    # A NUDGE IS A NUDGE. The smallest thing a wheel can do must move the page by that much and no further; this
-    # is the check that would have caught every one of the four carries on the first run.
-    page.scroll(stops[2], pause=0.4)
+    # A NUDGE BELOW THE RAIL MOVES ONCE AND STOPS. The smallest thing a wheel can do must move the page by that
+    # much and no further; this is the check that would have caught every one of the four carries on the first run.
+    page.scroll(below, pause=0.4)
     at = page.js('Math.round(scrollY)')
     page.wheel(200, pause=0)
     after = page.until_still(quiet=0.5)
-    r.ok('a single nudge moves once and stops', at < after < at + 400,
+    r.ok('a single nudge below the rail moves once and stops', at < after < at + 400,
          'moved from %d to %d' % (at, after))
 
     # Contact's top is below the furthest the page can scroll, so the clamp parks the last section at the bottom.
@@ -266,6 +336,18 @@ def run(page, r):
     r.near('and the one after that', page.until_still(), stops[2], 8)
     page.key('ArrowUp', pause=0.05)
     r.near('and it steps back the same way', page.until_still(), stops[1], 8)
+
+    # A STEP IS PLAYED, NOT JUMPED, and it was neither for a while. Scroll snapping grabs PROGRAMMATIC scrolls
+    # too, so a glide crossing a beat was yanked onto it rather than eased onto it: measured, 742px covered
+    # between 160ms and 485ms of a 1.4-second travel, which reads as a teleport with a stutter at each end.
+    # The duration is not observable from here and the position is -- so this samples a quarter of a second in
+    # and asks to find the page somewhere in between rather than already arrived.
+    page.scroll(0, pause=1.2)
+    page.key('ArrowDown', pause=0.25)
+    part = page.js('Math.round(scrollY)')
+    r.ok('and it glides there rather than jumping', 0 < part < stops[1] - 40,
+         'at %d of %d a quarter of a second in' % (part, stops[1]))
+    r.near('...and still lands on the stop', page.until_still(), stops[1], 8)
 
     # THE HERO RESOLVES TO THE REACTOR ALONE. Its second stop is the point where the words have finished leaving
     # and nothing else is in the frame; the instrument's own exit has not started. Both halves matter: a stop
@@ -297,19 +379,20 @@ def run(page, r):
          'peak %.3f' % page.js(pulse))
     r.near('and steps with it', page.until_still(), stops[1], 400)
 
-    # Every role is its own stop, so the timeline can be walked rather than scrolled past.
-    roles = page.js("document.querySelectorAll('#experience .role').length")
+    # THE ARROWS REACH THE BOTTOM, one beat per press. A stop that cannot be left is invisible until the list is
+    # walked end to end, which is what this does. The bound is the stop list's own LENGTH rather than a number:
+    # it was 12-24 while the ten roles were each a stop, and they now live on their own page.
     steps = 0
     at = page.js('Math.round(scrollY)')
-    while steps < 30:
+    while steps < len(stops) + 4:
         page.key('ArrowDown', pause=0.05)
         now = page.until_still()
         steps += 1
         if now == at:
             break
         at = now
-    r.ok('the page steps to the bottom in one beat per stop', 12 <= steps <= 24,
-         '%d presses for %d roles' % (steps, roles))
+    r.ok('the page steps to the bottom in one beat per stop', steps <= len(stops),
+         '%d presses for %d stops' % (steps, len(stops)))
     r.near('the last press rests at the bottom', page.until_still(), end, 8)
 
     # A NAV LINK INTO A PINNED SCENE MUST GO TO ITS RANGE, NOT TO THE ELEMENT. #alex is absolutely positioned
@@ -342,7 +425,8 @@ def run(page, r):
     page.click_at('#nav .tools button', pause=0.5)
     r.ok('the header QR mark opens the one dialog',
          page.js("!document.getElementById('qr-dialog').hidden"))
-    page.js("document.getElementById('qr-close').click();1")
+    # The overlay is its own close control; share.js binds the click to the dialog, not to a button.
+    page.js("document.getElementById('qr-dialog').click();1")
 
     # Cartographer ARRIVES and then holds still. Two separate claims, and both have been broken here before:
     # the section is scrubbed in across the viewport it rises through, and once it is seated NOTHING inside it is
@@ -394,92 +478,6 @@ def run(page, r):
     over = page.js("(()=>{const s=document.getElementById('cartographer');"
                    "return Math.max(0, Math.round(s.getBoundingClientRect().height - innerHeight))})()")
     r.ok('and the section fits the screen it is given', over == 0, '%dpx over' % over)
-
-    # THE ROLES ARE A VIEWER, ONE AT A TIME. The mechanism, not the copy: exactly one role showing at any
-    # position in the pin, the strip agreeing with it, and every role reachable -- including the last, which is
-    # the one a floor()'d index is most likely to strand.
-    # quiesce first: the QR check above clicks with a real mouse, and the carry answers real input for two
-    # seconds afterwards. Every beat below is a scrollTo, so a carry still in flight lands one of them on the
-    # previous role and the run reports nine distinct roles out of ten.
-    page.quiesce()
-    page.viewport(1600, 1000)
-    # top is MEASURED, not read off offsetTop -- the section is position: relative, so offsetTop reports the
-    # distance from the section rather than from the top of the document and every beat lands on role one.
-    geo = page.json("(()=>{const s=document.getElementById('exp-scroll'),g=document.getElementById('exp-stage');"
-                    "return JSON.stringify({top:Math.round(s.getBoundingClientRect().top+scrollY),"
-                    "run:s.offsetHeight-g.offsetHeight,"
-                    "n:document.querySelectorAll('.exp-deck .role').length})})()")
-    SHOWING = ("(()=>{const all=[...document.querySelectorAll('.exp-deck .role')];"
-               "const lit=all.filter(e=>+getComputedStyle(e).opacity>0.05);"
-               "const here=document.querySelector('.exp-deck .role.here');"
-               "return JSON.stringify({lit:lit.length,who:here?here.dataset.label:'',"
-               "tab:(document.querySelector('.exp-strip button[aria-selected]')||{}).textContent})})()")
-
-    seen, alone = [], True
-    for i in range(geo['n']):
-        page.scroll(geo['top'] + round(geo['run'] * ((i + 0.5) / geo['n'])), pause=0.55)
-        d = page.json(SHOWING)
-        if d['lit'] != 1:
-            alone = False
-        seen.append((d['who'], d['tab']))
-    r.ok('exactly one role is showing at every beat', alone,
-         'saw %s' % [x for x in seen][:3])
-    r.check('every role gets a beat of its own', len(set(w for w, _ in seen)), geo['n'])
-    r.ok('and the strip agrees with the deck', all(w == t for w, t in seen),
-         ' | '.join('%s/%s' % (w, t) for w, t in seen if w != t)[:80])
-
-    # The strip jumps the PAGE to that role's beat, since the deck holds no state of its own.
-    page.click_at('.exp-strip button:nth-child(6)', pause=1.3)
-    r.check('a jump shows the role it names', page.json(SHOWING)['who'],
-            page.js("document.querySelectorAll('.exp-deck .role')[5].dataset.label"))
-
-    # THE PIN HAS TO SEAT ITS TALLEST ROLE, at every window it still claims to pin at. The content is fixed and
-    # the window is not, so this is the invariant the whole design rests on: 730 is one pixel above the height
-    # where the section gives up and becomes a stack, and 860 is where the body type steps down to keep it true.
-    for w, h in [(1600, 1000), (1440, 860), (1366, 768), (1280, 730), (860, 730)]:
-        page.viewport(w, h)
-        page.settle(0.5)
-        d = page.json("(()=>{const g=document.getElementById('exp-stage');"
-                      "const v=document.querySelector('.exp-view').getBoundingClientRect();"
-                      "const deck=document.querySelector('.exp-deck').getBoundingClientRect();"
-                      "const tall=Math.max(...[...document.querySelectorAll('.exp-deck .role')].map(e=>{"
-                      "const p=e.style.position;e.style.position='static';"
-                      "const n=e.offsetHeight;e.style.position=p;return n}));"
-                      "return JSON.stringify({pinned:getComputedStyle(g).position==='sticky',"
-                      "over:Math.round(v.height-g.getBoundingClientRect().height),"
-                      "slack:Math.round(deck.height-tall)})})()")
-        r.ok('the pin is still a pin at %dx%d' % (w, h), d['pinned'])
-        r.ok('and it seats its tallest role at %dx%d' % (w, h), d['over'] <= 0 and d['slack'] >= 0,
-             'view over by %dpx, deck slack %dpx' % (d['over'], d['slack']))
-
-    # The strip sits a FIXED distance under the bar at every height. Centring the whole view in the stage made
-    # that gap 160px at 1080 and 30px at 820 -- one design that looked like several.
-    gaps = []
-    for h in (1080, 1000, 900):
-        page.viewport(1600, h)
-        page.settle(0.4)
-        # Re-derived every time: resizing changes the page's height, so a scroll position that was inside the
-        # pin at the previous size is not necessarily inside it at this one.
-        page.scroll(page.js("Math.round(document.getElementById('exp-scroll')"
-                            ".getBoundingClientRect().top+scrollY)+80"), pause=0.4)
-        gaps.append(page.js("(()=>{const s=document.querySelector('.exp-strip').getBoundingClientRect();"
-                            "const n=document.getElementById('nav').getBoundingClientRect();"
-                            "return Math.round(s.top-n.bottom)})()"))
-    r.ok('the strip holds one distance under the bar at any height', len(set(gaps)) == 1, str(gaps))
-    page.viewport(1600, 1000)
-    page.settle(0.4)
-
-    # AND THE PIN LETS GO. The viewer lives inside #experience, so past the last role the scroll has to carry on
-    # into the section's own tail rather than hold -- a runway that outlasts its content reads as a stuck page.
-    page.scroll(geo['top'] + geo['run'], pause=0.6)
-    r.check('the last role is the one at the end of the pin', page.json(SHOWING)['who'],
-            page.js("[...document.querySelectorAll('.exp-deck .role')].pop().dataset.label"))
-    page.scroll(geo['top'] + geo['run'] + 600, pause=0.6)
-    d = page.json("(()=>{const g=document.getElementById('exp-stage').getBoundingClientRect();"
-                  "const b=document.getElementById('background').getBoundingClientRect();"
-                  "return JSON.stringify({stage:Math.round(g.top),next:Math.round(b.top)})})()")
-    r.ok('and past it the pin releases into the next section', d['stage'] < 0 and d['next'] < 1200,
-         'stage %dpx, background %dpx' % (d['stage'], d['next']))
 
     # THE LOADING RING GETS OUT OF THE WAY. It is a full-screen overlay, so the failure that matters is not
     # whether it appears but whether it LEAVES -- one left at opacity zero is an invisible sheet across the whole

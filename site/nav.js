@@ -32,6 +32,18 @@
     return y > 0 ? y : null;
   }
 
+  /* The position where the reactor holds the frame alone, from the file that owns the exit envelope. Guarded
+     the same way loopIdle() is: scenes.js disarms itself under reduced motion and on a short window, and the
+     stepper must keep its beat when it has. */
+  function heroAlone() {
+    const s = window.AKSCENE;
+    if (s && typeof s.heroAloneY === 'function') return s.heroAloneY();
+    const cs = getComputedStyle(document.documentElement);
+    const run = (parseFloat(cs.getPropertyValue('--scene-hold')) || 0)
+      + (parseFloat(cs.getPropertyValue('--scene-exit')) || 0);
+    return Math.round(run * (window.innerHeight || 0));
+  }
+
   /* The range a link owns is declared in the markup, not restated here. Scene 01 and the calculator are
      absolutely positioned inside sticky stages, so their own tops are not page positions at all; the scroll each
      one occupies is its [data-range] container.
@@ -47,20 +59,32 @@
 
   let spans = [];
   let stops = [];
+  let runway = 1;
   let current = -1;
   let queued = false;
 
   /* THE SCROLL POSITION IS THE SCROLL POSITION. Nothing waits for the reader to stop and then moves the page for
      them; every scene is scrubbed, so scrolling through one already plays it. The keyboard keeps its stepping —
      a press is one discrete decision with no position of its own. */
-  const GLIDE = 620;    // ms of travel for a keyboard step or an anchor jump. Long enough to read as a hand-off,
-                        // short enough not to feel taken over.
+  const GLIDE = 620;    // ms of travel for an ANCHOR JUMP. A destination the reader named is a hand-off rather
+                        // than a scene to be played, so it keeps a flat duration whatever the distance.
   const NUDGE = 24;     // px. Two stops closer together than this are one stop as far as a press is concerned,
                         // and a reader this close to a mark is on it. The stop list uses it both ways round.
 
   // Keyboard stepping is a fine-pointer, roomy-window affordance; the same pair the stylesheet already uses.
   const roomy = window.matchMedia('(min-width: 821px) and (min-height: 501px)');
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+  /* A STEP IS PLAYED, NOT JUMPED. Every beat on this page has a scene scrubbed across the scroll that reaches
+     it, so a press has to travel at the rate that scene reads best at — which is the rate the rail in scenes.js
+     already carries a gesture at. Taken from the file that owns it rather than restated: a copy of the rate here
+     would have the page moving at two speeds depending on which hand the reader used.
+     The fallback is the flat anchor duration, not a second set of numbers — the rig disarms itself under reduced
+     motion and on a short window, and a fallback that quotes the real values is just a copy waiting to drift. */
+  function stepMs(dist) {
+    const s = window.AKSCENE;
+    return s && typeof s.glideMs === 'function' ? s.glideMs(dist) : GLIDE;
+  }
 
   let glide = 0;        // the running rAF, and the flag that says this scrolling is ours rather than theirs
   let stopIndex = -1;   // the stop we are at or gliding toward, so a second press mid-flight advances by one
@@ -74,6 +98,10 @@
     const end = items[items.length - 1].el.getBoundingClientRect().bottom + y;
     spans = tops.map((t, i) => [t, i + 1 < tops.length ? tops[i + 1] : end]);
     stops = buildStops();
+    /* CACHED, because scrollHeight forces a synchronous layout and the readout below wanted it on every scroll
+       frame — against a tree the scenes have just dirtied with a block of custom properties. Measured at 3.75ms
+       of forced layout for a frame's worth of those reads, on a 16.7ms budget. */
+    runway = Math.max(1, maxScroll());
   }
 
   /* ---- the stops ----
@@ -92,13 +120,13 @@
     const list = [0];
 
     /* THE HERO IS TWO STOPS. The first is the scene; the second is the point where the words have finished
-       leaving and the reactor holds the frame on its own, with nothing else in it. Read off the same two
-       properties scenes.js scrubs the exit against, so the stop cannot land somewhere the envelope disagrees
-       with. The next press from there is what strikes the instrument. */
-    const cs = getComputedStyle(document.documentElement);
-    const sceneRun = (parseFloat(cs.getPropertyValue('--scene-hold')) || 0)
-      + (parseFloat(cs.getPropertyValue('--scene-exit')) || 0);
-    orbY = Math.round(sceneRun * (window.innerHeight || 0));
+       leaving and the reactor holds the frame on its own, with nothing else in it. The next press from there is
+       what strikes the instrument.
+       Taken from scenes.js, which owns the envelope and stops the scroll on the same position: computed here
+       instead, an arrow press and a wheel gesture would land a reader on two different frames of one hand-off.
+       The fallback is the end of the exit — where the words are gone, but before the ring holds still — for the
+       case where the scene rig has disarmed itself and there is no handle to ask. */
+    orbY = heroAlone();
     if (orbY > 24) list.push(orbY);
 
     /* ONE stop, and the graph's running position is deliberately NOT a second one. This section is a viewport
@@ -106,8 +134,6 @@
        and it shipped broken once. The anchor click below still lands on the running graph, because a click is
        a destination the reader named rather than a place the page may come to rest on its own. */
     const loopScroll = document.getElementById('loop-scroll');
-    const trip = parseFloat(getComputedStyle(document.documentElement)
-      .getPropertyValue('--morph-trip')) || .14;
     if (loopScroll) {
       list.push(at(loopScroll));
     } else {
@@ -115,16 +141,19 @@
       if (cart) list.push(at(cart));
     }
 
-    /* The calculator is two stops, not one: the faceplate it is pinned at, and just past the trigger, which
-       commits the morph and lets it play out on its own clock. The trigger fraction is read from the
-       stylesheet, the same declaration scenes.js triggers on. */
+    /* The calculator is two stops, not one, and they are the ENDS of its pin: the faceplate it arrives at and
+       the shipped app it leaves as. The same two positions scenes.js stops the scroll on, so a press and a
+       gesture land a reader on the same frame of one hand-off.
+       It used to be a stop just past the trigger instead, which was a position the morph had been COMMITTED at
+       rather than one it had finished turning at — a press landed there and the calculator went on moving for
+       most of a second afterwards. */
     const appScroll = document.getElementById('app-scroll');
     const appStage = document.getElementById('app-stage');
     if (appScroll && appStage) {
       const pinTop = at(appScroll);
       const run = appScroll.offsetHeight - appStage.offsetHeight;
       list.push(pinTop);
-      if (run > 0) list.push(Math.min(maxScroll(), pinTop + Math.round(run * trip) + 24));
+      if (run > 0) list.push(Math.min(maxScroll(), pinTop + run));
     }
 
     /* ONE STOP PER ROLE, back again and meaningful this time. The roles are beats of a pinned viewer now, so a
@@ -205,14 +234,13 @@
     /* A step onto the reactor strikes it, the same way a click does. Only where it is actually on screen: a
        pulse fired into a scene that has already left is spent on nobody. */
     if (stops[t] <= orbY + 4 && window.HERO && window.HERO.pulse) window.HERO.pulse();
-    glideTo(stops[t]);
+    glideTo(stops[t], stepMs(stops[t] - (window.scrollY || window.pageYOffset || 0)));
   }
 
   function frame() {
     queued = false;
     const y = window.scrollY || window.pageYOffset || 0;
     const vh = window.innerHeight || 1;
-    const runway = Math.max(1, document.documentElement.scrollHeight - vh);
     /* 42% down the viewport at rest, 92% at the bottom. Contact is ~350px tall and the page bottoms out several
        hundred px above it, so a line fixed inside the viewport can never reach the last section and CONTACT
        would never light. This is the kind of thing that looks like a bug for a week if it is not written down. */
@@ -243,22 +271,33 @@
     if (!glide) return;
     cancelAnimationFrame(glide);
     glide = 0;
+    document.documentElement.style.scrollSnapType = '';
   }
 
-  function glideTo(y) {
+  function glideTo(y, ms) {
     stopGlide();
     const from = window.scrollY || window.pageYOffset || 0;
     const dist = y - from;
     if (Math.abs(dist) < 8) return;
+    const run = ms || GLIDE;
+    /* SNAPPING IS STOOD DOWN FOR THE DURATION, and without this the length above buys nothing. Scroll snapping
+       grabs programmatic scrolls too, so a glide that crosses a beat is YANKED onto it rather than eased onto
+       it — the same destination, arrived at as a jump. Measured on the step from the top of the page to the
+       reactor: 742px covered between 160ms and 485ms of a 1.4s glide with snapping live, against 1314ms of
+       even travel with it off. scenes.js stands it down across its own glides for the same reason. */
+    const root = document.documentElement;
+    root.style.scrollSnapType = 'none';
     let t0 = 0;
     const step = (ts) => {
       if (!t0) t0 = ts;
-      const p = Math.min(1, (ts - t0) / GLIDE);
+      const p = Math.min(1, (ts - t0) / run);
       const e = 1 - Math.pow(1 - p, 3);
       /* instant, per frame. The stylesheet sets scroll-behavior: smooth for anchor jumps, and letting each of
          these 60 steps run its own smooth scroll makes the two easings compound into a crawl. */
       window.scrollTo({ top: Math.round(from + dist * e), behavior: 'instant' });
-      glide = p < 1 ? requestAnimationFrame(step) : 0;
+      if (p < 1) { glide = requestAnimationFrame(step); return; }
+      glide = 0;
+      root.style.scrollSnapType = '';
     };
     glide = requestAnimationFrame(step);
   }
@@ -286,8 +325,6 @@
      the difference between that and a page at rest, but anything measuring one can be fooled by it. */
   window.AKNAV = {
     stops: () => stops.slice(),
-    index: () => stopIndex,
-    section: () => current,
     busy: () => glide !== 0,
   };
 
@@ -296,6 +333,9 @@
   window.addEventListener('resize', remeasure);
   // Web fonts land after this runs and reflow every section under the fold, so the first measurement is stale.
   window.addEventListener('load', remeasure);
+  /* And so does anything else that changes a section's height: an image sizing itself, the shelf building, a
+     lab object laying out. None of those fires a resize, and every stop below them moves when they land. */
+  if ('ResizeObserver' in window) new ResizeObserver(remeasure).observe(document.body);
 
   /* THE WHEEL IS THE READER'S, MOMENTUM AND ALL, and it is now the only thing that decides where they end up.
      The one job left here is to get out of the way: a hand on the wheel while a keyboard step is still gliding

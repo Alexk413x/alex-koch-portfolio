@@ -57,7 +57,10 @@ def run(page, r):
     page.js("document.getElementById('qr-open').click();1")
     page.settle()
     r.ok('the share dialog opens', page.js("!document.getElementById('qr-dialog').hidden"))
-    data = page.js("document.getElementById('qr-canvas').toDataURL('image/png').split(',')[1]")
+    # The <img>'s own bytes, not a canvas read: share.js draws to an OFFSCREEN canvas and hands the page a PNG
+    # data URL, because a canvas offers no save affordance and long-press/right-click only offer to save an
+    # <img>. The src IS the drawing, so decoding it tests exactly what a camera meets.
+    data = page.js("document.getElementById('qr-image').src.split(',')[1]")
     img = cv2.imdecode(np.frombuffer(base64.b64decode(data), np.uint8), cv2.IMREAD_COLOR)
     want = 'https://' + page.js("document.querySelector('.qr-url').textContent.trim()")
 
@@ -69,7 +72,7 @@ def run(page, r):
         return cv2.cvtColor(255 - cv2.cvtColor(im, cv2.COLOR_BGR2GRAY), cv2.COLOR_GRAY2BGR)
 
     got, _, _ = detector.detectAndDecode(flip(img))
-    r.check('the rendered canvas decodes', got, want)
+    r.check('the rendered code decodes', got, want)
     small = cv2.resize(img, (180, 180), interpolation=cv2.INTER_AREA)
     got_small, _, _ = detector.detectAndDecode(flip(small))
     r.check('...and still decodes at 180px', got_small, want)
@@ -80,5 +83,7 @@ def run(page, r):
     core = img[mid - 20:mid + 20, mid - 20:mid + 20, 2]
     r.ok('the centre carries the mark', bool((core > 150).any()))
 
-    page.js("document.getElementById('qr-close').click();1")
-    r.ok('close hides the dialog', page.js("document.getElementById('qr-dialog').hidden"))
+    # The overlay IS the close control -- there is no button. Every part of it closes, panel included.
+    page.js("document.getElementById('qr-dialog').click();1")
+    r.ok('a click anywhere on the overlay hides the dialog',
+         page.js("document.getElementById('qr-dialog').hidden"))
