@@ -11,7 +11,7 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="site/site.css">
 </head>
 <body>
@@ -314,10 +314,8 @@
         </div>
 
         <div class="cta-row">
-          <a class="primary" href="https://play.google.com/store/apps/details?id=com.gmail.alexk413x.RPN_Dominator_Calculator" target="_blank" rel="noopener">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.68 2.23L13.72 7.96L13.72 11.88L3.68 11.88Z"/><path d="M3.68 12.12L13.72 12.12L13.72 16.04L3.68 21.77Z"/><path d="M13.98 8.04L20.83 11.95L13.98 11.95Z"/><path d="M13.98 12.05L20.83 12.05L13.98 15.96Z"/></svg>
-            GET ON PLAYSTORE
-            <svg class="ext" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3h7v7h-2V6.41l-9.3 9.3-1.41-1.42 9.29-9.29H14zM5 5h5v2H6v11h11v-4h2v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1"/></svg>
+          <a class="store play" href="https://play.google.com/store/apps/details?id=com.gmail.alexk413x.RPN_Dominator_Calculator" target="_blank" rel="noopener noreferrer">
+            <img src="site/store-badges/google-play.png" alt="Get it on Google Play">
           </a>
         </div>
       </div>
@@ -348,6 +346,9 @@
 </div>
 
 <section id="experience">
+  <!-- The barrier for this beat, at the section's own top. Inside the section rather than at page level, so its
+       offset is 0 and the position it guards is the section's top by construction. -->
+  <i id="exp-snap" aria-hidden="true"></i>
   <div class="inner">
     <h2 class="sec-title" data-reveal>FOURTEEN YEARS<br><span style="color:var(--accent)">OF USER-DRIVEN SUCCESS</span></h2>
 
@@ -362,8 +363,9 @@
          what was shipped, and who paid for it is the answer rather than the heading.
          NOT PINNED. Each rack is a plain horizontal scroller, so sideways belongs to the shelf and down always
          belongs to the page; scrolling past this section is never converted into driving it.
-         EVERY PROOF IS WRITTEN OUT HERE. shelf.js is what collapses them, so a crawler running no JavaScript —
-         which is most of the AI ones — reads all seventeen records in full. Nothing is built from an array. -->
+         EVERY PROOF IS WRITTEN OUT HERE. catalogue.js reads them into the rack below and hides this block, so a
+         crawler running no JavaScript — which is most of the AI ones — reads all seventeen records in full, and
+         so does a reader whose scripts failed. Nothing is built from an array. -->
     <div class="shelf-intro" data-reveal>
       <div class="sec-label">THE BACK CATALOGUE</div>
       <h3>SEVENTEEN SHIPPED PRODUCTS<br><span>ACROSS FOUR ACTS</span></h3>
@@ -383,151 +385,151 @@
 
           <article class="spine">
             <button class="spine-face" type="button" aria-expanded="false" aria-controls="pf-qaai">
-              <span class="cover" data-domain="agentic" aria-hidden="true"></span>
               <span class="p-name">QAAI</span>
+              <span class="p-tag">Accurate Agentic Testing</span>
               <span class="p-marks"><i>Multi-agent</i><i>CI/CD</i><i>All platforms</i></span>
-              <span class="p-domain">Act IV &middot; Scale, then agents</span>
+              <span class="p-domain">Act IV &middot; Agents Agents Agents</span>
             </button>
           </article>
           <article class="spine">
             <button class="spine-face" type="button" aria-expanded="false" aria-controls="pf-mail">
-              <span class="cover" data-domain="consumer" aria-hidden="true"></span>
               <span class="p-name">Yahoo! Mail</span>
+              <span class="p-tag">Email in the Agentic World</span>
               <span class="p-marks"><i>Android</i><i>Compose</i><i>A11y</i></span>
-              <span class="p-domain">Act IV &middot; Scale, then agents</span>
+              <span class="p-domain">Act IV &middot; Agents Agents Agents</span>
             </button>
           </article>
           <article class="spine">
             <button class="spine-face" type="button" aria-expanded="false" aria-controls="pf-sc">
-              <span class="cover" data-domain="agentic" aria-hidden="true"></span>
               <span class="p-name">Store Companion</span>
+              <span class="p-tag">Every Document, One Answer</span>
               <span class="p-marks"><i>Android</i><i>Gen AI</i><i>Scanner</i></span>
-              <span class="p-domain">Act IV &middot; Scale, then agents</span>
+              <span class="p-domain">Act IV &middot; Agents Agents Agents</span>
             </button>
           </article>
           <article class="spine">
             <button class="spine-face" type="button" aria-expanded="false" aria-controls="pf-myday">
-              <span class="cover" data-domain="retail" aria-hidden="true"></span>
               <span class="p-name">myDay</span>
+              <span class="p-tag">Efficiency at Scale</span>
               <span class="p-marks"><i>Android</i><i>Compose</i><i>Zebra</i></span>
-              <span class="p-domain">Act IV &middot; Scale, then agents</span>
+              <span class="p-domain">Act IV &middot; Agents Agents Agents</span>
             </button>
           </article>
 
 
           <article class="spine">
-            <button class="spine-face" type="button" aria-expanded="false" aria-controls="pf-self">
-              <span class="cover" data-domain="retail" aria-hidden="true"></span>
+            <button class="spine-face" data-cover-title="SELF|PICKUP" type="button" aria-expanded="false" aria-controls="pf-self">
               <span class="p-name">Self Pickup</span>
+              <span class="p-tag">Pickup Orders Made Easy</span>
               <span class="p-marks"><i>Web</i></span>
-              <span class="p-domain">Act III &middot; Money and the store floor</span>
+              <span class="p-domain">Act III &middot; Leadership at scale</span>
             </button>
           </article>
           <article class="spine">
             <button class="spine-face" type="button" aria-expanded="false" aria-controls="pf-pick">
-              <span class="cover" data-domain="retail" aria-hidden="true"></span>
               <span class="p-name">Pickup</span>
+              <span class="p-tag">Orders Brought to You</span>
               <span class="p-marks"><i>Android</i><i>Offline</i><i>Zebra</i></span>
-              <span class="p-domain">Act III &middot; Money and the store floor</span>
+              <span class="p-domain">Act III &middot; Leadership at scale</span>
             </button>
           </article>
           <article class="spine">
             <button class="spine-face" type="button" aria-expanded="false" aria-controls="pf-isu">
-              <span class="cover" data-domain="retail" aria-hidden="true"></span>
               <span class="p-name">ISU</span>
+              <span class="p-tag">One Library to Rule Them All</span>
               <span class="p-marks"><i>Android</i><i>Core library</i></span>
-              <span class="p-domain">Act III &middot; Money and the store floor</span>
+              <span class="p-domain">Act III &middot; Leadership at scale</span>
             </button>
           </article>
           <article class="spine">
             <button class="spine-face" type="button" aria-expanded="false" aria-controls="pf-oro">
-              <span class="cover" data-domain="fintech" aria-hidden="true"></span>
               <span class="p-name">ORO Pay</span>
+              <span class="p-tag">Digital Banking for the Underbanked</span>
               <span class="p-marks"><i>Android</i><i>Camera</i><i>GPS</i></span>
-              <span class="p-domain">Act III &middot; Money and the store floor</span>
+              <span class="p-domain">Act III &middot; Leadership at scale</span>
             </button>
           </article>
           <article class="spine">
             <button class="spine-face" type="button" aria-expanded="false" aria-controls="pf-merch">
-              <span class="cover" data-domain="fintech" aria-hidden="true"></span>
               <span class="p-name">ORO Merchant</span>
+              <span class="p-tag">Payments for the Underbanked</span>
               <span class="p-marks"><i>Android</i><i>QR</i><i>ML Kit</i></span>
-              <span class="p-domain">Act III &middot; Money and the store floor</span>
+              <span class="p-domain">Act III &middot; Leadership at scale</span>
             </button>
           </article>
 
 
           <article class="spine">
             <button class="spine-face" type="button" aria-expanded="false" aria-controls="pf-fv">
-              <span class="cover" data-domain="field" aria-hidden="true"></span>
               <span class="p-name">FieldView</span>
+              <span class="p-tag">Your Eyes in the Field</span>
               <span class="p-marks"><i>Android</i><i>iOS</i><i>Windows</i><i>Offline</i></span>
-              <span class="p-domain">Act II &middot; Into the field</span>
+              <span class="p-domain">Act II &middot; Into the unknown</span>
             </button>
           </article>
           <article class="spine">
             <button class="spine-face" type="button" aria-expanded="false" aria-controls="pf-team">
-              <span class="cover" data-domain="field" aria-hidden="true"></span>
               <span class="p-name">Team</span>
+              <span class="p-tag">Forms for the Digital World</span>
               <span class="p-marks"><i>Android</i><i>iOS</i><i>Windows</i></span>
-              <span class="p-domain">Act II &middot; Into the field</span>
+              <span class="p-domain">Act II &middot; Into the unknown</span>
             </button>
           </article>
           <article class="spine">
             <button class="spine-face" type="button" aria-expanded="false" aria-controls="pf-tab">
-              <span class="cover" data-domain="consumer" aria-hidden="true"></span>
               <span class="p-name">TabbedOut</span>
+              <span class="p-tag">Tabs Automated</span>
               <span class="p-marks"><i>Android</i></span>
-              <span class="p-domain">Act II &middot; Into the field</span>
+              <span class="p-domain">Act II &middot; Into the unknown</span>
             </button>
           </article>
           <article class="spine">
-            <button class="spine-face" type="button" aria-expanded="false" aria-controls="pf-house">
-              <span class="cover" data-domain="field" aria-hidden="true"></span>
+            <button class="spine-face" data-cover-title="HOUSE|KEEPING" type="button" aria-expanded="false" aria-controls="pf-house">
               <span class="p-name">Housekeeping</span>
+              <span class="p-tag">Everything to Get the Job Done</span>
               <span class="p-marks"><i>Android</i><i>Offline</i><i>GPS</i></span>
-              <span class="p-domain">Act II &middot; Into the field</span>
+              <span class="p-domain">Act II &middot; Into the unknown</span>
             </button>
           </article>
 
 
           <article class="spine">
             <button class="spine-face" type="button" aria-expanded="false" aria-controls="pf-rexel">
-              <span class="cover" data-domain="retail" aria-hidden="true"></span>
               <span class="p-name">Rexel USA</span>
+              <span class="p-tag">Every Brand, One Build</span>
               <span class="p-marks"><i>Android</i><i>iOS</i><i>Scanner</i></span>
-              <span class="p-domain">Act I &middot; Learning the hardware</span>
+              <span class="p-domain">Act I &middot; Learning the ropes</span>
             </button>
           </article>
           <article class="spine">
             <button class="spine-face" type="button" aria-expanded="false" aria-controls="pf-123">
-              <span class="cover" data-domain="consumer" aria-hidden="true"></span>
               <span class="p-name">123 Calling</span>
+              <span class="p-tag">Linguistics Is Child&rsquo;s Play</span>
               <span class="p-marks"><i>iOS</i><i>Localised</i></span>
-              <span class="p-domain">Act I &middot; Learning the hardware</span>
+              <span class="p-domain">Act I &middot; Learning the ropes</span>
             </button>
           </article>
           <article class="spine">
             <button class="spine-face" type="button" aria-expanded="false" aria-controls="pf-kiosk">
-              <span class="cover" data-domain="consumer" aria-hidden="true"></span>
-              <span class="p-name">Asian Art Museum Kiosk</span>
+              <span class="p-name">Asian Art Museum</span>
+              <span class="p-tag">Secure Interactive Kiosk</span>
               <span class="p-marks"><i>Android</i><i>Kiosk</i></span>
-              <span class="p-domain">Act I &middot; Learning the hardware</span>
+              <span class="p-domain">Act I &middot; Learning the ropes</span>
             </button>
           </article>
           <article class="spine">
             <button class="spine-face" type="button" aria-expanded="false" aria-controls="pf-ink">
-              <span class="cover" data-domain="tooling" aria-hidden="true"></span>
               <span class="p-name">Ink Usage Dashboard</span>
+              <span class="p-tag">From Hours to Minutes</span>
               <span class="p-marks"><i>Web</i><i>Graphs</i></span>
-              <span class="p-domain">Act I &middot; Learning the hardware</span>
+              <span class="p-domain">Act I &middot; Learning the ropes</span>
             </button>
           </article>
 
         </div>
       </div>
 
-      <!-- ONE BAY for the whole shelf. Every proof is written out here and shelf.js is what collapses them, so a
+      <!-- ONE BAY for the whole shelf. Every proof is written out here and catalogue.js reads them, so a
            crawler running no JavaScript reads all seventeen records in full. Nothing is built from an array. -->
       <div class="bay">
 
@@ -536,12 +538,14 @@
           <p class="proof-say">Tests generated, executed and self-healed from natural language, at a 95%+ pass rate in CI/CD.</p>
           <div class="proof-at">
             <span class="pa-label">Built at</span>
-            <h4>Yahoo!</h4>
+            <h4 data-site="https://www.yahoo.com/" data-via="Mindlance" data-via-site="https://www.mindlance.com/">Yahoo!</h4>
             <span class="pa-role">Agentic Engineer</span>
             <time datetime="2025-09/2026-07">Sep 2025 &ndash; Jul 2026</time>
           </div>
           <p class="proof-more">App-, platform- and LLM-agnostic: one test case runs unchanged on iOS, Android and
             Web. Saves executives, project managers, QA and developers across every app team hundreds of hours weekly.</p>
+          <p class="proof-kit"><b>Features</b>Android 9&ndash;16</p>
+          <p class="proof-kit"><b>Tools</b>Claude Code, Cursor, Codex, Copilot, LLM Agents, Kotlin, Compose, Android Studio, Python, GCP</p>
         </div>
 
         <div class="proof" id="pf-mail">
@@ -549,12 +553,18 @@
           <p class="proof-say">Features built to EAA compliance, and the QA pain points taken out behind them.</p>
           <div class="proof-at">
             <span class="pa-label">Built at</span>
-            <h4>Yahoo!</h4>
+            <h4 data-site="https://www.yahoo.com/" data-via="Mindlance" data-via-site="https://www.mindlance.com/">Yahoo!</h4>
             <span class="pa-role">Agentic Engineer</span>
             <time datetime="2025-09/2026-07">Sep 2025 &ndash; Jul 2026</time>
           </div>
           <p class="proof-more">Developed and maintained features on Yahoo! Mail alongside the agentic plugin work,
             with a focus on accessibility.</p>
+          <p class="proof-get"><span class="pa-label">Get it on</span>
+            <a href="https://play.google.com/store/apps/details?id=com.yahoo.mobile.client.android.mail" data-store="play" target="_blank" rel="noopener noreferrer">Google Play</a>
+            <a href="https://apps.apple.com/us/app/yahoo-mail-your-email-inbox/id577586159" data-store="ios" target="_blank" rel="noopener noreferrer">App Store</a>
+          </p>
+          <p class="proof-kit"><b>Features</b>Android 9&ndash;16</p>
+          <p class="proof-kit"><b>Tools</b>Claude Code, Cursor, Codex, Copilot, LLM Agents, Kotlin, Compose, Android Studio, Python, GCP</p>
         </div>
 
         <div class="proof" id="pf-sc">
@@ -562,12 +572,14 @@
           <p class="proof-say">Generative AI answering store team members straight out of Target&rsquo;s own documentation.</p>
           <div class="proof-at">
             <span class="pa-label">Built at</span>
-            <h4>Target</h4>
+            <h4 data-site="https://www.target.com/">Target</h4>
             <span class="pa-role">Lead Android Developer</span>
             <time datetime="2022-08/2025-04">Aug 2022 &ndash; Apr 2025</time>
           </div>
           <p class="proof-more">Created the chat experience for free-form questions &mdash; viewing responses, giving
             feedback on the AI&rsquo;s answers, and scanning barcodes to enquire about items or guest orders.</p>
+          <p class="proof-kit"><b>Features</b>Barcode scanner, Zebra devices, Android 8&ndash;13</p>
+          <p class="proof-kit"><b>Tools</b>Android Studio, Kotlin, Compose, MVI, Dagger, Hilt, Firebase, Git, Jetpack, Unit Testing, Espresso, Robolectric, Generative AI</p>
         </div>
 
         <div class="proof" id="pf-myday">
@@ -575,12 +587,14 @@
           <p class="proof-say">Daily active team members, completing in-store tasks, generating billions of calls a day.</p>
           <div class="proof-at">
             <span class="pa-label">Built at</span>
-            <h4>Target</h4>
+            <h4 data-site="https://www.target.com/">Target</h4>
             <span class="pa-role">Lead Android Developer</span>
             <time datetime="2022-08/2025-04">Aug 2022 &ndash; Apr 2025</time>
           </div>
           <p class="proof-more">Led the myDay team through updating and maintaining a multi-module monolith,
             mentoring on Compose and Kotlin and working with other teams on shared components and the backing APIs.</p>
+          <p class="proof-kit"><b>Features</b>Barcode scanner, Zebra devices, Android 8&ndash;13</p>
+          <p class="proof-kit"><b>Tools</b>Android Studio, Kotlin, Compose, MVI, Dagger, Hilt, Firebase, Git, Jetpack, Unit Testing, Espresso, Robolectric, Generative AI</p>
         </div>
 
         <div class="proof" id="pf-self">
@@ -588,12 +602,14 @@
           <p class="proof-say">Walk into the store, enter a code, collect the order, walk out.</p>
           <div class="proof-at">
             <span class="pa-label">Built at</span>
-            <h4>Kohl&rsquo;s</h4>
+            <h4 data-site="https://www.kohls.com/">Kohl&rsquo;s</h4>
             <span class="pa-role">Senior Android Developer</span>
             <time datetime="2021-01/2022-08">Jan 2021 &ndash; Aug 2022</time>
           </div>
           <p class="proof-more">Designed and developed a web app letting customers collect online orders with no
             staff involved. The customer gets an email when the order is ready.</p>
+          <p class="proof-kit"><b>Features</b>Offline, barcode scanner, Zebra devices, Android 8&ndash;10</p>
+          <p class="proof-kit"><b>Tools</b>Android Studio, Kotlin, Java, Next.js, Compose, MVVM, Firebase, Git, Jetpack, Unit Testing, Espresso, Cucumber, GitLab, Balanced Teams</p>
         </div>
 
         <div class="proof" id="pf-pick">
@@ -601,12 +617,14 @@
           <p class="proof-say">In-store, drive-up and self-pickup orders, found by scan or by customer details &mdash; online or off.</p>
           <div class="proof-at">
             <span class="pa-label">Built at</span>
-            <h4>Kohl&rsquo;s</h4>
+            <h4 data-site="https://www.kohls.com/">Kohl&rsquo;s</h4>
             <span class="pa-role">Senior Android Developer</span>
             <time datetime="2021-01/2022-08">Jan 2021 &ndash; Aug 2022</time>
           </div>
           <p class="proof-more">A redesign of the associate-facing app to simplify adoption, increase productivity
             and add offline capability.</p>
+          <p class="proof-kit"><b>Features</b>Offline, barcode scanner, Zebra devices, Android 8&ndash;10</p>
+          <p class="proof-kit"><b>Tools</b>Android Studio, Kotlin, Java, Next.js, Compose, MVVM, Firebase, Git, Jetpack, Unit Testing, Espresso, Cucumber, GitLab, Balanced Teams</p>
         </div>
 
         <div class="proof" id="pf-isu">
@@ -614,12 +632,14 @@
           <p class="proof-say">Inventory, stock and unload &mdash; plus the core library sitting under every associate app Kohl&rsquo;s ships.</p>
           <div class="proof-at">
             <span class="pa-label">Built at</span>
-            <h4>Kohl&rsquo;s</h4>
+            <h4 data-site="https://www.kohls.com/">Kohl&rsquo;s</h4>
             <span class="pa-role">Senior Android Developer</span>
             <time datetime="2021-01/2022-08">Jan 2021 &ndash; Aug 2022</time>
           </div>
           <p class="proof-more">Focused on reducing tech debt and bringing the core library up to current practice,
             with automated testing added to the apps and their build pipeline.</p>
+          <p class="proof-kit"><b>Features</b>Offline, barcode scanner, Zebra devices, Android 8&ndash;10</p>
+          <p class="proof-kit"><b>Tools</b>Android Studio, Kotlin, Java, Next.js, Compose, MVVM, Firebase, Git, Jetpack, Unit Testing, Espresso, Cucumber, GitLab, Balanced Teams</p>
         </div>
 
         <div class="proof" id="pf-oro">
@@ -633,6 +653,13 @@
           </div>
           <p class="proof-more">An ORO Store for digital goods, Lot&eacute;rica and ATM transfers, and in-app phone
             top-ups &mdash; then a greenfield Kotlin rewrite with Cognito login and a new card carousel.</p>
+          <p class="proof-get"><span class="pa-label">Get it on</span>
+            <a href="https://play.google.com/store/apps/details?id=com.oropay.app" data-store="play" target="_blank" rel="noopener noreferrer">Google Play</a>
+            <!-- /cy/, not /us/: the app ships in Cyprus and is not in the US store, where this id 404s. -->
+            <a href="https://apps.apple.com/cy/app/oropay/id6449222840" data-store="ios" target="_blank" rel="noopener noreferrer">App Store</a>
+          </p>
+          <p class="proof-kit"><b>Features</b>Online/offline, camera, GPS, Android 5.0&ndash;11.0</p>
+          <p class="proof-kit"><b>Tools</b>Android Studio, Kotlin, Java, MVVM, Amazon Amplify with Cognito, Firebase, Git, Google ML Kit</p>
         </div>
 
         <div class="proof" id="pf-merch">
@@ -646,6 +673,8 @@
           </div>
           <p class="proof-more">The merchant side of ORO, taking payments from ORO Pay and from card readers at
             Brazilian businesses.</p>
+          <p class="proof-kit"><b>Features</b>Online/offline, camera, GPS, Android 5.0&ndash;11.0</p>
+          <p class="proof-kit"><b>Tools</b>Android Studio, Kotlin, Java, MVVM, Amazon Amplify with Cognito, Firebase, Git, Google ML Kit</p>
         </div>
 
         <div class="proof" id="pf-fv">
@@ -653,13 +682,19 @@
           <p class="proof-say">Active devices globally, on sites, in an app dating back to the Pocket PC days.</p>
           <div class="proof-at">
             <span class="pa-label">Built at</span>
-            <h4>Viewpoint</h4>
+            <h4 data-site="https://viewpoint.com/">Viewpoint</h4>
             <span class="pa-role">Mobile Developer</span>
             <time datetime="2017-07/2019-03">Jul 2017 &ndash; Mar 2019</time>
           </div>
           <p class="proof-more">Construction personnel navigate a site in real time, file forms, complete task lists
             and track progress &mdash; so companies can record who completed what and compile a digital record of
             all activity.</p>
+          <p class="proof-get"><span class="pa-label">Get it on</span>
+            <a href="https://play.google.com/store/apps/details?id=com.viewpoint.fieldview" data-store="play" target="_blank" rel="noopener noreferrer">Google Play</a>
+            <a href="https://apps.apple.com/us/app/viewpoint-field-view/id1051411527" data-store="ios" target="_blank" rel="noopener noreferrer">App Store</a>
+          </p>
+          <p class="proof-kit"><b>Features</b>Online/offline, camera, GPS, Android 4.1&ndash;9.0, iOS 8&ndash;12, Windows 8.1&ndash;10, telemetry, analytics</p>
+          <p class="proof-kit"><b>Tools</b>Android Studio, Xamarin, Java, C#, Xamarin Forms, Visual Studio, Microsoft Azure</p>
         </div>
 
         <div class="proof" id="pf-team">
@@ -667,12 +702,18 @@
           <p class="proof-say">Android, iOS and Windows shipping the same feature set in every monthly release.</p>
           <div class="proof-at">
             <span class="pa-label">Built at</span>
-            <h4>Viewpoint</h4>
+            <h4 data-site="https://viewpoint.com/">Viewpoint</h4>
             <span class="pa-role">Mobile Developer</span>
             <time datetime="2017-07/2019-03">Jul 2017 &ndash; Mar 2019</time>
           </div>
           <p class="proof-more">Team lets users raise RFIs &mdash; requests for information &mdash; to get what they
             need to finish a job on site. Xamarin for Windows and iOS, native on Android.</p>
+          <p class="proof-get"><span class="pa-label">Get it on</span>
+            <a href="https://play.google.com/store/apps/details?id=com.viewpoint.field" data-store="play" target="_blank" rel="noopener noreferrer">Google Play</a>
+            <a href="https://apps.apple.com/us/app/viewpoint-team/id1264886008" data-store="ios" target="_blank" rel="noopener noreferrer">App Store</a>
+          </p>
+          <p class="proof-kit"><b>Features</b>Online/offline, camera, GPS, Android 4.1&ndash;9.0, iOS 8&ndash;12, Windows 8.1&ndash;10, telemetry, analytics</p>
+          <p class="proof-kit"><b>Tools</b>Android Studio, Xamarin, Java, C#, Xamarin Forms, Visual Studio, Microsoft Azure</p>
         </div>
 
         <div class="proof" id="pf-tab">
@@ -680,12 +721,13 @@
           <p class="proof-say">The UI fixed across every screen size, and the crashes stopped.</p>
           <div class="proof-at">
             <span class="pa-label">Built at</span>
-            <h4>Rave</h4>
+            <h4 data-site="https://www.ravesocial.com/">Rave</h4>
             <span class="pa-role">Android Developer</span>
             <time datetime="2017-03/2017-05">Mar 2017 &ndash; May 2017</time>
           </div>
           <p class="proof-more">A contract through a partnership between the two companies, maintaining and updating
             the app&rsquo;s features.</p>
+          <p class="proof-kit"><b>Tools</b>Java, Android SDK, Android Studio, Git, JIRA</p>
         </div>
 
         <div class="proof" id="pf-house">
@@ -693,12 +735,14 @@
           <p class="proof-say">Cleaning details, hours worked, maintenance tickets, supplies, directions and the key house details.</p>
           <div class="proof-at">
             <span class="pa-label">Built at</span>
-            <h4>Vacasa</h4>
+            <h4 data-site="https://www.vacasa.com/">Vacasa</h4>
             <span class="pa-role">Android Developer</span>
             <time datetime="2015-03/2017-01">Mar 2015 &ndash; Jan 2017</time>
           </div>
           <p class="proof-more">An internal Android app for Vacasa&rsquo;s housekeepers, with the data it runs on
             designed alongside the API team.</p>
+          <p class="proof-kit"><b>Features</b>Online/offline, GPS, camera, phone, encryption, Google API, multiple languages, Android 4.0&ndash;7.1</p>
+          <p class="proof-kit"><b>Tools</b>Java, Android SDK, Android Studio, Fabric, JIRA, Git, Appsee, Appaloosa</p>
         </div>
 
         <div class="proof" id="pf-rexel">
@@ -706,12 +750,17 @@
           <p class="proof-say">All of Rexel&rsquo;s brands and their languages out of a single Titanium build.</p>
           <div class="proof-at">
             <span class="pa-label">Built at</span>
-            <h4>Rexel</h4>
-            <span class="pa-role">Mobile Application Developer</span>
+            <h4 data-site="https://www.rexelusa.com/">Rexel</h4>
+            <span class="pa-role">Mobile App Developer</span>
             <time datetime="2014-07/2015-02">Jul 2014 &ndash; Feb 2015</time>
           </div>
           <p class="proof-more">A mobile e-commerce app leaning on device hardware &mdash; a barcode scanner among
             it &mdash; to make buying on a phone worth doing.</p>
+          <p class="proof-get"><span class="pa-label">Get it on</span>
+            <a href="https://play.google.com/store/apps/details?id=com.rexel.storefront.releaserexel" data-store="play" target="_blank" rel="noopener noreferrer">Google Play</a>
+            <a href="https://apps.apple.com/us/app/rexelusa-mobile/id1537022597" data-store="ios" target="_blank" rel="noopener noreferrer">App Store</a>
+          </p>
+          <p class="proof-kit"><b>Tools</b>Titanium SDK, JavaScript, Agile, Android, iOS</p>
         </div>
 
         <div class="proof" id="pf-123">
@@ -724,6 +773,7 @@
             <time datetime="2012-05/2014-07">May 2012 &ndash; Jul 2014</time>
           </div>
           <p class="proof-more">The first mobile role, and the start of the fourteen years.</p>
+          <p class="proof-kit"><b>Tools</b>Corona SDK, Android, iOS, Xcode, Hype, HTML5, CSS</p>
         </div>
 
         <div class="proof" id="pf-kiosk">
@@ -737,6 +787,7 @@
           </div>
           <p class="proof-more">Ran on an Android tablet placed beside a piece at the San Francisco Asian Art Museum,
             letting visitors select and learn more about aspects of the work and zoom in on close-up detail.</p>
+          <p class="proof-kit"><b>Tools</b>Corona SDK, Android, iOS, Xcode, Hype, HTML5, CSS</p>
         </div>
 
         <div class="proof" id="pf-ink">
@@ -744,12 +795,13 @@
           <p class="proof-say">Weekly graph production, cut from an afternoon to a coffee break.</p>
           <div class="proof-at">
             <span class="pa-label">Built at</span>
-            <h4>Hewlett-Packard</h4>
+            <h4 data-site="https://www.hp.com/">Hewlett-Packard</h4>
             <span class="pa-role">Software Engineer Intern</span>
             <time datetime="2012-06/2012-08">Jun 2012 &ndash; Aug 2012</time>
           </div>
           <p class="proof-more">An internal web page displaying and graphing printhead and ink usage, with a new
             heat-map graph for analysing usage trends.</p>
+          <p class="proof-kit"><b>Tools</b>PHP, JavaScript, HTML, CSS, JpGraph, SCRUM</p>
         </div>
 
       </div>
@@ -757,33 +809,84 @@
 
   </div>
 
+
+  <!-- THE CATALOGUE, built by catalogue.js from the records above and shown only once it has run. Everything a
+       reader without JavaScript needs is in .inner; this is the same seventeen products as an object you can
+       turn over. -->
+  <div class="cat" id="cat">
+
+    <div class="cat-left">
+      <!-- NO EYEBROW. The section names itself in the title, so a label above saying the same thing was two
+           headings for one section and height the carousel was competing for. -->
+      <h2 class="sec-title">THE CATALOG<br><span>17 SHIPPED PRODUCTS</span></h2>
+      <p class="cat-degree">BS Computer Science <em>Northern Arizona University</em></p>
+
+      <!-- THE KEY WORDS AS TEXT, not chips. They are facts about the catalogue rather than items in it, and as
+           bordered chips they were twenty-five more rectangles in a column that already has seventeen. -->
+      <div class="keys">
+        <div class="key-row"><b>Languages</b><p>Kotlin, Java, Python, XML, HTML5, JavaScript, TypeScript, CSS</p></div>
+        <div class="key-row"><b>Platforms</b><p>Android, iOS, Windows, Web</p></div>
+        <div class="key-row"><b>Tools</b><p>Claude Code, Cursor, Codex, Copilot, Agentic Development, Android Studio,
+          Jetpack, Firebase, Azure, JUnit, Espresso, Xamarin, Git</p></div>
+      </div>
+
+      <!-- THE COMPANY BAR IS NAVIGATION, NOT A FILTER. Every employer stays listed whatever is showing — hiding
+           fifteen products to look at two is the opposite of a catalogue — and the one the carousel is on lights
+           up. Clicking jumps the carousel there, which is the fast way through seventeen boxes.
+           Built by catalogue.js from the record, so a company cannot be listed here and missing from the reel. -->
+      <nav class="firms" id="firms" aria-label="Jump to a company"></nav>
+
+      <!-- ONE CAROUSEL, not four shelves. The company bar reaches any product in a click and the act reads out
+           under the row, so splitting seventeen into four rows bought nothing and cost three quarters of the
+           height each box could have had. Sideways belongs to the carousel; down belongs to the page. -->
+      <div class="reel-wrap">
+        <!-- THE ACT LEADS THE CRATE. It says what you are about to look at rather than captioning what you have
+             already looked at, and it keeps the plinth under the boxes as the shelf they stand on. -->
+        <div class="reel-act" id="reel-act"></div>
+        <div class="reel" id="reel" role="listbox" aria-label="Shipped products, newest first"></div>
+      </div>
+    </div>
+
+    <div class="case" id="case">
+      <div class="case-box">
+        <!-- THE SLIDE IS ITS OWN ELEMENT. The box inside it turns over on `transform`, and one element cannot run
+             two transitions on one property — a slide written onto the same node would cancel the flip mid-turn. -->
+        <div class="case-slide" id="case-slide">
+          <!-- THE WIREFRAME IS DRAWN, THE PRINT IS TEXT. The SVG carries the whole object as one path set, so the
+               corners are real curves and every line is the same stroke; the two HTML faces over it are laid out
+               in a CSS-3D box under the same perspective and the same two angles, which is what keeps the title,
+               the blurb and the spine selectable and wrapping like text. -->
+          <div class="case-body" id="case-body" role="img" aria-label="Product case">
+            <!-- THE PRINT STRADDLES THE GLASS. Whichever faces are turned away live in this first layer, UNDER the
+                 drawing, so the case's own side walls and panels dim them the way a real one would. With the whole
+                 print above the SVG the far side showed through at full ghost strength wherever a wall crossed it,
+                 and the box read as see-through in places it should have been solid. -->
+            <div class="c3-print" id="case-print-far"></div>
+            <svg class="c3-wire" id="case-wire" aria-hidden="true"></svg>
+            <div class="c3-print" id="case-print">
+              <div class="c3-side c3-front" id="case-front"></div>
+              <div class="c3-side c3-back" id="case-back"></div>
+              <div class="c3-side c3-spine"><span id="case-spine"></span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="case-foot">
+        <button class="flip" id="flip" type="button">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 0 1 15.5-6.2M21 12a9 9 0 0 1-15.5 6.2"></path><path d="M18 3v4h-4M6 21v-4h4"></path></svg>
+          <span>Turn it over</span>
+        </button>
+      </div>
+    </div>
+
+  </div>
 </section>
 
 <!-- ITS OWN SECTION, because none of it is a job. Education has no employer and no duration worth reading, and
      the off-hours list is not work at all; both were sitting in the timeline's tail where they read as two more
      entries in a career. -->
-<section id="background">
-  <div class="inner">
-    <h2 class="sec-title" data-reveal>EDUCATION<br><span style="color:var(--accent)">AND ELSEWHERE</span></h2>
-    <div class="education" data-reveal>
-      <b>Education</b>
-      <div class="ed-line">
-        <span class="ed-degree">BS Computer Science</span>
-        <span class="ed-place">Northern Arizona University</span>
-      </div>
-    </div>
-
-    <div class="offbeat" data-reveal>
-      <b>Away from the keyboard</b>
-      <span>Arduino: built a soil-moisture control system for plants.</span>
-      <span>VR: early adopter.</span>
-      <span>Soccer: played club, still plays indoor and out.</span>
-      <span>Disc golf: have you been to Horning&rsquo;s Hideout?</span>
-    </div>
-  </div>
-</section>
-
 <section id="labs">
+  <i id="labs-snap" aria-hidden="true"></i>
   <div class="inner">
     <h2 class="sec-title">BEHIND<br><span style="color:var(--accent)">THE SCENES</span></h2>
     <p class="sec-lede">
@@ -827,13 +930,14 @@
 </section>
 
 <section id="contact">
+  <i id="contact-snap" aria-hidden="true"></i>
   <div class="inner">
     <h2 class="sec-title">GET IN TOUCH</h2>
     <div class="contact-links">
       <a href="mailto:Alexk413x@gmail.com">Alexk413x@gmail.com</a>
       <a href="https://www.linkedin.com/in/alexk413x/" target="_blank" rel="noopener">LINKEDIN ↗</a>
       <a href="https://github.com/Alexk413x" target="_blank" rel="noopener">GITHUB ↗</a>
-      <button id="qr-open" type="button" data-qr-open>SHOW QR CODE ▸</button>
+      <button id="qr-open" type="button" data-qr-open>SHOW QR CODE</button>
     </div>
   </div>
 </section>
@@ -854,7 +958,8 @@
 <script src="site/rpn.js"></script>
 <script src="site/rpn-demo.js"></script>
 <script src="site/lab-objects.js"></script>
-<script src="site/shelf.js"></script>
+<script src="site/case3d.js"></script>
+<script type="module" src="site/catalogue.js"></script>
 <script src="site/timeline.js"></script>
 <script type="module" src="site/hero-core.js"></script>
 </body>

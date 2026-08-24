@@ -57,6 +57,27 @@
 
   if (!items.length) return;
 
+  /* WHICH BAR EACH BEAT FEEDS, and how full standing on it makes that bar.
+     scenes.js says a beat belongs to `#alex` and is worth half of it; the ORDER of the bars is this file's, and
+     the two only ever meet through the href. Neither can be renumbered by a change to the other. */
+  const barOf = {};
+  items.forEach((it, i) => { barOf[(it.a.getAttribute('href') || '').slice(1)] = i; });
+
+  function meter() {
+    const s = window.AKSCENE;
+    if (!s || !s.meter) return [];
+    const out = [];
+    s.meter().forEach((b) => {
+      const bar = barOf[b.sec];
+      if (bar === undefined) return;
+      out.push({ at: b.at, k: bar + b.fill });
+    });
+    return out;
+  }
+
+  /* Two pixels' worth of a bar, in k. See the current-item note in frame(). */
+  const SETTLED = .002;
+
   let spans = [];
   let stops = [];
   let runway = 1;
@@ -244,20 +265,40 @@
     /* 42% down the viewport at rest, 92% at the bottom. Contact is ~350px tall and the page bottoms out several
        hundred px above it, so a line fixed inside the viewport can never reach the last section and CONTACT
        would never light. This is the kind of thing that looks like a bug for a week if it is not written down. */
-    const line = y + vh * (.42 + .5 * clamp(y / runway));
 
-    let k = spans.length;
-    for (let i = 0; i < spans.length; i++) {
-      const top = spans[i][0], bottom = spans[i][1];
-      if (line < top) { k = i; break; }
-      if (line < bottom) { k = i + (line - top) / Math.max(1, bottom - top); break; }
+    /* THE METER IS THE RAIL, not a line swept through section boxes.
+     * Every beat says which bar it belongs to and how much of that bar standing on it earns, so the hero
+     * seated is half of ALEX and the reactor fills it, the faceplate is half of CALCULATOR and the shipped app
+     * fills it. Between two beats the value runs from one to the other, which is what makes the NEXT section
+     * start lighting as the reader moves toward it rather than the moment a box's edge crosses a line.
+     * The old sweep could not express any of that: a section was current when a point 42% down the viewport was
+     * inside it, so a beat that sat mid-section read as most of a bar and one that sat at a section's top read
+     * as none of it. Measured on the labs beat, --k was 4.945 of 5 the instant the reader arrived.
+     */
+    let k = 0;
+    const m = meter();
+    if (m.length) {
+      if (y <= m[0].at) k = m[0].k;
+      else if (y >= m[m.length - 1].at) k = m[m.length - 1].k;
+      else {
+        let i = 0;
+        while (i < m.length - 1 && y >= m[i + 1].at) i++;
+        const a = m[i], b = m[i + 1];
+        k = a.k + (b.k - a.k) * ((y - a.at) / Math.max(1, b.at - a.at));
+      }
     }
 
     nav.style.setProperty('--k', k.toFixed(4));
 
     /* Semantics carry the current item too, and the CSS keys off the attribute rather than a class, so there is
-       one description of "current" instead of two that can disagree. */
-    const i = Math.min(items.length - 1, Math.max(0, Math.floor(k)));
+       one description of "current" instead of two that can disagree.
+       CEIL, not floor: a bar that is part filled is the one being worked on. At k = 1.5 the reader has finished
+       ALEX and is on their way into CARTOGRAPHER, and CARTOGRAPHER is what the header should say — floor would
+       hold the previous name until the next bar was completely full.
+       SETTLED is why the epsilon: the page rests on subpixel positions, so standing exactly on the reactor beat
+       measured k = 1.0003 and ceil handed the name to CARTOGRAPHER when the reader had not left ALEX at all.
+       A beat is about 950px of page to a whole bar, so two thousandths is two pixels of tolerance. */
+    const i = Math.min(items.length - 1, Math.max(0, Math.ceil(k - SETTLED) - 1));
     if (i === current) return;
     if (current >= 0) items[current].a.removeAttribute('aria-current');
     items[i].a.setAttribute('aria-current', 'true');
@@ -366,6 +407,11 @@
     const dir = space && e.shiftKey ? -1 : STEP_KEYS[e.key];
     if (!dir || e.metaKey || e.ctrlKey || e.altKey || (e.shiftKey && !space)) { stopGlide(); return; }
     if (e.repeat || busy(e.target)) return;   // held down, it would race through the page a stop per frame
+    /* THE CATALOGUE OWNS SIDEWAYS ON ITS OWN SCREEN. Left and right step its rack there; up, down and space
+       still move the page's rail, so the reader can always leave. Asked rather than assumed, so this file does
+       not have to know which section that is or when it is on screen. */
+    const side = e.key === 'ArrowLeft' || e.key === 'ArrowRight';
+    if (side && window.AKCAT && window.AKCAT.sideways && window.AKCAT.sideways()) return;
     if (!roomy.matches || reduced.matches) return;
     e.preventDefault();
     stopGlide();

@@ -70,6 +70,12 @@
       appRun = morphScroll.offsetHeight - morphStage.offsetHeight;
     }
     if (loopScroll) loopTop = loopScroll.offsetTop;
+    /* THE TWO PLAIN SECTIONS. Neither animates, so neither has a runway or an idle position — their beat is
+       simply the top of the section, which is where the reader wants to be standing when they arrive. Cached
+       here with the rest so a scroll frame never reads offsetTop and forces a layout. */
+    if (expSec) expTop = expSec.offsetTop;
+    if (labsSec) labsTop = labsSec.offsetTop;
+    if (contactSec) contactTop = contactSec.offsetTop;
   }
 
   const clamp = (v) => (v < 0 ? 0 : v > 1 ? 1 : v);
@@ -400,13 +406,16 @@
   /* WHERE THE REACTOR HOLDS THE FRAME ALONE, and the ONLY declaration of it — nav.js reads it back off the
    * handle below rather than recomputing it from the same two properties.
    *
-   * The words are clear at the end of the exit, and the ring does not begin to open until RING_START of it, so
-   * between those two positions there is a stretch in which nothing at all is in flight. The stop is that
-   * stretch's midpoint, for the same reason Cartographer's is its pin's: a window is scrolling during which
-   * nothing moves, and a midpoint is a position something can be landed on.
+   * The words are clear at the END OF THE EXIT, and the ring does not begin to open until RING_START of it, so
+   * between those two positions there is a stretch in which nothing at all is in flight. The stop is the START
+   * of that stretch rather than its midpoint: the reader's own gesture is what carries the words off, and the
+   * moment they are gone is the moment the scene has arrived — landing them further in means the page keeps
+   * moving after the thing they were watching has finished, which reads as the stop overshooting it.
+   * Measured at 1600x1000: the words reach zero at 700 and the ring starts at 790; the midpoint put the stop at
+   * 742, so 42px of travel happened after there was anything left to see.
    */
   function heroAloneY() {
-    return Math.round((hold + exit * (1 + RING_START) / 2) * screenH());
+    return Math.round((hold + exit) * screenH());
   }
 
   /* ---- and the scroll is STOPPED on the beats ----
@@ -435,9 +444,16 @@
   const heroSnap = document.getElementById('hero-snap');
   const appOldSnap = document.getElementById('app-snap-old');
   const appAppSnap = document.getElementById('app-snap-app');
+  const expSnap = document.getElementById('exp-snap');
+  const labsSnap = document.getElementById('labs-snap');
+  const expSec = document.getElementById('experience');
+  const labsSec = document.getElementById('labs');
+  const contactSnap = document.getElementById('contact-snap');
+  const contactSec = document.getElementById('contact');
 
   const SNAP_FREE = .12;    // of a viewport: how near a beat still counts as being parked on it.
   let snapOff = -1;         // page position of the target stood down for this gesture, or -1 for none.
+  let expTop = 0, labsTop = 0, contactTop = 0;
 
   /* THE BEATS, in page order, and the ONE description of them. The rail below walks this list and every barrier
      is placed off the same number, so a stop and the position it guards cannot drift apart. They were two lists
@@ -451,15 +467,35 @@
     const dead = reduced.matches || short.matches;
     const noApp = dead || appRun <= 0;
     return [
-      { el: null, base: 0, at: dead ? null : 0 },
-      { el: heroSnap, base: 0, at: dead ? null : heroAloneY() },
-      { el: loopSnap, base: loopTop,
+      { el: null, base: 0, at: dead ? null : 0, sec: 'alex', fill: .5 },
+      { el: heroSnap, base: 0, at: dead ? null : heroAloneY(), sec: 'alex', fill: 1 },
+      { el: loopSnap, base: loopTop, sec: 'cartographer', fill: 1,
         at: dead || shortLoop.matches || !loopScroll ? null : loopIdleY() },
       /* THE CALCULATOR IS ITS PIN'S TWO ENDS, which are the morph's two resting states: the faceplate it arrives
          at and the shipped app it leaves as. Nothing between them is a place to be — the mechanism is either
          still or in flight — so the pin carries exactly two beats and the turn happens on the way between. */
-      { el: appOldSnap, base: appTop, at: noApp ? null : appTop },
-      { el: appAppSnap, base: appTop, at: noApp ? null : appTop + appRun },
+      { el: appOldSnap, base: appTop, at: noApp ? null : appTop, sec: 'app', fill: .5 },
+      { el: appAppSnap, base: appTop, at: noApp ? null : appTop + appRun, sec: 'app', fill: 1 },
+      /* THE CATALOGUE AND THE LABS, which are beats for the same reason the others are: each is exactly one
+         screen and has one right alignment, so arriving half in it is arriving wrong. They carry no scene, so
+         there is nothing to scrub and their position never moves within the section — `at` and `base` are the
+         same number and the barrier sits at offset 0 inside its own section.
+         They stand down with everything else on a short window or with reduced motion, because a barrier on a
+         section taller than the viewport is a trap rather than an alignment. */
+      { el: expSnap, base: expTop, at: dead ? null : expTop, sec: 'experience', fill: 1 },
+      /* LABS IS THE LAST BEAT, and it can only be one because contact is a full screen. The rail releases a
+         reader past its last beat at last + RAIL_PAST screens: with contact at 325px labs sat 292px above the
+         end of the document, the release position did not exist, and every scroll below labs was dragged back
+         to it. Contact at 100dvh puts 965px under labs and the release comfortably inside the page.
+         Contact itself carries no beat — it ends where the document does, so the bottom of the page already
+         lands it square, and a beat there would be one the rail could never release from. */
+      { el: labsSnap, base: labsTop, at: dead ? null : labsTop, sec: 'labs', fill: 1 },
+      /* CONTACT IS THE LAST BEAT, AND IT IS THE FOOT OF THE PAGE. It is one screen and it ends where the
+         document does, so its beat sits exactly at the maximum scroll — which means the rail now reaches the
+         end of the page and there is no released region past it. That is deliberate: with nothing below, there
+         is nothing a reader could be dragged back FROM, and the release rule this rig carries exists to stop a
+         beat trapping someone above content they wanted. Here the beat IS the bottom. */
+      { el: contactSnap, base: contactTop, at: dead ? null : contactTop, sec: 'contact', fill: 1 },
     ];
   }
 
@@ -546,6 +582,14 @@
   // The positions from that one table, with the beats that are not there dropped.
   function railStops() {
     return beats().filter((b) => b.at !== null).map((b) => b.at);
+  }
+
+  /* THE SAME TABLE, FOR THE HEADER'S METER. `sec` is the id of the section whose bar a beat belongs to and
+     `fill` is how much of that bar standing on it earns — the hero seated is half of ALEX and the reactor is
+     the other half, the faceplate is half of CALCULATOR and the shipped app is the rest.
+     The nav owns the ORDER of the bars and this owns which beat feeds which; neither restates the other. */
+  function railMeter() {
+    return beats().filter((b) => b.at !== null && b.sec).map((b) => ({ at: b.at, sec: b.sec, fill: b.fill }));
   }
 
   /* Compared with slack rather than for equality: the anchor is a beat's position as it was measured when the
@@ -641,6 +685,7 @@
     cartographerIdleY: loopIdleY,
     heroAloneY: heroAloneY,
     beats: railStops,
+    meter: railMeter,
     glideMs: glideMs,
   };
 
