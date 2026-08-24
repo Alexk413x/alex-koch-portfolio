@@ -40,6 +40,20 @@ const AIM_FOLLOW = 5.0;    // how fast the face chases that angle, per second
 // A slow drift under it all, so a core nobody is pointing at is not a still image.
 const SPIN_IDLE = 3, TILT_IDLE = 1;        // RPM
 
+/* ---- what the scroll does to it ----
+ *
+ * SCROLL IS A RATE HERE, NOT A POSITION. Driving the pose from scrollY would tie the core's angle to where the
+ * page happens to be, so it would sit still whenever the reader did and snap when they jumped — and it would
+ * fight the rail, which moves the page on its own. Reading how FAST the page is moving instead makes the core
+ * something the scroll stirs: it spins up under a flick, keeps turning after the page has stopped, and settles
+ * back to its idle drift on its own.
+ * Fed through the same shape the pointer's nearness uses — a value that chases a target and decays — because it
+ * is the same kind of thing and the core already knows how to be driven that way. */
+const SCROLL_SPIN = .045;  // RPM of extra spin per pixel-per-frame of scroll
+const SCROLL_STIR = .022;  // and how much of the roil it reaches, per the same
+const SCROLL_DECAY = 2.4;  // per second, back to idle once the page stops
+const SCROLL_MAX = 26;     // ceiling in RPM, so a flung trackpad cannot put it into a blur
+
 const clamp01 = (v) => (v < 0 ? 0 : v > 1 ? 1 : v);
 const clamp11 = (v) => (v < -1 ? -1 : v > 1 ? 1 : v);
 const ease = (t) => { const x = clamp01(t); return x * x * (3 - 2 * x); };
@@ -106,6 +120,8 @@ function init() {
   /* Its own clock, advanced only while the hero is on screen — uTime drives the noise field, so a clock that ran
    * on through the scrolled-past minutes would hand the surface the whole gap in one frame on the way back. */
   let sec = 0, onScreen = true, held = false;
+  // How hard the page is being moved, in the core's own units. Decays to 0 whenever it is not being fed.
+  let churn = 0, lastY = window.scrollY || 0;
 
   // A resized buffer comes back blank, so the held reduced-motion frame has to be drawn again.
   const fit = fitCanvas({ stage: canvas, R, scale: () => state.renderScale, onFit: () => { held = false; } });
@@ -178,13 +194,29 @@ function init() {
       faceY += (aimY - faceY) * a;
       faceX += (aimX - faceX) * a;
     }
+    /* THE SCROLL'S CONTRIBUTION, read as a speed rather than a place. scrollY costs no layout, so this is a
+       subtraction per frame and nothing more. Its SIGN is dropped: the core spins up whichever way the page is
+       driven, because it is being stirred, not steered. */
+    const y = window.scrollY || 0;
+    if (!reduced.matches) {
+      churn = Math.min(SCROLL_MAX, churn + Math.abs(y - lastY) * SCROLL_SPIN);
+      churn -= churn * Math.min(1, dt * SCROLL_DECAY);
+    } else {
+      churn = 0;
+    }
+    lastY = y;
+
     /* The idle drift is a RATE the sim integrates; the pointer's contribution is an ANGLE added on top of it, so
-       the hand moves the face directly and never has to overcome a rotation already running. */
-    state.coreSpin = SPIN_IDLE;
-    state.coreSpinX = TILT_IDLE;
+       the hand moves the face directly and never has to overcome a rotation already running. The scroll joins
+       the RATE, which is why it keeps turning after the page has stopped instead of snapping back. */
+    state.coreSpin = SPIN_IDLE + churn;
+    state.coreSpinX = TILT_IDLE + churn * .35;
     state.coreAngle = restY + faceY;
     state.coreAngleX = restX + faceX;
-    state.visc = VISC_REST + (VISC_LIVE - VISC_REST) * near;
+    /* And it roils on top of whatever the pointer is already asking for, never below it — a reader who is both
+       hovering and scrolling should not get a calmer core than one who is only hovering. */
+    const stir = Math.min(1, near + churn * SCROLL_STIR);
+    state.visc = VISC_REST + (VISC_LIVE - VISC_REST) * stir;
     sendUniforms(R, state, sim.step(state, dt, sec), sec);
     R.draw();
   }
