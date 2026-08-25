@@ -8,7 +8,7 @@
  *
  * `fwidth` NEEDS NOTHING. Derivatives are core in WebGL2, which is the only context [[glquad]] creates, so the
  * old two-part dance -- an `ext` entry on the host plus a `#extension` directive as this shader's first line --
- * is gone. Both halves had to agree or the shader compiled to nothing and the page simply never initialised.
+ * is gone. Both halves had to agree or the shader compiled to nothing and the page simply never initialized.
  */
 export const UNIFORMS = [
   'uRes', 'uTime', 'uShape', 'uSize', 'uAspect', 'uRot', 'uRadius', 'uWeight',
@@ -43,7 +43,7 @@ float shapeSDF(vec2 p, vec2 half_, float r){
 }
 
 void main(){
-  vec2 uv = (gl_FragCoord.xy - 0.5*uRes) / uRes.y;   // the stage's own centre; the panel is a flex sibling
+  vec2 uv = (gl_FragCoord.xy - 0.5*uRes) / uRes.y;   // the stage's own center; the panel is a flex sibling
   float c = cos(uRot), s = sin(uRot);
   vec2 p = mat2(c, -s, s, c) * uv;
 
@@ -66,7 +66,7 @@ void main(){
   col = mix(col, ink, stroke);
   col *= uOpacity;
 
-  // THE DEBUG OVERLAY, gated on the section master. A dashed bounding box and a centre cross -- the two things you
+  // THE DEBUG OVERLAY, gated on the section master. A dashed bounding box and a center cross -- the two things you
   // want when a control is not doing what you expected.
   if(uDebug > 0.5){
     vec2 b = half_ + 0.028;

@@ -22,7 +22,7 @@ permissions:
   pages: write
   id-token: write
 
-# One deploy at a time. NOT cancel-in-progress: a half-finished Pages deploy that is cancelled can leave the
+# One deploy at a time. NOT cancel-in-progress: a half-finished Pages deploy that is canceled can leave the
 # site serving a partial tree, and these deploys take seconds, so queueing is cheaper than the risk.
 concurrency:
   group: pages

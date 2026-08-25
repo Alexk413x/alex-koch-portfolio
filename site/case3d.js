@@ -32,7 +32,7 @@
   function outline(w, h, r, arc) {
     const pts = [];
     const x = w / 2 - r, y = h / 2 - r;
-    // Corner centres in drawing order, each with the angle its quarter starts at.
+    // Corner centers in drawing order, each with the angle its quarter starts at.
     [[x, -y, -90], [x, y, 0], [-x, y, 90], [-x, -y, 180]].forEach((c) => {
       for (let i = 0; i <= arc; i++) {
         const a = (c[2] + (90 * i) / arc) * Math.PI / 180;

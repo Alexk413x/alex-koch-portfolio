@@ -1,7 +1,7 @@
 /* hero-core.js — the reactor lab's core, alone, behind scene 01.
  *
  * It IS the lab's core, at the lab's own STABLE settings: the same shader, the same simulation, the same state.
- * Changed and no more: the ring assembly is off, the colour comes from --accent, the render scale is its own,
+ * Changed and no more: the ring assembly is off, the color comes from --accent, the render scale is its own,
  * and the pulse runs at FORCE 13 with SUB VIS/TRB 0.
  *
  * The pointer does exactly two things, and both are read off its POSITION. The face turns to where it is, and
@@ -59,14 +59,14 @@ const clamp11 = (v) => (v < -1 ? -1 : v > 1 ? 1 : v);
 const ease = (t) => { const x = clamp01(t); return x * x * (3 - 2 * x); };
 
 /* The linear red a lit surface on this core reaches, measured off the rendered frame: the brightest decile came
- * back at 154/255, which is this value through the tone map. It is the operating point the colour below is
+ * back at 154/255, which is this value through the tone map. It is the operating point the color below is
  * solved at, and it is a property of the lab's GLOW — re-measure if that setting ever moves. */
 const OPERATING = 1.05;
 
 const toneMap = (x) => Math.pow(x / (x + 0.85), 0.85);
 const unTone = (v) => { const y = Math.pow(clamp01(v), 1 / 0.85); return 0.85 * y / Math.max(1e-4, 1 - y); };
 
-/* The colour the SHADER must be given for the core to RENDER as `hex`.
+/* The color the SHADER must be given for the core to RENDER as `hex`.
  *
  * The last two lines of the shader are a tone map, (x/(x+0.85))^0.85 per channel, and that curve compresses a
  * warm hue's red long before its green — hand it the accent and every lit surface comes back yellow. So each

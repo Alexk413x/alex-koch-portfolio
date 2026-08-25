@@ -3,7 +3,7 @@
  * unit exists.
  *
  * THERE IS NO GLOBAL FLOW. Every layer carries its own SPEED, TWIST and SPIN, so clouds can drift while streaks
- * tear past and bolts crawl the other way. The colour rows repeat for the same reason: one thing meaning one
+ * tear past and bolts crawl the other way. The color rows repeat for the same reason: one thing meaning one
  * thing in three places beats a shared control that has to compromise.
  *
  * COVERAGE IS THE EXCEPTION and lives in IMAGE. How far in from the wall the field reaches describes the tunnel
@@ -23,7 +23,7 @@ export const EFFECTS = [
   { key: 'plOn',  label: 'PLASMA' },
 ];
 
-const COLOUR_MODES = ['SOLID', 'BLEND', 'RAIN'];
+const COLOR_MODES = ['SOLID', 'BLEND', 'RAIN'];
 
 // The three every layer has, in the same order each time so the eye finds them in the same place. COVERAGE used
 // to be a fourth; it is now one value in IMAGE, shared by all three.
@@ -34,14 +34,14 @@ const flow = (p) => [
 ];
 
 /* ONLY THE ROWS THE CURRENT MODE USES ARE SHOWN, because the other ones do nothing at all: the ramp returns
- * COLOUR A alone in SOLID, mixes A to B in BLEND, and ignores both in favour of a hue-shifted cosine palette in
+ * COLOR A alone in SOLID, mixes A to B in BLEND, and ignores both in favor of a hue-shifted cosine palette in
  * RAIN. Three rows were on screen at all times and never more than two of them were live, with nothing saying
  * which — a control that does nothing is worse than one that is absent.
  */
-const colour = (p) => [
-  [p + 'Mode', 'COLOUR', COLOUR_MODES],
-  [p + 'Col', 'COLOUR A', '#', { when: [p + 'Mode', [0, 1]] }],
-  [p + 'ColB', 'COLOUR B', '#', { when: [p + 'Mode', [1]] }],
+const color = (p) => [
+  [p + 'Mode', 'COLOR', COLOR_MODES],
+  [p + 'Col', 'COLOR A', '#', { when: [p + 'Mode', [0, 1]] }],
+  [p + 'ColB', 'COLOR B', '#', { when: [p + 'Mode', [1]] }],
   [p + 'Hue', 'HUE', 0, 1, 0.01, { when: [p + 'Mode', [2]] }],
 ];
 
@@ -84,7 +84,7 @@ export const SECTIONS = [
    *
    * RIBS are rings of dense wall with a thin tube between them, sliding toward the eye at their own FLOW. They
    * are the cheapest strong cue in the lab: a ring sits at a fixed DEPTH, so it foreshortens toward the throat
-   * and arrives faster as it comes, which is what an eye reads as travelling rather than as watching a sky.
+   * and arrives faster as it comes, which is what an eye reads as traveling rather than as watching a sky.
    * SPACING reads as how many of them stand between here and the far end.
    *
    * BEND makes the axis a curve instead of a line. FLOW slides the curve toward the eye so corners arrive rather
@@ -98,7 +98,7 @@ export const SECTIONS = [
               ['bendFlow', 'BEND FLOW', -20, 20, 0.1],
               ['bendScale', 'TIGHTNESS', 0.1, 3, 0.01]]],
 
-  ['NEBULA', colour('neb').concat([
+  ['NEBULA', color('neb').concat([
     ['nebDensity', 'DENSITY', 0, 3, 0.02],
     ['nebFill', 'FILL', 0, 1, 0.01],
     ['nebFluff', 'FLUFF', 0.15, 0.9, 0.01],
@@ -112,7 +112,7 @@ export const SECTIONS = [
    * LENGTH its real length, both in world units, rather than a kernel that had to widen with the sampling rate.
    * Its streaks scatter through the whole wall at any distance, exactly as the other two layers fill it, and
    * there is no shell count to set. */
-  ['LIGHTSPEED', colour('ls').concat([
+  ['LIGHTSPEED', color('ls').concat([
     ['lsDensity', 'BRIGHTNESS', 0, 4, 0.02],
     ['lsCount', 'STREAKS', 8, 260, 1],
     ['lsLen', 'LENGTH', 0.02, 1, 0.01],
@@ -127,7 +127,7 @@ export const SECTIONS = [
    * the depth axis so bolts run lengthwise down the tunnel, and SCALE decides how big the field is. Squashing
    * alone strings the noise's own features along each bolt as visible beads, so the two have to be set together —
    * a hard squash wants a small field, or the beads read as rungs. */
-  ['PLASMA', colour('pl').concat([
+  ['PLASMA', color('pl').concat([
     ['plDensity', 'BRIGHTNESS', 0, 3, 0.02],
     ['plFill', 'FILL', 0, 1, 0.01],
     ['plOcclude', 'OCCLUSION', 0, 2, 0.01],
@@ -139,18 +139,18 @@ export const SECTIONS = [
     ['plLight', 'LIGHTS CLOUD', 0, 1, 0.01],
   ], flow('pl')), 'plOn'],
 
-  /* CORE is the far end of the tunnel — the bright centre the layers are wrapped around. It is drawn after the
+  /* CORE is the far end of the tunnel — the bright center the layers are wrapped around. It is drawn after the
    * march rather than inside it, so its rows are about one object and none of them cost a sample.
    *
-   * COLOUR FIRST within the section, as FRAME does in CRT Lab and every layer does here: it is what the far end
+   * COLOR FIRST within the section, as FRAME does in CRT Lab and every layer does here: it is what the far end
    * of the tunnel is MADE of, and every row under it is a departure from that. SOURCE sits with it because the
-   * two answer one question — whether that colour is the swatch or the average of whatever layers are lit.
+   * two answer one question — whether that color is the swatch or the average of whatever layers are lit.
    *
    * SPIN turns the rays and nothing else, so it reads as doing nothing while RAYS is 0. PULSE and FADE are both
    * breaths and are separate controls because they are different ones: PULSE brightens and dims around full,
    * FADE takes the whole core away and brings it back. Each carries its own rate for the same reason every layer
    * carries its own flow — a shared rate forces the slow one to compromise. */
-  ['CORE', [['coreCol', 'COLOUR', '#'],
+  ['CORE', [['coreCol', 'COLOR', '#'],
             ['coreAuto', 'SOURCE', 0, 1, 0.01],
             ['glow', 'CORE', 0, 3, 0.02],
             ['throatTint', 'TINT', 0, 1, 0.01],
@@ -207,7 +207,7 @@ export const FMT = {
 
   glow:          as.ofRange(3),
   coreAuto:      as.ends(as.pct(), 'CUSTOM', 'LAYERS', 1),
-  throatTint:    as.ends(as.pct(), 'WHITE', 'COLOUR', 1),
+  throatTint:    as.ends(as.pct(), 'WHITE', 'COLOR', 1),
   throatRays:    as.off(as.pct()),
   coreSpin:      SPIN,
   corePulse:     as.off(as.pct()),

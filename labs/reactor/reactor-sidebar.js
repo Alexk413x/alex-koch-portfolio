@@ -4,7 +4,7 @@
  * Angles are stored in radians and read in degrees. ROTATION RATES ARE STORED IN RPM, the unit their rows
  * read and step in, so the panel does no arithmetic at all: integer range, integer step, integer readout.
  * reactor-sim converts to rad/s once, where a rate becomes a phase.
- * Speeds are signed and centred on zero, so a rotation can be stopped at rest from either direction.
+ * Speeds are signed and centerd on zero, so a rotation can be stopped at rest from either direction.
  */
 import { as } from '../kit/units.js';
 
@@ -15,11 +15,11 @@ export const SECTIONS = [
   ['RENDER', [['renderScale', 'RENDER SCALE', 0.35, 1, 0.01]]],
 
   /* CORE: SHAPE first as a wide, label-less strip -- these are silhouettes rather than words, and at row height
-   * beside a label they read as punctuation. Then the colour, which every row below is read through, then the two
+   * beside a label they read as punctuation. Then the color, which every row below is read through, then the two
    * rotations, then the surface, then how much of it there is to compute. DETAIL is last because it is a cost
    * dial, not a look dial -- each octave is another noise evaluation per march step. */
   ['CORE', [['shape', '', ['●', '⬟', '■', '▲', '▬'], { wide: true }],
-            ['coreHex', 'CORE COLOUR', '#'],
+            ['coreHex', 'CORE COLOR', '#'],
             ['size', 'SIZE', 0, 1.5, 0.01],
             ['coreSpin', 'SPIN Y', -50, 50, 1],
             ['coreAngle', 'ANGLE Y', -Math.PI, Math.PI, 0.01],
@@ -91,17 +91,17 @@ export const SECTIONS = [
               ['zoom', 'ZOOM', 0.5, 3, 0.01]]],
 ];
 
-/* The units are the instrument's fiction, held consistently: metres for a metre-scale core, megawatts for GLOW,
+/* The units are the instrument's fiction, held consistently: meters for a meter-scale core, megawatts for GLOW,
  * pascal-seconds for VISCOSITY. Nothing is dimensionally derived — they are labels chosen once, taken from
  * kit/units.js so two rows describing the same kind of quantity cannot read differently. */
-const METRES = as.scaled(100, 0, ' m');
+const METERS = as.scaled(100, 0, ' m');
 
 export const FMT = {
-  size:        METRES,
+  size:        METERS,
   visc:        as.raw(1, ' Pa·s'),
   turb:        as.pct(),
   rate:        as.hz(),
-  amp:         METRES,
+  amp:         METERS,
   glow:        as.scaled(100, 0, ' MW'),
   octaves:     as.raw(0, ' oct'),
   coreSpin:    as.raw(0, ' RPM'),
@@ -116,7 +116,7 @@ export const FMT = {
   ringAngleX:  as.rad(),
   ringAngleZ:  as.rad(),
   camAngle:    as.rad(),
-  ringR:       METRES,
+  ringR:       METERS,
   wobbleX:     as.rad(),
   wobSpdX:     as.hz(),
   wobbleZ:     as.rad(),
@@ -127,7 +127,7 @@ export const FMT = {
   ringGlow:    as.pct(),
   ringBreak:   as.pct(),
   breakSpd:    as.raw(1, ' m/s'),
-  camEl:       METRES,
+  camEl:       METERS,
   zoom:        as.mult(2),
   pulseAmp:    as.raw(0, ' kPa'),
   pulseSize:   as.pct(),

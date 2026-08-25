@@ -6,7 +6,7 @@
 <title>Reactor Lab &middot; Alex Koch</title>
 
 <!-- A lab is a page a crawler can only reach from the sitemap, so what it says about itself it has to say here.
-     The card image is the site's, not the scene's: one recognisable card across every page beats four near-misses. -->
+     The card image is the site's, not the scene's: one recognizable card across every page beats four near-misses. -->
 <meta name="description" content="A sphere-traced containment core in one WebGL2 shader: a turbulent goo core, nine alloy ring fragments and an inner shield band, with a pulse that tears sub-cores out of the surface and a vent that charges, booms and fades. The home page draws this same scene behind its hero.">
 <link rel="canonical" href="https://alexk413x.github.io/alex-koch-portfolio/labs/reactor/Reactor.html">
 <meta property="og:type" content="article">
@@ -103,7 +103,7 @@ const state = defaultPreset(R.gpu);
 const sim = createSim();
 
 // persist() derives ranges from the panel layout, so these two are invisible to it: ringOn is a section master,
-// and a colour row has no range.
+// and a color row has no range.
 const store = persist({ key: 'reactor', version: 2, state, sections: SECTIONS,
                         extra: ['ringOn', 'coreHex'] });
 store.restore();
@@ -123,7 +123,7 @@ const syncPresets = buildActions(document.getElementById('presets'),
   MODES.map((name, i) => [name, () => applyPreset(i), () => matchIdx(state) === i]));
 
 /* A PRESET IS ONLY ITS VALUES. It writes the sliders and stops there — nothing downstream asks which one was
- * pressed, so a state dialled in by hand behaves identically to the button that would have set it.
+ * pressed, so a state dialed in by hand behaves identically to the button that would have set it.
  *
  * The camera survives a preset: having framed the core, pressing MELTDOWN should not spin the view back. */
 function applyPreset(i) {
@@ -186,7 +186,7 @@ function syncVentHUD() {
 
 /* Gauges on the outside of a vessel: derived from the settings, not measurements of the simulation — and from the
  * SETTINGS ONLY. Reading the preset index here made the needles move because a button was lit rather than because
- * anything about the reaction had changed, and left them stuck when the same values were dialled in by hand. */
+ * anything about the reaction had changed, and left them stuck when the same values were dialed in by hand. */
 function syncGauges() {
   const s = state;
   textOut(pressEl, String(Math.round(180 + s.rate * 90 + s.turb * 400

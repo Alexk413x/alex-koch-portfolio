@@ -24,7 +24,7 @@
   const SITE_URL = 'https://alexk413x.github.io/alex-koch-portfolio';
   const MODULE = '#dd6a20';    // --accent, the same orange the mark is drawn in
   const GROUND = '#0c0c0e';    // --ink
-  const LEVEL = 'H';           // the recovery budget the centre stamp spends
+  const LEVEL = 'H';           // the recovery budget the center stamp spends
   const QUIET = 4;             // modules of margin the spec requires around the code
   const CSS_PX = 260;          // the size the code is asked to occupy, before rounding to whole modules
 
@@ -44,7 +44,7 @@
   // An explicit flag, not img.src: the src is set asynchronously enough that reading it back races the first open.
   let drawn = false;
 
-  /* How many modules the mark covers, and how many are cleared around it. Both odd so the block centres exactly
+  /* How many modules the mark covers, and how many are cleared around it. Both odd so the block centers exactly
      on a symbol, whose size is always odd. The cleared ring is what keeps the scanner from reading a module
      that the mark has half-covered. */
   function stampSpan(size) {

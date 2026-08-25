@@ -6,7 +6,7 @@
  * record cannot drift apart, because there is only one name for the pair.
  *
  * The lockup is NOT here. Kicker, title, tagline, company and years are HTML over the top of this, so the title
- * stays selectable and reflows at blade size. See buildCover in catalogue.js.
+ * stays selectable and reflows at blade size. See buildCover in catalog.js.
  *
  * THESE MODULES ARE THE SOURCE. They were first derived mechanically from the hand-authored SVG in the design
  * artifact, but they have been edited since — self.js and rexel.js draw their grids from a table now, which the
@@ -54,10 +54,10 @@ export const COVERS = {
   'pf-ink': ink
 };
 
-/* THE ARTWORK'S FRAME IS THE BOX'S FRAME. Every cover is composed on 300x400 with the art centred on y=237 —
+/* THE ARTWORK'S FRAME IS THE BOX'S FRAME. Every cover is composed on 300x400 with the art centerd on y=237 —
    the midpoint between the tagline's ink and the foot text — so the covers line up as a set only if they are
    all drawn into the same box at the same scale. preserveAspectRatio stays at the default: letterboxing one
-   cover to fit a differently-proportioned face would move its centre and break the set.
+   cover to fit a differently-proportioned face would move its center and break the set.
    Returns null for an unknown id so a record without a cover degrades to no art rather than to a broken box. */
 export function coverArt(id) {
   const draw = COVERS[id];

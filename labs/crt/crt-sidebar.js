@@ -11,13 +11,13 @@ export function makeFmt({ state, cssPx, textGrid }) {
   corner:  (v) => Math.round(v) + '°',
   /* BEND AS THE ARC ITS EDGE SWEEPS, which is the one angle it honestly has. SQUIRCLE has a landmark — at 90 the
    * exponent is exactly 2, a circle — so degrees mean something absolute there. BEND has no such point: it is a bow
-   * depth, normalised so the bulge cannot leave the glass.
+   * depth, normalized so the bulge cannot leave the glass.
    *
    * What IS measurable is the arc the bowed edge describes: with sagitta s at the edge midpoint and half chord L to
    * the corner, the included angle is 4·atan(s/L). Straight reads 0° and every value above it is a real arc.
    *
    * Computed from the CURRENT outline rather than a formula, because the sagitta depends on SQUIRCLE and the aspect
-   * too. Memoised on those three, since it runs guideOutline. */
+   * too. Memoized on those three, since it runs guideOutline. */
   bend:    (v) => Math.round(v) + '%',
   spot:    (v) => v.toFixed(2) + 'px',
   face:    (v) => Math.abs(v) < 0.006 ? 'FLAT'
@@ -85,7 +85,7 @@ export function makeFmt({ state, cssPx, textGrid }) {
   tht:     (v) => { const g = textGrid();
                     return v < 1 ? 'AUTO' : Math.round(v) + '% ' +
                            Math.max(1, Math.floor(g.H * v / 100 / g.pitch)) + 'R'; },
-  // A PERCENTAGE OF THE PICTURE, from its centre -- so the unit belongs on the readout, as the reference has it.
+  // A PERCENTAGE OF THE PICTURE, from its center -- so the unit belongs on the readout, as the reference has it.
   tox:     (v) => Math.round(v) + '%',
   toy:     (v) => Math.round(v) + '%',
   /* A WORD IS FIVE CHARACTERS, by the usual convention -- the same x350 the reference prints. This is the one
@@ -98,7 +98,7 @@ export function makeFmt({ state, cssPx, textGrid }) {
   ignite:  (v) => v.toFixed(2) + 's',
   /* GAUSS AND HERTZ, the DOM build's own formulas for FIELD and WIGGLE -- 250 G per unit and 8 Hz per unit. The
    * ranges here are wider than the reference's, so the numbers run past what its panel could show; that is the
-   * point of the wider range and not a reason to renormalise the unit underneath it. */
+   * point of the wider range and not a reason to renormalize the unit underneath it. */
   wint:    (v) => v < 0.001 ? 'OFF' : Math.round(v * 250) + ' G',
   wwig:    (v) => Math.round(v * 8) + ' Hz',
   warpSec: (v) => v.toFixed(1) + 's',
@@ -137,10 +137,10 @@ export function makeFmt({ state, cssPx, textGrid }) {
    * shader multiplies them straight into a space where 1 is the half-height. Printing the raw fraction made
    * eight rows read as unitless magic numbers ("0.02", "0.35") when they are all the same kind of quantity said
    * the same way. Nothing changes but the readout: the stored values and the shader are untouched. */
-  /* MILLIMETRES, PRINTED AS MILLIMETRES. TUBE DIA names the standard it lands on, because T5/T8/T12 is how
+  /* MILLIMETERS, PRINTED AS MILLIMETERS. TUBE DIA names the standard it lands on, because T5/T8/T12 is how
    * anyone actually refers to a lamp, and TUBE INSET prints the LENGTH it produces -- that is the number you
    * are really choosing, and it is the one that has to be a real lamp size. */
-  /* CENTIMETRES FOR THE FITTING ITSELF, millimetres only where the millimetre is the unit anyone actually
+  /* CENTIMETERS FOR THE FITTING ITSELF, millimeters only where the millimeter is the unit anyone actually
    * uses: a tube is a T8 at 26mm and nobody calls it 2.6cm. Everything you would describe out loud in cm --
    * how wide the housing is, how deep, how far apart the lamps sit -- reads in cm. */
   distMM:  (v) => (v / 1000).toFixed(2) + 'm',
@@ -195,7 +195,7 @@ export function makeFmt({ state, cssPx, textGrid }) {
   /* THE TIP'S RATE READS AS THE TIME IT TAKES TO CROSS, the way SWEEP RATE reads as the time to fall -- a period
    * is the thing you can see happening, a rate is the reciprocal of it. The rest are screen distances. */
   sweepSol:(v) => Math.round(v * 100) + '%',
-  // 0 is the phosphor's own colour, 100% is bare excitation -- see the note where beamCol is built.
+  // 0 is the phosphor's own color, 100% is bare excitation -- see the note where beamCol is built.
   sweepWhite:(v) => Math.round(v * 100) + '%',
   sweepDip:(v) => v < 0.005 ? 'OFF' : Math.round(v * 100) + '%',
   dipNoise:(v) => v < 0.005 ? 'OFF' : Math.round(v * 100) + '%',
@@ -219,7 +219,7 @@ export function makeFmt({ state, cssPx, textGrid }) {
   bloomSize:(v) => Math.round(v) + 'px',
   persist: (v) => Math.round(v * 100) + '%',
   frame:   (v) => Math.round(v * 100) + '%',
-  /* THE THREE LIGHTS ON THE MOULDING ARE FRACTIONS, SO THEY READ AS PERCENTAGES. They were falling through to the
+  /* THE THREE LIGHTS ON THE MOLDING ARE FRACTIONS, SO THEY READ AS PERCENTAGES. They were falling through to the
    * default formatter, which prints two decimals for any range at or under 40 -- so a 0..1 amount read "0.35". A
    * bare decimal is not a unit: it makes you work out what the top of the range is before the number means
    * anything, and it read differently from FRAME and TINT directly above, which are the same kind of quantity. */
@@ -284,14 +284,14 @@ export const SECTIONS = [
   ['GLASS', [['glare','GLARE',0,1,0.01],['matte','MATTE',0,1,0.01],
              ['sheen','SHEEN',0,1,0.01],['scatterCM','SCATTER',1,200,1]]],
 
-  /* THE MOULDING GOES WITH THE GLASS IT HOLDS. Reading down, the panel walks OUTWARD from the picture: the tube's
+  /* THE MOLDING GOES WITH THE GLASS IT HOLDS. Reading down, the panel walks OUTWARD from the picture: the tube's
    * shape, the faceplate over it, the bezel around that. Filed after FIXTURE it would put the physical front of the
    * set below the room being reflected in it, and the frame is there whether the light is on or not.
    *
-   * COLOUR FIRST within the section: it is the moulding's material, and every other row is a departure FROM it.
-   * FRAME CARRIES ITS OWN MASTER — with no moulding there is nothing for COLOUR, WIDTH or the three lights to
+   * COLOR FIRST within the section: it is the molding's material, and every other row is a departure FROM it.
+   * FRAME CARRIES ITS OWN MASTER — with no molding there is nothing for COLOR, WIDTH or the three lights to
    * describe. */
-  ['FRAME', [['frameCol','COLOUR','#'],['frame','FRAME',0,1.5,0.01],['frameW','WIDTH',1,30,1],
+  ['FRAME', [['frameCol','COLOR','#'],['frame','FRAME',0,1.5,0.01],['frameW','WIDTH',1,30,1],
                           /* Ordered by how broad each light is: the whole layer, then the lamp, then the local
               * pool that only answers for the content immediately beside a given piece of plastic. */
              /* The fixture first: it is the room's light, and the screen's own glow is a reflection of
@@ -348,7 +348,7 @@ export const SECTIONS = [
    * position pair keeps it only because X and Y alone would not say what they moved. */
   /* ABOVE FIXTURE, because the panel reads outward from the picture and the terminal IS the picture. Everything
    * before this describes the tube and what it draws; FIXTURE is the room the tube is standing in. Filing the
-   * text after the light fitting put the most-reached section of the panel behind twenty-nine rows of millimetres
+   * text after the light fitting put the most-reached section of the panel behind twenty-nine rows of millimeters
    * describing a lamp. */
   ['TERMINAL', [['type','TYPE SPEED',0.3,3,0.05],
                 ['tcell','ROW HEIGHT',1,16,1],['tgap','LINE GAP',0,8,1],['tcols','CHAR WIDTH',0,12,1],
@@ -357,7 +357,7 @@ export const SECTIONS = [
                 ['tw','WIDTH',0,200,1],['tht','HEIGHT',0,200,1],
                 ['tox','TEXT X',-50,50,1],['toy','TEXT Y',-50,50,1]]],
 
-  /* Master switch and colour, then the housing, then the tubes INSIDE that housing (its size defines the space
+  /* Master switch and color, then the housing, then the tubes INSIDE that housing (its size defines the space
    * they occupy, so it has to be settled first), then where the finished assembly sits, then each tube's own
    * condition as a HEALTH / FLICKER / STRENGTH triplet, then the light it throws beyond itself. */
   /* SIZE FIRST, THEN THE LAMPS INSIDE IT, THEN WHAT COVERS THEM, THEN THEIR CONDITION. Reading down is
@@ -371,12 +371,12 @@ export const SECTIONS = [
                ['frost','FROST',0,1,0.01],['diffuse','DIFFUSER',0,1,0.01],
                ['prism','PRISM',0,1,0.01],['prismN','PRISM CELLS',2,40,1],
                ['railMM','RAILS',0,150,1],['railVis','RAIL FADE',0,1,0.01],['boxVis','BOX',0,1,0.01],
-               /* ONE LAMP PER BLOCK. Level, colour, condition, then how it fails -- everything about tube A
+               /* ONE LAMP PER BLOCK. Level, color, condition, then how it fails -- everything about tube A
                 * together and everything about tube B together, so a mismatched pair is set by reading down
                 * one block and then the other rather than by hopping between six interleaved rows. */
                /* HOW DEAD A DEAD SECTION LOOKS. Sits above the per-lamp blocks because it describes what HEALTH
                 * MEANS -- at 0 a spent middle is black and the tube reads as two glowing ends, at 1 it is the
-                * old floor where a fully dead centre still measured half as bright as the ends. */
+                * old floor where a fully dead center still measured half as bright as the ends. */
                ['tubeDead','DEAD COATING',0,1,0.01],
                ['lightA','LIGHT A',0,1,0.01],['glowA','GLOW A',0,1,0.01],['tempA','TEMP A',2200,6500,50],['healthA','HEALTH A',0,1,0.1],
                ['lflickA','FLICKER A',0,20,0.1],['lfstrA','FLICK STR A',0,1,0.01],
@@ -389,9 +389,9 @@ export const SECTIONS = [
                 * The reference carries both under LIGHT FLICKER; same names, same ranges. */
                ['lfjit','FLICK JITTER',0,1,0.01],['lfchaos','FLICK CHAOS',0,1,0.01],
                /* WHAT A STRIKE IS WORTH. CHAOS above decides how OFTEN the arc misfires; these two decide how
-                * far it goes when it does -- the colour it comes back at, and how much coating it drops. Both
+                * far it goes when it does -- the color it comes back at, and how much coating it drops. Both
                 * multiply the machine's own picks, so the timing stays its decision. */
-               ['lfwarmK','COLOUR STRIKE',0,6000,50],['lfhdip','HEALTH DIP',0,4,0.05],
+               ['lfwarmK','COLOR STRIKE',0,6000,50],['lfhdip','HEALTH DIP',0,4,0.05],
                ['ripple','MAINS RIPPLE',0,1,0.01]], 'lightOn'],
   /* LAST, AS THE REFERENCE FILES IT. Two durations: how long the raster takes to fall in, and how long it takes
    * to open back up. WARM-UP is the one that also sets when the boot text starts, because typing begins half a
@@ -425,9 +425,9 @@ export const SECTIONS = [
   /* THE MAINS FAULT. crt-flicker's timeline is fixed -- it is a scripted event and the shape IS the point -- so
    * every row here is how hard this build spends it, not what happens when. TUBE and FIXTURE first, because they
    * are the two things the fault has to move together; then the three that make it a FAULT rather than a dimmer
-   * (colour, health, and the guttering on top); then RATE, which is the whole event's clock. */
+   * (color, health, and the guttering on top); then RATE, which is the whole event's clock. */
   ['SURGE', [['surgeScreen','TUBE',0,3,0.05],['surgeLamp','FIXTURE',0,3,0.05],
-             ['surgeWarm','COLOUR DROP',0,4000,50],
+             ['surgeWarm','COLOR DROP',0,4000,50],
              ['surgeHealth','STARVE',0,1,0.01],
              ['surgeHz','GUTTER RATE',0,60,0.5],['surgeStr','GUTTER DEPTH',0,1,0.01],
              ['surgeLampHz','LAMP GUTTER',0,40,0.5],

@@ -1,7 +1,7 @@
 /* nav.js — where the reader is, and the two things that read it.
  *
  * ONE reading line and ONE written property. --k is the playhead in section units, so 2.37 reads as "37% through
- * the third section"; every bar, and the current item's colour, is a static rule off that one number. A scroll
+ * the third section"; every bar, and the current item's color, is a static rule off that one number. A scroll
  * frame therefore writes a single attribute on a single element, which is the same discipline scenes.js runs on.
  *
  * The carry lives here for the same reason rather than in a file of its own: it needs to know which section the
@@ -178,7 +178,7 @@
 
     /* ONE STOP PER ROLE, back again and meaningful this time. The roles are beats of a pinned viewer now, so a
        press both moves the page and changes what is showing — which is what a stop is for. Placed mid-beat
-       rather than on its edge, so a pixel of rounding cannot land on the neighbour. */
+       rather than on its edge, so a pixel of rounding cannot land on the neighbor. */
     const exp = document.getElementById('experience');
     if (exp) list.push(at(exp));
 
@@ -350,7 +350,7 @@
 
   /* ---- the arrow keys ----
    *
-   * One press, one stop. Arrows only: PageUp/PageDown, Home/End and the space bar keep their native behaviour,
+   * One press, one stop. Arrows only: PageUp/PageDown, Home/End and the space bar keep their native behavior,
    * so a reader who navigates by keyboard has not had the page taken away, only given a better default.
    */
   // 'Spacebar' is the pre-2017 Edge spelling; without it that browser simply keeps the native page scroll.
@@ -369,7 +369,7 @@
     const dir = space && e.shiftKey ? -1 : STEP_KEYS[e.key];
     if (!dir || e.metaKey || e.ctrlKey || e.altKey || (e.shiftKey && !space)) { stopGlide(); return; }
     if (e.repeat || busy(e.target)) return;   // held down, it would race through the page a stop per frame
-    /* THE CATALOGUE OWNS SIDEWAYS ON ITS OWN SCREEN. Left and right step its rack there; up, down and space
+    /* THE CATALOG OWNS SIDEWAYS ON ITS OWN SCREEN. Left and right step its rack there; up, down and space
        still move the page's rail, so the reader can always leave. Asked rather than assumed, so this file does
        not have to know which section that is or when it is on screen. */
     const side = e.key === 'ArrowLeft' || e.key === 'ArrowRight';

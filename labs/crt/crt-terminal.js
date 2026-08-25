@@ -4,7 +4,7 @@
  * container element it is handed, which is the whole reason it can live outside the DC: it needs no state, no layout and
  * no knowledge of the tube around it.
  *
- * The DC keeps the DOM: it supplies the container, the phosphor colours, and a `push` for its own timer bookkeeping.
+ * The DC keeps the DOM: it supplies the container, the phosphor colors, and a `push` for its own timer bookkeeping.
  */
 
 import { hexRgb, mix } from './crt-phosphor.js';
@@ -29,7 +29,7 @@ import { hexRgb, mix } from './crt-phosphor.js';
  * and are untouched. GRANTED was dropped from the operator row because a 7-character value moves the column left for all
  * four rows, and at 39 columns it cost more than it said.
  *
- * Segments exist so one row can carry both the dim prompt colour and the bright result; `hi` picks the bright one.
+ * Segments exist so one row can carry both the dim prompt color and the bright result; `hi` picks the bright one.
  */
 export function bootLines(ph, cols) {
   const MIN = 3;
@@ -55,22 +55,22 @@ export function bootLines(ph, cols) {
   const budget = (cols > 0 ? cols : 999) - 1 - maxValue;   // 1 = the single space before the value
   // As far right as the labels want, or as far left as the budget forces, whichever is tighter -- never below MIN dots.
   const col = Math.min(maxLabel + MIN, Math.max(MIN, budget));
-  /* THE DIM COLOUR, DERIVED ONLY WHEN IT HAS TO BE.
+  /* THE DIM COLOR, DERIVED ONLY WHEN IT HAS TO BE.
    *
    * The two-tone is normally fg for the label and hi for the value -- amber's #f0a24a against a pale cream, green's the same
    * shape. WHITE cannot work that way: hi is #ffffff and there is nothing brighter to promote a highlight to, so pure white
-   * on both sides flattens the label and the value into one colour.
+   * on both sides flattens the label and the value into one color.
    *
    * The contrast has to come from BELOW white, and the question is where to spend it. Not on ph.fg: that value is the
    * phosphor's identity everywhere else -- crt-bezel runs hexRgb() on it for the frame tint, the panel's swatch takes it as
    * an <input type="color"> value, and the calibration grid inks with it. Dimming it there would make a white phosphor
-   * render grey, which is the thing that was just fixed.
+   * render gray, which is the thing that was just fixed.
    *
-   * So it is spent HERE, on the boot text's label only, and only when fg and hi are the same colour. Amber and green take the
+   * So it is spent HERE, on the boot text's label only, and only when fg and hi are the same color. Amber and green take the
    * untouched fg exactly as before; white gets a 26%-toward-black label against a pure-white value. One targeted rule rather
    * than a palette-wide inversion, so no phosphor changes that did not have a problem.
    */
-  /* COMPARED AS PARSED COLOURS, NOT AS STRINGS, and that distinction is the whole bug this replaces.
+  /* COMPARED AS PARSED COLORS, NOT AS STRINGS, and that distinction is the whole bug this replaces.
    *
    * resolvePhosphor returns fg as a hex and hi as an rgb() string -- mix() gives a triple and it is joined -- so on the CUSTOM
    * path a pure white arrives as fg '#ffffff' and hi 'rgb(255,255,255)'. A string compare calls those different, the dim rule

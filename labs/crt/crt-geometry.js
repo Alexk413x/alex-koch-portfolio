@@ -34,7 +34,7 @@ export function fixed(v, m) { return Math.round(v * m) / m; }
  * is load-bearing: q comes from min(sx, sy), which kinks where the nearer edge switches, and only a term vanishing
  * to second order there hides that kink. BEND MUST NOT BE INVERTED to bow the runs inward — that exposes it.
  *
- * Returns { pts, w, H, hw, hh, rQ, rhoQ, rhoMin }: the closed outline in centred px, the box it was measured in, the
+ * Returns { pts, w, H, hw, hh, rQ, rhoQ, rhoMin }: the closed outline in centerd px, the box it was measured in, the
  * radius function, and THE SHAPE RATIO.
  *
  * rhoQ(ang) = rQ(ang) / boxRadius(ang): how far inside the raster's own box the glass sits on that ray. It is 1 on
@@ -74,14 +74,14 @@ export function guideOutline(w, H, sq, bend) {
     const A = ca / hw, B = sa / hh, M = Math.max(A, B), m = Math.min(A, B);
     const den = isSq ? M : (M <= 0 ? 1e-12 : M * Math.pow(1 + Math.pow(m / M, nExp), 1 / nExp));
     const r0 = 1 / Math.max(1e-12, den);
-    // The superellipse's own normalised coordinates give the honest position along the run: min(sx, sy) is 0 on either
+    // The superellipse's own normalized coordinates give the honest position along the run: min(sx, sy) is 0 on either
     // axis and peaks at the diagonal, so scaling it by its diagonal value is a clean 0-to-1 run midpoint-to-corner.
     const sx = r0 * ca / hw, sy = r0 * sa / hh;
     const tDiag = isSq ? 1 : Math.pow(2, -1 / nExp);
     const q = Math.min(1, Math.min(sx, sy) / Math.max(1e-9, tDiag));
     const q2 = 1 - q * q, wAx = q2 * q2;
     let rSE = r0;
-    // NORMALISED BY (1 + bendE) so the bow cannot leave the glass. Added raw, the midpoint pushed past hw and needed a
+    // NORMALIZED BY (1 + bendE) so the bow cannot leave the glass. Added raw, the midpoint pushed past hw and needed a
     // cap to catch it -- and a cap is a flat spot with a kink at each end. Dividing the whole profile by its own peak
     // lands the bowed midpoint exactly on the glass edge and takes the corner in behind it: same shape, nothing clipped.
     rSE *= (1 + bendE * wAx) / (1 + bendE);
@@ -131,7 +131,7 @@ export function radiusAt(prof, theta) {
 }
 
 // The shape ratio along any ray, folded the same way. 1 on the axes, rhoMin at the diagonal. This is what the projection
-// normalises its radius against, so the sag's contours are the OUTLINE's shape instead of the raster's box.
+// normalizes its radius against, so the sag's contours are the OUTLINE's shape instead of the raster's box.
 export function shapeRatio(prof, theta) {
   if (!prof || !prof.rhoQ) return 1;
   return prof.rhoQ(foldQuad(theta));
@@ -142,7 +142,7 @@ export function shapeRatio(prof, theta) {
  *
  * It is the exact complement of the shape ratio, and both come from one pass over one outline rather than one of them being
  * reconstructed by a caller: rho says how much a ray belongs to a CORNER, wAx says how much it belongs to a FLAT RUN, so
- * they cannot disagree about which is which. The projection uses rho to normalise the radius and wAx to bow the flats.
+ * they cannot disagree about which is which. The projection uses rho to normalize the radius and wAx to bow the flats.
  */
 export function axisWeight(prof, theta) {
   if (!prof || !prof.wQ) return 0;
@@ -173,7 +173,7 @@ export function ringLadder(prof, n, stepK, fF, rays) {
    * stopped being constant. Each ring is walked point by point through fF(u, theta).
    *
    * FORCED MONOTONE, PER POINT: never let a ring pass the one outside it ON ITS OWN RAY. KG is the minimum scale
-   * separation kept between neighbours; prevK holds the outer ring's value at each sampled index, so the guard is a
+   * separation kept between neighbors; prevK holds the outer ring's value at each sampled index, so the guard is a
    * per-ray promise rather than an average one. What it costs is a ring stopping short of where the projection wanted it;
    * what it buys is that the overlay never draws two rings through each other, which is the one thing it exists to
    * disprove.
@@ -221,16 +221,16 @@ export function ringLadder(prof, n, stepK, fF, rays) {
       vrho[m] = prof.rhoQ ? prof.rhoQ(ang) : 1;
     } else { vx[m] = q0[0]; vy[m] = q0[1]; vth[m] = 0; vrho[m] = 1; }
   }
-  const kUsed = [];                           // the ON-AXIS scale each drawn ring landed at, centre ring included
+  const kUsed = [];                           // the ON-AXIS scale each drawn ring landed at, center ring included
   const sx = 100 / prof.w, sy = 100 / prof.H;
-  /* ONE COLOUR PER BAND, and this is a LEGIBILITY decision made against a more accurate alternative -- worth knowing before
+  /* ONE COLOR PER BAND, and this is a LEGIBILITY decision made against a more accurate alternative -- worth knowing before
    * anyone reaches for the accurate one again.
    *
    * With a theta term in the projection a band's compression genuinely varies along it: the corner of a rounded face is the
    * steepest part and squeezes hardest, the flats barely squeeze. So each band was cut into ~46 sectors, each carrying its
    * own local gap, bucketed into eight levels. It was strictly the truer map and it read worse: the whole range in play is
-   * heat 0.06..0.19 against a ramp whose full scale is 0.5 (the fold limit), so the corner/flat difference quantised into two
-   * neighbouring blues and the clean concentric bands turned into a faintly mottled ring for no gain in what you could see.
+   * heat 0.06..0.19 against a ramp whose full scale is 0.5 (the fold limit), so the corner/flat difference quantized into two
+   * neighboring blues and the clean concentric bands turned into a faintly mottled ring for no gain in what you could see.
    *
    * So the band keeps one value and that value is the WORST VISIBLE RAY -- a minimum, not a sample. A single number has to
    * pick one story and "the hardest this band is squeezed anywhere you can see it" is the useful one for deciding whether a
@@ -240,7 +240,7 @@ export function ringLadder(prof, n, stepK, fF, rays) {
   let prevK = new Float64Array(V).fill(Infinity), cur = new Float64Array(V), lastK = null, lastMin = Infinity;
   for (let i = 0; i < nR; i++) {
     const k = 1 - stepK * i;
-    if (k <= 0.02) break;                     // the last nominal ring is k = 0 — appended as the centre below
+    if (k <= 0.02) break;                     // the last nominal ring is k = 0 — appended as the center below
     let d = '';
     let gMin = Infinity, cMin = Infinity, gMinAll = Infinity, cMinAll = Infinity;
     for (let m = 0; m < V; m++) {
@@ -279,15 +279,15 @@ export function ringLadder(prof, n, stepK, fF, rays) {
     // and "last" are the same array -- and allocating a fresh one per ring was 20 x 3604 doubles per rebuild.
     lastK = cur; prevK = cur; cur = new Float64Array(V);
   }
-  /* THE CENTRE IS A RING TOO, even though it is a point.
+  /* THE CENTER IS A RING TOO, even though it is a point.
    *
    * A band is the annulus between two consecutive rings, so the innermost drawn ring had nothing to pair with and the disc
    * inside it — the four cells at the middle of the grid — carried no heat at all, while visibly being warped. The loop
    * above stops before k = 0 because a zero-scale ring is a degenerate point, which is true and was taken as a reason to
    * omit it rather than to append it. As the INNER subpath of the last band, a degenerate point is exactly right: the
-   * evenodd hole it cuts has zero area, so the band fills the whole centre.
+   * evenodd hole it cuts has zero area, so the band fills the whole center.
    *
-   * Its heat is real, not a filler value: the gap from the innermost ring to the centre against the nominal step is the
+   * Its heat is real, not a filler value: the gap from the innermost ring to the center against the nominal step is the
    * same compression measure every other band uses, and near the middle it is genuinely small — which is the honest
    * answer, rather than a hole that reads as "not measured".
    */

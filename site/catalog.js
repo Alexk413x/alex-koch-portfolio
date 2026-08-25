@@ -1,4 +1,4 @@
-/* catalogue.js — the back catalogue: seventeen shipped products as a rack of cases and one display case.
+/* catalog.js — the back catalog: seventeen shipped products as a rack of cases and one display case.
  *
  * READ FROM THE MARKUP, NEVER FROM AN ARRAY. Every product and every proof is written out in index.html and this
  * script turns them into the rack, so a crawler running no JavaScript still reads all seventeen records in full.
@@ -169,7 +169,7 @@ import { coverArt } from './cover-art/index.js';
 
   /* The size, as a fraction of the face's own width. A fit against the real glyph widths would be exact, but it
      needs layout and this runs before the rack is measured — so it fits against the character count instead and
-     the title is centred in a fixed band, which is where the few per cent of error goes. One line is capped at
+     the title is centerd in a fixed band, which is where the few per cent of error goes. One line is capped at
      the size ISU sets at; two lines share one size across the whole two-line family, which is what makes them
      read as a set rather than as seventeen separate decisions. */
   function titleScale(lines) {
@@ -233,7 +233,7 @@ import { coverArt } from './cover-art/index.js';
      boxes and looked like one. Everything below is tuned so both piles stay legible from the front. */
   /* SYMMETRIC BLADES, one face and thirty-two edges. The cover you are on faces you square and every other one
      stands nearly edge-on, fanning away to both sides — a card index or a Rolodex, not a book. The turned/
-     untouched split a book has is wrong for a catalogue anyway: there is no "already read" here, only near and
+     untouched split a book has is wrong for a catalog anyway: there is no "already read" here, only near and
      far from where you are standing.
      ALL SIXTEEN OTHERS STAY ON SCREEN, because the section's claim is seventeen and a rack that shows five is
      asking the reader to take the other twelve on trust. */
@@ -292,7 +292,7 @@ import { coverArt } from './cover-art/index.js';
     print.appendChild(face);
     b._face = face;
     /* A SPINE ON BOTH RIMS, and the front cover only.
-       The fan is symmetric, so blades to the left of centre show their right rim and blades to the right show
+       The fan is symmetric, so blades to the left of center show their right rim and blades to the right show
        their left — one spine would leave half the rack anonymous. Two, and every blade in the fan is legible
        whichever way it leans, which is the whole point of a rack of edges: at 79 degrees the reader is looking
        at the spine, not at the cover.
@@ -307,7 +307,7 @@ import { coverArt } from './cover-art/index.js';
     b.appendChild(print);
     b._print = print;
     /* 8 samples a corner, against the stage case's 18. Four was chosen when the cover was 189px; at 1920 it is
-       388 and the facets showed on the facing one. Only the blade crossing the centre redraws on a given frame,
+       388 and the facets showed on the facing one. Only the blade crossing the center redraws on a given frame,
        so the corner is worth paying for. */
     b._draw = window.CASE3D ? window.CASE3D.make(wire, 8, true) : null;
     b.addEventListener('click', () => go(i));
@@ -418,7 +418,7 @@ import { coverArt } from './cover-art/index.js';
     /* THE BLADE'S DEPTH IS SET BY THE SPACING, not by the case's own thickness ratio.
        A blade stands at BLADE degrees, so the rim it shows is depth * sin(BLADE) wide — and the next blade sits
        STEP away. At the stage case's eleventh-of-its-width the rim came out 17px against a 12px step, so every
-       rim ran a third of the way under its neighbour and the rack read as a smear rather than as a stack.
+       rim ran a third of the way under its neighbor and the rack read as a smear rather than as a stack.
        Derived from STEP, the rims tile: each blade shows exactly its own rim and no more. */
     const bd = Math.max(5, Math.round(RIM / Math.sin(BLADE * Math.PI / 180)));
     // The rims are CSS faces, so they need the two measurements the drawing takes as arguments.
@@ -458,11 +458,11 @@ import { coverArt } from './cover-art/index.js';
       const turn = Math.min(1, far);          // 0 facing you, 1 fully into the fan
 
       /* ORDER MATTERS. translate(-50%) is written FIRST so it is applied LAST — the cover turns about its own
-         centre and is only then shifted half its width to sit on the reel's centre line. Written the other way
+         center and is only then shifted half its width to sit on the reel's center line. Written the other way
          round the shift is dragged into the rotation and every blade lands somewhere it was never sent.
          The offset clears the FACING cover's half width before the blades start, or the first one either side
          is buried behind it. */
-      /* ONE EXPRESSION FOR EVERY POSITION, continuous through the centre. Each term is the old discrete case
+      /* ONE EXPRESSION FOR EVERY POSITION, continuous through the center. Each term is the old discrete case
          with `turn` ramping it in over the first step, so a cover at n = 1 lands exactly where the fan used to
          put it and a cover part way between turns part way.
          The offset clears the FACING cover's full half-width before the fan starts, or the first blade each
@@ -511,8 +511,8 @@ import { coverArt } from './cover-art/index.js';
        42 while its spine face began at 36, and the reel's overflow clipped four pixels off the first name. The
        leftmost thing on the rack is a rim, not a cover. */
     /* THE RACK STARTS ON THE COLUMN'S RAIL, the same edge the title, the key rows and the chip bar start on.
-       The target is a fixed edge rather than a centre on purpose: the rack's own span is about 40px wider when
-       the leftmost item is a cover than when it is a blade, so centring it would slide the whole thing sideways
+       The target is a fixed edge rather than a center on purpose: the rack's own span is about 40px wider when
+       the leftmost item is a cover than when it is a blade, so centering it would slide the whole thing sideways
        every time the selection crossed that boundary. A fixed edge keeps the frame still and lets the covers do
        the moving, which is what a rack does. */
     const rr = reel.getBoundingClientRect();
@@ -523,7 +523,7 @@ import { coverArt } from './cover-art/index.js';
       got = Math.min(got, b._print.getBoundingClientRect().left);
       b._rims.forEach((r) => { got = Math.min(got, r.getBoundingClientRect().left); });
     });
-    // The act line is centred over the rack rather than over the column, so it needs the rack's real width.
+    // The act line is centerd over the rack rather than over the column, so it needs the rack's real width.
 
     // Clamped, so a bad frame during a resize cannot walk the rack off the column.
     if (got < Infinity) shiftFix = Math.max(-400, Math.min(400, shiftFix + (got - want)));
@@ -628,12 +628,12 @@ import { coverArt } from './cover-art/index.js';
 
     /* AND A LOOK AT WHAT IS COMING, ON THE SIDE YOU ARE HEADED. The bar is a jump list, so showing the company
        you are on and nothing beyond it hides the answer to "what is next" — which is most of why anybody scans
-       it. This used to peek at idx + 1 always, which is the wrong neighbour half the time: walking BACK through
+       it. This used to peek at idx + 1 always, which is the wrong neighbor half the time: walking BACK through
        the rack it revealed the company you had just left and kept the one you were heading toward under the
        fade, so the bar led you in the opposite direction to the one you were moving.
        Never at the current chip's expense, either way: the peek is taken only if the chip being named keeps its
        own far edge inside the view, so the thing the bar is pointing at can never be pushed out to show its
-       neighbour. */
+       neighbor. */
     const nb = firmBtns[idx + dir];
     if (nb) {
       const ns = firmSpan(nb);
@@ -818,7 +818,7 @@ import { coverArt } from './cover-art/index.js';
        product's two or three spine marks, which is a fraction of what the role actually lists — the panel was
        thinner than the source it is drawn from. Features and tools are different questions and get a label
        each; the product's own marks lead the features, because they are the specific ones. */
-    /* ONE ROW, NO HEADINGS. Features and tools were labelled and split; the labels were the only thing telling
+    /* ONE ROW, NO HEADINGS. Features and tools were labeled and split; the labels were the only thing telling
        them apart, so without them two rows would read as one list that happened to wrap. Joined, features
        first — the specific ones the product carries, then the role's kit behind them. */
     const spec = el('div', 'b-spec');
@@ -838,7 +838,7 @@ import { coverArt } from './cover-art/index.js';
    * crossing ten boxes shows the reader two covers and a wait while the rack beside it turns all ten: two
    * descriptions of one movement.
    *
-   * The cover it shows is the nearest whole box, and how far it sits off centre is the fraction left over, so every
+   * The cover it shows is the nearest whole box, and how far it sits off center is the fraction left over, so every
    * cover crossed comes through it in step with the blade carrying the same artwork.
    *
    * The direction falls out and is not written down: `k - pos` is negative while the playhead is still short of box
@@ -1073,7 +1073,7 @@ import { coverArt } from './cover-art/index.js';
   caseBody.addEventListener('pointerdown', (e) => {
     /* A LINK IS NOT A HANDLE. setPointerCapture below sends every later event — the CLICK included — to the case
        body, so an anchor inside it never sees its own click and the company link was completely inert. Not
-       starting the grab at all is what leaves the anchor its normal behaviour; the case is still a drag surface
+       starting the grab at all is what leaves the anchor its normal behavior; the case is still a drag surface
        everywhere else, and a name is small enough that losing it as a handle costs nothing. */
     if (e.target.closest && e.target.closest('a')) return;
     grab = { x: e.clientX, y: e.clientY, moved: 0 };
@@ -1146,7 +1146,7 @@ import { coverArt } from './cover-art/index.js';
 
   /* SIDEWAYS BELONGS TO THE RACK WHENEVER THIS SECTION IS THE SCREEN, not only when the pointer happens to be
      over the reel. The section is a beat and fills the viewport when you are on it, so "is the reader here" is
-     the honest test — a trackpad swipe or an arrow press aimed at the catalogue should not depend on where the
+     the honest test — a trackpad swipe or an arrow press aimed at the catalog should not depend on where the
      cursor was left. Owning the middle of the viewport is the test rather than any overlap, so the two screens
      either side of it can never both claim a gesture. */
   const catSec = document.getElementById('experience');
@@ -1157,7 +1157,7 @@ import { coverArt } from './cover-art/index.js';
     return r.top < mid && r.bottom > mid;
   }
   /* nav.js reads this before it takes an arrow for the page's rail: down and up move between beats, left and
-     right move through the catalogue, and neither has to know the other's rules. */
+     right move through the catalog, and neither has to know the other's rules. */
   window.AKCAT = { sideways: mine };
 
   window.addEventListener('wheel', (e) => {
@@ -1226,7 +1226,7 @@ import { coverArt } from './cover-art/index.js';
     if (e.target && e.target.closest && e.target.closest('input, textarea, select, [contenteditable="true"]')) return;
     /* RIGHT WALKS TOWARD THE BLADES ON THE RIGHT, which is FORWARD through the record: the rack is laid out
        newest first from its left edge, so higher indices sit further right and pressing right has to raise the
-       index. It was inverted, from when the fan was centred and the rack travelled under a fixed playhead —
+       index. It was inverted, from when the fan was centerd and the rack traveled under a fixed playhead —
        with the rack left-aligned it is the covers that move past you, and the arrow has to point the way they
        go. */
     const d = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;

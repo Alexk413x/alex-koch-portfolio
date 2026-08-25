@@ -1,4 +1,4 @@
-/* The GLSL every wormhole effect shares, as named chunks the shader composes. Split out so noise, colour and the
+/* The GLSL every wormhole effect shares, as named chunks the shader composes. Split out so noise, color and the
  * tunnel mapping are written once: three effects sampling three slightly different noises is how a field stops
  * looking like one place.
  */
@@ -28,7 +28,7 @@ float bump(float d2, float w2){
  * and y for nothing, the two channels carry slices z and z+1, and only the z mix is left. See valueNoiseTexture
  * in kit/glquad.js for how the offset packing works.
  *
- * The half-texel shift is required: a texture sample lands at a texel CENTRE, and without it every lookup sits on
+ * The half-texel shift is required: a texture sample lands at a texel CENTER, and without it every lookup sits on
  * a corner and the hardware averages four lattice points that should have been one.
  */
 uniform sampler2D uNoise;
@@ -58,7 +58,7 @@ float noise3(vec3 x){
  * EXACT, NOT AN APPROXIMATION. The value comes back on the same side of the same threshold, so the frame is
  * byte-identical; only the work is smaller.
  *
- * inv IS THE FULL NORMALISER AND HAS TO BE PASSED IN. Accumulating it here would renormalise against the octaves
+ * inv IS THE FULL NORMALIZER AND HAS TO BE PASSED IN. Accumulating it here would renormalize against the octaves
  * that happened to run, which is a different field rather than the same one cut short — and it is one value per
  * frame, so the caller resolves it once outside the march.
  */
@@ -76,7 +76,7 @@ float fbm(vec3 p, int oct, float gain, float inv, float lo, float hi){
   return v;
 }
 
-// The normaliser fbm needs to stop early, which is one value per frame rather than one per sample.
+// The normalizer fbm needs to stop early, which is one value per frame rather than one per sample.
 float fbmNorm(int oct, float gain){
   float a = 0.5, norm = 0.0;
   for (int i = 0; i < 5; i++){ if (i >= oct) break; norm += a; a *= gain; }
@@ -106,16 +106,16 @@ float filament(vec3 p, float sharp){
 }
 `;
 
-/* One colour ramp for all three effects, so "set the colour" means the same thing everywhere.
+/* One color ramp for all three effects, so "set the color" means the same thing everywhere.
  *
- *   mode 0 SOLID    colour A only
+ *   mode 0 SOLID    color A only
  *   mode 1 BLEND    A to B across the effect's own gradient
  *   mode 2 RAINBOW  a cosine palette, hue-shiftable
  *
- * `t` MUST VARY SLOWLY ALONG A RAY. Integrating a hundred samples of a fast-cycling palette averages it to grey —
+ * `t` MUST VARY SLOWLY ALONG A RAY. Integrating a hundred samples of a fast-cycling palette averages it to gray —
  * which is exactly what a density-driven gradient does here, because density is high-frequency. Each effect
  * therefore drives `t` from something coherent over depth: a slow band for the cloud, a per-streak constant for
- * the streaks. Colour then survives the march instead of cancelling out.
+ * the streaks. Color then survives the march instead of canceling out.
  */
 export const PALETTE = `
 vec3 ramp(float t, vec3 a, vec3 b, float mode, float hue){
@@ -126,11 +126,11 @@ vec3 ramp(float t, vec3 a, vec3 b, float mode, float hue){
 }
 `;
 
-/* THE TUNNEL, AND WHY THE RAY IS NOT NORMALISED.
+/* THE TUNNEL, AND WHY THE RAY IS NOT NORMALIZED.
  *
  * With rd = vec3(uv, 1.0) a point at parameter t is exactly (uv * t, t): depth is t and radial distance from the
- * axis is |uv| * t. So the wall at radius 1 is reached at t = 1 / |uv| — which runs to infinity down the centre of
- * the screen, and that divergence IS the tunnel. Normalising would cost a sqrt per pixel and buy nothing.
+ * axis is |uv| * t. So the wall at radius 1 is reached at t = 1 / |uv| — which runs to infinity down the center of
+ * the screen, and that divergence IS the tunnel. Normalizing would cost a sqrt per pixel and buy nothing.
  *
  * `dir` is constant along a ray, so the angular coordinate is computed once per pixel rather than per step. Only
  * the twist, which varies with depth, has to be applied inside the loop.
@@ -169,7 +169,7 @@ vec2 spin(vec2 xy, float ang){
  * sensitive to and reads as clumpy grain, while blue noise pushes it high where the eye averages it away.
  * Interleaved gradient noise is cheaper still but its lattice prints a visible cross-hatch at these step counts.
  *
- * gl_FragCoord lands on pixel centres, so dividing by the texture size hits texel centres exactly and the LINEAR
+ * gl_FragCoord lands on pixel centers, so dividing by the texture size hits texel centers exactly and the LINEAR
  * filter returns the stored value rather than a blend of four. The tile repeats every 64 pixels.
  *
  * THE TILE MOVES EVERY FRAME, and that is what makes a low step count watchable. Held still, the leftover march

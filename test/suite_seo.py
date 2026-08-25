@@ -1,7 +1,7 @@
 # The machine-readable layer, checked against the page it claims to describe.
 #
 # WHY THIS SUITE EXISTS. Structured data restates what the markup already says, which makes it a second copy of
-# the truth -- the one failure mode this repository is organised against. The answer is not to go without it, but
+# the truth -- the one failure mode this repository is organized against. The answer is not to go without it, but
 # to make the two disagree loudly: every product name, employer, skill and claim in the JSON-LD is asserted here
 # against the page's own text. A claim that survives in the graph after its visible counterpart is deleted is
 # hidden text, and Google's spam policies name that as grounds for removal from the index.
@@ -195,7 +195,7 @@ def run(page, r):
                       "?.querySelector('h4')?.textContent||'').trim()})))")
     lst = typed['ItemList'][0]
     items = [e['item'] for e in lst['itemListElement']]
-    r.check('the catalogue counts what the shelf holds', lst['numberOfItems'], len(shelf))
+    r.check('the catalog counts what the shelf holds', lst['numberOfItems'], len(shelf))
     r.check('the list is as long as it says', len(items), lst['numberOfItems'])
     for i, (rec, item) in enumerate(zip(shelf, items)):
         r.check('product %d is the shelf\'s' % (i + 1), item['name'], rec['name'])

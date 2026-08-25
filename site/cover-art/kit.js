@@ -1,7 +1,7 @@
 /* kit.js — the vocabulary every box cover is drawn in.
  *
  * THREE INKS AND A DEPTH RAMP, AND NEITHER LIVES HERE AS A NUMBER YOU CAN TYPE TWICE. A cover names a role —
- * line, lit, deep — and site.css decides what colour the role is, so retinting the whole set is one rule. The
+ * line, lit, deep — and site.css decides what color the role is, so retinting the whole set is one rule. The
  * weights a role is laid on at are the PAINTS below: how much ink a thing gets is a function of how far back it
  * sits, and there are six depths, not sixty. Every defect in this artwork's history was a repeated value.
  *
@@ -12,7 +12,7 @@
 
 const NS = 'http://www.w3.org/2000/svg';
 
-/* The ink roles. Values are class suffixes, not colours — see .cover-art in site.css. */
+/* The ink roles. Values are class suffixes, not colors — see .cover-art in site.css. */
 export const LINE = 'line';   // --accent: every edge and every body
 export const LIT = 'lit';     // --amber: the one lit thing on a cover
 export const DEEP = 'deep';   // --ink-deep: the face, and every knockout cut in it
@@ -46,7 +46,7 @@ const PAINTS = {
 };
 
 /* Resolve a paint to attributes. A string names one of the PAINTS; an object overrides it field by field, which
-   is how a cover says "this one thing is a little further back" without inventing a new colour. */
+   is how a cover says "this one thing is a little further back" without inventing a new color. */
 export function pt(name, over) {
   const base = typeof name === 'string' ? PAINTS[name] : name;
   if (!base) throw new Error('cover-art: unknown paint "' + name + '"');
@@ -55,16 +55,16 @@ export function pt(name, over) {
 
 /* A role that is ABSENT and a role that is null are different things: absent inherits from the group or from
    the <use> that placed a shared part, null paints nothing. Collapsing the two is what would leak a stroke onto
-   Rexel's barcodes the moment the <use> carrying the drawer's colour also carried a stroke. */
+   Rexel's barcodes the moment the <use> carrying the drawer's color also carried a stroke. */
 
 const VAR = { line: '--accent', lit: '--amber', deep: '--ink-deep', strong: '--text-strong' };
 
-/* INSIDE A SHARED PART THE COLOUR GOES ON AS AN INLINE STYLE, NOT A CLASS, and that is not a style preference.
+/* INSIDE A SHARED PART THE COLOR GOES ON AS AN INLINE STYLE, NOT A CLASS, and that is not a style preference.
    A part is drawn by <use>, and a CSS SELECTOR DOES NOT REACH INTO THE SHADOW CONTENT the <use> clones — only
-   attributes and inline styles travel with the clone. Painted by class, every fixed-colour shape in a shared
+   attributes and inline styles travel with the clone. Painted by class, every fixed-color shape in a shared
    part silently took the <use>'s inherited fill instead of its own: the agent glyph came out invisible, and
    Rexel's barcode label came out the same orange as the barcode on it, which is why the codes vanished.
-   Shapes that are MEANT to take the placement's colour still carry no paint at all; inheritance does reach the
+   Shapes that are MEANT to take the placement's color still carry no paint at all; inheritance does reach the
    shadow tree, which is why FieldView's frame worked all along and nothing else did. */
 let inShared = false;
 
@@ -124,7 +124,7 @@ export const glyph = (g, x, y, str, size, paint, extra) => {
 /* A group carrying a paint its children inherit. Returns the group so a caller can keep filling it. */
 export const group = (g, paint, extra) => add(g, node('g', extra, paint));
 
-/* A placed instance of a shared part. Colour, fill opacity and stroke width ride on the <use>, not on the
+/* A placed instance of a shared part. Color, fill opacity and stroke width ride on the <use>, not on the
    definition, so the same drawing can be the steel frame on one cover and the photo of it on another. */
 export const use = (g, id, paint, extra) =>
   add(g, node('use', Object.assign({ href: '#' + id }, extra), paint));

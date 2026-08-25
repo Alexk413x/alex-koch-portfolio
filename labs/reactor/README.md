@@ -8,7 +8,7 @@ a schedule the panel sets.
 of it can reach the page.
 
 ```
-reactor-shader.js    the GLSL. Pure source: 49 uniforms in, one colour out
+reactor-shader.js    the GLSL. Pure source: 49 uniforms in, one color out
 reactor-sim.js       createSim() -> { step, firePulse, fireVent } — the pulse spring, the vent envelope,
                      the break/scatter machine, the instability lag, and the droplet table
 reactor-sidebar.js   SECTIONS (panel layout) + FMT (how each value reads)
@@ -16,7 +16,7 @@ reactor-presets.js   PRESETS, MODES, CAM_KEYS, matchIdx, defaultPreset
 reactor-uniforms.js  sendUniforms() — one state and one pose in, every uniform the shader reads out
 ```
 
-The home page draws this scene too (`site/hero-core.js`: the core alone, ring off, accent-coloured), which is why
+The home page draws this scene too (`site/hero-core.js`: the core alone, ring off, accent-colored), which is why
 the uniform block is a module rather than a paragraph of `R.f` calls inside this page's `draw()`.
 
 Shared, not local: [`../kit/glquad.js`](../kit/glquad.js) hosts the shader, [`../kit/panel.js`](../kit/panel.js)
@@ -38,7 +38,7 @@ the *speeds* these phases replaced, still being uploaded.
 
 ## The ring is lit by a sphere, and its outward face is lit by nothing
 
-The core is the only light in the scene, and it is a metre-wide ball a metre away — not a point. `sphereDiff`
+The core is the only light in the scene, and it is a meter-wide ball a meter away — not a point. `sphereDiff`
 takes its angular radius, which does two things a point at the origin cannot: it softens the terminator by the
 light's real size, and it supplies the inverse-square falloff. **RING SIZE and CORE SIZE therefore change how lit
 the ring is**, which is why `LIGHT_NORM` exists — it is `1/sin²A` at the shipped SIZE and RING SIZE, so stored
@@ -51,9 +51,9 @@ that only widened that lobe would do nothing on the face you mostly look at. A w
 of the chamber and catches the core even where the mirror direction misses it; a polished face reflects the sharp
 image of an empty chamber, which is nearly black.
 
-The surface is a **height field in metres** (`ringRelief`), and everything reads off that one description: the
+The surface is a **height field in meters** (`ringRelief`), and everything reads off that one description: the
 bump, the cavity darkening and the paint. `bumpN` tilts the normal by the field's true world-space gradient —
-the hit point's screen derivatives convert dH/dpixel into dH/dmetre. Perturbing the normal's x and y by screen
+the hit point's screen derivatives convert dH/dpixel into dH/dmeter. Perturbing the normal's x and y by screen
 derivatives directly is the obvious shortcut and it shades without ever reading as relief.
 
 Feature sizes are metric, so a bay's rib and its lip keep their size as the ring grows; the fine scribing stays
@@ -80,7 +80,7 @@ Measured by stripping the uniform declarations and grepping the body, not by rea
 - **`uFragFly` and `uSnap` were read but never moved**, pinned at 0 and 1. The auto-fling they drove was superseded
   by the manual break-scatter (`uScatter`), which reaches the same fly-apart from a control. Both are gone, along
   with `rotZ`, `sdHexPrism` and a `p0` captured for a bulge that no longer exists.
-- **RADIATION was a second colour control.** It rotated the hue of the colour the picker had already chosen, so
+- **RADIATION was a second color control.** It rotated the hue of the color the picker had already chosen, so
   every setting it could reach was reachable from the swatch. Gone, and `uHue`, `hueShift()` and `coreCol()` with
   it — the last two existed only to serve it.
 
@@ -142,7 +142,7 @@ integrity gauges. So ORBIT at zero still tumbled the ring, and no row in the pan
 it did.
 
 Nothing reads a mode now. `applyPreset` writes the sliders and stops, `matchIdx` derives which preset is active
-from the values, and the `mode` key is gone from state entirely. **A state dialled in by hand behaves identically
+from the values, and the `mode` key is gone from state entirely. **A state dialed in by hand behaves identically
 to the button that would have set it** — verified, not assumed. What still moves the shield is what happens TO it:
 a pulse knocks it down, the core pressing on the ring stresses it, a vent floods it.
 
@@ -151,7 +151,7 @@ a pulse knocks it down, the core pressing on the ring stresses it, a vent floods
 **Measure, don't look.** The port was checked by diffing the GLSL body line for line against the DC build's —
 357 lines, differing only in the one `uv` line that removes `uPanelPx` — and by driving every control over CDP and
 reading the consequence back out of the page (28 checks: sliders, steppers, folds, the RING master, presets and
-CUSTOM, PULSE, VENT, the colour row, the debounce, and a reload).
+CUSTOM, PULSE, VENT, the color row, the debounce, and a reload).
 
 `window.REACTOR` is the handle: `state`, `R`, `sim`, `renderNow(dt, sec)`, `rebuildPanel()`, `saveState()`.
 

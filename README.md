@@ -12,7 +12,7 @@ physics are plain ES modules. Every page is a plain module page, with no runtime
 
 ## The CRT lab
 
-The centrepiece, and the reason most of this code exists.
+The centerpiece, and the reason most of this code exists.
 **[CRT Lab](labs/crt/CRT%20Lab.html)** is an amber CRT solved per pixel in a WebGL2 fragment shader — the face's
 curvature, the shadow mask, the beam, the phosphor's persistence and a ray-traced light fitting reflected in the
 glass — with a measurement grid and a heat-map overlay reporting how hard the surface is being compressed.
@@ -34,9 +34,9 @@ page, and pure modules for the shader, the control table and the values.
 - **[Reactor Lab](labs/reactor/Reactor.html)** — a containment core, sphere-traced. A goo core with sub-cores torn
   out of it by a pulse, nine alloy ring fragments, and a shield that fails on a schedule.
   See [`labs/reactor/README.md`](labs/reactor/README.md).
-- **[Wormhole Lab](labs/wormhole/Wormhole.html)** — a domain-warped noise tunnel, in three flavours.
+- **[Wormhole Lab](labs/wormhole/Wormhole.html)** — a domain-warped noise tunnel, in three flavors.
   See [`labs/wormhole/README.md`](labs/wormhole/README.md).
-- **Lab Shell** (`labs/shell/Shell.html`) — not a user-facing page. It is the **base lab**: a live catalogue of
+- **Lab Shell** (`labs/shell/Shell.html`) — not a user-facing page. It is the **base lab**: a live catalog of
   every control type and every formatter the kit offers, annotated, built on the same scaffold the others use.
   Start there when writing a new lab. Deliberately not linked from the site index.
 
@@ -63,7 +63,7 @@ Two things worth knowing:
 - **Nothing here needs a network** beyond the fonts. There is no framework, no CDN and no build step — every
   page loads its own ES modules and nothing else.
 - **Editing a module needs a hard reload**, and a plain reload is not always enough: the browser will serve the
-  modules from cache while the HTML is fresh, which looks exactly like a maths bug. Serve with
+  modules from cache while the HTML is fresh, which looks exactly like a math bug. Serve with
   `Cache-Control: no-store` if you are working on them — `bench.py`'s own server already does.
 
 ---
@@ -83,7 +83,7 @@ python bench.py --inject "<js>"       # pin a setting first, so two runs are com
 `bench.py` serves the repo, launches an isolated Chrome with the flags that stop it from halting rendering
 in a window that is not front-most, warms the profile's cache, and drives the page over the DevTools
 protocol. It refuses a verdict when the machine is too loaded to measure on, and reports the first sampling
-window separately as a warm-up rather than letting it poison that judgement.
+window separately as a warm-up rather than letting it poison that judgment.
 
 - `labs/crt/render-probe.js` — a deterministic render fingerprint for CRT Lab. Hashes seven fixed scenes, which
   is how a refactor proves it changed nothing.
@@ -113,7 +113,7 @@ bench.py        the frame-rate harness
 
 **Every page here is plain HTML plus ES modules.** Five `.dc.html` component pages once sat at the repository
 root on a `support.js` runtime that pulled React and Babel from a CDN; they and that runtime are gone, along with
-`experience.html`, whose role viewer the back catalogue replaced.
+`experience.html`, whose role viewer the back catalog replaced.
 
 ---
 
@@ -123,7 +123,7 @@ root on a `support.js` runtime that pulled React and Babel from a CDN; they and 
   Below 820px wide **or 500px tall** the CRT lab folds the control panel away behind a chevron, scales the
   raster up so the terminal text holds both its column count and its line count (a real set has a fixed line
   count whatever size the tube is), tightens the convergence and beam spot to stay the same fraction of a
-  glyph, drops the moulding for a full-bleed picture, and flattens the dome a little to put that area back.
+  glyph, drops the molding for a full-bleed picture, and flattens the dome a little to put that area back.
   Those are one override table plus three ratios, applied to a *view* of the settings — the stored
   configuration is never touched, so a session tuned on a desktop survives being opened on a phone. Given
   both, nothing is adjusted at all. The panel's own control density is still built for a large window.
@@ -137,6 +137,6 @@ root on a `support.js` runtime that pulled React and Babel from a CDN; they and 
 - **The WebGL labs are demanding.** All three default to a reduced render scale on integrated graphics, and
   **RENDER SCALE** at the top of each panel is the lever if your machine struggles.
 
-## Licence
+## License
 
-No licence granted — all rights reserved. Read it, run it, learn from it; please ask before reusing it.
+No license granted — all rights reserved. Read it, run it, learn from it; please ask before reusing it.
