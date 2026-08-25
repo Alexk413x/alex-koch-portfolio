@@ -80,7 +80,7 @@ float hitBoxInside(vec3 ro, vec3 rd, vec3 lo, vec3 hi, out vec3 n) {
  * line source, not a point: its irradiance falls off with 1/d rather than 1/d^2 near the axis, which is why a
  * fluorescent lights a wall so evenly along its length and why substituting a point light looks wrong. This is
  * the term that makes the flicker do something -- when a tube dips, the box it sits in dims with it. */
-/* WHERE A DYING TUBE'S LIGHT ACTUALLY COMES FROM, which is not the whole tube. `reach` is tubeHealth's own: how
+/* WHERE A DYING TUBE'S LIGHT ACTUALLY COMES FROM, which is not the whole tube. reach is tubeHealth's own: how
  * far in from each end the discharge still runs. At 0.5 the two lit zones meet and the lamp emits along its full
  * length, which is the healthy case. Below that the middle is dead glass — drawn dark by tubeSurface, and it must
  * not go on throwing light either.
