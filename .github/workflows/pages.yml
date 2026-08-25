@@ -42,7 +42,7 @@ jobs:
       # the code graph and the agent instructions all live beside it and none of them is a page. Dropped from
       # the runner's own checkout, which is thrown away after the deploy, so nothing here touches the repo.
       - name: Drop the tooling from the artifact
-        run: rm -rf bench.py test .githooks knowledge .claude CLAUDE.md
+        run: rm -rf bench.py site-url.py test .githooks knowledge .claude CLAUDE.md
 
       # What is left is the repository root, exactly as served locally by `python -m http.server`.
       - uses: actions/upload-pages-artifact@v3

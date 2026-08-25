@@ -38,6 +38,14 @@ actually did.
 - **`suite_layout`** — nav on one row at seven widths, one shared left rail, no sideways scroll at four
   shapes, the hero fitting on a landscape phone, reduced motion collapsing both rigs, and every internal
   link resolving.
+- **`suite_seo`** — the JSON-LD against the page it describes. Structured data is a second copy of the
+  truth, which is the failure this repository is organised against, so the two are made to disagree loudly:
+  the seventeen products must match the shelf in name, tagline, employer and order, and every skill, job
+  title, employer and proper noun the graph asserts must appear in the page's own text. A claim left in the
+  graph after its visible counterpart is deleted is hidden text, which Google's spam policies name as
+  grounds for removal from the index — so the suite fails rather than letting it ship. It also checks that
+  `robots.txt` and `sitemap.xml` serve, that every `<loc>` resolves, and that each lab is canonical at its
+  own URL and credits the same author `@id` as the home page.
 
 ## Three things the harness does that matter
 

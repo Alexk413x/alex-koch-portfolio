@@ -19,8 +19,9 @@
 (function () {
   'use strict';
 
-  // The www host, deliberately: the apex alexk413x.com does not resolve, so a code encoding it scans to nothing.
-  const SITE_URL = 'https://www.alexk413x.com';
+  // The address the site is actually served from. `python site-url.py <base>` moves this with the canonical
+  // URL, the cards and the sitemap; a code encoding a host that serves something else scans to the wrong site.
+  const SITE_URL = 'https://alexk413x.github.io/alex-koch-portfolio';
   const MODULE = '#dd6a20';    // --accent, the same orange the mark is drawn in
   const GROUND = '#0c0c0e';    // --ink
   const LEVEL = 'H';           // the recovery budget the centre stamp spends
