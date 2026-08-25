@@ -21,7 +21,7 @@ import { NOISE, PALETTE, TUNNEL } from './wormhole-glsl.js';
 
 export const UNIFORMS = [
   'uRes', 'uTime', 'uSteps', 'uSpread', 'uBend', 'uBendFlow', 'uBendScale',
-  'uFov', 'uCov', 'uWall', 'uRibs', 'uRibScale', 'uRibFlow',
+  'uFov', 'uCov', 'uWall', 'uRibs',
   'uGlow', 'uChroma', 'uVignette', 'uExposure', 'uThroatTint', 'uThroatRays',
   'uCoreCol', 'uCoreAuto', 'uCoreSpin', 'uCorePulse', 'uCorePulseRate', 'uCoreFade', 'uCoreFadeRate',
   'uNebOn', 'uNebCol', 'uNebColB', 'uNebMode', 'uNebHue',
@@ -50,7 +50,7 @@ uniform float uTime, uSteps, uSpread, uBend, uBendFlow, uBendScale;
  * set them from, so the shader evaluated wallProfile twice per step against two numbers the host had just sent
  * the same value to. Collapsed, the profile is computed ONCE and both marched layers read it: 2.6% of the frame,
  * for a byte-identical picture. */
-uniform float uFov, uCov, uWall, uRibs, uRibScale, uRibFlow;
+uniform float uFov, uCov, uWall, uRibs;
 uniform float uGlow, uChroma, uVignette, uExposure, uThroatTint, uThroatRays;
 uniform float uCoreAuto, uCoreSpin, uCorePulse, uCorePulseRate, uCoreFade, uCoreFadeRate;
 uniform vec3  uCoreCol;
@@ -88,6 +88,21 @@ vec2 bendAt(float z, float sec){
   return vec2(sin(u * 0.21) + 0.6 * sin(u * 0.37 + 1.7),
               cos(u * 0.17 + 0.9) + 0.6 * cos(u * 0.29 - 0.4)) * (uBend * 0.47);
 }
+
+/* THE CURVE IS ANCHORED AT THE EYE, and that is what lets BEND go past a token lean.
+ *
+ * bendAt is a curve through space, not through the CAMERA: at z = 0 it is already displaced, and it slides with
+ * BEND FLOW, so the whole tube used to shift sideways around a fixed viewer. The wall therefore closed on the eye
+ * long before the far end had bent very far, and BEND had to stop at 1.0 to avoid it -- which is a limit on the
+ * lean the tunnel is allowed rather than on anything real.
+ *
+ * Subtracting the curve's own value at the eye pins the axis to the viewer and lets the offset grow with depth
+ * instead. The near wall then stays put however hard the far end swings, so BEND reaches far enough to carry the
+ * throat off the side of the frame and out of sight behind the tube -- which is the point of a bend.
+ *
+ * bend0 IS ONE VALUE PER FRAME and the caller hoists it. Recomputing it per step would double the only
+ * transcendentals in the march.
+ */
 
 /* NEBULA — volumetric cloud in the tube's wall.
  *
@@ -165,7 +180,7 @@ float capsuleDist(vec3 rd, vec2 c, float z1, float z2, out float tHit){
  */
 struct Streaks { vec3 b0; vec3 b1; vec3 b2; vec3 b3; };
 
-Streaks lightspeed(vec3 rd, float sec){
+Streaks lightspeed(vec3 rd, float sec, vec2 bend0){
   Streaks acc;
   acc.b0 = vec3(0.0); acc.b1 = vec3(0.0); acc.b2 = vec3(0.0); acc.b3 = vec3(0.0);
 
@@ -202,7 +217,7 @@ Streaks lightspeed(vec3 rd, float sec){
      * no longer, and the layer goes black. Both use the bend at the depth this band is met at — the same
      * approximation TWIST already makes, and for the same reason: a capsule only has to be right where
      * the ray actually reaches it. */
-    vec2 bendM = bendAt(zMeet, sec);
+    vec2 bendM = bendAt(zMeet, sec) - bend0;
     vec2 rel = rd.xy * (zMeet / max(rd.z, 1e-4)) - bendM;
     float aBand = atan(rel.y, rel.x);
     float rot = uLsSpin * sec + uLsTwist * zMeet * 0.05;
@@ -378,6 +393,9 @@ void main(){
 
   int steps = int(uSteps);
 
+  // The curve's value at the eye. One evaluation per frame; every reader below works relative to it.
+  vec2 bend0 = bendAt(0.0, sec);
+
   /* THE MARCH STARTS WHERE THE RAY ENTERS THE SHELL, NOT AT THE EYE. Nothing exists inside the clear throat, and every
    * layer's density begins at its own radius, so the depth at which a ray first reaches the innermost enabled layer
    * solves exactly — and every step before that was integrating vacuum.
@@ -393,7 +411,7 @@ void main(){
 #ifdef HAVE_LS
   Streaks ls;
   ls.b0 = vec3(0.0); ls.b1 = vec3(0.0); ls.b2 = vec3(0.0); ls.b3 = vec3(0.0);
-  if (uLsOn > 0.5) ls = lightspeed(rd, sec);
+  if (uLsOn > 0.5) ls = lightspeed(rd, sec, bend0);
   // Transmittance sampled at each band's MIDDLE, which is the depth its streaks average out at. All start at 1,
   // so a scene with nothing marching in front leaves the streaks at full brightness.
   float tb0 = 1.0, tb1 = 1.0, tb2 = 1.0, tb3 = 1.0;
@@ -405,7 +423,11 @@ void main(){
    * tube's own radius, so a ray meets the bent shell EARLIER than the straight solve says and everything
    * before that was being skipped. Backing the start off by the bend's maximum costs a few steps of
    * vacuum on rays that did not need them and clips nothing. */
-  float tEnter = max(0.3, (innerMin * TUBE - uBend * 0.752) / max(k, 1e-5));
+  /* THE BACKOFF IS SMALLER NOW THE CURVE IS ANCHORED. The offset is zero at the eye and grows with depth, so
+     a ray meets the bent shell barely earlier than the straight solve says rather than 0.75 of a unit earlier.
+     Kept proportional to BEND and deliberately generous: a few steps of vacuum cost nothing, and starting late
+     clips the near wall. */
+  float tEnter = max(0.3, (innerMin * TUBE - uBend * 0.22) / max(k, 1e-5));
 
   /* THE STEPS GROW WITH DEPTH. A uniform march spends as much on the far half of the tunnel — where everything is
    * small, dim and already half-occluded — as on the near half that fills the screen.
@@ -426,7 +448,7 @@ void main(){
   float growth = max(pow(max(uSpread, 1.0), 1.0 / max(float(steps), 1.0)), 1.0001);
   float gp = pow(growth, float(steps));
   float dt = span * (growth - 1.0) / (gp - 1.0);
-  float t = tEnter + dt * dither(gl_FragCoord.xy, sec);
+  float t = tEnter + dt * dither(gl_FragCoord.xy);
   if (!anyLayer || span <= 0.0) steps = 0;
 
   vec3 col = vec3(0.0);
@@ -447,7 +469,7 @@ void main(){
     vec3 p = rd * t;
     // THE BEND IS APPLIED ONCE, HERE. s01 and every layer below read p.xy, so one offset leans the whole
     // field — the wall profile included, which is what stops the tunnel's mouth sliding off its own wall.
-    p.xy -= bendAt(p.z, sec);
+    p.xy -= bendAt(p.z, sec) - bend0;
 
     // Rotation-invariant, so ONE radial distance serves every layer however each happens to be spinning.
     float s01 = clamp(length(p.xy) / TUBE, 0.0, 1.0);
@@ -479,9 +501,12 @@ void main(){
        *
        * The crest is a fourth power, which is narrow, and the trough is scaled down to match, so lighting the
        * control does not simply make the frame brighter. */
-      float rc0 = 0.5 + 0.5 * cos((p.z + sec * uRibFlow) * uRibScale);
-      float band = rc0 * rc0; band *= band;
-      ribK = mix(1.0, 0.25 + 3.2 * band, uRibs);
+      // 4.4 rad/unit is a ring every 1.43 of the tunnel's 13, so about nine stand between the eye and the
+      // throat; 7.4 runs them a little ahead of the clouds. Both were controls and neither earned a panel row --
+      // there is one useful answer to "how far apart" at this tube's proportions, and this is it.
+      float rc0 = 0.5 + 0.5 * cos((p.z + sec * 7.4) * 4.4);
+      float ring = rc0 * rc0; ring *= ring;
+      ribK = mix(1.0, 0.25 + 3.2 * ring, uRibs);
     }
 
     vec3 emit = vec3(0.0);
@@ -570,7 +595,7 @@ void main(){
    * and the offset is bend * uFov / FAR. Left at the screen center it drifts off the mouth of its own
    * tunnel: at full BEND the far end sits 15% of the way to the edge of the frame. */
   float r = length(uv);
-  vec2 cuv = uv - bendAt(FAR, sec) * (uFov / FAR);
+  vec2 cuv = uv - (bendAt(FAR, sec) - bend0) * (uFov / FAR);
   float rc = length(cuv);
 
   vec3 tc = vec3(0.0);
@@ -595,15 +620,24 @@ void main(){
   float rays = 0.5 + 0.5 * sin(a * 7.0 + sin(a * 3.0 - sec * 0.37) * 1.6);
   float corona = smoothstep(0.34, 0.0, rc) * mix(1.0, 0.30 + 0.70 * rays, uThroatRays);
 
-  /* THE HOT CENTER HAS NO EDGE, and it used to have a hard one. A smoothstep over 0.045 of the frame is a DISC,
-   * and a disc at this brightness reads as a ball pasted over the picture rather than as the far end of anything
-   * — every shot of this scene showed it as exactly that. Cubed, the falloff peaks at the same value in the same
-   * place and reaches zero over three times the radius, so it blooms into the corona instead of stopping against
-   * it. */
+  /* THE HOT CENTER IS THE CORE'S OWN COLOR, and it used to be a hard-coded near-white constant. COLOR, SOURCE
+   * and TINT reached the corona and stopped at the edge of the center — three controls that named the thing and
+   * visibly did nothing to the brightest part of it.
+   *
+   * THE WHITE WAS DELIBERATE ONCE and the reasoning was sound: a source bright enough to clip reads white in the
+   * middle and colored at its edges. But the tone map only whitens what is actually over 1, and at the CORE this
+   * scene ships with, the center lands near 0.5 — so the hot middle simply rendered grey, which is why it read as
+   * a ball pasted over the picture rather than as the far end of anything.
+   *
+   * IT STILL BLOWS OUT WHEN IT IS GENUINELY BRIGHT. col/(col+1) saturates the largest channel first, so turning
+   * CORE up walks the center from the swatch toward white on its own — the constant was faking an effect the
+   * tone map already produces.
+   *
+   * NO EDGE EITHER: a smoothstep over 0.045 of the frame is a DISC. Cubed over three times the radius it peaks at
+   * the same value in the same place and blooms into the corona instead of stopping against it. */
   float hot = smoothstep(0.135, 0.0, rc);
   hot = hot * hot * hot;
-  vec3 throat = vec3(1.0, 0.97, 0.92) * hot * 2.6 * pulse
-              + tc * corona * 0.55 * pulse;
+  vec3 throat = tc * (hot * 2.6 + corona * 0.55) * pulse;
   col += throat * uGlow * fade * trans;
 
   float ca2 = uChroma * 0.2 * r;

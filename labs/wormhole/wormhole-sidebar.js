@@ -82,19 +82,18 @@ export const SECTIONS = [
    * which is a cloud the camera happens to be inside; hard, it arrives over a few percent and there is a surface
    * with a mouth in it.
    *
-   * RIBS are rings of dense wall with a thin tube between them, sliding toward the eye at their own FLOW. They
-   * are the cheapest strong cue in the lab: a ring sits at a fixed DEPTH, so it foreshortens toward the throat
-   * and arrives faster as it comes, which is what an eye reads as traveling rather than as watching a sky.
-   * SPACING reads as how many of them stand between here and the far end.
+   * RINGS thickens the wall into bands spaced along the tunnel that slide toward the eye. A ring sits at a fixed
+   * DEPTH, so it foreshortens toward the throat and arrives faster as it comes — which is the cue an eye reads as
+   * traveling rather than as watching a sky. It is ONE row: how far apart they sit and how fast they arrive are
+   * fixed at the only setting worth having at this tube's proportions, and as sliders they said nothing a reader
+   * could act on.
    *
    * BEND makes the axis a curve instead of a line. FLOW slides the curve toward the eye so corners arrive rather
    * than sit still; TIGHTNESS is how close together they come. */
   ['TUNNEL', [['coverage', 'COVERAGE', 0, 1, 0.01],
               ['wall', 'WALL', 0, 1, 0.01],
-              ['ribs', 'RIBS', 0, 1, 0.01],
-              ['ribScale', 'RIB SPACING', 0.3, 12, 0.05],
-              ['ribFlow', 'RIB FLOW', -20, 20, 0.1],
-              ['bend', 'BEND', 0, 1, 0.01],
+              ['ribs', 'RINGS', 0, 1, 0.01],
+              ['bend', 'BEND', 0, 4, 0.02],
               ['bendFlow', 'BEND FLOW', -20, 20, 0.1],
               ['bendScale', 'TIGHTNESS', 0.1, 3, 0.01]]],
 
@@ -219,11 +218,7 @@ export const FMT = {
   coverage:    as.pct(),
   wall:        as.ends(as.pct(), 'FOG', 'SURFACE', 1),
   ribs:        as.off(as.pct()),
-  // Spacing reads as how many rings stand between the eye and the throat, which is the thing being set. FAR is
-  // 13 world units and a ring repeats every TAU / uRibScale of them.
-  ribScale:    as.scaled(13 / (2 * Math.PI), 1, ' rings'),
-  ribFlow:     as.raw(1, 'c'),
-  bend:        as.off(as.pct()),
+  bend:        as.off(as.ofRange(4)),
   bendFlow:    as.raw(1, 'c'),
   bendScale:   as.mult(2),
   exposure:    as.mult(2),

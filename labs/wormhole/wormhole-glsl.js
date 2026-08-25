@@ -172,16 +172,12 @@ vec2 spin(vec2 xy, float ang){
  * gl_FragCoord lands on pixel centers, so dividing by the texture size hits texel centers exactly and the LINEAR
  * filter returns the stored value rather than a blend of four. The tile repeats every 64 pixels.
  *
- * THE TILE MOVES EVERY FRAME, and that is what makes a low step count watchable. Held still, the leftover march
- * error is a FIXED pattern: the scene slides through it while the stipple stays nailed to the screen, which reads
- * as a dirty display rather than as grain. Offset per frame, the error is different noise each time and motion
- * averages it away — the eye does for free what another eight steps would have paid for.
- *
- * OFFSET BY WHOLE TEXELS. A fractional shift lands every lookup between four texels, the LINEAR filter blends
- * them, and the result is no longer blue noise — which is the one property this is here for.
+ * THE TILE DOES NOT MOVE BETWEEN FRAMES. Offsetting it per frame decorrelates the leftover march error so motion
+ * averages it away, which is the textbook way to buy back a low step count -- and it was tried here and rejected
+ * on sight: what it actually reads as is a sizzle over the whole picture. Static grain sits still and the eye
+ * stops seeing it. Do not put it back without watching it move first.
  */
-float dither(vec2 fc, float sec){
-  vec2 o = floor(vec2(fract(sec * 21.7), fract(sec * 47.3)) * 256.0);
-  return textureLod(uNoise, (fc + o) / 256.0, 0.0).b;
+float dither(vec2 fc){
+  return textureLod(uNoise, fc / 256.0, 0.0).b;
 }
 `;
