@@ -5,13 +5,23 @@
 # to make the two disagree loudly: every product name, employer, skill and claim in the JSON-LD is asserted here
 # against the page's own text. A claim that survives in the graph after its visible counterpart is deleted is
 # hidden text, and Google's spam policies name that as grounds for removal from the index.
+import io
 import json
+import os
 import re
+import urllib.parse
 import urllib.request
 
 NAME = 'seo'
 
-CANON = 'https://www.alexk413x.com/'
+# The base is READ FROM THE PAGE, not written here. site-url.py moves the site between addresses, and a base
+# spelled out in the test as well would be one more place to forget -- which is the failure it exists to catch.
+# Whatever index.html declares canonical is what every other file then has to agree with.
+SELF_HOST = re.compile(r'https?://[\w.-]*alexk413x[\w.-]*[^\s"\'<>)]*')
+
+# Every file that writes the address down. Kept in step with FILES in site-url.py by the first check in run().
+ADDRESSED = ['index.html', 'robots.txt', 'sitemap.xml', 'site/share.js',
+             'labs/crt/CRT Lab.html', 'labs/reactor/Reactor.html', 'labs/wormhole/Wormhole.html']
 
 LABS = [
     ('labs/crt/CRT Lab.html', 'labs/crt/CRT%20Lab.html'),
@@ -57,7 +67,8 @@ def norm(s):
 
 
 def fetch(page, path):
-    url = 'http://127.0.0.1:%d/%s' % (page.port, path)
+    # Quoted, because one lab's filename has a space in it and a raw space in a request line is not a request.
+    url = 'http://127.0.0.1:%d/%s' % (page.port, urllib.parse.quote(path, safe='/%'))
     try:
         res = urllib.request.urlopen(url, timeout=5)
         return res.getcode(), res.read().decode('utf-8', 'replace')
@@ -110,6 +121,29 @@ def strings_in(node):
 
 def run(page, r):
     page.goto('index.html')
+
+    # --- ONE ADDRESS, WRITTEN IN SEVEN FILES ----------------------------------------------------------
+    # The site renders at any base because its links and assets are relative; these seven are the places the
+    # address is written down and cannot be. site-url.py moves them together, and this is what proves it did.
+    CANON = page.js("document.querySelector('link[rel=canonical]')?.href||''")
+    r.ok('the home page declares a canonical base', CANON.startswith('http'), CANON)
+
+    # A file that writes the address but is not in site-url.py's list would be left behind by a move, and this
+    # suite would never look at it either. The two lists are the same list.
+    root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    tool = io.open(os.path.join(root, 'site-url.py'), encoding='utf-8').read()
+    listed = re.search(r'FILES = \[(.*?)\]', tool, re.S)
+    r.check('site-url.py moves what this suite checks',
+            sorted(re.findall(r"'([^']+)'", listed.group(1))) if listed else None, sorted(ADDRESSED))
+
+    for path in ADDRESSED:
+        code, text = fetch(page, path)
+        if not r.check('%s is served' % path, code, 200):
+            continue
+        for url in set(SELF_HOST.findall(text)):
+            r.ok('%s writes one base: %s' % (path, url), url.startswith(CANON.rstrip('/')),
+                 'wanted the base %s' % CANON)
+
     doc, by_id = graph_of(page, r, 'index.html')
     if not doc:
         return
