@@ -24,30 +24,9 @@
 </head>
 <body>
 
-<!-- The wait, as the instrument coming up. One svg per moving ring, and the SVG is what rotates: circles
-     animated inside one drawing are not layer-promoted, so the rate wobbles exactly when the main thread is
-     busiest — which, during a shader compile, it entirely is. Removed by labReady() after the first frame. -->
-<div class="kit-load" role="status" aria-live="polite">
-  <div class="kit-ring" aria-hidden="true">
-    <svg viewBox="0 0 120 120">
-      <circle cx="60" cy="60" r="56" fill="none" stroke="rgba(255,180,84,.13)" stroke-width="1"/>
-      <circle cx="60" cy="60" r="52" fill="none" stroke="rgba(255,180,84,.15)" stroke-width="2.5"/>
-      <circle cx="60" cy="60" r="33" fill="none" stroke="rgba(255,180,84,.17)" stroke-width="1" stroke-dasharray="1 14"/>
-    </svg>
-    <svg class="kr-dash" viewBox="0 0 120 120">
-      <circle cx="60" cy="60" r="46" fill="none" stroke="var(--panel-accent, #ffb454)" stroke-width="1.5" stroke-dasharray="2 11" opacity=".55"/>
-    </svg>
-    <svg class="kr-hair" viewBox="0 0 120 120">
-      <circle cx="60" cy="60" r="41" fill="none" stroke="rgba(255,217,160,.24)" stroke-width="1" stroke-dasharray="1 8"/>
-    </svg>
-    <svg class="kr-arc" viewBox="0 0 120 120">
-      <circle cx="60" cy="60" r="52" fill="none" stroke="var(--panel-accent, #ffb454)" stroke-width="2.5"
-              stroke-linecap="round" stroke-dasharray="70 257" transform="rotate(-90 60 60)"/>
-    </svg>
-  </div>
-  <div class="kit-load-name">Reactor Lab</div>
-  <div class="kit-load-stage">Compiling shaders</div>
-</div>
+<!-- Empty, and fixed black over the whole viewport from the first paint, so a cold load never flashes.
+     mountLoader() fills it in; see labs/kit/lab.js. -->
+<div class="kit-load" role="status" aria-live="polite"></div>
 
 <div id="stage">
   <canvas id="core"></canvas>
@@ -71,15 +50,16 @@
 <script type="module">
 import { createQuad } from '../kit/glquad.js';
 import { createPanel, buildActions, mountPanelToggle } from '../kit/panel.js';
-import { persist, fitCanvas, runLoop, textOut, reportNoGL, escapeLeaves } from '../kit/lab.js';
+import { persist, fitCanvas, runLoop, textOut, reportNoGL, escapeLeaves, mountLoader } from '../kit/lab.js';
 
-// Escape leaves the instrument, the way the back button does.
-escapeLeaves();
 import { FRAG, UNIFORMS } from './reactor-shader.js';
 import { SECTIONS, FMT } from './reactor-sidebar.js';
 import { PRESETS, MODES, CAM_KEYS, defaultPreset, matchIdx } from './reactor-presets.js';
 import { createSim, ventTimings } from './reactor-sim.js';
 import { sendUniforms } from './reactor-uniforms.js';
+mountLoader();
+// Escape leaves the instrument, the way the back button does.
+escapeLeaves();
 
 const stage = document.getElementById('stage');
 const R = createQuad(document.getElementById('core'), {

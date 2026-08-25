@@ -134,7 +134,8 @@
   else runAll();
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(runAll);
 
-  window.addEventListener('resize', function () {
+  // Debounced past the kit's own frame gate: retracking measures every line, which is too much for a drag.
+  window.AKKIT.onResize(function () {
     clearTimeout(runAll._t);
     runAll._t = setTimeout(runAll, 120);
   });

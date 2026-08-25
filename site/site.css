@@ -2794,4 +2794,20 @@ html.booting { scroll-snap-type: none }
   /* The rule APPEARS rather than draws: the same clamp, multiplied hard enough that entering a section is a
      step to full. Position is information, so the readout itself never turns off. */
   #nav .links a::after { transform: scaleX(clamp(0, calc((var(--k, 0) - var(--i, 0)) * 1000), 1)) }
+
+  /* THE INSTRUMENT BODIES, STILL. lab-objects.js already composes them and skips the entrance, and its comment
+     says reduced motion gets them "composed and still" — but the ambience is a dozen infinite CSS animations it
+     cannot reach, so they went on turning, drifting and scanning underneath it. Every one of these rests at its
+     0% pose, which is the composed pose, so stopping them is exactly what that comment promised.
+     The state transitions are left alone: rx-collapse and crt-off run on departure, which never happens here. */
+  .wh .obj-3d, .wh .roll, .wh .wsp, .wh .rg,
+  .rx .core, .rx .core b,
+  .crt .tube, .crt s { animation: none }
+
+  /* .wh .rg is drawn at opacity 0 and lit by its own keyframes, so stopping the animation would leave the whole
+     tunnel invisible. Under reduced motion the resting pose the script writes per ring IS the picture. */
+  .wh .rg { opacity: 1 }
+
+  /* Named apart from the block above because these are the hover ambience rather than the resting ambience. */
+  .crt:hover .face u.r, .crt:hover .face u.g, .crt:hover .face u.b { animation: none }
 }

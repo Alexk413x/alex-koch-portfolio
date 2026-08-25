@@ -67,30 +67,9 @@
 </head>
 <body>
 
-<!-- The wait, as the instrument coming up. One svg per moving ring, and the SVG is what rotates: circles
-     animated inside one drawing are not layer-promoted, so the rate wobbles exactly when the main thread is
-     busiest — which, during a shader compile, it entirely is. Removed by labReady() after the first frame. -->
-<div class="kit-load" role="status" aria-live="polite">
-  <div class="kit-ring" aria-hidden="true">
-    <svg viewBox="0 0 120 120">
-      <circle cx="60" cy="60" r="56" fill="none" stroke="rgba(255,180,84,.13)" stroke-width="1"/>
-      <circle cx="60" cy="60" r="52" fill="none" stroke="rgba(255,180,84,.15)" stroke-width="2.5"/>
-      <circle cx="60" cy="60" r="33" fill="none" stroke="rgba(255,180,84,.17)" stroke-width="1" stroke-dasharray="1 14"/>
-    </svg>
-    <svg class="kr-dash" viewBox="0 0 120 120">
-      <circle cx="60" cy="60" r="46" fill="none" stroke="var(--panel-accent, #ffb454)" stroke-width="1.5" stroke-dasharray="2 11" opacity=".55"/>
-    </svg>
-    <svg class="kr-hair" viewBox="0 0 120 120">
-      <circle cx="60" cy="60" r="41" fill="none" stroke="rgba(255,217,160,.24)" stroke-width="1" stroke-dasharray="1 8"/>
-    </svg>
-    <svg class="kr-arc" viewBox="0 0 120 120">
-      <circle cx="60" cy="60" r="52" fill="none" stroke="var(--panel-accent, #ffb454)" stroke-width="2.5"
-              stroke-linecap="round" stroke-dasharray="70 257" transform="rotate(-90 60 60)"/>
-    </svg>
-  </div>
-  <div class="kit-load-name">CRT Lab</div>
-  <div class="kit-load-stage">Compiling shaders</div>
-</div>
+<!-- Empty, and fixed black over the whole viewport from the first paint, so a cold load never flashes.
+     mountLoader() fills it in; see labs/kit/lab.js. -->
+<div class="kit-load" role="status" aria-live="polite"></div>
 
 <div id="stage">
   <canvas id="tube"></canvas>
@@ -119,14 +98,19 @@ import { PH, hexRgb, kelvinRgb } from './crt-phosphor.js';
 import { bezelCols } from './crt-bezel.js';
 import { bootLines } from './crt-terminal.js';
 import { createFlicker } from './crt-flicker.js';
+import { createPower } from './crt-power.js';
+import { createMagnet } from './crt-magnet.js';
+import { createSurge } from './crt-surge.js';
 import { createRenderer, buildFaceLUT, buildOutlineLUT, toLinear } from './crt-gl.js';
 import { defaultPreset } from './crt-presets.js';
 import { makeFmt, SECTIONS } from './crt-sidebar.js';
 // The one thing this lab takes from the shared kit: Escape leaves, the way the back button does.
-import { escapeLeaves, labReady } from '../kit/lab.js';
-let shownOnce = false;
-escapeLeaves();
+import { escapeLeaves, labReady, mountLoader, persist } from '../kit/lab.js';
 import { createPanel, buildActions, mountPanelToggle } from '../kit/panel.js';
+
+let shownOnce = false;
+mountLoader();
+escapeLeaves();
 
 const canvas = document.getElementById('tube');
 // A FACTORY, because it holds machine phase -- two instruments on one page cannot share each other's state.
@@ -261,378 +245,75 @@ const state = defaultPreset(R.gpu);
 //      read as a 2.08-SCANLINE row height, which is legal and wrong, so the whole blob is retired.
 const MM_PER_UNIT = 900;   // mm of room across one glass half-height -- see the note in state
 const SAVE_KEY = 'crtgl', SAVE_V = 11;   // an address, not a name — see the note above before changing it
-try {
-  const raw = localStorage.getItem(SAVE_KEY);
-  const s = raw ? JSON.parse(raw) : null;
-  if (s && s.v === SAVE_V) {
-    for (const k in state) {
-      if (s[k] != null && typeof s[k] === typeof state[k]) state[k] = s[k];
-    }
-  }
-} catch (e) { /* private mode, quota, corrupt JSON -- none of them are a reason to fail to boot */ }
 
-let saveT = 0;
-function saveState() {
-  try { localStorage.setItem(SAVE_KEY, JSON.stringify(Object.assign({}, state, { v: SAVE_V }))); } catch (e) {}
-}
-/* DEBOUNCED ON CHANGE, FLUSHED ON THE WAY OUT. Writing on every input event means a localStorage round trip per
- * pixel of slider travel; pagehide and the hidden visibilitychange are the two events that actually fire when a
- * tab goes away, and unload is not reliable. */
-const queueSave = () => { clearTimeout(saveT); saveT = setTimeout(saveState, 400); };
-window.addEventListener('pagehide', saveState);
-document.addEventListener('visibilitychange', () => { if (document.hidden) saveState(); });
+/* THE SHARED STORE, not a private one. This lab kept its own restore for a while and it was the weaker of the
+ * two: it type-checked a stored value but never clamped it, so a blob carrying a number outside its control's
+ * current range booted the panel into a state it cannot represent — the thumb pins at one end while the readout
+ * shows the old number. The kit derives every clamp from SECTIONS, which is the same table the panel is built
+ * from, so a bound cannot disagree with its slider.
+ *
+ * `extra` is every key in state, because this lab has far more settings than it has slider rows: the phosphor
+ * name, the custom swatch, the frame colour and each section's master are all state and none of them is a row.
+ * Keys that DO have a row still get their range from SECTIONS; the union just makes sure nothing is dropped.
+ */
+const store = persist({ key: SAVE_KEY, version: SAVE_V, state, sections: SECTIONS, extra: Object.keys(state) });
+store.restore();
+const queueSave = store.queueSave;
 
-/* ============================================================================ THE POWER SEQUENCE
- *
- * PORTED FROM THE DOM LAB'S KEYFRAMES RATHER THAN REINVENTED, because those poses are the whole effect and a
- * second set of numbers describing the same animation is two descriptions free to drift apart. crt.css holds
- * @keyframes clCrtOn and clCrtOff; the tables below are those rules, stop for stop, and the beziers are the ones
- * the lab declares beside them in aScreen.
- *
- * OFF IS ON MIRRORED IN TIME. clCrtOn's 100% is clCrtOff's 0%, its 34% is the other's 66%, and the two beziers are
- * each other's reversal -- reverse(x1,y1,x2,y2) = (1-x2,1-y2,1-x1,1-y1) -- which is what makes the collapse read
- * as the strike backwards rather than as the same poses at the wrong speeds. crt.css says the same thing in its
- * own comment. Change one and recompute the other, in BOTH files.
- *
- * WHAT EACH COLUMN DRIVES HERE: sx/sy become uPwr, the picture's surviving extent. bright and op are multiplied
- * together into the level that rides on uFlicker -- the shader already spends that on everything the tube emits
- * and nothing it reflects, which is the exact boundary the lab gets by nesting its layers inside #clPower. */
-const PWR_ON = [
-  [0.00, 0.015, 0.004, 4.4, 1],
-  [0.34, 1.020, 0.006, 3.0, 1],
-  [0.70, 1.000, 1.000, 1.5, 1],
-  [1.00, 1.000, 1.000, 1.0, 1],
-];
-const PWR_OFF = [
-  [0.00, 1.000, 1.000, 1.0, 1],
-  [0.30, 1.000, 1.000, 1.5, 1],
-  [0.66, 1.020, 0.006, 3.0, 1],
-  [1.00, 0.015, 0.004, 4.4, 0],
-];
+/* THE POWER SEQUENCE, THE MAGNET AND THE MAINS FAULT all moved out to their own modules — they are three
+ * time-driven effect generators with no DOM in them, which is the shape crt-flicker already had. What stays here
+ * is what they touch on this page: the switch that is a saved setting, the typewriter's two deadlines, and the
+ * masthead. Each is a factory, because it holds phase and two instruments on one page cannot share a clock. */
+const PWR = createPower(!!state.power);
+const MAG = createMagnet();
+const SRG = createSurge(FLK);
 
-/* CSS EASES EACH INTERVAL, NOT THE WHOLE RUN, and getting that wrong is what makes a hand-rolled port of a
- * keyframe animation look almost right. animation-timing-function applies BETWEEN adjacent keyframes: the bezier
- * is re-applied from 0 to 1 across 0->34%, then again across 34->70%, then again across 70->100%. Easing the
- * global progress instead and interpolating the table linearly puts every pose at the wrong time except the ends.
- *
- * Newton on x, because a cubic-bezier timing function is a parametric curve and t is not its input -- the
- * progress is x and what is wanted is y. Four iterations from a linear seed is well inside a pixel for the two
- * curves here; the bisection fallback is for the flat-derivative case, where Newton cannot converge at all.
- *
- * THE POLYNOMIAL FORM, NOT THE BERNSTEIN ONE, and writing it out by hand is how this got its first bug. With the
- * endpoints pinned at 0 and 1 the curve expands to (1+3a-3b)t^3 + (3b-6a)t^2 + 3a*t, and the version here before
- * it carried a 6 where the middle term wants a 3 -- so it evaluated to 3 at t=1 instead of 1. Every pose still
- * landed on its keyframe, because those are the interval ENDS and are read off the table; only the motion
- * between them was wrong, which is exactly the kind of error that survives a look and not a measurement.
- * Verified against the identities: cubic-bezier(.5,0,.7,0) must reduce to y = t^3 and (.3,1,.5,1) to 1-(1-t)^3. */
-function bezier(x1, y1, x2, y2) {
-  const curve = (t, a, b) => (((1 + 3 * a - 3 * b) * t + (3 * b - 6 * a)) * t + 3 * a) * t;
-  const slope = (t, a, b) => 3 * (1 + 3 * a - 3 * b) * t * t + 2 * (3 * b - 6 * a) * t + 3 * a;
-  return (x) => {
-    if (x <= 0) return 0;
-    if (x >= 1) return 1;
-    let t = x;
-    for (let i = 0; i < 4; i++) {
-      const e = curve(t, x1, x2) - x;
-      if (Math.abs(e) < 1e-5) return curve(t, y1, y2);
-      const d = slope(t, x1, x2);
-      if (Math.abs(d) < 1e-6) break;
-      t -= e / d;
-    }
-    let lo = 0, hi = 1; t = x;
-    for (let i = 0; i < 20; i++) { t = (lo + hi) * 0.5; if (curve(t, x1, x2) < x) lo = t; else hi = t; }
-    return curve(t, y1, y2);
-  };
-}
-const EASE_ON  = bezier(0.3, 1, 0.5, 1);
-const EASE_OFF = bezier(0.5, 0, 0.7, 0);
-
-// The pose at progress u, with the interval's own easing applied inside it -- see the note above.
-function poseAt(track, u, ease) {
-  let i = 0;
-  while (i < track.length - 2 && u > track[i + 1][0]) i++;
-  const a = track[i], b = track[i + 1];
-  const e = ease(Math.min(1, Math.max(0, (u - a[0]) / Math.max(1e-6, b[0] - a[0]))));
-  const at = (j) => a[j] + (b[j] - a[j]) * e;
-  return { sx: at(1), sy: at(2), lvl: at(3) * at(4) };
-}
-
-/* THE PHASE IS NOT state.power. The switch is a setting and is saved; where the animation has got to is neither,
- * and persisting it would restore a page mid-collapse. state.power flips the instant the button is pressed --
- * which is also what feeds crt-bezel, so the moulding's own tone changes with the switch rather than with the
- * picture, exactly as the lab has it -- and the phase runs the picture down or up afterwards. */
-let pwrPhase = state.power ? 'on' : 'off';
-let pwrT0 = 0;
-/* TWO DEADLINES, READ IN THE FRAME LOOP RATHER THAN SET AS TIMERS.
- *
- * The lab uses setTimeout because its picture is DOM and has to be erased imperatively. Here the typewriter is
- * already a frame-driven counter, so a deadline it compares against is one mechanism instead of two -- and a
- * timer that fires in a backgrounded tab, where this page renders nothing at all, would advance the boot text
- * against a screen that is not being drawn. Both are absolute performance.now() stamps; 0 means no deadline. */
+/* TWO DEADLINES, READ IN THE FRAME LOOP RATHER THAN SET AS TIMERS. The typewriter is already a frame-driven
+ * counter, so a deadline it compares against is one mechanism instead of two — and a timer that fires in a
+ * backgrounded tab, where this page renders nothing, would advance the boot text against a screen nobody is
+ * drawing. Both are absolute performance.now() stamps; 0 means no deadline. */
 let typeAt = 0, wipeAt = 0;
 
-/* TYPING STARTS HALF A SECOND AFTER THE TUBE HAS FINISHED OPENING, and the delay is derived from WARM-UP rather
- * than being a flat number that happens to land after it at one setting and mid-strike at every other. */
+/* THE PHASE IS NOT state.power. The switch is a setting and is saved; where the animation has got to is neither,
+ * and persisting it would restore a page mid-collapse. state.power flips the instant the button is pressed —
+ * which is what feeds crt-bezel, so the moulding's tone changes with the switch rather than with the picture. */
+
+// Typing starts half a second after the tube has finished opening, derived from WARM-UP rather than flat.
 function powerOn() {
   const now = performance.now();
-  state.power = 1; pwrPhase = 'ignite'; pwrT0 = now;
-  /* WIPED ON THE WAY UP AS WELL AS ON THE WAY DOWN, for the case where the switch comes back before the collapse's
-   * own wipe was due. Without it the tube strikes with the previous screen already on it. */
+  state.power = 1;
+  PWR.strike(now);
+  // Wiped on the way up as well as down, for a switch that comes back before the collapse's own wipe was due.
   typed = 0; wipeAt = 0;
   typeAt = now + state.ignite * 1000 + 500;
   syncMode();
 }
-/* THE TEXT IS WIPED AFTER THE COLLAPSE, NOT WITH THE SWITCH. The text falling in with the rest of the picture IS
- * the power-off animation -- clearing it on the click would drop the content a frame before the tube does
- * anything and the collapse would play over nothing. */
+
+/* The text is wiped AFTER the collapse, not with the switch: the text falling in with the rest of the picture is
+ * the power-off animation, and clearing it on the click would play the collapse over nothing. */
 function powerOff() {
   const now = performance.now();
-  state.power = 0; pwrPhase = 'collapse'; pwrT0 = now;
+  state.power = 0;
+  PWR.collapse(now);
   typeAt = 0; wipeAt = now + state.collapse * 1000 + 60;
   syncMode();
 }
+
 function togglePower() { if (state.power) powerOff(); else powerOn(); }
 
-// Where the animation has got to this frame. Both settled phases return exact constants, so a tube that is simply
-// on pays nothing for the machinery and hands the shader the 1,1 its uniform branch tests for.
-/* PURE: it reads the phase and never writes it, so a measurement can sample the whole run without driving it.
- * The version before this ended the transition itself, which meant asking what the pose WOULD be past the end
- * silently switched the tube off -- a reading that changes what it is reading. Retiring the phase is the frame
- * loop's job, one line below, because that is the thing whose job is to move time forward. */
-function poseFor(now) {
-  if (pwrPhase === 'on')  return { sx: 1, sy: 1, lvl: 1 };
-  if (pwrPhase === 'off') return { sx: 1, sy: 1, lvl: 0 };
-  const on = pwrPhase === 'ignite';
-  const u  = (now - pwrT0) / (Math.max(0.05, on ? state.ignite : state.collapse) * 1000);
-  if (u >= 1) return on ? { sx: 1, sy: 1, lvl: 1 } : { sx: 1, sy: 1, lvl: 0 };
-  return poseAt(on ? PWR_ON : PWR_OFF, u, on ? EASE_ON : EASE_OFF);
-}
-function powerNow(now) {
-  if (pwrPhase === 'ignite' || pwrPhase === 'collapse') {
-    const dur = Math.max(0.05, pwrPhase === 'ignite' ? state.ignite : state.collapse) * 1000;
-    if (now - pwrT0 >= dur) pwrPhase = pwrPhase === 'ignite' ? 'on' : 'off';
-  }
-  return poseFor(now);
-}
+// What the magnet cannot know for itself. Rebuilt per sample; every term is already read per frame.
+const magEnv = () => ({
+  face: view.face,
+  aspect: cssPx.w / Math.max(1, cssPx.h),
+  rgbScale: 1 / rasterScale() / Math.max(1, cssPx.w),
+});
 
-/* ============================================================================ THE MAGNET
- *
- * WHAT THE REFERENCE DOES, AND WHY THIS IS NOT A PORT OF IT.
- *
- * The DOM build animated a CSS transform -- translate, rotate, skew, scale -- on the element
- * holding the TEXT. Its own doc block is explicit that the layers describing the glass "must stay still, or the
- * tube wobbles rather than the picture in it", so the scanlines, the phosphor wash and the grid deliberately do
- * NOT move. That was the correct call for a stack of composited DOM layers: there is no way to bend one of them
- * without re-rastering all of them, and a rigid sheet is the only transform CSS can apply to a live subtree.
- *
- * It is the wrong call for what a magnet actually does. A magnet bends the BEAM. The scanline is the beam's own
- * path across the faceplate, so it bends too -- so does the mask the beam writes through, so does the grid, so
- * does the bloom that light casts. The one thing that does NOT move is the glass. This build can say that
- * directly, because every one of those is a function of one coordinate, and the shader displaces that coordinate.
- *
- * WHAT IS LEFT HERE IS THE TIMELINE. The reference's was a single left-to-right crossing at a fixed height --
- * mag = -0.2 + 1.4t for x, a small oscillation for y -- and carried straight over it read as A WAVE ACROSS THE
- * MIDDLE rather than as a magnet. Two reasons, and both are fixed below rather than tuned around:
- *
- *   THE POLE NEVER LEFT THE MIDDLE. Its y stayed within a tenth of centre, so the top and bottom of the tube
- *   never saw the near field at all and the disturbance could only ever be a horizontal band. It now roams the
- *   whole face on two incommensurate rates, so it visits the corners and passes the middle at an angle.
- *
- *   THE FIELD WAS TOO WIDE TO HAVE A PLACE. At REACH 0.45 the pole's gaussian covered most of the picture, which
- *   is a global breathing and not something you can point at. A magnet you can SEE is a local one: the field has
- *   to fall off inside the picture so there is somewhere it is not.
- */
-/* AND IT IS A SPRING, NOT A SINE, which is the other half of "pully rather than twisty".
- *
- * A raster under a magnet is not a soft body being kneaded -- it is a deflection circuit being fought. The beam
- * is yanked, the supply resists, and when the field passes the picture springs back THROUGH its rest position
- * and rings down. A sine has none of that: it is symmetric, it has no sense of being released, and every part of
- * the cycle looks like every other part. So the amplitude carries a damped oscillator whose ringing rides on top
- * of the envelope -- fast to grab, slow to let go, overshooting on the way back.
- *
- * SPRING is how much of the motion is that ringing. At 0 this is the smooth sweep it was.
- */
-let warpT0 = null, warpSeed = 0;
-function triggerWarp(now) {
-  warpT0 = (now == null ? performance.now() : now);
-  // A different path every press -- see the surge's note on the same idea. The SHAPE is authored; where the pole
-  // happens to wander is not, and a magnet arriving on exactly the same track twice is the tell that it is canned.
-  warpSeed = Math.random() * 1000;
-}
-const WARP_REST = { k: [0, 0, 0, 0], pos: [0.5, 0.5], r: [0.5, 0.55], d: [0, 0] };
-function warpAt(now) {
-  if (warpT0 == null) return WARP_REST;
-  const dur = Math.max(0.05, state.warpSec) * 1000;
-  const t = (now - warpT0) / dur;
-  if (t < 0 || t >= 1) return WARP_REST;
-  const TAU = Math.PI * 2;
-  const env = Math.sin(Math.PI * t);
-  const w   = 0.6 + state.wwig * 1.6;             // WIGGLE, as the rate the pole roams at
-  /* THE SPRING. exp(-d u) sin(w u) is the classic under-damped response: it overshoots, comes back past rest and
-   * rings down. Centred on 1 so it MODULATES the pull rather than replacing it, and floored at 0.15 so a hard
-   * ring cannot invert the field -- a magnet does not repel on the rebound; the picture does. */
-  const ring = Math.exp(-t * 3.2) * Math.sin(t * TAU * (1.4 + state.wwig * 2.2));
-  const spr  = Math.max(0.15, 1 + ring * state.warpSpring * 1.6);
-  const amp  = state.wint * env * spr;
-  /* THE DOME TRADES THE SWEEP FOR THE SQUEEZE, and this argument is the reference's, kept because it is right.
-   *
-   * A picture painted on the inside of a bowl cannot slide sideways as freely as one on a flat sheet -- the walls
-   * are in the way -- so the same magnet that shoves a flat raster across pushes a domed one into the middle. So
-   * the travelling pole's authority is scaled DOWN by the dome and handed to the pinch, rather than added to it:
-   * total displacement stays in the same range and a deep FACE cannot throw the picture off the tube. Flat face,
-   * flat trade, and the warp is exactly the sweep it always was. */
-  const dome  = Math.min(1, Math.abs(view.face));
-  const slide = 1 - dome * 0.55;
-  /* THE POLE ORBITS, AND THAT IS THE THIRD GO AT THIS PATH.
-   *
-   * First it was the reference's straight left-to-right crossing, which read as a wave because a pole that only
-   * ever occupies one height can only disturb one band. Then it was two incommensurate sines -- which does cover
-   * the face, but a Lissajous figure spends most of its time reversing at the ends of its travel, and a thing
-   * that keeps stopping and turning around still reads as oscillation. It was a wave in two axes instead of one.
-   *
-   * A magnet being walked around a screen does not oscillate. It GOES ROUND, continuously, in one direction, and
-   * what makes it feel physical is that it does not go round at a constant rate -- a hand swings faster through
-   * the bottom of an arc than the top. So: a real orbit, its direction drawn per press, its angular rate varying
-   * within the run, and its radius breathing so it swings wide and then cuts close.
-   *
-   * The x radius carries the aspect, or a circular orbit in suv is an ellipse on a 16:9 tube -- squashed on the
-   * axis with more room, which is precisely backwards. */
-  const s    = warpSeed;
-  const spin = (s % 2 < 1) ? 1 : -1;                        // clockwise or anticlockwise, drawn at the press
-  const laps = 1 + (s % 1.7);                               // how far round it gets in one run
-  /* THE RATE VARIES WITHIN THE LAP. t + k sin(2pi t) is a time warp, not a second oscillator: the pole never
-   * reverses, it just covers some of the circle faster than the rest. WIGGLE drives how uneven that is. */
-  const tw   = t + Math.min(0.4, state.wwig * 0.13) * Math.sin(t * TAU);
-  const ang  = spin * TAU * laps * tw + s;
-  const rad  = 0.30 + 0.20 * Math.sin(t * TAU * 1.3 + s * 2.1);   // swinging wide, then cutting close
-  const asp  = Math.max(0.2, cssPx.w / Math.max(1, cssPx.h));
-  const px   = 0.5 + rad * Math.cos(ang) * Math.min(1.6, asp * 0.85);
-  const py   = 0.5 + rad * Math.sin(ang);
-  /* THE DRAG IS POINTED HERE, because which way the picture leans is a fact about where the pole is, and that is
-   * this function's business rather than the shader's. Toward the pole, so the whole raster follows it round --
-   * which is what turns an orbiting disturbance into an orbiting PICTURE. */
-  const dl = Math.hypot(px - 0.5, py - 0.5) || 1;
-  const drag = amp * state.warpDrag * slide;
-  return {
-    // The squeeze toward the middle, breathing with the spring rather than with a second oscillator.
-    k: [amp * state.warpPinch * (0.45 + 0.55 * dome),
-        amp * state.warpPull * slide,
-        amp * state.warpSwirl,
-        /* PX -> the picture's own 0..1, here and nowhere else. Same conversion, same reason, as the beam tip's
-         * radii and the frame's width: the panel speaks pixels and the shader speaks picture widths.
-         *
-         * AND OVER THE RASTER SCALE, like the static convergence. This one is deliberately violent -- 31.5px
-         * is a radius chosen so the three rasters land a full glyph apart and the text genuinely comes to
-         * pieces. A full glyph is 30px on a desktop and 12px on a phone, so leaving it fixed would not make
-         * the phone's warp more dramatic, it would make it a different effect: the text is not pulled apart,
-         * it is gone. Scaling keeps "a glyph apart" meaning a glyph. */
-        amp * state.warpRGB / rasterScale() / Math.max(1, cssPx.w)],
-    pos: [px, py],
-    r: [Math.max(0.02, state.warpR), state.warpRim],
-    d: [(px - 0.5) / dl * drag, (py - 0.5) / dl * drag],
-  };
-}
-
-/* ============================================================================ THE MAINS FAULT
- *
- * THE TIMELINE IS NOT REIMPLEMENTED. crt-flicker owns it -- seven phases over 4.6s, deterministic, the same fault
- * every run -- and it owns it because it already owns the two things a supply failure has to move together: the
- * bulbs' output and their colour temperature. This fires it and decides how hard each channel is spent.
- *
- * SAMPLED AT A SCALED TIME so RATE can stretch or compress the whole event without the module needing to know.
- * surgeAt is pure, so sampling it off its own clock is safe; a rate of 2 simply runs out of timeline in half the
- * wall-clock, which is what "twice as fast" means.
- *
- * WHY THE FIXTURE AND THE TUBE MOVE TOGETHER: they are handed the SAME sample. A mains fault is upstream of both,
- * so the room dimming while the screen holds steady -- or either one leading the other -- would be the giveaway
- * that they are two effects rather than one event. The reference's note on triggerSurge makes exactly this point,
- * and it is the reason the surge is shared state inside the flicker module rather than a property of either. */
-let surgeT0 = null, surgeSeed = 0;
-function triggerSurge(now) {
-  surgeT0 = (now == null ? performance.now() : now);
-  /* A NEW FAULT EVERY PRESS, AND THE REFERENCE DELIBERATELY HAS THE OPPOSITE. crt-flicker's note is explicit --
-   * "the same fault every time, because the shape is the point", hashed off the step index rather than drawn
-   * from Math.random. That is right for the thing it protects: the ORDER of the levels is authored, and a
-   * timeline that reshuffles itself is a timeline nobody can tune.
-   *
-   * What it does not protect is the GRAIN. Where the guttering happens to chop, and whether the supply makes two
-   * failed attempts at restriking in the dark or four, carry no authored meaning at all -- and being identical
-   * every press is exactly what makes the fourth press stop being alarming. So the shape stays fixed and comes
-   * from the module; the grain is seeded here and is different every time. */
-  surgeSeed = Math.random() * 4096;
-  FLK.triggerSurge(surgeT0);
-}
-// Deterministic given the seed, so one fault plays the same way from any sampled time -- which is what lets the
-// whole event be stepped through and measured. New press, new seed, new grain.
-const sNoise = (n) => {
-  const v = Math.sin(n * 12.9898 + surgeSeed * 78.233) * 43758.5453;
-  return v - Math.floor(v);
-};
-// Null when nothing is running. `bite` is how far from normal the fault has pushed the supply, which is what the
-// extra guttering rides on: worst at the collapse and the cut, quiet through the build.
-function surgeNow(now) {
-  if (surgeT0 == null) return null;
-  const dt = now - surgeT0;
-  const sg = FLK.surgeAt(surgeT0 + dt * Math.max(0.05, state.surgeRate));
-  if (!sg) { if (dt > 0) surgeT0 = null; return null; }
-  // The gains scale the DEPARTURE from normal, so 0 removes the channel and 1 is the reference's own fault.
-  const g = (v, gain) => 1 + (v - 1) * gain;
-  let screen = Math.max(0, g(sg.screen, state.surgeScreen));
-  let lamp   = Math.max(0, g(sg.lamp,   state.surgeLamp));
-  const bite = Math.min(1, Math.abs(1 - sg.screen));
-
-  /* THE CHOP -- hard-edged steps, not a dip, and this is most of "more flicker".
-   *
-   * screenFlicker is a smooth sin() dip, which is the right model for a phosphor wandering on a healthy supply
-   * and the wrong one for an arc losing its strike: that is a SWITCH, and it reads as one. crt-flicker's own
-   * guttering inside the STRUGGLE phase is hard-edged for exactly this reason. So the fault carries its own
-   * square chop on top, at GUTTER RATE, biting hardest where the supply is furthest from normal.
-   *
-   * The lamps take a shallower share of the same chop. A fluorescent has a metre of ionised gas with some
-   * thermal inertia in it; a phosphor dot has none, so the screen snaps where the tubes sag. */
-  let chop = 1;
-  if (state.surgeChaos > 0.001 && state.surgeStr > 0.001) {
-    const step  = Math.floor(dt / (1000 / Math.max(0.5, state.surgeHz)));
-    const h     = sNoise(step);
-    const pDrop = (0.05 + 0.55 * bite) * state.surgeChaos;
-    if (h < pDrop) chop = 1 - state.surgeStr * (0.35 + 0.65 * (1 - h / Math.max(1e-6, pDrop)));
-  }
-  screen *= chop;
-  lamp   *= 1 - (1 - chop) * 0.55;
-
-  /* THE FAILED RESTRIKES, and this is the suspense.
-   *
-   * The dark phase is 900ms of authored nothing, and its own note says it is "long enough to stop waiting, which
-   * is what makes the recovery a surprise". That works once. What it does not have is the thing a real supply
-   * does while it is down: TRY. A breaker that has tripped on a fault does not sit politely dark -- the arc
-   * attempts to restrike, gets a fraction of a second of light, and loses it again, and each attempt makes the
-   * next silence longer rather than shorter.
-   *
-   * So where the timeline is AT ZERO -- and only there, so this can never brighten a phase that is already lit
-   * or argue with the flash -- a seeded cell can produce a brief partial strike that dies. Different count and
-   * placement every press, which is the whole point: you cannot learn when they are coming. */
-  if (state.surgeChaos > 0.001 && sg.screen < 0.03) {
-    const cell = Math.floor(dt / 80);
-    const sh   = sNoise(cell + 977);
-    /* 0.20 rather than 0.13, and the reason is measured: at the lower rate two presses in four produced NO
-     * attempt at all, and a suspense device that is absent half the time is not one. This puts the expected
-     * count at three or four across the dark, so a silent one is rare rather than routine. */
-    if (sh < 0.20 * state.surgeChaos) {
-      const strike = 0.10 + sh * 2.6;
-      screen = Math.max(screen, strike);
-      lamp   = Math.max(lamp,   strike * 0.75);
-    }
-  }
-  return {
-    screen, lamp, bite,
-    warm: sg.warm,
-    /* HEALTH, NOT JUST BRIGHTNESS -- the reference's own correction, and worth carrying over verbatim. Dimming a
-     * fluorescent uniformly is not how one starves: the arc collapses toward the cathodes, so the ENDS stay lit
-     * and orange while the middle dies. crt-fixture already draws that as low HEALTH, so the fault only has to
-     * ask for less of it. Floored at 0.22 because below that the ends go too, and the ends are the point. */
-    health: 1 - (1 - Math.max(0.22, Math.min(1, sg.lamp))) * state.surgeHealth,
-  };
-}
+const triggerWarp = (now) => MAG.trigger(now);
+const warpAt = (now) => MAG.at(now, state, magEnv());
+const triggerSurge = (now) => SRG.trigger(now);
+const surgeNow = (now) => SRG.at(now, state);
+const poseFor = (now) => PWR.at(now, state);
+const powerNow = (now) => PWR.advance(now, state);
 
 // The masthead's second line, naming the mode rather than a setting -- the lab's own modeName.
 const modeEl = document.querySelector('#mast .s');
@@ -1477,7 +1158,7 @@ function frame(now) {
   syncView();
   const t = now / 1000;
   /* THE POWER SEQUENCE, EVALUATED FIRST, because both deadlines below are read against it and the picture it
-   * hands out is what everything after this draws. See the note where PWR_ON is declared. */
+   * hands out is what everything after this draws. See the pose tables in crt-power.js. */
   const pwr = powerNow(now);
   const wp  = warpAt(now);
   if (wipeAt && now >= wipeAt) { typed = 0; wipeAt = 0; }
@@ -1892,12 +1573,12 @@ window.CRTGL = { state, get R() { return R; }, resize, textGrid, drawContent, re
    * is the pose the shader is being handed, so a reading can be checked against what was asked for -- and it is
    * the PURE one, so sampling past the end of a run reports where the animation lands without ending it. */
   powerOn, powerOff, togglePower, powerAt: poseFor,
-  get powerPhase() { return pwrPhase; }, get powerT0() { return pwrT0; },
+  get powerPhase() { return PWR.phase; }, get powerT0() { return PWR.t0; },
   /* THE TWO EVENTS, AND THE POSE EACH IS HANDING THE SHADER. Both samplers are pure, so a whole run can be
    * stepped through and read off without driving it -- which is the only way anything here has ever been
    * measured, since Chrome runs no animation frames in a tab that is not front-most. */
-  triggerWarp, warpAt, get warpT0() { return warpT0; },
-  triggerSurge, surgeAt: surgeNow, get surgeT0() { return surgeT0; },
+  triggerWarp, warpAt, get warpT0() { return MAG.t0; },
+  triggerSurge, surgeAt: surgeNow, get surgeT0() { return SRG.t0; },
   surgeMs: () => FLK.surgeMs() };
 </script>
 </body>

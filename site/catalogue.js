@@ -15,6 +15,9 @@
 import { coverArt } from './cover-art/index.js';
 
 (function () {
+  /* A module reaching for a global, because site/kit.js is a classic script: every other file on this page is
+     one, and converting them all is a change to how the page loads rather than to what it does. */
+  const K = window.AKKIT;
 
   const shelf = document.getElementById('shelf');
   const reelHost = document.getElementById('reel');
@@ -334,13 +337,17 @@ import { coverArt } from './cover-art/index.js';
   function slideTo(target) {
     cancelAnimationFrame(glide);
     const from = pos, delta = target - pos;
-    if (!delta) { place(); settleCase(); armAutoTurn(); return; }
+    if (!delta || reduced.matches) {
+      glide = 0; pos = target;
+      place(); settleCase(); armAutoTurn();
+      return;
+    }
     const ms = Math.min(620, 240 + Math.abs(delta) * 80);
     let t0 = 0;
     const step = (ts) => {
       if (!t0) t0 = ts;
       const p = Math.min(1, (ts - t0) / ms);
-      pos = from + delta * (1 - Math.pow(1 - p, 3));
+      pos = from + delta * K.easeOutCubic(p);
       place();
       if (p < 1) { glide = requestAnimationFrame(step); return; }
       glide = 0; pos = target; place();
@@ -964,7 +971,13 @@ import { coverArt } from './cover-art/index.js';
    * to carry: a settle for a deliberate turn, and a spring with a touch of overshoot for the way home from a
    * drag — which is what a hinged plastic thing does when you let go of it.
    */
-  const EASE_TURN = (p) => 1 - Math.pow(1 - p, 3);
+  /* REDUCED MOTION LANDS THE TWEEN, IT DOES NOT CANCEL THE MOVE. Both animations below are hand-written
+     because neither the wireframe nor the rack's fan can be transitioned by the stylesheet, so the media query
+     cannot reach them and has to be asked here. The cover still turns over on its timer and the rack still
+     steps — they simply arrive rather than travel. */
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+  const EASE_TURN = K.easeOutCubic;
   const EASE_SPRING = (p) => {
     const c = 1.7;
     return 1 + (c + 1) * Math.pow(p - 1, 3) + c * Math.pow(p - 1, 2);
@@ -976,6 +989,12 @@ import { coverArt } from './cover-art/index.js';
 
   function swingTo(toTurn, toTilt, ms, ease) {
     cancelAnimationFrame(swing);
+    if (reduced.matches) {
+      swing = 0; swingEnds = 0;
+      turn = toTurn; tilt = toTilt;
+      apply(); setTurn(toTurn);
+      return;
+    }
     swingEnds = performance.now() + ms;
     const fromTurn = turn, fromTilt = tilt;
     let t0 = 0;
@@ -1229,10 +1248,9 @@ import { coverArt } from './cover-art/index.js';
     if (reel.contains(document.activeElement)) boxes[at].focus();
   });
 
-  window.addEventListener('resize', place);
-  window.addEventListener('resize', sizeCase);
-  window.addEventListener('load', sizeCase);
-  window.addEventListener('load', place);
+  // The kit's resize channel already carries load and a body observer, so both of these arrive once per frame.
+  K.onResize(place);
+  K.onResize(sizeCase);
 
   /* setTurn first: stepCase asks which face is out before it decides which one to draw, and go(0) runs the
      whole placement. */

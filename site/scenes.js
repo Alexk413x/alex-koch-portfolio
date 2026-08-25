@@ -32,7 +32,7 @@
   const RING_SPAN = .8;     // viewport heights it takes to go, finishing before the next section arrives
 
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
-  let hold = 0, exit = .7, vh = 1, queued = false, loopRun = .9;
+  let hold = 0, exit = .7, vh = 1, loopRun = .9;
 
   /* Reads the scene runway back off the stylesheet. site.css is the only place --scene-hold and --scene-exit are
      written, so the height the stage stays pinned for and the range the exit is scrubbed across cannot disagree —
@@ -78,7 +78,8 @@
     if (contactSec) contactTop = contactSec.offsetTop;
   }
 
-  const clamp = (v) => (v < 0 ? 0 : v > 1 ? 1 : v);
+  const K = window.AKKIT;
+  const clamp = K.clamp01;
 
   /* THE LIVE WINDOW HEIGHT, for anything that reports a POSITION rather than scrubs one. The scrub reads the
      cached vh, which is what a per-frame loop should do; the exported stops must not, because the order the
@@ -316,8 +317,7 @@
   }
 
   function frame() {
-    queued = false;
-    const y = window.scrollY || window.pageYOffset || 0;
+    const y = K.scrollY();
     morph(y);
     if (!shortLoop.matches) loop(y);
     const e = ease((y - hold * vh) / (exit * vh));
@@ -342,9 +342,7 @@
 
   function onScroll() {
     holdArm();
-    if (queued) return;
-    queued = true;
-    requestAnimationFrame(frame);
+    frame();
   }
 
   function onResize() {
@@ -577,7 +575,7 @@
   const HOLD_MIN = 380, HOLD_MAX = 1700;
   const glideMs = (dist) => Math.max(HOLD_MIN, Math.min(HOLD_MAX, Math.abs(dist) / HOLD_SPEED * 1000));
 
-  let holdWait = 0, holdAnim = 0, anchorY = -1;
+  let holdWait = 0, anchorY = -1;
 
   // The positions from that one table, with the beats that are not there dropped.
   function railStops() {
@@ -615,10 +613,14 @@
     return f < .5 ? lo : hi;
   }
 
+  /* stopGlide restores scroll snapping as well as cancelling the frame. Cancelling without restoring is what
+     left snapping switched off for the rest of the session when the rig stood itself down mid-glide. */
   function holdStop() {
     if (holdWait) { clearTimeout(holdWait); holdWait = 0; }
-    if (holdAnim) { cancelAnimationFrame(holdAnim); holdAnim = 0; }
+    if (railGliding()) K.stopGlide();
   }
+
+  const railGliding = () => K.glideOwner() === 'rail';
 
   /* Snapping is stood down for the duration. It grabs programmatic scrolls too, so the last frames of a glide
      would be yanked onto the target rather than eased onto it — the same destination, arrived at as a jump.
@@ -626,25 +628,14 @@
      anchor still on the one they left, so the commit above reads their position as the decision it was rather
      than as a reversal of a journey that never finished. */
   function holdGlide(to) {
-    const from = window.scrollY || window.pageYOffset || 0;
-    const dist = to - from;
-    const ms = glideMs(dist);
-    const root = document.documentElement;
-    root.style.scrollSnapType = 'none';
-    let t0 = 0;
-    const step = (ts) => {
-      if (!t0) t0 = ts;
-      const p = Math.min(1, (ts - t0) / ms);
-      // 'instant' per frame: the stylesheet sets scroll-behavior: smooth, and a smooth scrollTo on every frame
-      // of a glide compounds the two easings into a crawl.
-      window.scrollTo({ top: Math.round(from + dist * ease(p)), behavior: 'instant' });
-      if (p < 1) { holdAnim = requestAnimationFrame(step); return; }
-      holdAnim = 0;
-      anchorY = to;
-      snapArm();
-      root.style.scrollSnapType = '';
-    };
-    holdAnim = requestAnimationFrame(step);
+    K.glideTo(to, {
+      ms: glideMs(to - K.scrollY()),
+      // Smoothstep, not the kit's default: this is a correction the reader did not ask for, so it eases in as
+      // well as out. An anchor jump they DID ask for starts at speed.
+      ease: ease,
+      owner: 'rail',
+      onArrive: (y) => { anchorY = y; snapArm(); },
+    });
   }
 
   function holdSettle() {
@@ -654,11 +645,11 @@
     /* nav.js is moving the page itself — a keyboard step or an anchor jump. Re-armed rather than dropped, so the
        rail still tidies up once the press lands; two glides racing for the same scroll position is a fight the
        reader sees as a stutter. */
-    if (window.AKNAV && window.AKNAV.busy && window.AKNAV.busy()) {
+    if (K.glideOwner() === 'nav') {
       holdWait = setTimeout(holdSettle, HOLD_WAIT);
       return;
     }
-    const y = window.scrollY || window.pageYOffset || 0;
+    const y = K.scrollY();
     const to = railTarget(y);
     if (to === null) return;
     if (Math.abs(to - y) < HOLD_NEAR) { anchorY = to; return; }
@@ -666,14 +657,13 @@
   }
 
   function holdArm() {
-    if (holdAnim) return;   // the glide scrolls too; arming off it would have the rail chase itself
+    if (railGliding()) return;   // the glide scrolls too; arming off it would have the rail chase itself
     holdStop();
     holdWait = setTimeout(holdSettle, HOLD_WAIT);
   }
 
   function holdRelease() {
-    if (holdAnim) document.documentElement.style.scrollSnapType = '';
-    snapFree(window.scrollY || window.pageYOffset || 0);
+    snapFree(K.scrollY());
     holdStop();
     holdWait = setTimeout(holdSettle, HOLD_WAIT);
   }
@@ -695,29 +685,24 @@
      only one of the ways. Fonts landing, an image sizing itself, and the shelf and the timeline building all
      change how far down the page a section starts, and none of them fires one. Watching the body catches every
      case with one observer. It is held here rather than installed once because apply() owns every listener: on
-     a short window or under reduced motion the rig is stood down, and an observer still calling onResize would
+     a short window or under reduced motion the rig is stood down, and a resize still reaching onResize would
      write the scrub back over the static end states clear() just handed to the stylesheet. */
-  const bodyResize = 'ResizeObserver' in window ? new ResizeObserver(onResize) : null;
+  let unsub = [];
 
   function apply() {
-    window.removeEventListener('scroll', onScroll);
-    window.removeEventListener('resize', onResize);
-    window.removeEventListener('load', onResize);
+    unsub.forEach((off) => off());
+    unsub = [];
     for (const ev of HOLD_INPUT) window.removeEventListener(ev, holdRelease);
-    if (bodyResize) bodyResize.disconnect();
     holdStop();
     snapOff = -1;
     if (reduced.matches || short.matches) { placeSnap(); clear(); morphFinal(); return; }
     if (shortLoop.matches) loopFinal();
     measure();
-    morphInit(window.scrollY || window.pageYOffset || 0);
+    morphInit(K.scrollY());
     frame();
     // After measure(), never before it: both targets are placed in pixels off numbers measure() reads.
     placeSnap();
-    window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', onResize);
-    window.addEventListener('load', onResize);
-    if (bodyResize) bodyResize.observe(document.body);
+    unsub = [K.onScroll(onScroll), K.onResize(onResize)];
     for (const ev of HOLD_INPUT) window.addEventListener(ev, holdRelease, { passive: true });
   }
 

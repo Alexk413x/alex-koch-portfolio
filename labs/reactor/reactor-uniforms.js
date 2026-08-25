@@ -80,9 +80,7 @@ export function sendUniforms(R, s, p, sec) {
   R.m3('uRingM', ringMatrix(s, p));
   R.m3('uCoreM', coreMatrix(s, p));
 
-  const c = s.coreHex || '#28ff1a';
-  R.f3('uCoreCol', parseInt(c.slice(1, 3), 16) / 255, parseInt(c.slice(3, 5), 16) / 255,
-                   parseInt(c.slice(5, 7), 16) / 255);
+  R.f3hex('uCoreCol', s.coreHex || '#28ff1a');
 
   // dropN is 0 at rest, so the shader's droplet loop breaks immediately and eighty floats are never uploaded.
   R.f('uDropN', p.dropN);

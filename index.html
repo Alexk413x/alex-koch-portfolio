@@ -6,6 +6,27 @@
 <title>Alex Koch, Agentic Mobile Engineer</title>
 <meta name="description" content="Alex Koch, agentic mobile engineer. 14 years shipping mobile at scale with Yahoo!, Target, Kohl's and Vacasa. Now building QAAI, a multi-agent QA platform.">
 <meta name="color-scheme" content="dark">
+<link rel="canonical" href="https://www.alexk413x.com/">
+
+<!-- Absolute URLs, because a scraper resolves these against nothing. og:image must be a raster format and at
+     least 200x200: Slack, iMessage and LinkedIn all decline an SVG, which is why the card is a PNG built from
+     the same 413X glyphs as favicon.svg. -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Alex Koch">
+<meta property="og:url" content="https://www.alexk413x.com/">
+<meta property="og:title" content="Alex Koch, Agentic Mobile Engineer">
+<meta property="og:description" content="Alex Koch, agentic mobile engineer. 14 years shipping mobile at scale with Yahoo!, Target, Kohl's and Vacasa. Now building QAAI, a multi-agent QA platform.">
+<meta property="og:image" content="https://www.alexk413x.com/site/og-card.png">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="The 413X mark over the name Alex Koch and the role agentic mobile engineer.">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Alex Koch, Agentic Mobile Engineer">
+<meta name="twitter:description" content="Alex Koch, agentic mobile engineer. 14 years shipping mobile at scale with Yahoo!, Target, Kohl's and Vacasa. Now building QAAI, a multi-agent QA platform.">
+<meta name="twitter:image" content="https://www.alexk413x.com/site/og-card.png">
+
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="icon" href="favicon.ico" sizes="48x48 32x32 16x16">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -373,8 +394,10 @@
     <div class="expertise" data-reveal>
       <div><b>Languages</b>Kotlin, Java, Python, XML, HTML5, JavaScript, TypeScript, CSS</div>
       <div><b>Platforms</b>Android, iOS, Windows, Web</div>
+      <!-- Same three rows as the .cat block's .keys. One is the no-JS fallback and one is the built view, so a
+           reader sees exactly one; edit them together. -->
       <div><b>Tools</b>Claude Code, Cursor, Codex, Copilot, Agentic Development, Antigravity, Android Studio,
-        Jetpack, JIRA, Firebase, Microsoft Azure, JUnit, Espresso, Xamarin, Git, Photoshop</div>
+        Jetpack, Firebase, Azure, JUnit, Espresso, Xamarin, Git</div>
     </div>
 
     <!-- THE BACK CATALOGUE. The product leads and the employer is withheld until one is picked — the shelf is
@@ -569,7 +592,7 @@
             <li><b>100s of hours</b> saved for each team from QA, devs, PMs and executives</li>
             <li><b>1 test</b> for Android, iOS, and Web</li>
             <li>Cost savings with swappable or even <b>local LLMs</b></li>
-            <li>Every run recorded with video playback and every for review and <b>ML training</b></li>
+            <li>Every run with recorded video and logs for review and <b>LLM training</b></li>
           </ul>
           <p class="proof-kit"><b>Features</b>Android 9&ndash;16</p>
           <p class="proof-kit"><b>Tools</b>Claude Code, Cursor, Codex, Copilot, LLM Agents, Kotlin, Compose, Android Studio, Python, GCP</p>
@@ -946,7 +969,7 @@
     <div class="cat-left">
       <!-- NO EYEBROW. The section names itself in the title, so a label above saying the same thing was two
            headings for one section and height the carousel was competing for. -->
-      <h2 class="sec-title">THE CATALOG<br><span>17 SHIPPED PRODUCTS</span></h2>
+      <h2 class="sec-title">THE CATALOGUE<br><span>SEVENTEEN SHIPPED PRODUCTS</span></h2>
       <p class="cat-degree">BS Computer Science <em>Northern Arizona University</em></p>
 
       <!-- THE KEY WORDS AS TEXT, not chips. They are facts about the catalogue rather than items in it, and as
@@ -954,7 +977,7 @@
       <div class="keys">
         <div class="key-row"><b>Languages</b><p>Kotlin, Java, Python, XML, HTML5, JavaScript, TypeScript, CSS</p></div>
         <div class="key-row"><b>Platforms</b><p>Android, iOS, Windows, Web</p></div>
-        <div class="key-row"><b>Tools</b><p>Claude Code, Cursor, Codex, Copilot, Agentic Development, Android Studio,
+        <div class="key-row"><b>Tools</b><p>Claude Code, Cursor, Codex, Copilot, Agentic Development, Antigravity, Android Studio,
           Jetpack, Firebase, Azure, JUnit, Espresso, Xamarin, Git</p></div>
       </div>
 
@@ -1060,7 +1083,7 @@
 <section id="contact">
   <i id="contact-snap" aria-hidden="true"></i>
   <div class="inner">
-    <h2 class="sec-title">GET IN TOUCH</h2>
+    <h2 class="sec-title">LET&rsquo;S CONNECT</h2>
     <div class="contact-links">
       <a href="mailto:Alexk413x@gmail.com">Alexk413x@gmail.com</a>
       <a href="https://www.linkedin.com/in/alexk413x/" target="_blank" rel="noopener">LINKEDIN ↗</a>
@@ -1078,6 +1101,8 @@
   </div>
 </div>
 
+<!-- First: everything below reaches for AKKIT as it initialises. -->
+<script src="site/kit.js"></script>
 <script src="site/display-lockup.js"></script>
 <script src="site/scenes.js"></script>
 <script src="site/nav.js"></script>

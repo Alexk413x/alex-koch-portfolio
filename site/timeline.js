@@ -10,6 +10,8 @@
 (function () {
   'use strict';
 
+  const K = window.AKKIT;
+
   const scroll = document.getElementById('exp-scroll');
   const stage = document.getElementById('exp-stage');
   const strip = document.querySelector('.exp-strip');
@@ -77,9 +79,7 @@
     pinTop = scroll.getBoundingClientRect().top + (window.scrollY || window.pageYOffset || 0);
   }
 
-  let queued = false;
   function frame() {
-    queued = false;
     const y = window.scrollY || window.pageYOffset || 0;
     const p = run > 0 ? (y - pinTop) / run : 0;
     const i = Math.max(0, Math.min(roles.length - 1, Math.floor(p * roles.length)));
@@ -91,19 +91,12 @@
     frame();
   }
 
-  window.addEventListener('scroll', () => {
-    if (queued) return;
-    queued = true;
-    requestAnimationFrame(frame);
-  }, { passive: true });
-
-  window.addEventListener('resize', remeasure);
-  // Web fonts land after this runs and reflow every section above, which moves where this pin starts.
-  window.addEventListener('load', remeasure);
-  /* And so does anything else that changes a section's height, none of which fires a resize — fitDeck below is
-     one, since it writes the floor the strip sits on. Nothing this file writes per frame is a layout property,
-     so the observer cannot feed itself. */
-  if ('ResizeObserver' in window) new ResizeObserver(remeasure).observe(document.body);
+  K.onScroll(frame);
+  /* The kit's resize channel carries the load event and a ResizeObserver on the body as well as resize itself.
+     Fonts landing, and anything else that changes a section's height above this one, move where the pin starts
+     and none of them fires a resize. Nothing this file writes per frame is a layout property, so the observer
+     cannot feed itself. */
+  K.onResize(remeasure);
   remeasure();
 
   /* The deck is absolutely positioned, so it has no height of its own and the strip above it would sit on the
@@ -128,5 +121,5 @@
   }
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitDeck);
   else fitDeck();
-  window.addEventListener('resize', fitDeck);
+  K.onResize(fitDeck);
 })();

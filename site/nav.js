@@ -20,7 +20,8 @@
   const links = Array.prototype.slice.call(nav.querySelectorAll('.links a[href^="#"]'));
   if (!links.length) return;
 
-  const clamp = (v) => (v < 0 ? 0 : v > 1 ? 1 : v);
+  const K = window.AKKIT;
+  const clamp = K.clamp01;
 
   /* Cartographer's running-graph position, from the file that owns the envelope. Guarded rather than assumed:
      scenes.js disarms itself under reduced motion and on a short window, and this must not take the nav down
@@ -82,7 +83,6 @@
   let stops = [];
   let runway = 1;
   let current = -1;
-  let queued = false;
 
   /* THE SCROLL POSITION IS THE SCROLL POSITION. Nothing waits for the reader to stop and then moves the page for
      them; every scene is scrubbed, so scrolling through one already plays it. The keyboard keeps its stepping —
@@ -107,7 +107,6 @@
     return s && typeof s.glideMs === 'function' ? s.glideMs(dist) : GLIDE;
   }
 
-  let glide = 0;        // the running rAF, and the flag that says this scrolling is ours rather than theirs
   let stopIndex = -1;   // the stop we are at or gliding toward, so a second press mid-flight advances by one
   let orbY = 0;         // the stop where the reactor holds the frame alone
 
@@ -237,12 +236,12 @@
   function stepTo(dir) {
     if (!stops.length) return;
     let t;
-    if (glide && stopIndex >= 0) {
+    if (K.glideOwner() === 'nav' && stopIndex >= 0) {
       // Mid-flight, step from where we are HEADED. Measuring scrollY here would read a position between two
       // stops and round back to the one we just left.
       t = stopIndex + dir;
     } else {
-      const y = window.scrollY || window.pageYOffset || 0;
+      const y = K.scrollY();
       let i = 0;
       for (let n = 0; n < stops.length; n++) if (Math.abs(stops[n] - y) < Math.abs(stops[i] - y)) i = n;
       const onIt = Math.abs(stops[i] - y) < 24;
@@ -255,11 +254,10 @@
     /* A step onto the reactor strikes it, the same way a click does. Only where it is actually on screen: a
        pulse fired into a scene that has already left is spent on nobody. */
     if (stops[t] <= orbY + 4 && window.HERO && window.HERO.pulse) window.HERO.pulse();
-    glideTo(stops[t], stepMs(stops[t] - (window.scrollY || window.pageYOffset || 0)));
+    glideTo(stops[t], stepMs(stops[t] - K.scrollY()));
   }
 
   function frame() {
-    queued = false;
     const y = window.scrollY || window.pageYOffset || 0;
     const vh = window.innerHeight || 1;
     /* 42% down the viewport at rest, 92% at the bottom. Contact is ~350px tall and the page bottoms out several
@@ -308,50 +306,16 @@
   const maxScroll = () =>
     Math.max(0, document.documentElement.scrollHeight - (window.innerHeight || 1));
 
-  function stopGlide() {
-    if (!glide) return;
-    cancelAnimationFrame(glide);
-    glide = 0;
-    document.documentElement.style.scrollSnapType = '';
-  }
-
-  function glideTo(y, ms) {
-    stopGlide();
-    const from = window.scrollY || window.pageYOffset || 0;
-    const dist = y - from;
-    if (Math.abs(dist) < 8) return;
-    const run = ms || GLIDE;
-    /* SNAPPING IS STOOD DOWN FOR THE DURATION, and without this the length above buys nothing. Scroll snapping
-       grabs programmatic scrolls too, so a glide that crosses a beat is YANKED onto it rather than eased onto
-       it — the same destination, arrived at as a jump. Measured on the step from the top of the page to the
-       reactor: 742px covered between 160ms and 485ms of a 1.4s glide with snapping live, against 1314ms of
-       even travel with it off. scenes.js stands it down across its own glides for the same reason. */
-    const root = document.documentElement;
-    root.style.scrollSnapType = 'none';
-    let t0 = 0;
-    const step = (ts) => {
-      if (!t0) t0 = ts;
-      const p = Math.min(1, (ts - t0) / run);
-      const e = 1 - Math.pow(1 - p, 3);
-      /* instant, per frame. The stylesheet sets scroll-behavior: smooth for anchor jumps, and letting each of
-         these 60 steps run its own smooth scroll makes the two easings compound into a crawl. */
-      window.scrollTo({ top: Math.round(from + dist * e), behavior: 'instant' });
-      if (p < 1) { glide = requestAnimationFrame(step); return; }
-      glide = 0;
-      root.style.scrollSnapType = '';
-    };
-    glide = requestAnimationFrame(step);
-  }
+  // Under 8px is not a journey. The kit's tween owns the snap stand-down and the per-frame instant scroll.
+  const stopGlide = K.stopGlide;
+  const glideTo = (y, ms) => K.glideTo(y, { ms: ms || GLIDE, minDist: 8, owner: 'nav' });
 
   /* A scroll updates the readout and NOTHING ELSE. No settle timer, no decision about where the reader ought to
      have stopped. The stepper's index is dropped, though: once the page has been scrolled by hand, the stop it
      was last heading for says nothing about where the next press should start from. */
   function onScroll() {
-    if (!queued) {
-      queued = true;
-      requestAnimationFrame(frame);
-    }
-    if (!glide) stopIndex = -1;
+    frame();
+    if (!K.busy()) stopIndex = -1;
   }
 
   function remeasure() {
@@ -366,17 +330,15 @@
      the difference between that and a page at rest, but anything measuring one can be fooled by it. */
   window.AKNAV = {
     stops: () => stops.slice(),
-    busy: () => glide !== 0,
+    busy: K.busy,
   };
 
   remeasure();
-  window.addEventListener('scroll', onScroll, { passive: true });
-  window.addEventListener('resize', remeasure);
-  // Web fonts land after this runs and reflow every section under the fold, so the first measurement is stale.
-  window.addEventListener('load', remeasure);
-  /* And so does anything else that changes a section's height: an image sizing itself, the shelf building, a
-     lab object laying out. None of those fires a resize, and every stop below them moves when they land. */
-  if ('ResizeObserver' in window) new ResizeObserver(remeasure).observe(document.body);
+  K.onScroll(onScroll);
+  /* The kit's resize channel is the resize event, the load event and a ResizeObserver on the body. Fonts landing
+     after this runs, an image sizing itself, the rack building and a lab object laying out all move every stop
+     below them and none of them fires a resize. */
+  K.onResize(remeasure);
 
   /* THE WHEEL IS THE READER'S, MOMENTUM AND ALL, and it is now the only thing that decides where they end up.
      The one job left here is to get out of the way: a hand on the wheel while a keyboard step is still gliding

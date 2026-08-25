@@ -160,6 +160,8 @@ function blueNoiseTile(size) {
  * depends on which parts are switched on. `frag` must then be the SUPERSET, because it is what draws while a
  * narrower build compiles.
  */
+const HEX = new Map();   // shared by every renderer: a hex string parses to the same vec3 anywhere
+
 export function createQuad(canvas, { frag, uniforms = [], ext = [], textures = {}, onRestore = null,
                                      variant = null, deferLink = false } = {}) {
   /* WEBGL2, and only WebGL2. There is no WebGL1 fallback and that is deliberate: `experimental-webgl` was a 2013
@@ -373,6 +375,16 @@ export function createQuad(canvas, { frag, uniforms = [], ext = [], textures = {
       cur.last.set(name, [a, b, c]);
       gl.uniform3f(cur.U[name], a, b, c);
     },
+    /* A '#rrggbb' colour as a vec3 in 0..1. The parse is memoised across every renderer on the page — a colour
+     * comes from a swatch or a preset, so the same handful of strings recur for the life of the lab — and the
+     * upload itself is skipped by f3's own cache. */
+    f3hex(name, hex) {
+      const h = hex || '#ffffff';
+      let c = HEX.get(h);
+      if (!c) HEX.set(h, c = [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16) / 255));
+      this.f3(name, c[0], c[1], c[2]);
+    },
+
     // Uncached: an array uniform here is a per-frame animation table, so comparing costs what uploading costs.
     fv4(name, arr) { if (!cur) return; gl.uniform4fv(cur.U[name], arr); },
 

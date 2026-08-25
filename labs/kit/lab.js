@@ -145,6 +145,38 @@ export function runLoop({ draw, onTick, tickMs = 500, maxDt = 0.05 }) {
   };
 }
 
+/* Draws the loading ring into the .kit-load element the page already carries.
+ *
+ * The element stays in the markup, empty, because .kit-load is a fixed black sheet over the whole viewport and
+ * that has to be true from the first paint — built from script it would arrive after the page had already
+ * flashed its background. Its contents are what is shared: four rings at four radii, three of them turning at
+ * rates that do not divide into each other. The name comes from document.title, so a lab says what it is in one
+ * place rather than two.
+ */
+export function mountLoader(stage = 'Compiling shaders') {
+  const el = document.querySelector('.kit-load');
+  if (!el || el.firstElementChild) return el;
+  const ring = (cls, r, w, extra) =>
+    '<svg' + (cls ? ' class="' + cls + '"' : '') + ' viewBox="0 0 120 120"><circle cx="60" cy="60" r="' + r +
+    '" fill="none" stroke-width="' + w + '"' + extra + '/></svg>';
+  el.innerHTML =
+    '<div class="kit-ring" aria-hidden="true">' +
+      '<svg viewBox="0 0 120 120">' +
+        '<circle cx="60" cy="60" r="56" fill="none" stroke="rgba(255,180,84,.13)" stroke-width="1"/>' +
+        '<circle cx="60" cy="60" r="52" fill="none" stroke="rgba(255,180,84,.15)" stroke-width="2.5"/>' +
+        '<circle cx="60" cy="60" r="33" fill="none" stroke="rgba(255,180,84,.17)" stroke-width="1" stroke-dasharray="1 14"/>' +
+      '</svg>' +
+      ring('kr-dash', 46, 1.5, ' stroke="var(--panel-accent, #ffb454)" stroke-dasharray="2 11" opacity=".55"') +
+      ring('kr-hair', 41, 1,   ' stroke="rgba(255,217,160,.24)" stroke-dasharray="1 8"') +
+      ring('kr-arc',  52, 2.5, ' stroke="var(--panel-accent, #ffb454)" stroke-linecap="round"' +
+                               ' stroke-dasharray="70 257" transform="rotate(-90 60 60)"') +
+    '</div>' +
+    '<div class="kit-load-name"></div><div class="kit-load-stage"></div>';
+  el.querySelector('.kit-load-name').textContent = document.title;
+  el.querySelector('.kit-load-stage').textContent = stage;
+  return el;
+}
+
 /* Dismisses the loading ring once there is something behind it to look at.
  *
  * The overlay is markup and a stylesheet; this is the only line of script it needs, and it exists because CSS
