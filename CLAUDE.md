@@ -50,20 +50,21 @@ for that reason. So `labs/` is no longer only a lab: renaming or deleting anythi
 every formatter, annotated with why each is the kind it is, built on the same scaffold the real labs use. It is
 not linked from the index and is not meant for users.
 
-Five `.dc.html` pages remain **at the repository root** — the portfolio, the console, the intro and two notes.
-They still run on `support.js` (React + Babel from unpkg). They are on their way out, and `support.js` goes with
-the last of them. Migrating one is a deliberate job with measurements either side, not something to do
-incidentally.
+**Nothing here runs React, Babel or a CDN any more.** Five `.dc.html` pages sat at the repository root — the
+portfolio, the console, the intro and two notes — on a `support.js` runtime that pulled React and Babel from
+unpkg. They were deleted along with `support.js` and `experience.html`, whose role viewer the back catalogue
+replaced. Every page that ships is now plain HTML plus ES modules, and the only network dependency left on first
+load is fonts from Google.
 
 ## Running it
 
 ES modules mean `file://` will not work. Needs a real server from the repo root:
 
 ```
-python -m http.server 8000     # then http://localhost:8000/labs/crt/CRT%20Lab.dc.html
+python -m http.server 8000     # then http://localhost:8000/labs/crt/CRT%20Lab.html
 ```
 
-First load needs network: React + Babel from unpkg, fonts from Google.
+First load needs network for the fonts from Google, and nothing else.
 
 **Editing anything in `labs/crt/` needs a hard reload**, and a plain reload is not always enough — the browser will
 serve the modules from cache while the HTML is fresh, which looks exactly like a maths bug. Either hard-reload
@@ -117,7 +118,7 @@ chrome --user-data-dir=%TEMP%\crt-bench --no-first-run --disable-extensions ^
        --remote-debugging-port=9222 --remote-allow-origins=* ^
        --disable-backgrounding-occluded-windows --disable-renderer-backgrounding ^
        --disable-features=CalculateNativeWinOcclusion ^
-       --new-window --window-size=1600,1000 "http://localhost:8000/labs/crt/CRT%20Lab.dc.html"
+       --new-window --window-size=1600,1000 "http://localhost:8000/labs/crt/CRT%20Lab.html"
 ```
 
 Verified: without those flags the page reported `hidden` and 0 rAF callbacks per second; with them, `visible` and
@@ -125,7 +126,7 @@ Verified: without those flags the page reported `hidden` and 0 rAF callbacks per
 
 The debugging port then lets you drive the page without a human at the keyboard — `POST /json/new`,
 `GET /json/activate/<id>`, and `Runtime.evaluate` over the websocket. A throwaway profile also starts with an EMPTY
-HTTP CACHE, so load the page once to pull React/Babel/fonts before measuring anything.
+HTTP CACHE, so load the page once to pull the fonts before measuring anything.
 
 **Measure on an IDLE machine, in ONE tab.** This is not fussiness — it is the difference between a number and a
 mood. During one session an *unchanged* build measured 33ms early and 71ms late, and the per-second curve degraded
@@ -192,16 +193,13 @@ maths bug.
   displacement lens) but it still sets how deep FACE bends, and every stored setting is calibrated against
   it. Change it knowingly or not at all.
 
-`labs/crt/CRT Lab HANDOFF.md` has the full "settled decisions — please don't relitigate" list. **It is named for
-a build that no longer exists, and most of it still binds**: the projection, the outline and the geometry it
-argues about are the shared modules CRT Lab walks. Read it before touching either. Its companion
-`CRT Lab LAYER HANDOFF.md` is more mixed — the thirteen-layer model is gone with the DOM build, but the sections
-on the face's shape and the rim's pinning are still current.
+**The two CRT handoff documents are gone.** They recorded the settled decisions of a build that no longer
+exists, and every decision in them that still binds is already stated where it applies: the sag amplitude in
+`crt-projection.js`'s header, the `BEND` double root in `crt-geometry.js`'s, and the rest in the list above.
+A decision written twice is two descriptions that can drift, which is the fault this whole file is about.
 
 ## Not yet done
 
-- **The root pages are still `.dc.html`.** Portfolio, Console OS, Cinematic Intro and the two notes. They are the
-  last users of `support.js`, React and Babel; migrating them retires all three.
 - **Reactor's two frozen uniforms** (above) are uncut.
 - **Reactor's `renderNow` is not reproducible**, because `sim.step` carries phase forward — so that lab has no
   render fingerprint of the kind `render-probe.js` gives CRT Lab. Resetting the sim would be the way in.

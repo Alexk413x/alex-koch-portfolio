@@ -19,5 +19,3 @@ desktop.ini
 # Per-machine Claude Code permissions; .claude/settings.json is the shared one
 .claude/settings.local.json
 
-# Scratch comparison rig for the experience section; deleted when a shape is chosen
-_exp-options/

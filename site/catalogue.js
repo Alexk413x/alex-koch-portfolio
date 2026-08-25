@@ -56,7 +56,16 @@ import { coverArt } from './cover-art/index.js';
       /* FEATURES AND TOOLS AS THE ROLE LISTS THEM, off the record's own kit lines. They belong to the role and
          not to the product, which is why two records under one employer carry the same pair — the same way they
          already carry the same employer, role and dates. Comma-separated in the markup because that is how a CV
-         writes a tool list and how experience.html prints it; split here rather than tagged one by one. */
+         writes a tool list; split here rather than tagged one by one. */
+      /* WHAT THE PRODUCT IS, then WHAT IT ACHIEVED. The lede is one paragraph under the header and the wins are
+         the outcomes worth reading on their own — a box back is scanned, and a reader who stops after the first
+         line should still know what the thing did. Records not yet rewritten carry the role's write-up in the
+         wins list and no lede, so the panel is never empty while the pass is in progress. */
+      /* THE SOURCE NODES, NOT THEIR TEXT. These carry <b> around the figures, and textContent would flatten it —
+         so the panel copies the record's own nodes instead. Cloned at draw time rather than parsed from a
+         string: there is no HTML to re-parse and nothing here can be anything the record did not already say. */
+      ledeEls: Array.prototype.slice.call(proof.querySelectorAll('.proof-lede')),
+      winEls: Array.prototype.slice.call(proof.querySelectorAll('.proof-wins li')),
       kit: Array.prototype.reduce.call(proof.querySelectorAll('.proof-kit'), (all, row) => {
         const head = row.querySelector('b');
         const key = head ? head.textContent.trim().toLowerCase() : '';
@@ -719,6 +728,14 @@ import { coverArt } from './cover-art/index.js';
     ios:  { file: './store-badges/apple-black.svg', alt: 'Download on the App Store' }
   };
 
+  /* A new element carrying a copy of another's children, markup and all. slice() first: appending MOVES a node
+     out of the clone, so iterating the live childNodes would walk off the end and drop every other one. */
+  function copyOf(tag, cls, src) {
+    const out = el(tag, cls);
+    Array.prototype.slice.call(src.cloneNode(true).childNodes).forEach((n) => out.appendChild(n));
+    return out;
+  }
+
   function drawBack(p) {
     back.replaceChildren();
     /* THE ROLE IS THE PANEL'S HEADLINE, not the product. The front of the box, the spine and the rack all name
@@ -745,9 +762,16 @@ import { coverArt } from './cover-art/index.js';
     where.appendChild(el('span', 'product', p.name));
     back.appendChild(where);
 
-    /* NO OUTCOME AND NO RESPONSIBILITIES BLOCK. The panel is the role, where it was, when, what came out of it
-       and where to get it — the prose that used to fill the middle is still written out in the record in
-       index.html, which is what a crawler and a no-script reader get, and experience.html carries it in full. */
+    /* THE RECORD IS WRITTEN OUT IN index.html AND READ FROM THERE. This panel is now the only place the full
+       role text lives — experience.html carried it until the rack replaced that page — so the markup is not a
+       fallback for a fuller page any more, it is the source. A crawler and a no-script reader get all of it. */
+
+    p.ledeEls.forEach((el) => back.appendChild(copyOf('p', 'b-lede', el)));
+    if (p.winEls.length) {
+      const wins = el('ul', 'b-wins');
+      p.winEls.forEach((li) => wins.appendChild(copyOf('li', null, li)));
+      back.appendChild(wins);
+    }
 
     /* WHERE TO GET IT, directly above the spec panel — the foot of a game box is where a store badge belongs,
        and it is the last thing read before the panel that lists what the thing is made of. Absent entirely
@@ -789,19 +813,17 @@ import { coverArt } from './cover-art/index.js';
        product's two or three spine marks, which is a fraction of what the role actually lists — the panel was
        thinner than the source it is drawn from. Features and tools are different questions and get a label
        each; the product's own marks lead the features, because they are the specific ones. */
+    /* ONE ROW, NO HEADINGS. Features and tools were labelled and split; the labels were the only thing telling
+       them apart, so without them two rows would read as one list that happened to wrap. Joined, features
+       first — the specific ones the product carries, then the role's kit behind them. */
     const spec = el('div', 'b-spec');
     const feats = p.marks.concat((p.kit.features || []).filter((f) => p.marks.indexOf(f) < 0));
-    [['Features', feats], ['Tools', p.kit.tools || []]].forEach(([label, list]) => {
-      if (!list.length) return;
-      /* The label and its chips share a row, so they share a PARENT. Left as siblings of the panel they were
-         two block items and no rule could put them side by side without absolute positioning. */
-      const row = el('div', 'b-kit');
-      row.appendChild(el('b', null, label));
+    const all = feats.concat((p.kit.tools || []).filter((t) => feats.indexOf(t) < 0));
+    if (all.length) {
       const chips = el('div', 'b-chips');
-      list.forEach((m) => chips.appendChild(el('span', null, m)));
-      row.appendChild(chips);
-      spec.appendChild(row);
-    });
+      all.forEach((m) => chips.appendChild(el('span', null, m)));
+      spec.appendChild(chips);
+    }
     back.appendChild(spec);
   }
 

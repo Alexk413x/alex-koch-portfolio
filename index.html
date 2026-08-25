@@ -11,6 +11,29 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<!-- BOOTING IS SET BEFORE THE FIRST PAINT AND CLEARED ON DOMContentLoaded. Inline and not in a module: this
+     has to be true for the very first frame, and a module is deferred to after parsing, which is exactly the
+     moment it is meant to have been true before. Without JavaScript the class is never set, so the hero is
+     visible from the start rather than faded out forever waiting for a reveal that cannot come. -->
+<script>
+  (function () {
+    var el = document.documentElement;
+    el.classList.add('booting');
+    // WAIT FOR THE TYPE, NOT JUST THE DOM. display-lockup.js measures each line's real ink edges and retracks
+    // the shorter one, which it can only do once the webfont has arrived — measured, that moves the lockup 30px.
+    // Revealing on DOMContentLoaded alone put that move inside the fade on a slow font, so the name appeared to
+    // slide into place. Behind fonts.ready it happens while the hero is still at zero opacity.
+    var done = false;
+    var reveal = function () { if (done) return; done = true; el.classList.remove('booting'); };
+    var ready = document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve();
+    ready.then(function () {
+      // One more frame after the fonts land, so the retrack has been laid out before anything becomes visible.
+      requestAnimationFrame(function () { requestAnimationFrame(reveal); });
+    });
+    // A font that never arrives must not cost the reader the page.
+    setTimeout(reveal, 2500);
+  })();
+</script>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="site/site.css">
 </head>
@@ -19,13 +42,8 @@
 <!-- Three zones on one row: the mark, the sections, the marks. The middle zone is centred against the viewport
      rather than against whatever the two sides weigh, so the links hold still when either side changes width. -->
 <nav id="nav">
-  <!-- TEMPORARY. The role viewer is parked on its own page while the section that replaces it is designed, and
-       this is the only route to it. It sits beside the mark rather than with the tools on the right because it
-       is not a tool: it is a page, and the left zone is where this site names pages.
-       Delete the link and experience.html together when the new section lands. -->
   <div class="brand">
     <a class="mark" href="#alex">ALEXK413X</a>
-    <a class="temp" href="experience.html">ROLES IN FULL &#8599;</a>
   </div>
   <div class="links">
     <a href="#alex">ALEX</a>
@@ -77,8 +95,8 @@
        and 68% of the height, so a curve that rises out of the corner gently is still left of it at that height
        and crosses the name. -->
   <svg id="hero-halo" viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-hidden="true">
-    <path d="M 0 1000 C 450 930 450 660 450 0"/>
-    <path d="M 1000 1000 C 550 930 550 660 550 0"/>
+    <path d="M 0 1000 C 450 930 450 660 450 0" pathLength="100"/>
+    <path d="M 1000 1000 C 550 930 550 660 550 0" pathLength="100"/>
   </svg>
 
   <!-- The reactor's core, and the whole of what sits behind this scene. site/hero-core.js drives it; without
@@ -370,7 +388,7 @@
       <div class="sec-label">THE BACK CATALOGUE</div>
       <h3>SEVENTEEN SHIPPED PRODUCTS<br><span>ACROSS FOUR ACTS</span></h3>
       <p>Pick one and it proves itself before it says who paid for it. The dates and the employers are all
-        still here &mdash; they are just no longer the first thing you have to read.</p>
+        still here. They are just no longer the first thing you have to read.</p>
     </div>
 
     <div class="shelf" id="shelf">
@@ -412,11 +430,19 @@
               <span class="p-name">myDay</span>
               <span class="p-tag">Efficiency at Scale</span>
               <span class="p-marks"><i>Android</i><i>Compose</i><i>Zebra</i></span>
-              <span class="p-domain">Act IV &middot; Agents Agents Agents</span>
+              <span class="p-domain">Act III &middot; Leadership at scale</span>
             </button>
           </article>
 
 
+          <article class="spine">
+            <button class="spine-face" type="button" aria-expanded="false" aria-controls="pf-isu">
+              <span class="p-name">ISU</span>
+              <span class="p-tag">One Library to Rule Them All</span>
+              <span class="p-marks"><i>Android</i><i>Core library</i></span>
+              <span class="p-domain">Act III &middot; Leadership at scale</span>
+            </button>
+          </article>
           <article class="spine">
             <button class="spine-face" data-cover-title="SELF|PICKUP" type="button" aria-expanded="false" aria-controls="pf-self">
               <span class="p-name">Self Pickup</span>
@@ -430,14 +456,6 @@
               <span class="p-name">Pickup</span>
               <span class="p-tag">Orders Brought to You</span>
               <span class="p-marks"><i>Android</i><i>Offline</i><i>Zebra</i></span>
-              <span class="p-domain">Act III &middot; Leadership at scale</span>
-            </button>
-          </article>
-          <article class="spine">
-            <button class="spine-face" type="button" aria-expanded="false" aria-controls="pf-isu">
-              <span class="p-name">ISU</span>
-              <span class="p-tag">One Library to Rule Them All</span>
-              <span class="p-marks"><i>Android</i><i>Core library</i></span>
               <span class="p-domain">Act III &middot; Leadership at scale</span>
             </button>
           </article>
@@ -544,6 +562,15 @@
           </div>
           <p class="proof-more">App-, platform- and LLM-agnostic: one test case runs unchanged on iOS, Android and
             Web. Saves executives, project managers, QA and developers across every app team hundreds of hours weekly.</p>
+          <p class="proof-lede">A multi-agent QA platform and dashboard. It turns a description of a test into a running end-to-end test, updating itself as the app changes.</p>
+          <p class="proof-lede">Created an agentic team to help with building and iterating on the QAAI engine and dashboard. Then distributed the team as a plugin for others to use in their work internally.</p>
+          <ul class="proof-wins">
+            <li><b>500+ tests</b> generated with <b>8 bugs</b> caught before a release</li>
+            <li><b>100s of hours</b> saved for each team from QA, devs, PMs and executives</li>
+            <li><b>1 test</b> for Android, iOS, and Web</li>
+            <li>Cost savings with swappable or even <b>local LLMs</b></li>
+            <li>Every run recorded with video playback and every for review and <b>ML training</b></li>
+          </ul>
           <p class="proof-kit"><b>Features</b>Android 9&ndash;16</p>
           <p class="proof-kit"><b>Tools</b>Claude Code, Cursor, Codex, Copilot, LLM Agents, Kotlin, Compose, Android Studio, Python, GCP</p>
         </div>
@@ -559,6 +586,12 @@
           </div>
           <p class="proof-more">Developed and maintained features on Yahoo! Mail alongside the agentic plugin work,
             with a focus on accessibility.</p>
+          <p class="proof-lede">Developed an agentic workflow for exploring and fixing issues within the Yahoo! Mail app. Turned the workflow into a Claude Code plugin for internal distribution at Yahoo! Focusing on reproducible issues and fixes that the agentic team could produce before and after evidence for review to ensure proper fixes.</p>
+          <ul class="proof-wins">
+            <li>Increased <b>EAA compliance to 100%</b> throughout the whole app</li>
+            <li>Maintained features by fixing bugs and removing <b>legacy code</b></li>
+            <li>Streamlined <b>CI/CD</b> testing with nightly QAAI test runs</li>
+          </ul>
           <p class="proof-get"><span class="pa-label">Get it on</span>
             <a href="https://play.google.com/store/apps/details?id=com.yahoo.mobile.client.android.mail" data-store="play" target="_blank" rel="noopener noreferrer">Google Play</a>
             <a href="https://apps.apple.com/us/app/yahoo-mail-your-email-inbox/id577586159" data-store="ios" target="_blank" rel="noopener noreferrer">App Store</a>
@@ -576,8 +609,15 @@
             <span class="pa-role">Lead Android Developer</span>
             <time datetime="2022-08/2025-04">Aug 2022 &ndash; Apr 2025</time>
           </div>
-          <p class="proof-more">Created the chat experience for free-form questions &mdash; viewing responses, giving
+          <p class="proof-more">Created the chat experience for free-form questions: viewing responses, giving
             feedback on the AI&rsquo;s answers, and scanning barcodes to enquire about items or guest orders.</p>
+          <p class="proof-lede">A place to consolidate Target&rsquo;s documentation and give store team members somewhere to get answers quickly. Generative AI answers free-form questions straight out of tens of thousands of Target documents.</p>
+          <ul class="proof-wins">
+            <li>Accurate answers in <b>seconds</b> quickly enabling team members</li>
+            <li>Created and rolled out to <b>100% of stores in 3 months</b></li>
+            <li>Self improving <b>LLM</b> through in app team member feedback</li>
+            <li><b>Barcode scanning</b> enabled AI assisted order and item look up for faster guest assistance</li>
+          </ul>
           <p class="proof-kit"><b>Features</b>Barcode scanner, Zebra devices, Android 8&ndash;13</p>
           <p class="proof-kit"><b>Tools</b>Android Studio, Kotlin, Compose, MVI, Dagger, Hilt, Firebase, Git, Jetpack, Unit Testing, Espresso, Robolectric, Generative AI</p>
         </div>
@@ -593,10 +633,37 @@
           </div>
           <p class="proof-more">Led the myDay team through updating and maintaining a multi-module monolith,
             mentoring on Compose and Kotlin and working with other teams on shared components and the backing APIs.</p>
-          <p class="proof-kit"><b>Features</b>Barcode scanner, Zebra devices, Android 8&ndash;13</p>
-          <p class="proof-kit"><b>Tools</b>Android Studio, Kotlin, Compose, MVI, Dagger, Hilt, Firebase, Git, Jetpack, Unit Testing, Espresso, Robolectric, Generative AI</p>
+          <p class="proof-lede">Led the myDay app team, through the ambiguity of a legacy code base and modernizing the architecture. Worked with library, UI/UX, and backend teams to create efficient and modern workflow that even new team members could quickly pick up and immediately be effective at work.</p>
+          <ul class="proof-wins">
+            <li><b>100,000+ daily active team members</b> completing in-store tasks, generating billions of calls worth of traffic each day</li>
+            <li>Improved workflows to remove tech debt and reduced screens by <b>1&ndash;3 per flow</b></li>
+            <li>Upgraded Gradle to Kotlin and reduced initial build time by <b>15 min</b></li>
+            <li>Mentored <b>10 engineers</b> on the team to utilize Compose and MVI/MVVM architecture</li>
+            <li>Shared Compose components used across <b>all of Target&rsquo;s internal apps</b></li>
+          </ul>
         </div>
 
+        <div class="proof" id="pf-isu">
+          <div class="proof-fig said">The library every app depends on</div>
+          <p class="proof-say">Inventory, stock and unload, plus the core library sitting under every associate app Kohl&rsquo;s ships.</p>
+          <div class="proof-at">
+            <span class="pa-label">Built at</span>
+            <h4 data-site="https://www.kohls.com/">Kohl&rsquo;s</h4>
+            <span class="pa-role">Senior Android Developer</span>
+            <time datetime="2021-01/2022-08">Jan 2021 &ndash; Aug 2022</time>
+          </div>
+          <p class="proof-more">Focused on reducing tech debt and bringing the core library up to current practice,
+            with automated testing added to the apps and their build pipeline.</p>
+          <p class="proof-lede">Worked with balanced teams on a variety of associate and customer-facing applications. Led the implementation of best practices to improve an aging code base, providing training and mentorship to junior engineers</p>
+          <p class="proof-lede"><b>Inventory, Stock and Unload</b> is the core library supporting all of Kohl&rsquo;s internal applications.</p>
+          <ul class="proof-wins">
+            <li><b>All store apps</b> needed the inventory and item location data</li>
+            <li>Automated testing improved <b>build quality</b> by catching issues sooner</li>
+            <li>Modernized the architecture to use <b>Kotlin and Compose</b></li>
+          </ul>
+          <p class="proof-kit"><b>Features</b>Offline, barcode scanner, Zebra devices, Android 8&ndash;10</p>
+          <p class="proof-kit"><b>Tools</b>Android Studio, Kotlin, Java, Next.js, Compose, MVVM, Firebase, Git, Jetpack, Unit Testing, Espresso, Cucumber, GitLab, Balanced Teams</p>
+        </div>
         <div class="proof" id="pf-self">
           <div class="proof-fig said">Zero associates</div>
           <p class="proof-say">Walk into the store, enter a code, collect the order, walk out.</p>
@@ -608,13 +675,19 @@
           </div>
           <p class="proof-more">Designed and developed a web app letting customers collect online orders with no
             staff involved. The customer gets an email when the order is ready.</p>
+          <p class="proof-lede">Designed and developed a web app letting customers walk into a store and collect online orders without an associate. Customers receive an email when the order is ready, go to the store, enter a code, pick up and walk out</p>
+          <ul class="proof-wins">
+            <li><b>Minutes</b> of waiting removed, where an associate had to fetch the order from the back room</li>
+            <li><b>Labor cost reduced</b>, with associates staying on higher-value tasks</li>
+            <li><b>Millions of orders</b> collected across <b>all stores</b></li>
+          </ul>
           <p class="proof-kit"><b>Features</b>Offline, barcode scanner, Zebra devices, Android 8&ndash;10</p>
           <p class="proof-kit"><b>Tools</b>Android Studio, Kotlin, Java, Next.js, Compose, MVVM, Firebase, Git, Jetpack, Unit Testing, Espresso, Cucumber, GitLab, Balanced Teams</p>
         </div>
 
         <div class="proof" id="pf-pick">
           <div class="proof-fig said">Works with the signal down</div>
-          <p class="proof-say">In-store, drive-up and self-pickup orders, found by scan or by customer details &mdash; online or off.</p>
+          <p class="proof-say">In-store, drive-up and self-pickup orders, found by scan or by customer details, online or off.</p>
           <div class="proof-at">
             <span class="pa-label">Built at</span>
             <h4 data-site="https://www.kohls.com/">Kohl&rsquo;s</h4>
@@ -623,28 +696,20 @@
           </div>
           <p class="proof-more">A redesign of the associate-facing app to simplify adoption, increase productivity
             and add offline capability.</p>
+          <p class="proof-lede">Redesigned the associate-facing app to simplify adoption, increase productivity and add offline capability. Scanning an order number or entering customer details helps associates find and deliver in-store, drive-up and self-pickup orders, handed over with a simple, easy to follow code trade that leaves customers happy with the convenience.</p>
+          <ul class="proof-wins">
+            <li><b>Offline first</b> development, because there is no wifi in the parking lot</li>
+            <li><b>Simplified adoption</b> for associates picking the app up</li>
+            <li><b>1 minute per order</b> saved finding and delivering orders</li>
+          </ul>
           <p class="proof-kit"><b>Features</b>Offline, barcode scanner, Zebra devices, Android 8&ndash;10</p>
           <p class="proof-kit"><b>Tools</b>Android Studio, Kotlin, Java, Next.js, Compose, MVVM, Firebase, Git, Jetpack, Unit Testing, Espresso, Cucumber, GitLab, Balanced Teams</p>
         </div>
 
-        <div class="proof" id="pf-isu">
-          <div class="proof-fig said">The library every app depends on</div>
-          <p class="proof-say">Inventory, stock and unload &mdash; plus the core library sitting under every associate app Kohl&rsquo;s ships.</p>
-          <div class="proof-at">
-            <span class="pa-label">Built at</span>
-            <h4 data-site="https://www.kohls.com/">Kohl&rsquo;s</h4>
-            <span class="pa-role">Senior Android Developer</span>
-            <time datetime="2021-01/2022-08">Jan 2021 &ndash; Aug 2022</time>
-          </div>
-          <p class="proof-more">Focused on reducing tech debt and bringing the core library up to current practice,
-            with automated testing added to the apps and their build pipeline.</p>
-          <p class="proof-kit"><b>Features</b>Offline, barcode scanner, Zebra devices, Android 8&ndash;10</p>
-          <p class="proof-kit"><b>Tools</b>Android Studio, Kotlin, Java, Next.js, Compose, MVVM, Firebase, Git, Jetpack, Unit Testing, Espresso, Cucumber, GitLab, Balanced Teams</p>
-        </div>
 
         <div class="proof" id="pf-oro">
           <div class="proof-fig said">Banking without a bank</div>
-          <p class="proof-say">Card accounts for the underbanked in Brazil &mdash; store money, send it and spend it with no bank account and no credit card.</p>
+          <p class="proof-say">Card accounts for the underbanked in Brazil. Store money, send it and spend it with no bank account and no credit card.</p>
           <div class="proof-at">
             <span class="pa-label">Built at</span>
             <h4>i2020 Fintech</h4>
@@ -652,7 +717,15 @@
             <time datetime="2019-08/2020-09">Aug 2019 &ndash; Sep 2020</time>
           </div>
           <p class="proof-more">An ORO Store for digital goods, Lot&eacute;rica and ATM transfers, and in-app phone
-            top-ups &mdash; then a greenfield Kotlin rewrite with Cognito login and a new card carousel.</p>
+            top-ups, then a greenfield Kotlin rewrite with Cognito login and a new card carousel.</p>
+          <p class="proof-lede">An app for the underbanked in Brazil. ORO Pay provides cards with account balances so users can store and transfer money safely without a bank account or credit card.</p>
+          <ul class="proof-wins">
+            <li><b>ORO Store</b> for buying digital items and codes for Spotify, Uber and others</li>
+            <li>Account transfers through <b>Lot&eacute;rica</b> and ATM withdrawals, plus phone top-ups in-app</li>
+            <li>Greenfield rewrite in <b>Kotlin</b>, replacing the original Java and its out-of-date design patterns</li>
+            <li>Streamlined login with <b>Amazon Cognito</b>, a new card carousel, and peer-to-peer and card-to-card transfers</li>
+            <li>Built with backend teams in both the <b>US and Brazil</b></li>
+          </ul>
           <p class="proof-get"><span class="pa-label">Get it on</span>
             <a href="https://play.google.com/store/apps/details?id=com.oropay.app" data-store="play" target="_blank" rel="noopener noreferrer">Google Play</a>
             <!-- /cy/, not /us/: the app ships in Cyprus and is not in the US store, where this id 404s. -->
@@ -673,6 +746,11 @@
           </div>
           <p class="proof-more">The merchant side of ORO, taking payments from ORO Pay and from card readers at
             Brazilian businesses.</p>
+          <p class="proof-lede">The merchant side of ORO, taking payments from ORO Pay and from card readers at Brazilian businesses.</p>
+          <ul class="proof-wins">
+            <li><b>QR renderer</b> paired with Google ML Kit scanning, for peer-to-peer transfers at a merchant</li>
+            <li>Accepts payment from <b>ORO Pay</b> without either side needing a bank</li>
+          </ul>
           <p class="proof-kit"><b>Features</b>Online/offline, camera, GPS, Android 5.0&ndash;11.0</p>
           <p class="proof-kit"><b>Tools</b>Android Studio, Kotlin, Java, MVVM, Amazon Amplify with Cognito, Firebase, Git, Google ML Kit</p>
         </div>
@@ -687,8 +765,16 @@
             <time datetime="2017-07/2019-03">Jul 2017 &ndash; Mar 2019</time>
           </div>
           <p class="proof-more">Construction personnel navigate a site in real time, file forms, complete task lists
-            and track progress &mdash; so companies can record who completed what and compile a digital record of
+            and track progress, so companies can record who completed what and compile a digital record of
             all activity.</p>
+          <p class="proof-lede">The largest and oldest app at Viewpoint. Construction personnel navigate a site in real time, file forms, complete task lists and track progress of work. Used on large construction projects, from skyscrapers to schools and even nuclear power plants.</p>
+          <ul class="proof-wins">
+            <li><b>10,000+ active devices</b> globally</li>
+            <li>Dates back to the <b>Pocket PC</b> days</li>
+            <li>Companies record <b>who completed what</b>, and compile a digital record of all activity</li>
+            <li>Whole projects tracked from the same record</li>
+            <li>One feature set across <b>Android, iOS and Windows</b></li>
+          </ul>
           <p class="proof-get"><span class="pa-label">Get it on</span>
             <a href="https://play.google.com/store/apps/details?id=com.viewpoint.fieldview" data-store="play" target="_blank" rel="noopener noreferrer">Google Play</a>
             <a href="https://apps.apple.com/us/app/viewpoint-field-view/id1051411527" data-store="ios" target="_blank" rel="noopener noreferrer">App Store</a>
@@ -706,8 +792,14 @@
             <span class="pa-role">Mobile Developer</span>
             <time datetime="2017-07/2019-03">Jul 2017 &ndash; Mar 2019</time>
           </div>
-          <p class="proof-more">Team lets users raise RFIs &mdash; requests for information &mdash; to get what they
+          <p class="proof-more">Team lets users raise RFIs (requests for information) to get what they
             need to finish a job on site. Xamarin for Windows and iOS, native on Android.</p>
+          <p class="proof-lede">Team lets users raise RFIs, requests for information, to get what they need to finish a job on site.</p>
+          <ul class="proof-wins">
+            <li>Same feature set shipped on <b>all three platforms</b> in every monthly release</li>
+            <li><b>Xamarin</b> for Windows and iOS, native on Android</li>
+            <li>New features built, existing ones maintained, and older code updated to modern practice</li>
+          </ul>
           <p class="proof-get"><span class="pa-label">Get it on</span>
             <a href="https://play.google.com/store/apps/details?id=com.viewpoint.field" data-store="play" target="_blank" rel="noopener noreferrer">Google Play</a>
             <a href="https://apps.apple.com/us/app/viewpoint-team/id1264886008" data-store="ios" target="_blank" rel="noopener noreferrer">App Store</a>
@@ -727,6 +819,12 @@
           </div>
           <p class="proof-more">A contract through a partnership between the two companies, maintaining and updating
             the app&rsquo;s features.</p>
+          <p class="proof-lede">Contracted to maintain and update the TabbedOut application, through a partnership between the two companies.</p>
+          <ul class="proof-wins">
+            <li>UI issues fixed across every screen size</li>
+            <li>Crashes stopped</li>
+            <li>Features maintained, updated and released</li>
+          </ul>
           <p class="proof-kit"><b>Tools</b>Java, Android SDK, Android Studio, Git, JIRA</p>
         </div>
 
@@ -741,6 +839,16 @@
           </div>
           <p class="proof-more">An internal Android app for Vacasa&rsquo;s housekeepers, with the data it runs on
             designed alongside the API team.</p>
+          <p class="proof-lede">An internal Android app for Vacasa&rsquo;s housekeepers, improving the efficiency of their everyday work.</p>
+          <ul class="proof-wins">
+            <li><b>Cleaning information</b> for the home</li>
+            <li><b>Hours worked</b></li>
+            <li><b>Maintenance tickets</b></li>
+            <li><b>Supplies</b></li>
+            <li><b>Directions</b> to homes</li>
+            <li><b>Key house details</b></li>
+            <li>Collaborated with <b>design and backend teams</b></li>
+          </ul>
           <p class="proof-kit"><b>Features</b>Online/offline, GPS, camera, phone, encryption, Google API, multiple languages, Android 4.0&ndash;7.1</p>
           <p class="proof-kit"><b>Tools</b>Java, Android SDK, Android Studio, Fabric, JIRA, Git, Appsee, Appaloosa</p>
         </div>
@@ -754,8 +862,13 @@
             <span class="pa-role">Mobile App Developer</span>
             <time datetime="2014-07/2015-02">Jul 2014 &ndash; Feb 2015</time>
           </div>
-          <p class="proof-more">A mobile e-commerce app leaning on device hardware &mdash; a barcode scanner among
-            it &mdash; to make buying on a phone worth doing.</p>
+          <p class="proof-more">A mobile e-commerce app leaning on device hardware, including a barcode scanner, to make buying on a phone worth doing.</p>
+          <p class="proof-lede">A mobile e-commerce app for Rexel and all the brands beneath it.</p>
+          <ul class="proof-wins">
+            <li>One source of code covering every brand and language, built with <b>Titanium</b></li>
+            <li>Device hardware used to make buying on a phone worth doing, a <b>barcode scanner</b> among it</li>
+            <li>Features created, updated, maintained and released</li>
+          </ul>
           <p class="proof-get"><span class="pa-label">Get it on</span>
             <a href="https://play.google.com/store/apps/details?id=com.rexel.storefront.releaserexel" data-store="play" target="_blank" rel="noopener noreferrer">Google Play</a>
             <a href="https://apps.apple.com/us/app/rexelusa-mobile/id1537022597" data-store="ios" target="_blank" rel="noopener noreferrer">App Store</a>
@@ -773,6 +886,11 @@
             <time datetime="2012-05/2014-07">May 2012 &ndash; Jul 2014</time>
           </div>
           <p class="proof-more">The first mobile role, and the start of the fourteen years.</p>
+          <p class="proof-lede">An iOS app converted and updated so Chinese students could use it to learn English.</p>
+          <ul class="proof-wins">
+            <li>Converted from English to <b>Simplified Chinese</b></li>
+            <li>The first mobile role, and the start of the fourteen years</li>
+          </ul>
           <p class="proof-kit"><b>Tools</b>Corona SDK, Android, iOS, Xcode, Hype, HTML5, CSS</p>
         </div>
 
@@ -787,6 +905,11 @@
           </div>
           <p class="proof-more">Ran on an Android tablet placed beside a piece at the San Francisco Asian Art Museum,
             letting visitors select and learn more about aspects of the work and zoom in on close-up detail.</p>
+          <p class="proof-lede">An Android kiosk app for the San Francisco Asian Art Museum, running on a tablet placed beside a piece of art.</p>
+          <ul class="proof-wins">
+            <li>Visitors select and learn more about aspects of the work</li>
+            <li>Zoom in on close-up detail</li>
+          </ul>
           <p class="proof-kit"><b>Tools</b>Corona SDK, Android, iOS, Xcode, Hype, HTML5, CSS</p>
         </div>
 
@@ -801,6 +924,11 @@
           </div>
           <p class="proof-more">An internal web page displaying and graphing printhead and ink usage, with a new
             heat-map graph for analysing usage trends.</p>
+          <p class="proof-lede">An internal web page displaying and graphing printhead and ink usage.</p>
+          <ul class="proof-wins">
+            <li>Weekly graph production cut from <b>hours to minutes</b></li>
+            <li>New <b>heat-map graph</b> for analysing usage trends</li>
+          </ul>
           <p class="proof-kit"><b>Tools</b>PHP, JavaScript, HTML, CSS, JpGraph, SCRUM</p>
         </div>
 

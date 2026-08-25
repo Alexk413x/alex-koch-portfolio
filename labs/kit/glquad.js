@@ -161,7 +161,7 @@ function blueNoiseTile(size) {
  * narrower build compiles.
  */
 export function createQuad(canvas, { frag, uniforms = [], ext = [], textures = {}, onRestore = null,
-                                     variant = null } = {}) {
+                                     variant = null, deferLink = false } = {}) {
   /* WEBGL2, and only WebGL2. There is no WebGL1 fallback and that is deliberate: `experimental-webgl` was a 2013
      spelling for browsers that no longer exist, and a silent downgrade path is worse than none — a shader using
      a core-in-2 feature would compile to nothing on the fallback and the page would show black with no error
@@ -195,6 +195,8 @@ export function createQuad(canvas, { frag, uniforms = [], ext = [], textures = {
   // widest shader for the narrowest scene.
   const BASE = Symbol('superset');
   let cur = null, pending = null, quad = null;
+  // The base program while it is still linking, under deferLink. Null once adopted, and null always without it.
+  let basePending = null;
 
   // 0 still linking, 1 linked, -1 failed. Reading LINK_STATUS is what BLOCKS until the driver has finished, so
   // the completion query has to come first or the compile is synchronous after all.
@@ -272,7 +274,15 @@ export function createQuad(canvas, { frag, uniforms = [], ext = [], textures = {
     progs.clear(); cur = null; pending = null;
 
     const prog = submit(frag);
-    if (!prog || linkState(prog, true) !== 1) return false;
+    if (!prog) return false;
+    /* deferLink: HAND THE PROGRAM TO THE DRIVER AND WALK AWAY. Reading LINK_STATUS is what blocks, so the wait
+       below is the whole cost — measured on an Intel UHD 630 with a cold shader cache, linking the reactor's
+       superset took 13.3 seconds on the main thread, and the page could not paint past it. A caller that opts
+       in polls ready() instead and draws nothing until it lands.
+       OFF BY DEFAULT, so every lab keeps the behaviour it was measured with: they own the whole viewport and
+       have nothing to show before the shader exists, where a page with a hero has a page around it. */
+    if (deferLink) { basePending = prog; return true; }
+    if (linkState(prog, true) !== 1) return false;
     activate(adopt(BASE, prog));
     return true;
   };
@@ -283,6 +293,24 @@ export function createQuad(canvas, { frag, uniforms = [], ext = [], textures = {
     gpu: detectGPU(gl),
     lost: false,
     w: 1, h: 1,
+
+    /* Whether there is a program to draw with. Always true without deferLink, so no existing caller changes.
+       Under it, this is the poll: COMPLETION_STATUS_KHR costs nothing and LINK_STATUS is only read once the
+       driver says it is done, which is the difference between a poll and a stall.
+       `wait` FORCES IT, and that is what a synchronous frame needs. renderNow() is documented to draw without an
+       animation frame at all, which is the only way to step a page that is not front-most — and a poll that
+       returns false leaves it drawing nothing, so the caller gets a blank buffer rather than a picture. The
+       frame loop never passes it; the harness path always does. */
+    ready(wait) {
+      if (!basePending) return !!cur;
+      const st = linkState(basePending, !!wait);
+      if (st === 0) return false;
+      const prog = basePending;
+      basePending = null;
+      if (st === -1) return false;
+      activate(adopt(BASE, prog));
+      return true;
+    },
 
     /* Asks for the program built for `key`, and returns whether that is what is now current.
      *
@@ -326,28 +354,31 @@ export function createQuad(canvas, { frag, uniforms = [], ext = [], textures = {
     // Skips the upload when the value has not moved. Reactor pushes about fifty floats per frame and perhaps
     // three of them differ from the frame before.
     f(name, v) {
+      if (!cur) return;
       if (cur.last.get(name) === v) return;
       cur.last.set(name, v);
       gl.uniform1f(cur.U[name], v);
     },
     f2(name, a, b) {
+      if (!cur) return;
       const k = cur.last.get(name);
       if (k && k[0] === a && k[1] === b) return;
       cur.last.set(name, [a, b]);
       gl.uniform2f(cur.U[name], a, b);
     },
     f3(name, a, b, c) {
+      if (!cur) return;
       const k = cur.last.get(name);
       if (k && k[0] === a && k[1] === b && k[2] === c) return;
       cur.last.set(name, [a, b, c]);
       gl.uniform3f(cur.U[name], a, b, c);
     },
     // Uncached: an array uniform here is a per-frame animation table, so comparing costs what uploading costs.
-    fv4(name, arr) { gl.uniform4fv(cur.U[name], arr); },
+    fv4(name, arr) { if (!cur) return; gl.uniform4fv(cur.U[name], arr); },
 
     // Uncached for the same reason as fv4: nine floats compare for what they cost to send. Column-major, which
     // is what GLSL expects and what mat3(a,b,c, d,e,f, g,h,i) builds.
-    m3(name, arr) { gl.uniformMatrix3fv(cur.U[name], false, arr); },
+    m3(name, arr) { if (!cur) return; gl.uniformMatrix3fv(cur.U[name], false, arr); },
 
     // Sizes the buffer to a CSS box at a fraction of it, reporting whether anything moved. dpr is capped at 1 on
     // top of `scale`: these are soft, noisy fields where the extra samples buy nothing visible.
@@ -361,7 +392,7 @@ export function createQuad(canvas, { frag, uniforms = [], ext = [], textures = {
       return true;
     },
 
-    draw() { gl.drawArrays(gl.TRIANGLES, 0, 3); },
+    draw() { if (cur) gl.drawArrays(gl.TRIANGLES, 0, 3); },
   };
 
   // preventDefault is required or the browser will not restore the context at all and the page stays black.

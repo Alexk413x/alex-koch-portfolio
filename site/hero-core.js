@@ -92,8 +92,12 @@ function init() {
   if (!canvas || !stage) return;
 
   // Without WebGL the element simply stays empty. A hero is not worth an error message.
+  /* deferLink: THE PAGE DOES NOT WAIT FOR THE SHADER. Linking the reactor's superset blocks the main thread —
+     13.3 seconds on an Intel UHD 630 with a cold shader cache, measured, and DOMContentLoaded sat behind all of
+     it. The labs still link the old way: they are the whole page and have nothing to show without it. Here the
+     rest of the page is the point, so the core arrives when it arrives. */
   const R = createQuad(canvas, {
-    frag: FRAG, uniforms: UNIFORMS, onRestore: () => fit(true),
+    frag: FRAG, uniforms: UNIFORMS, onRestore: () => fit(true), deferLink: true,
   });
   if (!R) return;
 
@@ -114,6 +118,9 @@ function init() {
     // supersampling. Costs 6.8ms/frame of a 16.67ms budget on an Intel UHD 630, at any window size.
     renderScale: 1,
   };
+
+  // Whether the shader has landed. One-way: a lost context rebuilds through onRestore, not through here.
+  let lit = false;
 
   const sim = createSim();
 
@@ -180,6 +187,14 @@ function init() {
 
   function draw(dt) {
     if (!onScreen || R.lost) return;
+    /* NOTHING TO DRAW UNTIL THE PROGRAM LANDS. ready() is a poll and not a wait, so this costs one extension
+       query a frame while the driver works, and the page stays live throughout.
+       The class is what the stylesheet hangs the stand-in ring and the title's fade on, and it is set once. */
+    if (!lit) {
+      if (!R.ready()) return;
+      lit = true;
+      document.documentElement.classList.add('core-lit');
+    }
     if (reduced.matches) {
       if (held) return;
       held = true;
@@ -233,7 +248,11 @@ function init() {
   /* `pose` puts the face at an angle and holds it there. draw() writes coreAngle every frame, so setting that
      on the state directly is overwritten before it can be rendered — anything sweeping the core has to come
      through here. */
-  window.HERO = { state, sim, R, renderNow: (dt) => loop.renderNow(dt), stop: () => loop.stop(),
+  /* renderNow FORCES THE LINK. The frame loop is happy to wait for the shader and draw nothing meanwhile, but a
+     synchronous frame has no next frame to be drawn on: whatever asked for it reads the buffer immediately. */
+  window.HERO = { state, sim, R,
+                  renderNow: (dt) => { R.ready(true); return loop.renderNow(dt); },
+                  stop: () => loop.stop(),
                   pulse: () => { sim.firePulse(state); },
                   pose: (y, x) => { aimY = faceY = y; aimX = faceX = x || 0; },
                   get onScreen() { return onScreen; },
