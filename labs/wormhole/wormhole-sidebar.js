@@ -142,13 +142,17 @@ export const SECTIONS = [
   /* CORE is the far end of the tunnel — the bright centre the layers are wrapped around. It is drawn after the
    * march rather than inside it, so its rows are about one object and none of them cost a sample.
    *
+   * COLOUR FIRST within the section, as FRAME does in CRT Lab and every layer does here: it is what the far end
+   * of the tunnel is MADE of, and every row under it is a departure from that. SOURCE sits with it because the
+   * two answer one question — whether that colour is the swatch or the average of whatever layers are lit.
+   *
    * SPIN turns the rays and nothing else, so it reads as doing nothing while RAYS is 0. PULSE and FADE are both
    * breaths and are separate controls because they are different ones: PULSE brightens and dims around full,
    * FADE takes the whole core away and brings it back. Each carries its own rate for the same reason every layer
    * carries its own flow — a shared rate forces the slow one to compromise. */
-  ['CORE', [['glow', 'CORE', 0, 3, 0.02],
-            ['coreCol', 'COLOUR', '#'],
+  ['CORE', [['coreCol', 'COLOUR', '#'],
             ['coreAuto', 'SOURCE', 0, 1, 0.01],
+            ['glow', 'CORE', 0, 3, 0.02],
             ['throatTint', 'TINT', 0, 1, 0.01],
             ['throatRays', 'RAYS', 0, 1, 0.01],
             ['coreSpin', 'SPIN', -2, 2, 0.01],
