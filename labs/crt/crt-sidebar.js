@@ -1,29 +1,23 @@
-/* THE SIDEBAR: WHICH CONTROLS EXIST, AND HOW EACH ONE READS.
+/* crt-sidebar.js — which controls exist, and how each one reads.
  *
- * This is the second of the three things that vary between views. A view is a scene, a set of values
- * ([[crt-presets]]) and some chrome; the cinematic intro has no panel at all, so none of this is loaded there.
- * Keeping it out of the lab page is what makes that possible -- it was 452 of the page's 2492 lines.
- *
- * SECTIONS IS PURE DATA and has no dependencies whatever. FMT has exactly three -- state, cssPx and textGrid --
- * and takes them as arguments rather than importing them, because two of the three are measured from a live
- * canvas. A formatter that reached for the DOM could not be unit-tested; one handed its inputs can be.
+ * SECTIONS IS PURE DATA and has no dependencies whatever. FMT has exactly three — state, cssPx and textGrid — and
+ * takes them as arguments rather than importing them, because two of the three are measured from a live canvas. A
+ * formatter that reached for the DOM could not be unit-tested; one handed its inputs can be.
  */
 
 // HOW A VALUE READS IN THE PANEL. Formatters only ever produce display text -- none of them may alter state.
 export function makeFmt({ state, cssPx, textGrid }) {
   const FMT = {
   corner:  (v) => Math.round(v) + '°',
-  /* BEND AS THE ARC ITS EDGE SWEEPS, which is the one angle it honestly has.
+  /* BEND AS THE ARC ITS EDGE SWEEPS, which is the one angle it honestly has. SQUIRCLE has a landmark — at 90 the
+   * exponent is exactly 2, a circle — so degrees mean something absolute there. BEND has no such point: it is a bow
+   * depth, normalised so the bulge cannot leave the glass.
    *
-   * SQUIRCLE has a landmark -- at 90 the exponent is exactly 2, a circle -- so degrees mean something absolute
-   * there. BEND has no such point: it is a bow depth, normalised by (1 + bendE) so the bulge cannot leave the
-   * glass. What IS measurable is the arc the bowed edge describes: with sagitta s at the edge midpoint and half
-   * chord L to the corner, the included angle is 4*atan(s/L). Straight reads 0 degrees and every value above it
-   * is a real arc you could put a protractor on.
+   * What IS measurable is the arc the bowed edge describes: with sagitta s at the edge midpoint and half chord L to
+   * the corner, the included angle is 4·atan(s/L). Straight reads 0° and every value above it is a real arc.
    *
-   * Computed from the CURRENT outline rather than a formula, because the sagitta depends on SQUIRCLE and on the
-   * aspect too -- a bow on a rounded shape is not the same arc as the same bow on a rectangle. Memoised on those
-   * three, since it runs guideOutline. */
+   * Computed from the CURRENT outline rather than a formula, because the sagitta depends on SQUIRCLE and the aspect
+   * too. Memoised on those three, since it runs guideOutline. */
   bend:    (v) => Math.round(v) + '%',
   spot:    (v) => v.toFixed(2) + 'px',
   face:    (v) => Math.abs(v) < 0.006 ? 'FLAT'
@@ -70,16 +64,12 @@ export function makeFmt({ state, cssPx, textGrid }) {
   grings:  (v) => { const n = Math.round(v); return n < 1 ? 'OFF' : n >= 20 ? 'FULL' : (n * 5) + '%'; },
   /* EVEN at 1, ^N above it -- the lab's format -- with the KNEE beside it: the fraction of the band, in from the
    * rim, inside which half the sag has happened. 0.5^(1/p), so 50% at EVEN and 13% at ^5. */
-  /* THE TEXT SECTION READS OUT WHAT THE SETTING BUYS, NOT ONLY WHAT IT IS SET TO.
+  /* THE TEXT SECTION READS OUT WHAT THE SETTING BUYS, NOT ONLY WHAT IT IS SET TO. SL is scanlines and COL is grille
+   * columns, but a cell height is only half an answer — what you want to know is how many ROWS of it fit, and that
+   * is not a division to do in your head on every drag. Same for the block: TEXT WIDTH is a percentage of the
+   * picture, and what that percentage MEANS is a column count.
    *
-   * SL is scanlines and COL is grille columns -- the units the cell is measured in now, see textGrid(). But a
-   * cell height is only half an answer: what you actually want to know is how many ROWS of it fit, and that is
-   * not a division to do in your head on every drag. Same for the block -- TEXT WIDTH is a percentage of the
-   * picture, and the thing that percentage MEANS is a column count, which is the unit a terminal has always been
-   * described in. So each of these prints the setting and its consequence.
-   *
-   * COMPACT, in the reference's own `5SL/38R` form, because the value field is ~52px and a spelled-out
-   * "5 SL . 38 ROWS" overruns the steppers either side of it -- a readout that does not fit is one you guess at.
+   * COMPACT, because the value field is narrow and a spelled-out form overruns the steppers either side of it.
    *
    * These call textGrid(), which is why contentPx is declared up with cssPx rather than beside resize(). */
   tcell:   (v) => Math.round(v) + 'SL/' +
@@ -245,16 +235,12 @@ export function makeFmt({ state, cssPx, textGrid }) {
 
 // WHAT THE PANEL CONTAINS, top to bottom. Rows are [key, label, min, max, step]; a section is [title, rows].
 export const SECTIONS = [
-  /* DEBUG FIRST, ABOVE THE TUBE, which is where the reference puts it -- its own panel opens
-   * DEBUG then TUBE. It sits above everything it measures because it is the thing you reach for
-   * WHILE tuning the rows below it, and hunting to the bottom of sixty-one controls to switch a
-   * guide on defeats the point of the master. Collapsed by default, so it costs one line when off.
+  /* DEBUG FIRST, ABOVE THE TUBE. It sits above everything it measures because it is the thing you reach for WHILE
+   * tuning the rows below it, and hunting to the bottom of sixty-one controls to switch a guide on defeats the point
+   * of the master. Collapsed by default, so it costs one line when off.
    *
-   * WITH A MASTER, and each instrument a plain on/off. These were 0..1 sliders with a stepper either side,
-   * which is three widgets and a numeric readout to express a boolean. The reference gates the whole group behind
-   * one debugOn and hides the rows when it is off -- guidesShow, heatShow and guideEdgeShow all test it -- so the
-   * panel is not carrying instrument rows around while you are working on the tube. Third element names the
-   * section's master key. */
+   * WITH A MASTER, and each instrument a plain on/off: a 0..1 slider with a stepper either side is three widgets and
+   * a numeric readout to express a boolean. Third element names the section's master key. */
   ['DEBUG', [['guidesOn','GUIDE',0,1,1],['heat','ELEVATION',0,1,1],['gridOn','GRID',0,1,1],
              ['fixSolo','FIXTURE',0,1,1]], 'debugOn'],
   /* OUTSIDE-IN, AND GOVERNING CONTROL FIRST. SQUIRCLE decides the outline and BEND bows the runs of it, so BEND
@@ -277,18 +263,16 @@ export const SECTIONS = [
              * is exactly the sort of thing the panel is for. The stored value is the DIVISOR the shader applies,
              * so 0.5 is half size and 1.5 is half again; the readout converts. */
             ['overscan','OVERSCAN',0.5,1.5,0.005],
-            /* CONVERGENCE LIVES WITH THE TUBE, not the raster. It is the three guns failing to land on the same
-             * triad -- a property of the gun assembly and the yoke, which is why a service manual has static
-             * convergence adjustments on the set and not on the signal. The raster section describes the PATTERN
-             * the beam paints; this describes the beam being three beams.
+            /* CONVERGENCE LIVES WITH THE TUBE, not the raster. It is the three guns failing to land on the same triad — a
+             * property of the gun assembly and the yoke, which is why a service manual has static convergence
+             * adjustments on the set and not on the signal.
              *
-             * SIGNED, because misconvergence has a direction. 0..4px could only ever put red outside and blue in;
-             * a real tube can be out either way, and the readout says which.
+             * SIGNED, because misconvergence has a direction: a positive-only range could only put red outside and
+             * blue in, and a real tube can be out either way.
              *
-             * IN PIXELS AT THE RIM. The error is exact on axis by construction and grows as rn^2, so a single
-             * distance only means anything if you say WHERE -- this is the red-to-blue separation at the edge of
-             * the picture, in CSS px, falling to zero at the centre. The page converts to the shader's uv units
-             * against the stage's own size, which is what makes the number survive a resize. */]],
+             * IN PIXELS AT THE RIM. The error is exact on axis by construction and grows as rn², so a single distance
+             * only means anything if you say WHERE. The page converts to the shader's uv units against the stage's own
+             * size, which is what makes the number survive a resize. */]],
 
   /* GLASS SITS WITH THE TUBE, because it IS the tube's front surface. It used to be filed after FIXTURE, which
    * put it next to the thing it reflects rather than next to the thing it belongs to -- and that is backwards:
@@ -300,15 +284,13 @@ export const SECTIONS = [
   ['GLASS', [['glare','GLARE',0,1,0.01],['matte','MATTE',0,1,0.01],
              ['sheen','SHEEN',0,1,0.01],['scatterCM','SCATTER',1,200,1]]],
 
-  /* THE MOULDING GOES WITH THE GLASS IT HOLDS. Reading down, the panel now walks OUTWARD from the picture:
-   * the tube's shape, the faceplate over it, the bezel around that. FRAME was filed after FIXTURE, which put
-   * the physical front of the set below the room being reflected in it -- and the frame is there whether the
-   * light is on or not.
+  /* THE MOULDING GOES WITH THE GLASS IT HOLDS. Reading down, the panel walks OUTWARD from the picture: the tube's
+   * shape, the faceplate over it, the bezel around that. Filed after FIXTURE it would put the physical front of the
+   * set below the room being reflected in it, and the frame is there whether the light is on or not.
    *
    * COLOUR FIRST within the section: it is the moulding's material, and every other row is a departure FROM it.
-   * FRAME CARRIES ITS OWN MASTER and its rows collapse with it, the same treatment DEBUG gets -- with no
-   * moulding there is nothing for COLOUR, WIDTH or the three lights to describe. The reference gates its whole
-   * bezel layer on frameOn for that reason. */
+   * FRAME CARRIES ITS OWN MASTER — with no moulding there is nothing for COLOUR, WIDTH or the three lights to
+   * describe. */
   ['FRAME', [['frameCol','COLOUR','#'],['frame','FRAME',0,1.5,0.01],['frameW','WIDTH',1,30,1],
                           /* Ordered by how broad each light is: the whole layer, then the lamp, then the local
               * pool that only answers for the content immediately beside a given piece of plastic. */

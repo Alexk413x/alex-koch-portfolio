@@ -12,3 +12,13 @@ desktop.ini
 .vscode/
 .idea/
 *.swp
+
+# codebase-kg scratch export; the .db is the artifact
+.kg-export.json
+
+# Per-machine Claude Code permissions; .claude/settings.json is the shared one
+.claude/settings.local.json
+
+
+# git worktrees created under the repo by tooling; each is its own checkout
+.claude/worktrees/

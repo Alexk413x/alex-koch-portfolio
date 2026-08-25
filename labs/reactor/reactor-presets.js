@@ -46,8 +46,9 @@ export function defaultPreset(gpu) {
     shape: 0,
     ringOn: 1, ringBreak: 0, breakSpd: 0,
     ringRough: 0.62, ringWear: 0.45,
-    ventSwellPct: 0.9, subVT: 1, ventVT: 1,
-    octaves: 1, pulseSize: 0.3, dropN: 10,
+    // subSurf splits off subVT's second job: 1 is what subVT alone used to mean, so the lab is unchanged.
+    ventSwellPct: 0.9, subVT: 1, subSurf: 1, ventVT: 1,
+    octaves: 1, pulseSize: 0.3, dropN: 10, dropSize: 1,
     coreHex: '#28ff1a',
     renderScale: gpu && gpu.integrated ? 0.55 : 0.62,
     secClosed: {},

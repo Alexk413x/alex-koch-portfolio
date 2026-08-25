@@ -1,11 +1,10 @@
-/* THE SHIPPED VALUES, LIFTED OUT OF THE LAB PAGE.
+/* crt-presets.js — the shipped values, lifted out of the lab page.
  *
- * A view is a scene, a set of values and some chrome. Holding the values here is what lets a second view --
- * the cinematic intro, which has no panel at all -- drive the same scene from a different starting point
- * instead of copying the scene to change its numbers.
+ * A view is a scene, a set of values and some chrome. Holding the values here is what lets a second view drive the
+ * same scene from a different starting point instead of copying the scene to change its numbers.
  *
- * `gpu` is a parameter rather than an import because this module has no renderer to ask, and a preset that
- * reached for one could not be read without first booting WebGL.
+ * `gpu` is a parameter rather than an import because this module has no renderer to ask, and a preset that reached
+ * for one could not be read without first booting WebGL.
  */
 export function defaultPreset(gpu) {
   return {
@@ -33,16 +32,13 @@ export function defaultPreset(gpu) {
    * area being swung about, which is the thing a coil held against the glass actually does. */
   warpR: 1.64,        // the pole's reach, in picture widths
   warpRim: 0,      // how far out the clamp starts -- 1 pins only the last pixel, 0 pins nearly everything
-  /* IN CSS PIXELS, like every other screen distance on this panel -- the scanline width, the frame, the beam tip
-   * and the CONVERGENCE rows this one adds to. It was a fraction of the picture, which read 16px on this window
-   * and something else on the next; a gun split is a distance on the glass, and the conversion belongs at the
-   * boundary where all the others happen.
+  /* IN CSS PIXELS, like every other screen distance on this panel — the scanline width, the frame, the beam tip and
+   * the CONVERGENCE rows this one adds to. A fraction of the picture reads as one distance on this window and
+   * another on the next; a gun split is a distance on the glass.
    *
-   * 16px, NOT 3. Three was chosen against CONVERGENCE's shipped +/-2px, on the argument that the field should
-   * make an existing defect visibly worse. That is the right argument for a magnet passing the desk and the
-   * wrong one for a coil held against the glass -- and at 3px on a 1600px tube the separation measured real and
-   * read as nothing. The guns are seated 120 degrees apart, so this is the RADIUS of the triad: at 16 the three
-   * rasters land a full glyph apart and the text genuinely comes to pieces, which is the ask. */
+   * The guns are seated 120° apart, so this is the RADIUS of the triad. Set against CONVERGENCE's own couple of
+   * pixels the separation is real and reads as nothing; at this size the three rasters land a full glyph apart and
+   * the text genuinely comes to pieces, which is the ask. */
   warpRGB: 31.5,
   /* THE MAINS FAULT. crt-flicker owns the 4.6s timeline -- the same one the reference fires -- and everything here
    * is how hard this build spends it. Each gain scales the fault's DEPARTURE from normal rather than its value, so
@@ -63,13 +59,10 @@ export function defaultPreset(gpu) {
   frameOn: 1,            // the reference ships frameOn: true; off shows the bare tube
   frameCol: '#2d1b15',   // the moulding's own plastic -- crt-bezel's default, and the reference's
   famp: 2.1,          // DEPTH: scales the fold-bounded amplitude; 1 is the reference's own depth
-  /* FIT IS GONE, AND THE PIN IS WHY. It held the picture's rim on the glass by overriding OVERSCAN with the
-   * face LUT's last sample -- the projection's scale factor at the rim. That was a real job right up until the
-   * LUT was pinned in element 2: buildFaceLUT now solves for the radius at s = 1 against target = r1 = F(1),
-   * which returns u = 1 by construction, for every profile, at every FACE. So the number FIT read became the
-   * constant 1.0 and the switch quietly turned into "force OVERSCAN to 100%" -- something the OVERSCAN slider
-   * already does, under a label claiming otherwise. Measured: identical picture extent with FIT on and off at
-   * FACE 20, 60 and 90.
+  /* FIT IS GONE, AND THE PIN IS WHY. It held the picture's rim on the glass by overriding OVERSCAN with the face
+   * LUT's last sample. buildFaceLUT now solves for the radius at s = 1 against target = r1 = F(1), which returns
+   * u = 1 by construction for every profile at every FACE — so the number FIT read became the constant 1.0 and the
+   * switch quietly turned into "force OVERSCAN to 100%", which the OVERSCAN slider already does.
    *
    * The rim it was guarding is still guarded. That is what the pin IS. */
   fexp: 3, grings: 20,        // FALLOFF exponent and CURVE AREA, both tuned on this build rather than the reference's
@@ -86,15 +79,12 @@ export function defaultPreset(gpu) {
    * say how much bloom and never how far it reached. The reference's single bloom control IS the width. */
   bloomSize: 16,
   vig: 0.5, vigFall: 0.22,
-  /* THE TWO RATES ARE SET IN SECONDS, NOT IN RATE -- and that was the whole problem with them.
+  /* THE TWO RATES ARE SET IN SECONDS, NOT IN RATE. A slider linear in FREQUENCY is wildly non-linear in the TIME
+   * anyone reads off it: at the fast end one step moves the sweep by a hundredth of a second and at the slow end
+   * the same step moves it by twenty, so every useful setting is crammed into the last few pixels of travel.
    *
-   * They used to be the frequency, printed as its reciprocal. A slider that is linear in RATE is wildly
-   * non-linear in the TIME anyone actually reads off it: at the fast end one step moved the sweep by a
-   * hundredth of a second and at the slow end the same step moved it by twenty seconds. The useful settings
-   * were all crammed into the last few pixels of travel.
-   *
-   * Storing the PERIOD makes every step the same size -- one second is one second wherever the handle is --
-   * and the reciprocal is taken once, at the boundary, where it is handed to the shader. Zero means parked. */
+   * Storing the PERIOD makes every step the same size, and the reciprocal is taken once at the boundary where it is
+   * handed to the shader. Zero means parked. */
   sweepSec: 20, sweepOn: 1,
   /* THE BEAM IS MEASURED IN SCANLINES, NOT IN SCREEN PERCENT -- the same move the terminal's text made.
    *
@@ -132,32 +122,20 @@ export function defaultPreset(gpu) {
    * the glass half-size. Inside it the tubes are ltwd=76% wide, at lt1=29% / lt2=71% down the opening, ltk=20
    * thick, and ftilt ships at 0. Every one of these was a guess before and every one of them was wrong -- the
    * fixture was at the top of the glass when the real one is dead centre. */
-  /* THE FIXTURE IN MILLIMETRES, because a light fitting has a size and the old controls did not.
+  /* THE FIXTURE IN MILLIMETRES, because a light fitting has a size. A bare fraction of the glass means nothing on its
+   * own and lets you build a fitting that could not exist: a 26mm tube in a housing 40mm deep, ends sticking through
+   * the sides, two lamps closer together than their own diameter. Real numbers make those states unreachable and the
+   * plausible ones obvious — a T8 tube IS 26mm, a 4-foot lamp IS 1200mm, an office troffer IS about 600x600x90.
    *
-   * Every dimension here used to be a bare fraction of the glass -- FIX WIDTH 0.35, TUBE THICK 0.02 -- which
-   * meant nothing on its own and let you build a fitting that could not exist: a 26mm tube in a housing 40mm
-   * deep, ends sticking through the sides, two lamps closer together than their own diameter. Real numbers make
-   * those states unreachable and make the plausible ones obvious: a T8 tube IS 26mm, a 4-foot lamp IS 1200mm,
-   * and an office troffer IS about 600 x 600 x 90.
+   * WHAT IS DERIVED STAYS DERIVED. Tube length is the housing minus an end allowance, because that is what decides it
+   * on a real fitting. Same for the caps: an end cap is a moulded part about 25mm long whatever tube it is on.
    *
-   * WHAT IS DERIVED STAYS DERIVED. Tube length is the housing minus an end allowance at each end, because that
-   * is what decides it on a real fitting -- you do not choose it independently and then discover the lamp does
-   * not fit. Same for the caps: an end cap is a moulded part about 25mm long whatever tube it is on.
+   * SCALE ties millimetres to the picture: how much of the room the glass half-height spans. */
+  /* MM_PER_UNIT IS A CONSTANT, NOT A CONTROL. Apparent size is (real size / U) over (real distance / U), so the U
+   * cancels and fixWmm/distMM is the entire answer — a global scale on top of a real size and a real distance can
+   * only be a no-op or a bug. It appeared to work only while DISTANCE was secretly a focal length.
    *
-   * SCALE is the one number that ties millimetres to the picture: how much of the room the glass half-height
-   * spans. Everything else divides by it. */
-  /* MM_PER_UNIT IS A CONSTANT, NOT A CONTROL, and SCALE was removed for a reason worth recording.
-   *
-   * It set how many millimetres of room a glass half-height spans, and every length here divided by it -- the
-   * housing, the tubes, the scatter, AND the distance. Apparent size is (real size / U) over (real distance / U),
-   * so the U cancels and fixWmm/distMM is the entire answer: an eight-fold change in SCALE moved 133k pixels
-   * where DISTANCE moved 1.25M over a smaller range, and what little it did move was two max() floors leaking at
-   * the extremes rather than the control doing a job.
-   *
-   * It only ever appeared to work while DISTANCE was secretly a focal length. Fixing that made this redundant,
-   * which is the honest outcome: the model is determined by real millimetres and a real distance, and a second
-   * global scale on top of both can only be a no-op or a bug. Kept as a constant because the conversion still
-   * has to happen somewhere -- it just is not anybody's decision. */
+   * Kept as a constant because the conversion still has to happen somewhere; it just is not anybody's decision. */
   distMM: 1200,        // how far the fitting is from the glass
   fixWmm: 1200, fixHmm: 600, recessMM: 40,
   tubeDiaMM: 20,       // T8. T5 is 16, T12 is 38
@@ -193,17 +171,14 @@ export function defaultPreset(gpu) {
    * glass rather than absence, and lets the ends do the talking. */
   tubeDead: 0.18,
   sheen: 0.06, matte: 0.0,
-  /* 0.78 IS THE OLD 0.20, AND THE NUMBER CHANGED BECAUSE THE UNIT DID.
+  /* THE NUMBER CHANGED BECAUSE THE UNIT DID. GLARE was a reflectance spent in linear light; it is a transparency spent
+   * in display space now — see the note in crt-gl where emisBare is taken. Under the old mapping the tone map and
+   * gamma between the control and the eye meant a low value already produced most of a full reflection, so this is
+   * the same picture said in the new unit and nothing about the shipped look moves.
    *
-   * GLARE was a reflectance spent in linear light; it is a transparency spent in display space now -- see the
-   * note in crt-gl where emisBare is taken. Under the old mapping the tone map and gamma between the control
-   * and the eye meant 0.20 already produced most of a full reflection: measured 161 of a possible 205 levels,
-   * which is 78% of the way there. So 0.78 is the same picture, said in the new unit, and nothing about the
-   * shipped look moves.
-   *
-   * A STORED VALUE KEEPS ITS NUMBER AND LOSES ITS MEANING, which is worth knowing rather than migrating: a
-   * session carrying glare 0.20 will now render it as 20% opacity instead of 78%, and read much weaker until
-   * the slider is touched once. Not worth a schema bump -- that discards every other setting to fix one row. */
+   * A STORED VALUE KEEPS ITS NUMBER AND LOSES ITS MEANING, which is worth knowing rather than migrating: an old
+   * session will read much weaker until the slider is touched once. Not worth a schema bump — that discards every
+   * other setting to fix one row. */
   glare: 0.21,
   // SCATTER IS A DISTANCE IN THE ROOM, so it is stored in cm and converted by SCALE like the fitting's own
   // dimensions. It was a bare 0..1 in shader units, which meant changing SCALE moved the fitting and left
@@ -248,16 +223,12 @@ export function defaultPreset(gpu) {
   type: 1.2,             // TYPE SPEED, x350 = WPM
   tox: 0, toy: 0,
   tvert: 0,        // 0 = anchor bottom (grows up), 1 = anchor top (grows down)
-  /* WHICH SECTIONS ARE FOLDED. An object so a section added later defaults to open without a migration,
-   * and so the set survives a reload with everything else.
+  /* WHICH SECTIONS ARE FOLDED. An object, so a section added later defaults to open without a migration.
    *
-   * ONLY THE CLOSED ONES ARE NAMED, which is the same property stated the other way round: absent means open,
-   * so PHOSPHOR, RENDER and DEBUG are open here by omission rather than by an explicit false. Listing the open
-   * ones too would work and would quietly break the migration promise above -- a section renamed or added would
-   * need an entry to stay open instead of getting it for free.
+   * ONLY THE CLOSED ONES ARE NAMED: absent means open, so anything renamed or added stays open for free. Listing the
+   * open ones too would work and would quietly break that.
    *
-   * A fourteen-section panel opened on all fourteen is a wall, so the shipped fold is the working set: the
-   * palette, the render scale, and the debug switches. */
+   * A fourteen-section panel opened on all fourteen is a wall, so the shipped fold is the working set. */
   secClosed: {
     BEAM: true, CONVERGENCE: true, FIXTURE: true, FRAME: true, GLASS: true, POWER: true,
     RASTER: true, SURGE: true, TERMINAL: true, TUBE: true, WARP: true,
@@ -270,16 +241,12 @@ export function defaultPreset(gpu) {
   /* WIDTH IN CSS PIXELS. It was a fraction of the glass half-height, which meant the same setting drew a
    * different moulding on a different window -- and crt-bezel wants px anyway, so the fraction had to be
    * converted back at every call site. 13 is the reference's own fwid. */
-  /* 0.88 IS THE OLD 0.72, AND THE NUMBER CHANGED BECAUSE THE UNIT DID -- the same story as GLARE.
+  /* THE NUMBER CHANGED BECAUSE THE UNIT DID — the same story as GLARE. FRAME scaled the moulding's radiance ahead of
+   * the tone map and the gamma, so most of its visible range sat in the bottom of the travel; it fades the finished
+   * tone now, which is a true opacity, and a given fraction of a finished tone is dimmer than the same fraction of a
+   * radiance. This is the same frame, said in the new unit.
    *
-   * FRAME scaled the moulding's radiance ahead of the tone map and the gamma, so most of its visible range sat
-   * in the bottom of the travel: measured, 10% already showed 39% of the moulding and 50% showed 79%. It fades
-   * the finished tone now, which is a true opacity, and 0.72 of a finished tone is dimmer than 0.72 of a
-   * radiance. Measured under identical conditions, the old default read 30.6 on the moulding annulus and 0.90
-   * reads 30.9 -- so 0.88 is the same frame, said in the new unit.
-   *
-   * A STORED VALUE KEEPS ITS NUMBER AND LOSES ITS MEANING, exactly as GLARE's did: a session carrying 0.72 will
-   * render it as 72% opacity and read a little darker until the slider is touched. */
+   * A STORED VALUE KEEPS ITS NUMBER AND LOSES ITS MEANING, exactly as GLARE's did. */
   frame: 0.19, frameW: 13, frameBleed: 0.8,
   frameScreen: 1,     // the tube's output reflected across the bezel, in the screen's colour
   frameFixture: 1,    // the light fixture, across the whole bezel, from wherever POS Y puts it
@@ -296,17 +263,14 @@ export function defaultPreset(gpu) {
    * show 38-44 at 1.00 and it fell to 21 once the fixture became genuinely visible, so that reading was noise and
    * the claim it supported was wrong. The scale is a real trade -- cell-grid energy measured 0.379 / 0.496 / 0.686
    * at 0.62 / 0.80 / 1.00 -- so it stays a control, defaulted to what the hardware can actually hold. */
-  /* 0.5, AND THIS ONE IS CHOSEN FOR THE LOOK RATHER THAN THE BUDGET -- which reverses the reasoning above and
-   * is worth saying plainly. Every earlier move of this number was a fill-rate decision that regretted what it
-   * cost the shadow mask; the table above reads 0.379 of cell-grid energy at 0.62 as a LOSS against the
-   * reference's 1.256. Below 0.62 that loss keeps growing, and at 0.5 the one-pixel structure is averaged down
-   * far enough that the tube reads as an older, softer set -- which is the wanted result here, not a price paid
-   * for frames. The headroom is real too (comfortable on a UHD 630), but it is no longer the argument.
+  /* CHOSEN FOR THE LOOK RATHER THAN THE BUDGET, which reverses the reasoning above and is worth saying plainly. Every
+   * earlier move of this number was a fill-rate decision that regretted what it cost the shadow mask; here the
+   * one-pixel structure is averaged down far enough that the tube reads as an older, softer set, which is the wanted
+   * result rather than a price paid for frames.
    *
-   * ONLY THE INTEGRATED BRANCH MOVED. The discrete default stays 1.0: this was judged on the adapter that
-   * actually renders it here, and a look tuned at one sampling density is not evidence about another. If the
-   * softness is wanted everywhere, the honest edit is to drop the branch entirely rather than guess a second
-   * number -- but that is a decision about the shipped look on hardware nobody has looked at it on. */
+   * ONLY THE INTEGRATED BRANCH MOVED. The discrete default stays 1.0: a look tuned at one sampling density is not
+   * evidence about another. If the softness is wanted everywhere, the honest edit is to drop the branch entirely
+   * rather than guess a second number. */
   renderScale: gpu.integrated ? 0.5 : 1.0,
   };
 }

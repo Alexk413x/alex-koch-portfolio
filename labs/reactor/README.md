@@ -13,7 +13,11 @@ reactor-sim.js       createSim() -> { step, firePulse, fireVent } — the pulse 
                      the break/scatter machine, the instability lag, and the droplet table
 reactor-sidebar.js   SECTIONS (panel layout) + FMT (how each value reads)
 reactor-presets.js   PRESETS, MODES, CAM_KEYS, matchIdx, defaultPreset
+reactor-uniforms.js  sendUniforms() — one state and one pose in, every uniform the shader reads out
 ```
+
+The home page draws this scene too (`site/hero-core.js`: the core alone, ring off, accent-coloured), which is why
+the uniform block is a module rather than a paragraph of `R.f` calls inside this page's `draw()`.
 
 Shared, not local: [`../kit/glquad.js`](../kit/glquad.js) hosts the shader, [`../kit/panel.js`](../kit/panel.js)
 and `../kit/panel.css` are the panel.

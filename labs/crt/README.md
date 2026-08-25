@@ -1,6 +1,6 @@
-# CRT GL modules
+# CRT Lab modules
 
-`CRT GL.html` is the view: sizing the glass, driving the panel, composing the boot text, running the frame loop.
+`CRT Lab.html` is the view: sizing the glass, driving the panel, composing the boot text, running the frame loop.
 Everything below is logic, and none of it can reach the page — **no DOM, no component state**. That is the rule the
 instrument is built on: there is one surface, described once, and geometry that can read the renderer is geometry
 that can disagree with it.
@@ -32,7 +32,7 @@ looks and performs better, and one renderer that is right beats two that must be
 because nothing else reached them — `crt-controls.js`, `crt-fixture.js`, `crt-vars.js`, `crt-warp.js`,
 `crt-glow.js`, `crt.css`, `fps-probe.js`. All of it is in the history if the cross-check is wanted back.
 
-The panel is [`../kit/panel.js`](../kit/README.md), shared with the other labs. CRT GL uses **only** that much of
+The panel is [`../kit/panel.js`](../kit/README.md), shared with the other labs. CRT Lab uses **only** that much of
 the kit: it predates the rest and keeps its own persistence, sizing and frame loop, wound through a power
 sequence, a warp and a surge the generic helpers have no notion of. Stretching `lab.js` over both would produce an
 abstraction fitting neither — the same judgement `glquad.js` records about not wrapping this renderer.
@@ -77,7 +77,7 @@ it as `F(u, theta)`. A one-argument `F` ignores it. Three consequences worth kno
   is less sagged than the pin), and OVERSCAN multiplies the whole thing. Anything that assumed "the rim maps to itself"
   everywhere needs re-reading.
 
-Imported directly by `CRT GL.html`'s single `<script type="module">`. The DOM build could not do that — a DC logic
+Imported directly by `CRT Lab.html`'s single `<script type="module">`. The DOM build could not do that — a DC logic
 class is not a module, so these were published on `window` as `CRT_GEOM`, `CRT_PROJ` and so on, and everything
 geometric returned empty until a `crt-math` event fired because module scripts are deferred. All of that machinery
 went with it; a module page just imports.

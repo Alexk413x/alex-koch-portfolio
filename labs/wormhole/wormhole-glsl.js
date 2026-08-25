@@ -37,7 +37,11 @@ float noise3(vec3 x){
   vec3 p = floor(x), f = fract(x);
   f = f * f * (3.0 - 2.0 * f);
   vec2 uv = p.xy + vec2(37.0, 17.0) * p.z + f.xy + 0.5;
-  vec2 rg = texture2D(uNoise, uv / 256.0).rg;
+  /* textureLod, NOT texture. This is called from inside the march loop, which breaks early and is therefore
+     non-uniform control flow -- where implicit derivatives are undefined and the hardware computes an LOD
+     anyway. The texture has no mipmaps (MIN_FILTER is LINEAR, not LINEAR_MIPMAP_*), so that LOD can only
+     ever be 0 and asking for it explicitly costs nothing in quality. */
+  vec2 rg = textureLod(uNoise, uv / 256.0, 0.0).rg;
   return mix(rg.x, rg.y, f.z);
 }
 
@@ -136,6 +140,6 @@ vec2 spin(vec2 xy, float ang){
  * filter returns the stored value rather than a blend of four. The tile repeats every 64 pixels.
  */
 float dither(vec2 fc){
-  return texture2D(uNoise, fc / 256.0).b;
+  return textureLod(uNoise, fc / 256.0, 0.0).b;
 }
 `;

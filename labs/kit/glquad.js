@@ -1,6 +1,6 @@
 /* glquad.js — hosts one full-screen fragment shader: compile, uniform cache, resize, context loss.
  *
- * Knows nothing about any uniform's meaning; the shader source and the values are the caller's. CRT GL keeps its
+ * Knows nothing about any uniform's meaning; the shader source and the values are the caller's. CRT Lab keeps its
  * own host — four programs and a half-float ping-pong do not fit this shape.
  */
 
@@ -28,21 +28,21 @@ function stage(gl, type, src) {
   return sh;
 }
 
-const VERT = 'attribute vec2 p; void main(){ gl_Position = vec4(p, 0.0, 1.0); }';
+// ES 3.00, like every fragment shader this compiles: a WebGL2 context will not link a 1.00 vertex shader to a
+// 3.00 fragment one, and the pair must agree on the language before either compiles.
+// A template literal, because #version has to sit on its own line and an escape would hide that.
+const VERT = `#version 300 es
+in vec2 p; void main(){ gl_Position = vec4(p, 0.0, 1.0); }`;
 
-/* A LOOKUP TABLE FOR 3D VALUE NOISE, PACKED INTO ONE 2D TEXTURE.
+/* A LOOKUP TABLE FOR 3D VALUE NOISE, PACKED INTO ONE 2D TEXTURE. Computing value noise in the shader costs eight
+ * hashes and seven interpolations per sample, and a shader wanting ten samples per march step spends its whole
+ * budget there. Put the lattice in a texture and the sampler's bilinear unit does x and y for free.
  *
- * Computing value noise in the shader costs eight hashes and seven interpolations per sample. A shader that wants
- * ten samples per march step spends its entire budget there. This is the standard answer: put the lattice in a
- * texture and let the sampler do the work — one filtered fetch, and the hardware's bilinear unit performs the x
- * and y interpolation for free.
+ * THE THIRD DIMENSION IS THE TRICK. The two channels hold the SAME field offset by (37, 17) texels, and the shader
+ * addresses slice z at `xy + vec2(37,17)*z` — so red is slice z and green is slice z+1 of that address, and one
+ * fetch returns both. The offset is coprime with the size, so slices decorrelate rather than repeating.
  *
- * THE THIRD DIMENSION IS THE TRICK. The two channels hold the SAME field offset by (37, 17) texels, and the
- * shader addresses slice z at `xy + vec2(37,17)*z`. So the red channel at a texel is slice z and the green
- * channel is slice z+1 of that same address, and one fetch returns both — the caller only has to mix them by the
- * fractional z. The offset is coprime with the size, so slices decorrelate rather than repeating.
- *
- * 256 is a power of two, which WebGL1 requires for REPEAT wrapping.
+ * The size must stay a power of two: WebGL2 wraps NPOT textures happily, but the slice arithmetic assumes it.
  */
 export function valueNoiseTexture(size = 256, seed = 1) {
   const n = size * size;
@@ -68,19 +68,14 @@ export function valueNoiseTexture(size = 256, seed = 1) {
   return { data, w: size, h: size };
 }
 
-/* BLUE NOISE, BY ENERGY MINIMISATION.
- *
- * A raymarch jitters where each ray starts so a fixed step count does not band into rings, and the character of
- * that jitter decides how the residual error looks. White noise spreads error across all frequencies including
- * the low ones the eye is most sensitive to, so it reads as clumpy grain. Blue noise pushes the energy into high
- * frequencies the eye averages away, and the same step count looks markedly cleaner.
+/* BLUE NOISE, BY ENERGY MINIMISATION. A raymarch jitters where each ray starts so a fixed step count does not band
+ * into rings, and the character of that jitter decides how the residual error looks: white noise spreads error
+ * across all frequencies including the low ones the eye is most sensitive to, so it reads as clumpy grain. Blue
+ * noise pushes the energy into high frequencies the eye averages away.
  *
  * Void-and-cluster is the textbook construction; this is the cheaper swap-based one — start from white noise and
- * repeatedly exchange two samples when doing so lowers a Gaussian-weighted neighbourhood energy. It converges to
- * a good approximation in a few thousand swaps, which is a few milliseconds once at startup.
- *
- * The neighbourhood is clipped to 4 texels because the Gaussian is negligible beyond that, turning an O(n^2)
- * energy into a constant per swap.
+ * exchange two samples whenever that lowers a Gaussian-weighted neighbourhood energy. The neighbourhood is clipped
+ * to 4 texels because the Gaussian is negligible beyond that, turning an O(n²) energy into a constant per swap.
  */
 function blueNoiseTile(size) {
   const n = size * size;
@@ -139,26 +134,41 @@ function blueNoiseTile(size) {
 
 /* Builds the renderer, or returns null if WebGL is unavailable or the shader will not compile.
  *
- *   const R = createQuad(canvas, { frag: FRAG, uniforms: ['uRes'], ext: ['OES_standard_derivatives'] });
+ *   const R = createQuad(canvas, { frag: FRAG, uniforms: ['uRes'] });
  *   R.resize(w, h, 0.7);  R.f('uTime', t);  R.draw();
  *
  * `onRestore` fires after a lost context is rebuilt, so the caller can re-send anything it only sets on change.
- * A shader using `fwidth` must pass `ext: ['OES_standard_derivatives']` AND carry the matching `#extension`
- * directive as its first line, or it compiles to nothing and this returns null.
+ *
+ * `ext` is for extensions that are still extensions in WebGL2 — EXT_color_buffer_float being the one likely to
+ * matter. Derivatives are core, so no `#extension` directive is needed for fwidth.
  *
  * `textures` maps a sampler name to { data, w, h } — see valueNoiseTexture. They are uploaded on build, so a
  * restored context recreates them along with everything else.
  *
- * `variant(key)` returns a fragment source for a key, and R.use(key) switches to it — for a shader whose cost
- * depends on which parts are switched on. `frag` must then be the SUPERSET, because it is what draws while a
- * narrower build compiles.
+ * `variant(key)` returns a fragment source for a key and R.use(key) switches to it, for a shader whose cost depends
+ * on which parts are switched on. `frag` must then be the SUPERSET, because it is what draws while a narrower
+ * build compiles.
  */
+const HEX = new Map();   // shared by every renderer: a hex string parses to the same vec3 anywhere
+
 export function createQuad(canvas, { frag, uniforms = [], ext = [], textures = {}, onRestore = null,
-                                     variant = null } = {}) {
-  const gl = canvas.getContext('webgl', { alpha: false, antialias: false, depth: false, stencil: false,
-                                          premultipliedAlpha: false, preserveDrawingBuffer: false,
-                                          powerPreference: 'high-performance' })
-          || canvas.getContext('experimental-webgl');
+                                     variant = null, deferLink = false } = {}) {
+  /* WEBGL2, and only WebGL2. There is no WebGL1 fallback and that is deliberate: a silent downgrade path is worse
+     than none, because a shader using a core-in-2 feature compiles to nothing on the fallback and the page shows
+     black with no error worth reading.
+     THIS IS NOT A SPEED CHANGE. Every lab draws one fullscreen triangle, so the frame cost is fragment shader
+     arithmetic and the context version does not touch it. What 2 buys is that derivatives, textureLod, texelFetch,
+     round() and NPOT textures are all core. */
+  /* `alpha: false` STAYS, and the reason is that removing it has NOT been shown to help. MDN warns the flag makes
+     the browser composite the canvas as though it were opaque "at a significant performance cost" and says to
+     write 1.0 from the shader instead — which these shaders already do, so it looks like free money.
+     It was tried. The run without it came back slower, but the same build measured 56.4 ms and 37.8 ms on two
+     runs an hour apart on this machine, so a ~10% effect is far inside the noise and NOTHING was demonstrated
+     either way. Left as it was, because an unmeasured change to a working default is not an improvement.
+     If you want the real answer: interleave A/B/A/B on an idle machine, several runs each. */
+  const gl = canvas.getContext('webgl2', { alpha: false, antialias: false, depth: false, stencil: false,
+                                           premultipliedAlpha: false, preserveDrawingBuffer: false,
+                                           powerPreference: 'high-performance' });
   if (!gl) return null;
 
   /* ONE RENDERER, SEVERAL PROGRAMS. A fragment shader pays for code it does not run: in this project's wormhole,
@@ -174,6 +184,8 @@ export function createQuad(canvas, { frag, uniforms = [], ext = [], textures = {
   // widest shader for the narrowest scene.
   const BASE = Symbol('superset');
   let cur = null, pending = null, quad = null;
+  // The base program while it is still linking, under deferLink. Null once adopted, and null always without it.
+  let basePending = null;
 
   // 0 still linking, 1 linked, -1 failed. Reading LINK_STATUS is what BLOCKS until the driver has finished, so
   // the completion query has to come first or the compile is synchronous after all.
@@ -193,9 +205,9 @@ export function createQuad(canvas, { frag, uniforms = [], ext = [], textures = {
     return prog;
   };
 
-  /* Makes a linked program current. The attribute binding and the sampler units are BOTH per program — WebGL1
-   * has no vertex array object to remember the first, and a sampler uniform lives in the program like any other
-   * — so both are re-applied on every switch rather than once at build.
+  /* Makes a linked program current. The attribute binding and the sampler units are BOTH re-applied on every switch
+   * rather than once at build: a sampler uniform lives in the program like any other, and no vertex array object is
+   * bound here to remember the attribute.
    *
    * `last` is per program and is NOT cleared here: uniform values live in the program object and survive being
    * switched away from, so a returning program's cache is still telling the truth.
@@ -250,7 +262,15 @@ export function createQuad(canvas, { frag, uniforms = [], ext = [], textures = {
     progs.clear(); cur = null; pending = null;
 
     const prog = submit(frag);
-    if (!prog || linkState(prog, true) !== 1) return false;
+    if (!prog) return false;
+    /* deferLink: HAND THE PROGRAM TO THE DRIVER AND WALK AWAY. Reading LINK_STATUS is what blocks, so the wait
+       below is the whole cost — measured on an Intel UHD 630 with a cold shader cache, linking the reactor's
+       superset took 13.3 seconds on the main thread, and the page could not paint past it. A caller that opts
+       in polls ready() instead and draws nothing until it lands.
+       OFF BY DEFAULT, so every lab keeps the behaviour it was measured with: they own the whole viewport and
+       have nothing to show before the shader exists, where a page with a hero has a page around it. */
+    if (deferLink) { basePending = prog; return true; }
+    if (linkState(prog, true) !== 1) return false;
     activate(adopt(BASE, prog));
     return true;
   };
@@ -262,15 +282,31 @@ export function createQuad(canvas, { frag, uniforms = [], ext = [], textures = {
     lost: false,
     w: 1, h: 1,
 
+    /* Whether there is a program to draw with. Always true without deferLink, so no existing caller changes.
+       Under it, this is the poll: COMPLETION_STATUS_KHR costs nothing and LINK_STATUS is only read once the
+       driver says it is done, which is the difference between a poll and a stall.
+       `wait` FORCES IT, and that is what a synchronous frame needs. renderNow() is documented to draw without an
+       animation frame at all, which is the only way to step a page that is not front-most — and a poll that
+       returns false leaves it drawing nothing, so the caller gets a blank buffer rather than a picture. The
+       frame loop never passes it; the harness path always does. */
+    ready(wait) {
+      if (!basePending) return !!cur;
+      const st = linkState(basePending, !!wait);
+      if (st === 0) return false;
+      const prog = basePending;
+      basePending = null;
+      if (st === -1) return false;
+      activate(adopt(BASE, prog));
+      return true;
+    },
+
     /* Asks for the program built for `key`, and returns whether that is what is now current.
      *
-     * IT NEVER STALLS AND NEVER SHOWS THE WRONG FRAME. A key that has not been built yet starts compiling and
-     * the CURRENT program keeps drawing — the caller's base shader is the superset, so it is already correct,
-     * only slower. Where the driver offers KHR_parallel_shader_compile that compile costs the main thread
-     * nothing at all; without it the wait lands on whichever frame finds it finished.
+     * IT NEVER STALLS AND NEVER SHOWS THE WRONG FRAME. A key not yet built starts compiling and the CURRENT program
+     * keeps drawing — the caller's base shader is the superset, so it is already correct, only slower.
      *
-     * Call this BEFORE the frame's uniforms: a switch lands on a program whose uniforms are all zero, and it is
-     * the sends that follow which fill it in.
+     * Call this BEFORE the frame's uniforms: a switch lands on a program whose uniforms are all zero, and it is the
+     * sends that follow which fill it in.
      */
     use(key) {
       if (!variant || R.lost) return false;
@@ -304,24 +340,41 @@ export function createQuad(canvas, { frag, uniforms = [], ext = [], textures = {
     // Skips the upload when the value has not moved. Reactor pushes about fifty floats per frame and perhaps
     // three of them differ from the frame before.
     f(name, v) {
+      if (!cur) return;
       if (cur.last.get(name) === v) return;
       cur.last.set(name, v);
       gl.uniform1f(cur.U[name], v);
     },
     f2(name, a, b) {
+      if (!cur) return;
       const k = cur.last.get(name);
       if (k && k[0] === a && k[1] === b) return;
       cur.last.set(name, [a, b]);
       gl.uniform2f(cur.U[name], a, b);
     },
     f3(name, a, b, c) {
+      if (!cur) return;
       const k = cur.last.get(name);
       if (k && k[0] === a && k[1] === b && k[2] === c) return;
       cur.last.set(name, [a, b, c]);
       gl.uniform3f(cur.U[name], a, b, c);
     },
+    /* A '#rrggbb' colour as a vec3 in 0..1. The parse is memoised across every renderer on the page — a colour
+     * comes from a swatch or a preset, so the same handful of strings recur for the life of the lab — and the
+     * upload itself is skipped by f3's own cache. */
+    f3hex(name, hex) {
+      const h = hex || '#ffffff';
+      let c = HEX.get(h);
+      if (!c) HEX.set(h, c = [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16) / 255));
+      this.f3(name, c[0], c[1], c[2]);
+    },
+
     // Uncached: an array uniform here is a per-frame animation table, so comparing costs what uploading costs.
-    fv4(name, arr) { gl.uniform4fv(cur.U[name], arr); },
+    fv4(name, arr) { if (!cur) return; gl.uniform4fv(cur.U[name], arr); },
+
+    // Uncached for the same reason as fv4: nine floats compare for what they cost to send. Column-major, which
+    // is what GLSL expects and what mat3(a,b,c, d,e,f, g,h,i) builds.
+    m3(name, arr) { if (!cur) return; gl.uniformMatrix3fv(cur.U[name], false, arr); },
 
     // Sizes the buffer to a CSS box at a fraction of it, reporting whether anything moved. dpr is capped at 1 on
     // top of `scale`: these are soft, noisy fields where the extra samples buy nothing visible.
@@ -335,7 +388,7 @@ export function createQuad(canvas, { frag, uniforms = [], ext = [], textures = {
       return true;
     },
 
-    draw() { gl.drawArrays(gl.TRIANGLES, 0, 3); },
+    draw() { if (cur) gl.drawArrays(gl.TRIANGLES, 0, 3); },
   };
 
   // preventDefault is required or the browser will not restore the context at all and the page stays black.

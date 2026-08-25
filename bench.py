@@ -1,7 +1,7 @@
 """bench.py — measure a lab's true frame rate, start to finish, in one command.
 
-    python bench.py                     # CRT GL, 12 samples, verdict
-    python bench.py --page reactor      # any lab: crtgl | reactor | wormhole | shell, or a literal path
+    python bench.py                     # CRT Lab, 12 samples, verdict
+    python bench.py --page reactor      # any lab: crt | reactor | wormhole | shell, or a literal path
     python bench.py --uncapped          # frame COST, not frame RATE — see below
     python bench.py --inject "<js>"     # change something in the page before sampling it
     python bench.py --high-perf-gpu     # render on the discrete adapter instead of the default one
@@ -57,11 +57,14 @@ import http.server, socketserver, urllib.parse, urllib.request
 ROOT = os.path.dirname(os.path.abspath(__file__))
 TARGET_MS = 1000.0 / 60
 
-# THE LAB UNDER TEST, BY NAME. CRT GL has a space in its filename, so the alternative at the command line is
-# `--page 'labs/crt/CRT GL.html'` with the escaping to match -- a quoting problem to solve before taking a
+# THE LAB UNDER TEST, BY NAME. CRT Lab has a space in its filename, so the alternative at the command line is
+# `--page 'labs/crt/CRT Lab.html'` with the escaping to match -- a quoting problem to solve before taking a
 # measurement. A literal path is still accepted for anything not on this list.
+# `crtgl` still resolves, so anything already written against it keeps working. It is only an alias here --
+# unlike the lab's localStorage key of the same spelling, which is an address and cannot move.
 PAGES = {
-    'crtgl':    'labs/crt/CRT%20GL.html',
+    'crt':      'labs/crt/CRT%20Lab.html',
+    'crtgl':    'labs/crt/CRT%20Lab.html',
     'reactor':  'labs/reactor/Reactor.html',
     'wormhole': 'labs/wormhole/Wormhole.html',
     'shell':    'labs/shell/Shell.html',
@@ -194,7 +197,7 @@ SAMPLER = '''(async()=>{
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument('--page', default='crtgl',
+    ap.add_argument('--page', default='crt',
                     help='which lab to measure: ' + ' | '.join(PAGES) + ', or a literal path from the repo root')
     ap.add_argument('--port', type=int, default=8791)
     ap.add_argument('--samples', type=int, default=12)

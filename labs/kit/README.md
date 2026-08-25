@@ -75,12 +75,17 @@ Five things in there are not decoration:
   range) and a section master (not a row) are invisible to it.
 - **Rebuild the panel when something outside it writes state.** Rows read state once and own their DOM afterwards —
   that is why a drag costs nothing measurable, and the price is that a preset leaves every row stale.
-- **`fwidth` needs `ext: ['OES_standard_derivatives']`** *and* the `#extension` directive as the shader's first
-  line. Without both, WebGL1 compiles nothing, `createQuad` returns null, and the page simply never starts.
+- **`glquad` creates a WebGL2 context and has no WebGL1 fallback.** So `fwidth`, `textureLod`, `texelFetch`,
+  `round()` and NPOT textures are all core and need nothing declared. The old two-part dance — an
+  `ext: ['OES_standard_derivatives']` entry on the host *and* a `#extension` directive as the shader's first
+  line — is gone; it was two halves that had to agree across two files, and when they did not the page simply
+  never started. `ext` still exists for what really are extensions here, `EXT_color_buffer_float` chiefly.
 
 ## Persistence
 
-**Each lab needs its own storage key** — `crtgl`, `reactor`, `wormhole`, `labshell`. localStorage is the one thing
+**Each lab needs its own storage key** — `crtgl`, `reactor`, `wormhole`, `labshell`. `crtgl` no longer matches
+the name of the lab that uses it, and that is deliberate: a key is an address, and moving one silently orphans
+every configuration stored under it. localStorage is the one thing
 labs genuinely share, so two on one key overwrite each other. It is the single thing you must change when copying.
 
 `persist()` handles the four traps, all paid for already:

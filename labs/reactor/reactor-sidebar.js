@@ -36,10 +36,14 @@ export const SECTIONS = [
    * how far the surface travels -- they are the same gesture and sit together. */
   ['PULSE', [['pulseAmp', 'FORCE', 1, 20, 0.5],
              ['dropN', 'SUB-CORES', 0, 20, 1],
+             ['dropSize', 'SUB-CORE SIZE', 0.2, 2, 0.05],
              ['pulseBright', 'BRIGHT', 0, 4, 0.1],
              ['pulseDur', 'DURATION', 0.3, 4, 0.1],
              ['pulseSize', 'SWELL', -1, 2, 0.1],
-             ['subVT', 'SUB VIS/TRB', -3, 3, 0.1]]],
+             /* Two controls, not one: SUB VIS/TRB roils the whole surface while a pulse fires, SUB-CORE SURFACE
+              * only decides whether the sub-cores carry that surface too. At 0 they render as smooth spheres. */
+             ['subVT', 'SUB VIS/TRB', -3, 3, 0.1],
+             ['subSurf', 'SUB-CORE SURFACE', 0, 2, 0.05]]],
 
   ['VENT', [['ventSize', 'SIZE', 0.3, 6, 0.1],
             ['ventBright', 'BRIGHT', 0, 4, 0.1],
@@ -128,6 +132,7 @@ export const FMT = {
   pulseAmp:    as.raw(0, ' kPa'),
   pulseSize:   as.pct(),
   dropN:       as.raw(0),
+  dropSize:    as.mult(2),
   pulseBright: as.mult(1),
   pulseDur:    as.sec(1),
   ventSize:    as.mult(1),
@@ -135,6 +140,7 @@ export const FMT = {
   ventDur:     as.sec(1),
   ventSwellPct: as.pct(),
   subVT:       as.mult(1),
+  subSurf:     as.mult(2),
   ventVT:      as.mult(1),
   renderScale: as.pct(),
 };

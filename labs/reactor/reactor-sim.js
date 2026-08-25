@@ -213,7 +213,7 @@ export function createSim() {
        * times per march step, seventy steps deep, plus four more per normal. dropN is 0 at rest so the caller
        * uploads nothing. */
       if (pulse > 0.002) {
-        const N = s.dropN | 0, sd = pulseSeed;
+        const N = s.dropN | 0, sd = pulseSeed, dsz = s.dropSize != null ? s.dropSize : 1;
         const pdc = Math.max(0, Math.min(2.5, pulse));
         const R = baseR;
         const fft = Math.max(0, Math.min(1, (s.pulseAmp - 10) / 11)), ff = fft * fft * (3 - 2 * fft);
@@ -229,8 +229,11 @@ export function createSim() {
           let cy = gy * reach + Math.cos(tm * 2.1 + i * 1.7) * 0.03 * R * pdc;
           const cz = Math.sin(gth) * gr * reach + Math.sin(tm * 1.8 + i) * 0.03 * R * pdc;
           if (s.shape > 3.5) cy *= 0.12;                       // the disk has no room for droplets off its plane
+          /* SUB-CORE SIZE scales the radius and nothing else, which is what makes it worth its own control: how
+           * far a droplet travels is FORCE's job, and the two together decide whether it pinches off or stays
+           * bridged. Smaller sub-cores at the same force separate; larger ones at the same force stretch. */
           const grow = 1 + h(i, 9.1) * pdc * 0.9;
-          const rr = R * (0.15 + 0.15 * h(i, 2.2)) * ss(0, 0.25, pdc) * grow;
+          const rr = R * (0.15 + 0.15 * h(i, 2.2)) * ss(0, 0.25, pdc) * grow * dsz;
           dropData[i * 4] = cx; dropData[i * 4 + 1] = cy; dropData[i * 4 + 2] = cz; dropData[i * 4 + 3] = rr;
         }
         out.dropN = N;

@@ -6,15 +6,14 @@ measurable rather than merely to look like it. The largest of them simulates an 
 **Live:** https://alexk413x.github.io/alex-koch-portfolio/
 
 Everything here is hand-authored — no build step, no bundler, no framework scaffolding. The geometry and
-physics are plain ES modules. Pages come in two kinds: `.dc.html` component files, which pull React and Babel
-from a CDN at runtime, and plain module pages, which have no runtime dependency but the fonts.
+physics are plain ES modules. Every page is a plain module page, with no runtime dependency but the fonts.
 
 ---
 
 ## The CRT lab
 
 The centrepiece, and the reason most of this code exists.
-**[CRT GL](labs/crt/CRT%20GL.html)** is an amber CRT solved per pixel in a WebGL2 fragment shader — the face's
+**[CRT Lab](labs/crt/CRT%20Lab.html)** is an amber CRT solved per pixel in a WebGL2 fragment shader — the face's
 curvature, the shadow mask, the beam, the phosphor's persistence and a ray-traced light fitting reflected in the
 glass — with a measurement grid and a heat-map overlay reporting how hard the surface is being compressed.
 
@@ -61,9 +60,8 @@ Then open http://localhost:8000/ and pick a page.
 
 Two things worth knowing:
 
-- **The labs need no network** beyond the fonts. There is no framework, no CDN and no build step — they load
-  their own ES modules and nothing else. The remaining `.dc.html` pages at the repository root still pull React,
-  ReactDOM and Babel from unpkg.
+- **Nothing here needs a network** beyond the fonts. There is no framework, no CDN and no build step — every
+  page loads its own ES modules and nothing else.
 - **Editing a module needs a hard reload**, and a plain reload is not always enough: the browser will serve the
   modules from cache while the HTML is fresh, which looks exactly like a maths bug. Serve with
   `Cache-Control: no-store` if you are working on them — `bench.py`'s own server already does.
@@ -76,8 +74,8 @@ Looking at the screen is not evidence here, so the labs ship the means to measur
 by any page — it all attaches on demand, so it costs nothing when unused.
 
 ```
-python bench.py                       # CRT GL: frame rate as a distribution, with a verdict
-python bench.py --page reactor        # any lab: crtgl | reactor | wormhole | shell, or a literal path
+python bench.py                       # CRT Lab: frame rate as a distribution, with a verdict
+python bench.py --page reactor        # any lab: crt | reactor | wormhole | shell, or a literal path
 python bench.py --uncapped            # frame COST, not frame rate — needed once a page holds 60
 python bench.py --inject "<js>"       # pin a setting first, so two runs are comparable
 ```
@@ -87,13 +85,13 @@ in a window that is not front-most, warms the profile's cache, and drives the pa
 protocol. It refuses a verdict when the machine is too loaded to measure on, and reports the first sampling
 window separately as a warm-up rather than letting it poison that judgement.
 
-- `labs/crt/render-probe.js` — a deterministic render fingerprint for CRT GL. Hashes seven fixed scenes, which
+- `labs/crt/render-probe.js` — a deterministic render fingerprint for CRT Lab. Hashes seven fixed scenes, which
   is how a refactor proves it changed nothing.
 - `window.CRTGL`, `window.REACTOR`, `window.WORMHOLE`, `window.SHELL` — every lab publishes a handle carrying
   `state`, `R`, `fit()` and a `renderNow()` that draws **synchronously**, so a frame can be taken from a tab
   that is not front-most, where Chrome delivers no animation frames at all. Read pixels back in the **same
   task** as the call, or a working shader reports as black.
-- **Not every `renderNow` is reproducible.** CRT GL's, Wormhole's and Shell's are functions of `(state, time)`
+- **Not every `renderNow` is reproducible.** CRT Lab's, Wormhole's and Shell's are functions of `(state, time)`
   and give the same frame twice. Reactor's is not — `sim.step` carries phase forward — so a pixel fingerprint
   of that lab means nothing unless the sim is fresh.
 
@@ -110,13 +108,12 @@ labs/reactor/   reactor lab:  host page + shader, sim, sidebar, presets
 labs/wormhole/  wormhole lab: host page + shader, sidebar, presets
 labs/shell/     the BASE LAB — start here when writing a new one
 labs/kit/       everything shared: panel, page shell, shader host, persistence, loop, units
-support.js      the runtime for the remaining .dc.html pages at the root
 bench.py        the frame-rate harness
 ```
 
-**Every page under `labs/` is plain HTML plus ES modules.** The `.dc.html` files left at the repository root —
-the portfolio, the console, the intro and two notes — are single-document components run by `support.js`, which
-pulls React and Babel from a CDN. They are on their way out; `support.js` goes with the last of them.
+**Every page here is plain HTML plus ES modules.** Five `.dc.html` component pages once sat at the repository
+root on a `support.js` runtime that pulled React and Babel from a CDN; they and that runtime are gone, along with
+`experience.html`, whose role viewer the back catalogue replaced.
 
 ---
 
@@ -136,8 +133,7 @@ pulls React and Babel from a CDN. They are on their way out; `support.js` goes w
   columns by a wide box — collapsed to 73 lines, which drew a 16px glyph on a 393px screen where the same
   handset upright drew 12px on 852px. The line-count floor and the height half of the breakpoint are what
   make a rotation stop changing the type size.
-- **The labs work offline; the root pages do not.** Nothing under `labs/` loads anything but its own modules and
-  the fonts. The remaining root `.dc.html` pages would need React, ReactDOM and Babel vendored in.
+- **Everything works offline once the fonts are cached.** No page loads anything but its own modules.
 - **The WebGL labs are demanding.** All three default to a reduced render scale on integrated graphics, and
   **RENDER SCALE** at the top of each panel is the lever if your machine struggles.
 
