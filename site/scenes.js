@@ -51,17 +51,14 @@
     shapeLoop();
   }
 
-  /* THE PAGE'S GEOMETRY, READ ONCE PER LAYOUT RATHER THAN ONCE PER FRAME.
+  /* THE PAGE'S GEOMETRY, READ ONCE PER LAYOUT RATHER THAN ONCE PER FRAME. offsetTop and offsetHeight force a
+   * synchronous layout when the tree is dirty, and every frame of this rig dirties it: the scrub writes custom
+   * properties, then the next frame asks the same elements where they are. That costs a large fraction of the frame
+   * budget to find out something that had not moved.
    *
-   * offsetTop and offsetHeight force a synchronous layout when the tree is dirty, and every frame of this rig
-   * dirties it: the scrub writes custom properties, then the next frame asks the same elements where they are.
-   * Measured on a scroll frame at the hero: 3.75ms of forced layout against 0.03ms of writes — a hundred to one,
-   * and most of a fifth of a 60fps budget spent finding out something that had not moved.
-   *
-   * Refreshed from measure(), which runs on resize, on load, and off a ResizeObserver on the body. All three are
-   * needed: fonts land after first paint and reflow every section under the fold, so a measurement taken once at
-   * parse time is wrong by a line's height for the rest of the session. Nothing this rig writes is a layout
-   * property — opacity, transforms and filters only — so the observer cannot feed itself. */
+   * Refreshed from measure(), which runs off the kit's resize channel — resize, load and a ResizeObserver on the
+   * body. All three are needed: fonts land after first paint and reflow every section under the fold. Nothing this
+   * rig writes is a layout property, so the observer cannot feed itself. */
   let appTop = 0, appRun = 0, loopTop = 0;
 
   function shape() {
@@ -106,15 +103,11 @@
   const morphStage = document.getElementById('app-stage');
   const morphScroll = document.getElementById('app-scroll');
 
-  /* ONE SCROLL PLAYS IT, THE NEXT ONE LEAVES.
+  /* ONE SCROLL PLAYS IT, THE NEXT ONE LEAVES. Scrubbing the morph across a long runway spends most of it moving
+   * nothing, and the mechanism can still be left stranded halfway by a reader who simply stops.
    *
-   * The morph used to be scrubbed: --m tracked the scroll position across 1.8 viewport heights, with a dead
-   * zone at each end so the two pure states were wide enough to stop on. That is 40% of the runway spent moving
-   * nothing, and the mechanism could still be left stranded halfway through by a reader who simply stopped.
-   *
-   * Now the scroll chooses only a DIRECTION. Crossing the trigger commits the morph and it runs to completion on
-   * its own clock, so it always lands on a pure state and cannot be held part-played — the holds are not needed,
-   * because there is no longer a position that means "halfway". The remaining pin is the way out.
+   * The scroll chooses only a DIRECTION: crossing the trigger commits the morph and it runs to completion on its own
+   * clock, so it always lands on a pure state and cannot be held part-played. The remaining pin is the way out.
    */
   /* FORWARD AND BACK ARE NOT THE SAME LENGTH, because they are not the same act. Arriving, the reader is coming
      to a stop and the calculator has the whole pin below it to turn in. Leaving upward, they are already going,
@@ -213,22 +206,19 @@
 
   /* ---- Cartographer's arrival ----
    *
-   * THE SECTION ARRIVES, it does not merely slide up. Its stage is already rising behind the hero for a whole
-   * viewport before it is seated, and none of that was read: it moved at exactly the speed of the scroll, which
-   * is the one motion the eye discounts entirely. It now trails the scroll by a few dozen pixels and comes up to
-   * strength across the same range the reactor is struck over, so the strike and the arrival read as one
-   * hand-off rather than as two things that happen to overlap.
+   * THE SECTION ARRIVES, it does not merely slide up. Its stage rises behind the hero for a whole viewport before it
+   * is seated, and moving at exactly the speed of the scroll is the one motion the eye discounts entirely. It trails
+   * the scroll by a few dozen pixels and comes up to strength across the same range the reactor is struck over, so
+   * the strike and the arrival read as one hand-off.
    *
-   * The WORDS are not part of this. They used to sit at a third opacity and light in turn as the pin was
-   * scrubbed, and a list that cannot be read until it has been scrolled through is worse than no animation at
-   * all. What moves is the section arriving, and the flow graph beside it building.
+   * The WORDS are not part of this: a list that cannot be read until it has been scrolled through is worse than no
+   * animation at all. What moves is the section arriving, and the flow graph beside it building.
    *
-   * THE GRAPH IS TWO SCALARS AND NOTHING ELSE. --gb rises across the approach so the flow extends as the
-   * section enters frame; --gf rises again as it leaves, and each element delays off whichever of the two is
-   * running. Two rather than one because arriving and leaving are two ORDERS — on a single scalar the last
-   * thing in is the first thing out, and the top row cannot lead both.
-   * Both are position, not time, so a reader who reverses gets the graph running back from where it actually
-   * is, and there is no separate exit description that can disagree with the entrance.
+   * THE GRAPH IS TWO SCALARS AND NOTHING ELSE. --gb rises across the approach, --gf rises again as it leaves, and
+   * each element delays off whichever is running. Two rather than one because arriving and leaving are two ORDERS —
+   * on a single scalar the last thing in is the first thing out, and the top row cannot lead both.
+   *
+   * Both are position, not time, so a reader who reverses gets the graph running back from where it actually is.
    */
   const loopStage = document.getElementById('loop-stage');
   const loopScroll = document.getElementById('loop-scroll');
@@ -243,16 +233,12 @@
      after the section seats. Run either envelope across the whole runway instead and most of the build happens
      below the fold and most of the collapse above it — which was the first shape of this and it read as a graph
      that was simply already there and then simply gone. */
-  /* STARTS LATE AND ENDS ON THE SEAT. It still waits until half the graph is above the fold — the graph's top
-     edge does not cross the bottom of the window until .31 of the approach, and a build beginning before that
-     spends its first third where nobody can see it.
-     What changed is the other end. The build used to run a fifth of a screen PAST the seated position, which put
-     the whole of that inside the pin: scrolling back UP out of the section, the graph un-built for most of a
-     third of a screen while the section itself did not move at all. That is the same two-beat shape the
-     departure had, on the entering side, and it only shows going up.
-     Ending the build where the section seats means every frame of it happens while the section is travelling, in
-     both directions. The cost is real and is the point: the build now fits in .57 of a screen rather than .98,
-     so it plays about 1.7x faster against the same scroll. */
+  /* STARTS LATE AND ENDS ON THE SEAT. It waits until half the graph is above the fold, because a build beginning
+     before that spends its first third where nobody can see it.
+     Ending the build where the section SEATS means every frame of it happens while the section is travelling, in
+     both directions. Running past the seat puts that overhang inside the pin, so scrolling back up the graph
+     un-builds while the section itself does not move. The cost is that the build plays faster against the same
+     scroll, and that is the point. */
   const BUILD_AT = .45;     // into the approach, where half the graph is above the bottom of the window
   /* WHEN THE LAST SCREEN LANDS, WHICH IS NOT WHEN --gb REACHES 1. The furthest element delays by .75 of the
      scalar and animates over a .16 window, so every screen is home at --gb .91 and the rest of the envelope is
@@ -297,19 +283,13 @@
     loopStage.style.setProperty('--y2', ((1 - q) * LOOP_LIFT).toFixed(1) + 'px');
 
     const built = ease((y - (top - vh * (1 - BUILD_AT))) / (vh * buildSpan));
-    /* THE COLLAPSE IS THE DEPARTURE. It begins where the build lands, which is a hair before the pin lets go, and
-       is spanned so the LAST element leaves exactly as the section clears the top of the window — the section
-       finishes going and the graph finishes collapsing on the same frame, instead of the graph fading out over
-       pinned scroll and the section only then starting to move.
+    /* THE COLLAPSE IS THE DEPARTURE. It begins where the build lands, a hair before the pin lets go, and is spanned so
+       the LAST element leaves exactly as the section clears the top of the window — the section finishes going and
+       the graph finishes collapsing on the same frame.
        The clear point is the pin's release plus one viewport, because the stage is a viewport tall. Divided by
-       STRUCK so that it is the LAST ELEMENT'S EXIT that lands there, not the envelope's end — the source phone
-       is still visibly going as the section leaves, rather than starting its exit off the top of the window and
-       finishing where nobody can see it.
-       LINEAR, where the build is eased. The section's departure is already linear in scroll, so easing this on
-       top of it eases the same motion twice: the scalar crawled through its first third, which stretched the
-       gap between the first two ranks to four times the gap between the last two and made the collapse read as
-       slow at exactly the moment it should be quickest. Each element now takes the same distance as every
-       other. */
+       STRUCK so it is the LAST ELEMENT'S EXIT that lands there, not the envelope's end.
+       LINEAR, where the build is eased: the section's departure is already linear in scroll, so easing this on top
+       eases the same motion twice and the collapse reads as slow exactly when it should be quickest. */
     const struck = clamp((y - (top + vh * fallAt)) / (vh * (loopRun + 1 - fallAt) / STRUCK));
     loopStage.style.setProperty('--gb', built.toFixed(3));
     loopStage.style.setProperty('--gf', struck.toFixed(3));
@@ -385,32 +365,26 @@
   /* WHERE THE GRAPH IS WHOLE AND THE CIRCUIT IS RUNNING — the position anything that wants to SHOW somebody
    * Cartographer should aim at, rather than the top of a pin where nothing has been drawn yet.
    *
-   * It is the pin's midpoint: the last screen lands there and the first one begins to leave there, so it is the
-   * position at which the graph is whole and nothing is in flight. A window would be a stretch of scrolling in
-   * which nothing moved; a position is something the settle below can land on.
+   * It is the pin's midpoint: the last screen lands there and the first begins to leave there, so it is the position
+   * at which the graph is whole and nothing is in flight.
    *
-   * DERIVED FROM THE SAME CONSTANTS the scrub runs on, and exported rather than restated, for the reason every
-   * measurement on this page is: a fraction copied into nav.js would go silently wrong the first time the pin
-   * moved, and the failure would look like a nav bug rather than a stale number.
+   * DERIVED FROM THE SAME CONSTANTS the scrub runs on, and exported rather than restated: a fraction copied into
+   * nav.js would go silently wrong the first time the pin moved, and the failure would look like a nav bug.
    *
-   * On a short or narrow window the scene has given its pin back and there is nothing to find — the graph is
-   * simply drawn — so the honest answer there is the top of the section. */
+   * On a short or narrow window the scene has given its pin back, so the honest answer is the top of the section. */
   function loopIdleY() {
     if (!loopScroll) return 0;
     if (shortLoop.matches) return loopTop;
     return Math.round(loopTop + screenH() * fallAt);
   }
 
-  /* WHERE THE REACTOR HOLDS THE FRAME ALONE, and the ONLY declaration of it — nav.js reads it back off the
-   * handle below rather than recomputing it from the same two properties.
+  /* WHERE THE REACTOR HOLDS THE FRAME ALONE, and the ONLY declaration of it — nav.js reads it back off the handle
+   * below rather than recomputing it.
    *
-   * The words are clear at the END OF THE EXIT, and the ring does not begin to open until RING_START of it, so
-   * between those two positions there is a stretch in which nothing at all is in flight. The stop is the START
-   * of that stretch rather than its midpoint: the reader's own gesture is what carries the words off, and the
-   * moment they are gone is the moment the scene has arrived — landing them further in means the page keeps
-   * moving after the thing they were watching has finished, which reads as the stop overshooting it.
-   * Measured at 1600x1000: the words reach zero at 700 and the ring starts at 790; the midpoint put the stop at
-   * 742, so 42px of travel happened after there was anything left to see.
+   * The words are clear at the END OF THE EXIT and the ring does not begin to open until RING_START of it, so
+   * between those two positions nothing is in flight. The stop is the START of that stretch rather than its
+   * midpoint: the reader's own gesture carries the words off, and the moment they are gone is the moment the scene
+   * has arrived. Landing further in means the page keeps moving after the thing they were watching has finished.
    */
   function heroAloneY() {
     return Math.round((hold + exit) * screenH());
@@ -418,25 +392,21 @@
 
   /* ---- and the scroll is STOPPED on the beats ----
    *
-   * Five positions on this page are worth coming to rest on: the hero with its words up, the reactor holding the
-   * frame alone once they have left, Cartographer with its graph whole, and the calculator at each end of its
-   * pin. Everything between them is an envelope playing, and a half-faded lockup, a half-built graph or a keypad
-   * with half its keys in each keyboard is a frame nobody chose to look at.
+   * Five positions are worth coming to rest on: the hero with its words up, the reactor holding the frame alone,
+   * Cartographer with its graph whole, and the calculator at each end of its pin. Everything between them is an
+   * envelope playing, and a half-faded lockup or a keypad with half its keys in each keyboard is a frame nobody
+   * chose to look at.
    *
    * TWO MECHANISMS, because a gesture has two halves and a script can only see the second. These snap targets
    * arrest the FLING: `scroll-snap-stop: always` refuses to be passed over, from either direction, before any
-   * handler could have reacted — by the time one can, the gesture has already carried the reader past the
-   * moment, and all a script could do is drag them back. The rail below is the other half.
+   * handler could have reacted. The rail below is the other half.
    *
-   * A BARRIER IS FOR ARRIVING, NOT FOR STAYING, and `scroll-snap-stop: always` under the reader is the second
-   * thing as well as the first: it does not merely refuse to carry them PAST the beat, it refuses to let them
-   * OFF it. Chrome answers each event of a trackpad's decaying stream as a gesture of its own, so every tick is
-   * pulled straight back onto the target and the beat becomes a trap. Measured, sitting on the reactor: a 900px
-   * flick moved 48px and returned, over and over.
+   * A BARRIER IS FOR ARRIVING, NOT FOR STAYING. Chrome answers each event of a trackpad's decaying stream as a
+   * gesture of its own, so a target under the reader pulls every tick straight back and the beat becomes a trap.
    *
-   * So the target UNDER the reader is stood down the moment they touch an input, and armed again when the page
-   * next comes to rest. The beat AHEAD is armed throughout, which is the half that does the work — leaving is
-   * free, and being carried past the next beat is still refused.
+   * So the target UNDER the reader is stood down the moment they touch an input, and armed again when the page next
+   * comes to rest. The beat AHEAD is armed throughout, which is the half that does the work — leaving is free, and
+   * being carried past the next beat is still refused.
    */
   const loopSnap = document.getElementById('loop-snap');
   const heroSnap = document.getElementById('hero-snap');
@@ -530,25 +500,21 @@
 
   /* ---- and the reader is walked between them ----
    *
-   * The snap targets above are BARRIERS: they arrest a gesture that would cross a beat. This is the other half,
-   * a RAIL: once the scrolling has stopped, whatever is left of the gap is closed by a glide.
+   * The snap targets above are BARRIERS: they arrest a gesture that would cross a beat. This is the other half, a
+   * RAIL: once the scrolling has stopped, whatever is left of the gap is closed by a glide.
    *
-   * IT COMMITS, IT DOES NOT ROUND. A third of the way toward the next beat is a decision to go there, and the
-   * rest of the distance is travelled for the reader; under that it is a nudge, and they are put back where they
-   * were. So one short scroll off the reactor plays the strike and carries them the whole way to Cartographer,
-   * one short scroll off the faceplate turns the calculator into the app, and one short scroll back does either
-   * in reverse — which is what makes the beats read as beats rather than as places the page happens to stick.
-   * Two lines rather than one, so a reader parked between two beats cannot flap the page back and forth on a
-   * pixel of movement.
+   * IT COMMITS, IT DOES NOT ROUND. A third of the way toward the next beat is a decision to go there, and the rest
+   * is travelled for the reader; under that it is a nudge, and they are put back. So one short scroll off the
+   * reactor plays the strike and carries them the whole way to Cartographer, and one short scroll back does it in
+   * reverse. Two lines rather than one, so a reader parked between two beats cannot flap the page back and forth.
    *
-   * PAST THE LAST BEAT THE RAIL IS SIMPLY GONE. Below that release the reader is looking at the section after
-   * this rig, and leaving therefore costs one decisive gesture rather than a pause, which is deliberate.
+   * PAST THE LAST BEAT THE RAIL IS SIMPLY GONE, so leaving costs one decisive gesture rather than a pause.
    *
    * ONE SPEED, not one duration: the glide drives every envelope it crosses, so it has to play at the rate the
    * animation reads best at whether it is correcting forty pixels or most of a screen.
    *
-   * ANY INPUT CANCELS IT and re-arms rather than spending it — a wheel's momentum tail lands a stray tick a
-   * moment after the glide starts, and treating that as a decision leaves the scene a few pixels short.
+   * ANY INPUT CANCELS IT and re-arms rather than spending it — a wheel's momentum tail lands a stray tick a moment
+   * after the glide starts, and treating that as a decision leaves the scene a few pixels short.
    */
   /* ms of stillness before the rail acts. Long enough that a reader who has stopped to look is not immediately
      moved, and that a gesture made of several flicks is treated as one gesture rather than as several stops. */
@@ -562,15 +528,11 @@
      hijack rather than a finish. Every gap on a roomy window is under a screen. */
   const RAIL_REACH = 1.25;
   /* HOW FAST THE PAGE MOVES ITSELF: px per second, with a floor and a ceiling on the duration that produces.
-     A SPEED, NOT A DURATION, because the glide drives every envelope it crosses and has to play at the rate the
-     animation reads best at whether it is correcting forty pixels or most of a screen. Slow enough to read as
-     the page carrying the reader to the next beat rather than as it correcting itself. The ceiling is above the
-     widest gap between two beats, so a full hand-off is never cut short into a lurch; the floor is what stops a
-     forty-pixel correction being a twitch.
-     THE ONLY DECLARATION OF IT, and nav.js glides too — its arrow keys and space bar step these same beats, and
-     a press and a flick that end on the same one must play the scene between at the same rate. It asks glideMs
-     below for the duration rather than carrying numbers of its own. No CSS rule wants any of this, so the
-     stylesheet is the wrong place for it however many files read it. */
+     A SPEED, NOT A DURATION, because the glide drives every envelope it crosses. The ceiling is above the widest gap
+     between two beats, so a full hand-off is never cut short into a lurch; the floor is what stops a forty-pixel
+     correction being a twitch.
+     THE ONLY DECLARATION OF IT, and nav.js glides too — its arrow keys and space bar step these same beats, and a
+     press and a flick that end on the same one must play the scene between at the same rate. */
   const HOLD_SPEED = 520;
   const HOLD_MIN = 380, HOLD_MAX = 1700;
   const glideMs = (dist) => Math.max(HOLD_MIN, Math.min(HOLD_MAX, Math.abs(dist) / HOLD_SPEED * 1000));

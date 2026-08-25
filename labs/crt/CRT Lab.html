@@ -129,16 +129,12 @@ if (!R) { document.getElementById('hud').textContent = 'needs WebGL2 + EXT_color
 let phName = 'amber';
 let ph = PH[phName];
 
-/* MEMOISED ON THEIR INPUTS, and this cost 30fps when it was not.
+/* MEMOISED ON THEIR INPUTS. These two run crt-phosphor's kelvin lookup, crt-bezel's whole colour model, several
+ * rgb() string parses and toLinear's three Math.pow per channel, then allocate fresh arrays — and nothing they
+ * read changes per frame, so from inside the draw that is all of it sixty times a second for the same numbers.
  *
- * These two build the palette and the moulding's tones by running crt-phosphor's kelvin lookup, crt-bezel's whole
- * colour model, several rgb() string parses and toLinear's three Math.pow per channel -- then allocating fresh
- * arrays for the result. Called from inside the draw, that is all of it sixty times a second to produce the same
- * numbers, plus the garbage. Measured: 59.9fps before, 30.1fps with 55% dropped after, on the same scene.
- *
- * Nothing they read changes per frame. TEMP, FRAME TINT, FRAME LIGHT, POWER and LIGHT are control inputs, so the
- * cache key is those and the work happens when one of them moves. The flicker multipliers stay per-frame because
- * they genuinely are -- they are applied to the result, not baked into it. */
+ * The cache key is the control inputs: TEMP, FRAME TINT, FRAME LIGHT, POWER and LIGHT. The flicker multipliers
+ * stay per-frame because they genuinely are — they are applied to the result, not baked into it. */
 const memo = (key, build) => { const box = { k: null, v: null };
   const f = (...a) => { const kk = key(...a); if (kk !== box.k) { box.k = kk; box.v = build(...a); }
                         return box.v; };
@@ -177,16 +173,13 @@ const bez = memo(
   (tA, tB) => state.power + '|' + state.lightOn + '|' + (tA + tB) + '|' +
         state.frameCol + '|' + view.frameW,
   (tA, tB) => {
-  /* fcol AND fwid COME FROM THE PANEL NOW, and both were hardcoded here.
+  /* fcol AND fwid COME FROM THE PANEL. Pinned here, FRAME could change the moulding's tint and its lit edge but not
+   * the plastic itself, and the shader drew the moulding at view.frameW while bezelCols was handed a constant —
+   * two numbers describing one width, free to disagree.
    *
-   * fcol was pinned to '#4a2c22', so the FRAME section could change the moulding's tint and its lit edge but not
-   * the plastic itself -- the one thing "customisable frame colour" actually means.
-   *
-   * fwid was pinned to 13 while the shader drew the moulding at view.frameW, which is the failure crt/README.md
-   * is about: two numbers describing one width, free to disagree. bezelCols only uses it as a RATIO -- wInner is
-   * 0.42w and wOuter is w + 7, so the lit lip's share of the frame moves with its thickness -- and pinning it at
-   * 13 meant a frame dragged to four times that width kept a lip proportioned for the old one. frameW is a
-   * fraction of the aperture radius; scaling by the glass half-height puts it back in the px bezelCols expects. */
+   * bezelCols uses fwid only as a RATIO: wInner is 0.42w and wOuter is w + 7, so the lit lip's share of the frame
+   * moves with its thickness. frameW is a fraction of the aperture radius; scaling by the glass half-height puts
+   * it back in the px bezelCols expects. */
   /* crt-bezel models the room's light as a single colour, which is the right abstraction for a moulding
    * lit by the whole fitting -- so it gets the pair's MEAN rather than either lamp's own. */
   const b = bezelCols({ power: state.power ? 'on' : 'off', lightOn: !!state.lightOn,
@@ -203,39 +196,27 @@ const bez = memo(
     bzBase: toLinear(hexRgb(b.base)), bzLo: toLinear(hexRgb(b.lo)), bzHi: toLinear(hexRgb(b.hi)),
     bzTint: toLinear(hexRgb(b.tint === 'rgba(0,0,0,0)' ? '#000000' : b.tint)),
     bzTintOp: parseFloat(b.tintOp) || 0,
-    /* THE LIT LIP IS A FIXED PHYSICAL SIZE, not a fixed share of the frame.
+    /* THE LIT LIP IS A FIXED PHYSICAL SIZE, not a fixed share of the frame. bezelCols derives it as 0.42w / (w + 7),
+     * which RISES with the width — that says a deeper surround has a proportionally bigger chamfer, and a moulded
+     * part does not work that way: the chamfer is a feature of the tooling, a couple of millimetres whatever sits
+     * behind it. Left alone, a wide frame comes out mostly lit lip and reads washed out.
      *
-     * bezelCols derives it as wInner/wOuter = 0.42w / (w + 7), which RISES with the width -- 12.6% of a 3px frame,
-     * 27.3% of a 13px one, 34.0% of a 30px one. That says a deeper surround has a proportionally bigger chamfer,
-     * and a moulded part does not work that way: the chamfer is a feature of the tooling, a couple of millimetres
-     * whatever the surround behind it is. Left alone, a wide frame came out mostly lit lip and read washed out.
-     *
-     * LIP_PX is that fixed size, and 3.5 is chosen so a 13px frame -- the reference's own fwid -- lands on 0.269,
-     * which is where bezelCols already had it. So the shipped look is unchanged and only the ends of the range
-     * move: narrow frames become all chamfer (correct -- a 3px surround IS the chamfer), wide ones gain body. */
+     * LIP_PX is chosen so the reference's own frame width lands where bezelCols already had it, so the shipped
+     * look is unchanged and only the ends of the range move: narrow frames become all chamfer, which is correct —
+     * a 3px surround IS the chamfer — and wide ones gain body. */
     bzInner: Math.min(0.6, Math.max(0.06, 3.5 / Math.max(1, view.frameW))),
   };
 });
 
 const state = defaultPreset(R.gpu);
 
-/* SETTINGS PERSIST, which they did not: this page had no storage of any kind, so every reload started from the
- * literal above and any tuning was lost.
- *
- * THE KEY IS `crtgl` AND IT STAYS THAT WAY, though the lab is now called CRT Lab. It is not a name, it is an
+/* THE KEY IS `crtgl` AND IT STAYS THAT WAY, though the lab is now called CRT Lab. It is not a name, it is an
  * address: every visitor who has ever tuned this page has their configuration stored under it, and moving it
  * orphans all of them silently — no error, no fallback, and the shipped defaults are themselves a real saved
  * configuration, so the loss would not even show in a screenshot. Migrate it deliberately or leave it alone.
  *
- * MERGED OVER THE DEFAULTS, KEY BY KEY, and type-checked -- not assigned wholesale. Controls have come and gone
- * this session (CONVERGE became six per-gun offsets, EDGE GLASS and FRAME LIGHT were deleted), so a stored
- * blob will generally disagree with the current shape. Taking only keys that still exist AND still hold the same
- * type means a removed control is ignored, a new one takes its default, and a corrupted value cannot boot the
- * page into a state its own panel cannot represent.
- *
- * A VERSION MISMATCH DISCARDS rather than migrates. The lab carries migration fallbacks because it has years of
- * stored configurations worth keeping; this page has none yet, and a migration path written before there is
- * anything to migrate is a guess that has to be maintained.
+ * A VERSION MISMATCH DISCARDS rather than migrates. A migration path written before there is anything to migrate
+ * is a guess that has to be maintained.
  */
 // v2: FRAME WIDTH changed from a fraction of the half-height to CSS px, so v1 blobs would read 0.03px.
 // v3: frameInner/frameLamp renamed, frameGlow removed.
@@ -246,15 +227,13 @@ const state = defaultPreset(R.gpu);
 const MM_PER_UNIT = 900;   // mm of room across one glass half-height -- see the note in state
 const SAVE_KEY = 'crtgl', SAVE_V = 11;   // an address, not a name — see the note above before changing it
 
-/* THE SHARED STORE, not a private one. This lab kept its own restore for a while and it was the weaker of the
- * two: it type-checked a stored value but never clamped it, so a blob carrying a number outside its control's
- * current range booted the panel into a state it cannot represent — the thumb pins at one end while the readout
- * shows the old number. The kit derives every clamp from SECTIONS, which is the same table the panel is built
- * from, so a bound cannot disagree with its slider.
+/* THE SHARED STORE, not a private one. A restore that type-checks a stored value but never clamps it boots the
+ * panel into a state it cannot represent — the thumb pins at one end while the readout shows the old number. The
+ * kit derives every clamp from SECTIONS, the same table the panel is built from, so a bound cannot disagree with
+ * its slider.
  *
  * `extra` is every key in state, because this lab has far more settings than it has slider rows: the phosphor
  * name, the custom swatch, the frame colour and each section's master are all state and none of them is a row.
- * Keys that DO have a row still get their range from SECTIONS; the union just makes sure nothing is dropped.
  */
 const store = persist({ key: SAVE_KEY, version: SAVE_V, state, sections: SECTIONS, extra: Object.keys(state) });
 store.restore();
@@ -353,19 +332,16 @@ function advRatio() {
   return 0.6;
 }
 
-/* THE CELL GRID, IN CONTENT PIXELS. One place computes it and every reader below uses it, so the wrap, the glyph
- * placement and the AUTO block size cannot disagree about what a row is.
+/* THE CELL GRID, IN CONTENT PIXELS. One place computes it, so the wrap, the glyph placement and the AUTO block
+ * size cannot disagree about what a row is.
  *
- * THE POINT OF THIS FUNCTION IS THE UNITS. Row height is in SCANLINES and char width is in GRILLE COLUMNS,
- * exactly as the reference's textGrid does it, so the text sits on the same lattice the scan pattern draws and
- * changing the raster density resizes the type with it. The previous version sized the font as a percentage of
- * the render height and spaced it with a bare multiplier -- a type scale that knew nothing about the surface it
- * was drawn on, so SCANLINES H moved the raster and left the glyphs where they were.
+ * THE POINT OF THIS FUNCTION IS THE UNITS. Row height is in SCANLINES and char width in GRILLE COLUMNS, so the
+ * text sits on the same lattice the scan pattern draws and changing the raster density resizes the type with it.
+ * Sized as a percentage of the render height instead, the type knows nothing about the surface it is drawn on and
+ * SCANLINES H moves the raster while leaving the glyphs where they were.
  *
- * nSL and nCOL are the SAME counts the shader rasters with. crt-gl lays the pattern out as `ny = suv.y * uScanN`
- * over the content texture, so in this space one scanline is exactly contentPx.h / nSL tall and one grille column
- * is contentPx.w / nCOL wide. Both are computed from cssPx for the reason given where scanN is handed to the
- * renderer: a density is a statement about the tube, not about the buffer it is rasterised into. */
+ * nSL and nCOL are the SAME counts the shader rasters with, and both are computed from cssPx: a density is a
+ * statement about the tube, not about the buffer it is rasterised into. */
 /* HOW MANY COLUMNS OF TEXT A NARROW DISPLAY IS HELD TO. Above the width where this is satisfied the raster
  * is left exactly as authored; below it the density is scaled up so the count does not collapse. */
 const TEXT_COLS_MIN = 40;
@@ -378,20 +354,18 @@ const TEXT_COLS_MIN = 40;
  * proportion held onto when the picture gets short. */
 const SCANLINES_MIN = 100;
 const RASTER_K_MAX = 6;         // a pathologically narrow viewport must not ask for a thousand scanlines
-/* WHAT COUNTS AS A DISPLAY WITH ROOM, and both accommodations apply below this and nowhere else. Shared with
- * the panel's own breakpoint (passed to mountPanelToggle) so "small screen" means one thing here; panel.css
- * carries the same pair in a media query, which a stylesheet cannot read from here and must be kept in step.
+/* WHAT COUNTS AS A DISPLAY WITH ROOM. Shared with the panel's own breakpoint via mountPanelToggle, so "small
+ * screen" means one thing here; panel.css carries the same pair in a media query, which a stylesheet cannot read
+ * from here and must be kept in step.
  *
- * THE GATE IS THE CORRECTION. Written as a pure column target with no size test, the rule fired on a DESKTOP
- * whenever the authored raster was coarse enough to make text wide -- caught by the fingerprint harness, where
- * the `fineRaster` scene (12 PPI, 5-scanline cells, on a 1247px stage) came out scaled by 1.146 and its hash
- * moved. Overriding a density somebody deliberately set, on a screen with plenty of room, is not what this is
- * for: it is an accommodation for displays that cannot fit the text, not an opinion about legibility.
+ * THE GATE IS THE CORRECTION. Written as a pure column target with no size test, the rule fires on a DESKTOP
+ * whenever the authored raster is coarse enough to make text wide. Overriding a density somebody deliberately set
+ * on a screen with plenty of room is not what this is for: it is an accommodation for displays that cannot fit
+ * the text, not an opinion about legibility.
  *
- * TWO NUMBERS, NOT ONE, BECAUSE SCREENS ARE NOT SQUARE. A phone on its side is 852x393: wide enough to pass any
- * width test and shorter than anything the width test was written for, so a single `min(w, h) > 820` would call
- * an ordinary 1366x768 laptop a phone. 500 sits in the gap -- phone landscape viewports run 320-430 tall, the
- * smallest laptop about 600 -- and it is the number the CSS carries too. */
+ * TWO NUMBERS, NOT ONE, BECAUSE SCREENS ARE NOT SQUARE. A phone on its side is 852x393 — wide enough to pass any
+ * width test — so a single min(w, h) test would call an ordinary laptop a phone. 500 sits in the gap, and it is
+ * the number the CSS carries too. */
 const NARROW_W = 820;
 const SHORT_H  = 500;
 
@@ -399,39 +373,30 @@ const SHORT_H  = 500;
  * about it is a tube drawn with one set of settings and measured with another. */
 function roomy() { return cssPx.w > NARROW_W && cssPx.h > SHORT_H; }
 
-/* WHAT A NARROW DISPLAY RENDERS INSTEAD, as a table rather than as more special cases scattered through the
- * frame. The raster scale above, the convergence divisor and the spot divisor are all narrow-display
- * accommodations too; they are computed rather than tabulated because they are RATIOS of whatever is
- * authored, while these are flat replacements.
+/* WHAT A NARROW DISPLAY RENDERS INSTEAD, as a table rather than as special cases scattered through the frame.
+ * The raster scale, the convergence divisor and the spot divisor are narrow-display accommodations too; they are
+ * computed rather than tabulated because they are RATIOS of whatever is authored, while these are replacements.
  *
- *   frameOn  the moulding is a fixed CSS-pixel border, so on a 390px screen it eats a far larger share of the
- *            picture than it does on a desktop. Off, and uFrameFit falls to 1, which gives the glass the whole
- *            box -- the full-bleed the small screen needs.
- *   famp     DEPTH, the dome's amplitude. A deep face spends its outer radius compressing the picture into the
- *            rim, which is a luxury a big screen can afford and a small one cannot; flattening it puts that
- *            area back. Not zero -- a flat tube is a monitor, and the curve is the subject.
- *   grings   CURVE AREA, which sets the BAND the sag lives in rather than how deep it is: u0 = 1 - grings*0.05
- *            and the profile is identically zero below u0. At the shipped 20 the span is 1.0, so u0 is 0 and
- *            there is no flat section anywhere -- every pixel is being bent by something. 14 puts u0 at 0.30,
- *            which leaves the middle 30% of the radius genuinely flat for the text to sit on and confines the
- *            bend to the outer band where it still reads as a dome.
+ *   frameOn  the moulding is a fixed CSS-pixel border, so on a phone it eats a far larger share of the picture.
+ *            Off, uFrameFit falls to 1 and the glass gets the whole box.
+ *   famp     DEPTH. A deep face spends its outer radius compressing the picture into the rim, which a small
+ *            screen cannot afford. Not zero — a flat tube is a monitor, and the curve is the subject.
+ *   grings   CURVE AREA, which sets the BAND the sag lives in rather than how deep it is: u0 = 1 - grings*0.05,
+ *            and the profile is identically zero below u0. At the shipped value there is no flat section at all;
+ *            this leaves the middle of the radius flat for the text and confines the bend to the outer band.
  *
- * EVERY KEY LISTED HERE MUST BE READ THROUGH `view`, NEVER THROUGH `state`. That is the whole contract, and it
- * is not decorative: `face`/`famp`/`frameOn`/`frameW` appear in THREE memo keys -- the face LUT's, the
- * calibration overlay's and the bezel's -- and a key that still reads `state` would leave the memo believing
- * nothing had changed while the value driving it had. The tube would then keep a dome it is no longer being
- * drawn with, which is the stale-geometry failure this project keeps paying for. */
+ * EVERY KEY LISTED HERE MUST BE READ THROUGH `view`, NEVER THROUGH `state`. face/famp/frameOn/frameW appear in
+ * THREE memo keys — the face LUT's, the calibration overlay's and the bezel's — and a key still reading `state`
+ * would leave the memo believing nothing had changed while the value driving it had. */
 const NARROW_OVERRIDES = { frameOn: 0, famp: 1.4, grings: 14 };
 
 /* THE SETTINGS THE RENDERER READS, as opposed to the ones the PANEL EDITS.
  *
- * state stays the operator's own configuration and is what persistence writes -- so a session tuned on a
- * desktop is not quietly overwritten by having been opened once on a phone, and resizing back restores it
- * with nothing lost. view is state on any roomy display, by identity, so the desktop path allocates nothing
- * and compares equal.
+ * state stays the operator's own configuration and is what persistence writes, so a session tuned on a desktop is
+ * not quietly overwritten by having been opened once on a phone. view is state on any roomy display, by identity,
+ * so the desktop path allocates nothing and compares equal.
  *
- * Rebuilt in place rather than spread fresh each frame: the object carries ~150 keys and this is on the frame
- * path, where the memo comment a few hundred lines up records what per-frame garbage cost the last time.
+ * Rebuilt in place rather than spread fresh each frame: the object carries ~150 keys and this is on the frame path.
  */
 const _view = {};
 let view = state;
@@ -442,32 +407,23 @@ function syncView() {
   view = _view;
 }
 
-/* THE SMALL-DISPLAY RASTER SCALE, and the reason it exists is that the glyph was pinned to an ABSOLUTE size.
+/* THE SMALL-DISPLAY RASTER SCALE. Without it the glyph is pinned to an ABSOLUTE size: work em through to screen
+ * pixels and the viewport cancels out, so a phone is handed the desktop's type on a fifth of the width.
  *
- * Work em through to screen pixels and the viewport cancels out: em_css = tcell * 100 / scan, which is 30px
- * at every display size. Measured -- 30.0px on a 1855px desktop and 30.0px on a 390px phone, so the phone was
- * being handed the desktop's type on a fifth of the width and the boot text wrapped at 16 columns.
+ * The cause is that the PITCH is held constant while the line COUNT floats. A real set is the other way round — a
+ * 525-line tube is 525 lines whether it is nine inches or twenty-seven, and the pitch is whatever that works out
+ * to. Scaling the density on small displays restores that, rather than special-casing the type away from the
+ * raster it is supposed to sit on.
  *
- * The cause is that the PITCH is held constant while the line COUNT floats (101 scanlines on the desktop, 84
- * on the phone). A real set is the other way round: a 525-line tube is 525 lines whether it is nine inches or
- * twenty-seven, and the pitch is whatever that works out to. Scaling the density on small displays restores
- * that -- the tube keeps its proportions and the type shrinks with everything else, rather than the type being
- * special-cased away from the raster it is supposed to sit on.
+ * k IS INDEPENDENT OF ITSELF, which makes this a closed form rather than a search. A character spans `cpc` grille
+ * columns, and cpc = round(advRatio * em / colW) where em and colW both carry 1/k — so cpc is the same at every
+ * scale. Columns across the block then vary linearly with k. `cell` and `gap` are in scanlines and carry no k
+ * either, so the line-count solve is closed in the same way.
  *
- * k IS INDEPENDENT OF ITSELF, which is what makes this a closed form rather than a search. A character spans
- * `cpc` grille columns, and cpc = round(advRatio * em / colW) where em carries 1/k and colW carries 1/k too --
- * so the ratio, and therefore cpc, is the same at every scale. Columns across the block then vary linearly
- * with k, and the k that yields TEXT_COLS_MIN can be solved directly. `cell` and `gap` are in scanlines and
- * carry no k either, so the line-count solve below is closed in the same way.
+ * BOTH AXES: a column target is satisfied by a wide box whatever its height, so a phone ON ITS SIDE passes it and
+ * draws a raster whose type is several times larger relative to the screen than the same phone upright.
  *
- * BOTH AXES, AND THE WIDTH ALONE WAS NOT ENOUGH. A column target is satisfied by a wide box whatever its
- * height, so a phone ON ITS SIDE passed it at k = 1.86 and drew a 73-line raster: measured at 852x393, a
- * 16.1px glyph on a 393px-tall screen, 4.1% of the picture against 1.45% for the same phone upright. Rotating
- * the handset made the type 2.8x larger relative to the screen, which is the complaint this answers.
- *
- * NEVER BELOW 1. This only ever makes a cramped display finer; it cannot coarsen a roomy one, so every
- * desktop-sized window renders exactly what it rendered before this existed.
- */
+ * NEVER BELOW 1. This only makes a cramped display finer; it cannot coarsen a roomy one. */
 function rasterScale() {
   const s = state;
   if (roomy()) return 1;                         // room for what was authored: exactly that, always
@@ -481,13 +437,12 @@ function rasterScale() {
   return Math.min(RASTER_K_MAX, Math.max(1, kCols, kLines));
 }
 
-/* THE RASTER'S LINE AND COLUMN COUNTS -- ONE PLACE, ELEVEN CALLERS.
+/* THE RASTER'S LINE AND COLUMN COUNTS — ONE PLACE, ELEVEN CALLERS. These two expressions were written out inline
+ * eleven times: twice in textGrid and nine more in the uniform bag, where the beam's height, the tip's radii, the
+ * convergence error and the sweep's step are each measured in scanlines or grille columns.
  *
- * These two expressions were written out inline eleven times: twice in textGrid and nine more in the uniform
- * bag, where the beam's height, the tip's radii, the convergence error and the sweep's step are all measured
- * in scanlines or grille columns and each divided by its own copy. Eleven copies of a density is eleven places
- * for the scale above to be applied to ten of them -- the beam would then be measured in a different raster
- * from the one being drawn, which is precisely the two-descriptions failure this project keeps paying for.
+ * Eleven copies of a density is eleven places for the scale above to be applied to ten of them, which would leave
+ * the beam measured in a different raster from the one being drawn.
  */
 function rasterN() {
   const k = rasterScale();
@@ -509,16 +464,16 @@ function textGrid() {
   return { W: W, H: H, em: em, pitch: pitch, colW: colW, slPx: H / nSL, charW: cols * colW, nSL: nSL, nCOL: nCOL };
 }
 
-/* WRAPPED ON WHITESPACE, THEN ON THE CELL GRID AS A LAST RESORT -- the reference's wrapLines, which this is a
- * port of. The block's width is a column count now, so how many cells fit is the whole answer.
+/* WRAPPED ON WHITESPACE, THEN ON THE CELL GRID AS A LAST RESORT. The block's width is a column count, so how many
+ * cells fit is the whole answer. Breaking at the column limit full stop splits words across rows and restarts
+ * their tails at the left margin — the tube reads "PA" / "SS".
  *
- * Breaking at the column limit full stop splits words across rows and restarts their tails at the left margin --
- * the tube reads "PA" / "SS". Segments survive the wrap so a row can still change colour mid-way, which the boot
- * text needs: it puts a label and its value in one line and would otherwise flatten to a single colour. Words
- * longer than the whole column count are hard-broken, because the alternative is a row wider than the block.
+ * Segments survive the wrap so a row can still change colour mid-way, which the boot text needs: it puts a label
+ * and its value in one line and would otherwise flatten to a single colour. Words longer than the whole column
+ * count are hard-broken, because the alternative is a row wider than the block.
  *
- * Every token is emitted in full including its trailing space, so the wrapped rows hold exactly the characters
- * the source did, in order -- which is what lets the flat `typed` counter walk them without a mapping. */
+ * Every token is emitted in full including its trailing space, so the wrapped rows hold exactly the characters the
+ * source did, in order — which is what lets the flat `typed` counter walk them without a mapping. */
 function wrapLines(lines, cols) {
   const out = [], per = Math.max(1, cols);
   lines.forEach((segs) => {
@@ -533,22 +488,14 @@ function wrapLines(lines, cols) {
       toks.forEach((tok) => {
         if (used + tok.replace(/\s+$/, '').length > per && used > 0) flush();
         let t = tok;
-        /* THE HARD BREAK, WITH THE TAKE CAPTURED BEFORE IT IS SPENT -- and that ordering is the whole bug this
-         * replaces. It used to read:
-         *
-         *     while (t.length > per) { put(t.slice(0, per - used), sg.c); t = t.slice(per - used); flush(); }
-         *
-         * `put` adds what it wrote to `used`, so the SECOND `per - used` is evaluated after the first has already
-         * been paid for and always comes out zero. `t.slice(0)` is `t`, the token never shortens, the condition
-         * never goes false: an infinite loop that hangs the tab with no error and no frame.
+        /* THE HARD BREAK, WITH THE TAKE CAPTURED BEFORE IT IS SPENT. `put` adds what it wrote to `used`, so a second
+         * `per - used` evaluated after the first has been paid for always comes out zero: the token never shortens,
+         * the condition never goes false, and the tab hangs with no error and no frame.
          *
          * It only fires when a token is longer than the whole column budget, so at normal widths nothing reaches
-         * it -- the longest word in the boot text is nine characters. Dragging TEXT WIDTH below about 6% takes
-         * the budget under that, and the page stops dead mid-drag.
+         * it. Dragging TEXT WIDTH far enough down takes the budget under the longest word.
          *
-         * Floored at one character so the loop cannot fail to advance even if `used` ever equals `per` on entry.
-         * A step of zero is the failure mode; making one impossible is worth a character of overflow in a case
-         * that cannot currently arise. */
+         * Floored at one character so the loop cannot fail to advance even if `used` equals `per` on entry. */
         while (t.length > per) {
           const take = Math.max(1, per - used);
           put(t.slice(0, take), sg.c); t = t.slice(take); flush();
@@ -562,13 +509,11 @@ function wrapLines(lines, cols) {
   return out;
 }
 
-/* UPLOADED ONLY WHEN IT CHANGED, and the unconditional version cost half the frame rate.
+/* UPLOADED ONLY WHEN IT CHANGED. texImage2D of a full-size RGBA canvas is megabytes; called every frame that is
+ * hundreds of MB/s of upload for text that moves once every few frames, and on a shared-memory GPU that traffic
+ * competes with the rendering itself.
  *
- * texImage2D of a 1600x1100 RGBA canvas is ~7MB. Called every frame that is 420MB/s of upload for text that moves
- * once every 26ms, and on a shared-memory GPU that traffic competes with the rendering itself. Measured: 30.1fps
- * with 55% dropped frames uploading every frame.
- *
- * The key is what is actually ON the texture -- the typed count and the caret's blink phase. Nothing else in the
+ * The key is what is actually ON the texture — the typed count and the caret's blink phase. Nothing else in the
  * content changes, so nothing else can require a re-raster. */
 let lastContentKey = '';
 let textRect = [-1, -1, -1, -1];   // the active block, in content-canvas fractions
@@ -650,14 +595,12 @@ function drawContent(force) {
   const bx = g.W * (0.5 + state.tox / 100) - bw / 2;
   const by = g.H * (0.5 + state.toy / 100) - bh / 2;
 
-  /* ANCHOR picks which edge of the block is nailed down -- the axis ALIGN does not speak for. BOTTOM stands the
-   * text on the block's last row and grows up; TOP hangs it from the first and grows down.
+  /* ANCHOR picks which edge of the block is nailed down — the axis ALIGN does not speak for. BOTTOM stands the text
+   * on the block's last row and grows up; TOP hangs it from the first and grows down.
    *
-   * THEN SNAPPED TO THE LATTICE, which is the whole point of measuring in cells. pitch is already a whole number
-   * of scanlines and charW a whole number of grille columns, so once the ORIGIN lands on a cell boundary every
-   * glyph in the block does too. Without the snap the block floats at an arbitrary sub-scanline phase and picks
-   * a new one on every resize -- rows consistent with each other, but cutting the scan pattern differently each
-   * time the window moves. */
+   * THEN SNAPPED TO THE LATTICE, which is the point of measuring in cells: pitch is a whole number of scanlines
+   * and charW a whole number of grille columns, so once the ORIGIN lands on a cell boundary every glyph does too.
+   * Without the snap the block floats at an arbitrary sub-scanline phase and picks a new one on every resize. */
   const align = state.tjust === 2 ? 1 : state.tjust === 1 ? 0.5 : 0;
   let y0 = state.tvert ? by : by + Math.max(0, bh - shown.length * g.pitch);
   y0 = Math.round(y0 / g.slPx) * g.slPx;
@@ -689,15 +632,14 @@ function drawContent(force) {
       bx0 = Math.min(bx0, x0); bx1 = Math.max(bx1, x0 + (row.part ? row.n : row.len) * g.charW);
       by0 = Math.min(by0, y);  by1 = Math.max(by1, y + g.em);
     }
-    /* THE CARET SITS WHEREVER THE NEXT CHARACTER WOULD GO, on the same 420ms phase the memo key is keyed on --
-     * and that includes AFTER THE LAST ONE, which is where it lives for all the time the boot is not running.
+    /* THE CARET SITS WHEREVER THE NEXT CHARACTER WOULD GO, on the same phase the memo key is keyed on — and that
+     * includes AFTER THE LAST ONE, which is where it lives for all the time the boot is not running.
      *
-     * This used to be gated on `row.part` alone, so the caret existed only while a row was half-typed. The
-     * moment the script finished, no row was partial any more and it vanished -- exactly when a terminal is
-     * most obviously waiting for you. A prompt with no cursor is a screenshot of a terminal, not a terminal.
+     * Gated on `row.part` alone the caret exists only while a row is half-typed, so it vanishes the moment the
+     * script finishes — exactly when a terminal is most obviously waiting for you.
      *
-     * Two cases, one position: mid-line it goes at the typing point, and at the end it goes one cell past the
-     * final character of the last revealed row. */
+     * Two cases, one position: mid-line it goes at the typing point, and at the end one cell past the final
+     * character of the last revealed row. */
     const lastRow  = (k === shown.length - 1);
     /* A CELL PAST THE END WHEN IT IS RESTING, on the typing point when it is not. The gap is the difference
      * between a prompt and a half-drawn line: "...|" reads as the machine still writing, "... |" as the machine
@@ -750,13 +692,12 @@ function syncLUT() {
 
 /* THE INSTRUMENT, REBUILT ONLY WHEN ITS INPUTS MOVE.
  *
- * Every path here comes from the same modules the DOM lab plots with -- guideOutline for the rim, ringLadder for
- * the ring ladder and its heat, curvedGridPaths for the calibration grid -- walked through the SAME faceShaped the
- * face LUT was built from. That is the whole point of keeping it: an instrument that derived its own geometry
- * could agree with itself while disagreeing with the tube, which is the failure crt/README.md is about.
+ * Every path here comes from the same modules the tube is drawn from — guideOutline for the rim, ringLadder for
+ * the ring ladder and its heat, curvedGridPaths for the calibration grid — walked through the SAME faceShaped the
+ * face LUT was built from. An instrument that derived its own geometry could agree with itself while disagreeing
+ * with the tube.
  *
- * HEAT IS A NUMBER, COLOUR IS PRESENTATION. ringLadder returns bands; the ramp from gap to colour is decided here,
- * exactly as the DOM build decides it in renderVals rather than in the module.
+ * HEAT IS A NUMBER, COLOUR IS PRESENTATION. ringLadder returns bands; the ramp from gap to colour is decided here.
  */
 const calSvg = document.getElementById('cal');
 let calKey = '';
@@ -772,30 +713,22 @@ function syncCal() {
   const prof = guideOutline(w, H, state.corner / 0.9, state.bend);
   /* faceShaped, not faceF: the projection reads the face's SHAPE, so the instrument must ask the same question.
    *
-   * AND PINNED, which it was not, and that is why the grid stopped short of the glass. The picture is gathered
-   * through a pinned map -- F(u)/F(1) -- because that is what the lab does; this overlay was plotted through the
-   * raw one, so at OUT 90 it ended at F(1) = 82.7% of the radius while the picture filled to 100%. An instrument
-   * that disagrees with the tube it is measuring is worse than no instrument, and it is the exact drift
-   * crt/README.md exists to prevent.
+   * AND PINNED. The picture is gathered through a pinned map — F(u)/F(1) — so an overlay plotted through the raw
+   * one stops short of the glass wherever F(1) < 1, and an instrument that disagrees with the tube it is measuring
+   * is worse than no instrument.
    *
-   * Pinned on .pin -- the UN-bowed axis value faceShaped publishes -- not on f(1, 0). crt-projection's note says
-   * why: dividing by the bowed value would normalise BEND's bow away at precisely the ray where it is strongest.
-   * This was character-for-character what the DOM build did at its own pin. */
-  /* FOLDED INTO THE FIRST QUADRANT, and passing the raw accessors instead was the bug behind "three of the four
-   * corners are wrong".
+   * Pinned on .pin — the UN-bowed axis value faceShaped publishes — not on f(1, 0): dividing by the bowed value
+   * would normalise BEND's bow away at precisely the ray where it is strongest. */
+  /* FOLDED INTO THE FIRST QUADRANT. prof.rhoQ and prof.wQ are tables over [0, PI/2] only, because guideOutline
+   * samples one quadrant — the outline is symmetric in both axes by construction. faceShaped hands them a RAW
+   * theta, which is negative below the x axis and past PI/2 to the left of the y axis, so in three quadrants out
+   * of four the lookup runs off the end of the table.
    *
-   * prof.rhoQ and prof.wQ are tables over [0, PI/2] only -- guideOutline samples one quadrant because the outline
-   * is symmetric in both axes by construction. faceShaped hands them a RAW theta, which is negative below the x
-   * axis and past PI/2 to the left of the y axis, so in three quadrants out of four the lookup ran off the end of
-   * the table. Measured: the mapper's four-fold asymmetry was 77.8%, i.e. the same ray could come back with a
-   * radius nearly twice another's depending only on which corner it pointed at.
+   * crt-geometry publishes shapeRatio and axisWeight for exactly this — both apply foldQuad first — so the two
+   * builds cannot disagree about which ray is a corner.
    *
-   * crt-geometry publishes shapeRatio and axisWeight for exactly this -- both apply foldQuad first -- and the DOM
-   * lab uses them: `{ rho: (th) => G.shapeRatio(p, th), bow: (th) => G.axisWeight(p, th) }`. This is that, so the
-   * two builds cannot disagree about which ray is a corner.
-   *
-   * The SHADER was never affected: aperture() folds with abs() before it indexes, which is why the picture looked
-   * right while the calibration grid drawn over it did not. */
+   * The SHADER is never affected: aperture() folds with abs() before it indexes, which is why the picture looks
+   * right while the calibration grid drawn over it does not. */
   const fRaw = faceShaped(view.face * 90, view.grings * 0.05,
                           { rho: (th) => shapeRatio(prof, th), bow: (th) => axisWeight(prof, th),
                             bend: state.bend / 100 }, state.fexp, view.famp);
@@ -803,15 +736,12 @@ function syncCal() {
   const kk = pinK > 0.01 ? pinK : 1;
   const fF = fRaw ? ((u, th) => fRaw(u, th) / kk) : null;
 
-  /* THE OVERLAY LIVES IN THE SAME SCALED SPACE AS THE SHADER, and it did not -- which is why the grid stopped
-   * matching the tube the moment the frame started fitting.
+  /* THE OVERLAY LIVES IN THE SAME SCALED SPACE AS THE SHADER. The moulding shrinks the glass so glass + frame fills
+   * the box: the shader multiplies its aperture by 1 + WIDTH, so the rim lands at 1/(1 + WIDTH) of the outline.
+   * This SVG is drawn into a fixed viewBox over the whole stage and would otherwise keep plotting the tube at its
+   * unshrunken size — an instrument measuring a surface the renderer is no longer drawing.
    *
-   * The moulding shrinks the glass so glass + frame fills the box: the shader multiplies its aperture by
-   * 1 + WIDTH, so the rim lands at 1/(1 + WIDTH) of the outline. This SVG is drawn into a fixed 0-100 viewBox
-   * over the whole stage and knew nothing about that, so it kept plotting the tube at its unshrunken size --
-   * an instrument measuring a surface the renderer is no longer drawing.
-   *
-   * Scaling about the viewBox centre by the same factor is the whole fix. It has to be the SAME expression the
+   * Scaling about the viewBox centre by the same factor is the fix, and it has to be the SAME expression the
    * shader uses, not a second one that happens to agree today. */
   // MUST MATCH THE SHADER'S uFrameFit exactly -- see the note where it is uploaded.
   const fitW = view.frameW / Math.max(1, cssPx.h / 2);
@@ -842,26 +772,19 @@ function syncCal() {
    * same quantity -- which is exactly the drift crt/README.md exists to prevent. */
 
   if (state.debugOn && state.gridOn) {
-    /* 192 SAMPLES PER LINE, NOT 48, and the corners are why.
+    /* 192 SAMPLES PER LINE, and the corners are why. A polyline chords a convex curve, cutting inside it, and the
+     * error goes as the square of the step — so it concentrates wherever curvature is highest. At 48 samples the
+     * corner error is an order above the axes', which reads as the grid failing to round its own corners rather
+     * than the projection failing to bend them.
      *
-     * A polyline chords a convex curve, cutting INSIDE it, and the error goes as the square of the step -- so it
-     * concentrates wherever curvature is highest, which is the corners. Measured against the true mapper at OUT
-     * 81: 2.47px of chord error at the corners against 0.24px on the axes at 48 samples, halving each time the
-     * count doubles (2.47 / 0.90 / 0.40 / 0.25 at 48 / 96 / 192 / 384). That is the grid failing to round its own
-     * corners, not the projection failing to bend them.
-     *
-     * 192 puts the corner error at 0.40px -- under half a pixel, and level with what the axes already had. The DOM
-     * lab needs a draft tier here because it rebuilds this while a slider is moving; this page does not, because
+     * 192 puts the corner error level with what the axes already had. No draft tier is needed here, because
      * syncCal is memoised on the geometry controls and only runs when one of them settles. */
-    /* CLIPPED TO THE GLASS, because the grid measures the PICTURE and the picture stops at the rim.
+    /* CLIPPED TO THE GLASS, because the grid measures the PICTURE and the picture stops at the rim. The lattice is
+     * rectangular and the glass is a squircle, so the grid's corners fall outside it and would be drawn over the
+     * moulding — an instrument reporting on a surface that is not there.
      *
-     * The lattice is rectangular and the glass is a squircle, so the grid's corners fall outside it -- and with
-     * nothing clipping them they were drawn over the moulding, an instrument reporting on a surface that is not
-     * there. The reference does not have this problem because its scan and grid layers live inside the screen
-     * wrapper and inherit crtFaceClip; this SVG was a bare sibling of the canvas and inherited nothing.
-     *
-     * The clip is guideOutline's own points -- the same path the blue guide is stroked from and the same outline
-     * the shader's aperture table is sampled from -- so the grid cannot end anywhere the tube does not. */
+     * The clip is guideOutline's own points — the same path the blue guide is stroked from and the same outline
+     * the shader's aperture table is sampled from — so the grid cannot end anywhere the tube does not. */
     const g = curvedGridPaths(w, H, 40, fF, 192);
     out += '<defs><clipPath id="glassclip" clipPathUnits="userSpaceOnUse">' +
            '<path d="' + glassD + '"/></clipPath></defs><g clip-path="url(#glassclip)">';
@@ -873,15 +796,13 @@ function syncCal() {
   }
     /* ONE TRANSFORM ON THE WHOLE OVERLAY, not a scale factor threaded through every path.
    *
-   * The frame shrinks the glass -- the shader multiplies its aperture by 1 + WIDTH -- so every instrument drawn
-   * over the tube has to shrink with it or it is measuring a surface the renderer is not drawing. A first attempt
-   * put the factor inside toVB, which reached the guide outline but NOT the grid: curvedGridPaths emits viewBox
-   * coordinates straight from radialMap and never passes through toVB, so the grid carried on covering the whole
-   * stage while the guide sat correctly on the rim. Two scaling mechanisms, one of which the grid did not use.
+   * Putting the factor inside toVB reaches the guide outline but NOT the grid: curvedGridPaths emits viewBox
+   * coordinates straight from radialMap and never passes through toVB, so the grid carries on covering the whole
+   * stage while the guide sits correctly on the rim.
    *
-   * A group transform catches everything by construction, including anything added later. Scaled about the
-   * viewBox centre, and vector-effect="non-scaling-stroke" on the paths keeps the stroke widths honest through
-   * it. Identity when the frame is off. */
+   * A group transform catches everything by construction, including anything added later. Scaled about the viewBox
+   * centre, with vector-effect="non-scaling-stroke" keeping the stroke widths honest through it. Identity when
+   * the frame is off. */
   calSvg.innerHTML = fit === 1 ? out
     : '<g transform="translate(50,50) scale(' + (1 / fit).toFixed(5) + ') translate(-50,-50)">' + out + '</g>';
 }
@@ -891,20 +812,15 @@ function syncCal() {
  * where guideOutline's exponent reaches exactly 2 -- a circle, in a square box. */
 /* THE ARC A BOWED EDGE SWEEPS, measured off the real outline. Sagitta is how far the edge midpoint stands proud
  * of the straight line joining its two corners; the half chord is the run from midpoint to corner. */
-/* BEND STAYS A PERCENTAGE, and the attempt to make it degrees is worth recording so it is not repeated.
+/* BEND STAYS A PERCENTAGE, and the attempt to make it degrees is recorded so it is not repeated.
  *
- * SQUIRCLE has an absolute landmark -- at 90 the superellipse exponent is exactly 2, which IS a circle -- so
- * degrees there mean something no other control can move. BEND has no such point. It is a bow depth, and the ARC
- * that bow describes depends on the shape being bowed: the same 6% sweeps a different angle on a rectangle than
- * on a rounded face, and on a wider glass than a narrower one.
+ * SQUIRCLE has an absolute landmark — at 90 the superellipse exponent is exactly 2, which IS a circle. BEND has no
+ * such point: it is a bow depth, and the ARC that bow describes depends on the shape being bowed, so the same
+ * percentage sweeps a different angle on a rectangle than on a rounded face, and on a wider glass than a narrower.
  *
- * So a degree-labelled BEND made itself a function of SQUIRCLE and of the window size -- the number moved when
- * you touched a different control, which is exactly the confusion it was meant to remove. And past what 15% can
- * produce the request is unreachable, so the panel would have read 18 degrees while the glass delivered less: a
- * readout that lies is worse than one that is merely abstract.
- *
- * A percentage is guideOutline's own parameter, it is stable under every other control, and it never overstates
- * what it got.
+ * A degree-labelled BEND is therefore a function of SQUIRCLE and of the window size — the number moves when you
+ * touch a different control. And past what the bow can produce the request is unreachable, so the panel would read
+ * a figure the glass does not deliver.
  */
 
 let faceLUT = { u: null, r1: 1, rimK: 1 };
@@ -924,25 +840,19 @@ const contentPx = { w: 1600, h: 1100 };
 
 const FMT = makeFmt({ state, cssPx, textGrid });
 const host = document.getElementById('controls');
-/* THE PANEL, AS FOUR SMALL BUILDERS RATHER THAN ONE NESTED LOOP.
- *
- * This was a single forEach doing four unrelated jobs at three levels of indentation: fold state, master toggles,
- * three row types and the stepper's auto-repeat, all interleaved. Adding a row type meant editing the middle of
- * it, and the collapse behaviour had to be threaded through by hand.
- *
- * Split by what each piece IS. Each builder returns its element and knows nothing about the others, so a new row
- * type is a new function plus one line in dispatch, and the section machinery never has to be touched again.
+/* THE PANEL, AS FOUR SMALL BUILDERS RATHER THAN ONE NESTED LOOP. Split by what each piece IS: each builder returns
+ * its element and knows nothing about the others, so a new row type is a new function plus one line in dispatch,
+ * and the section machinery never has to be touched.
  */
 
-/* THE PANEL IS THE SHARED KIT'S, not this page's. The builders lived here as 236 lines and 54 CSS rules,
- * duplicated in two other panels; they are ../kit/panel.js and ../kit/panel.css now.
+/* THE PANEL IS THE SHARED KIT'S, not this page's — ../kit/panel.js and ../kit/panel.css.
  *
- * THE TWO THINGS THE BUILDERS USED TO REACH IN FOR arrive here as (key, kind) instead. A colour is always a
- * bezel colour, so it invalidates that memo; RENDER SCALE is the one control that reallocates the buffer. The
- * kit stays ignorant of both.
+ * THE TWO THINGS THE BUILDERS USED TO REACH IN FOR arrive as (key, kind) instead. A colour is always a bezel
+ * colour, so it invalidates that memo; RENDER SCALE is the one control that reallocates the buffer. The kit stays
+ * ignorant of both.
  *
- * THE FOLD MAP IS NOT PASSED, so the kit resolves state.secClosed on every read. Handing it the object was a
- * real bug: the merge above replaces whole keys, so the panel folded on screen while nothing reached storage. */
+ * THE FOLD MAP IS NOT PASSED, so the kit resolves state.secClosed on every read. Handing it the object is a real
+ * bug: the restore replaces whole keys, so the panel folds on screen while nothing reaches storage. */
 createPanel({
   host, state, sections: SECTIONS, fmt: FMT,
   onChange(key, kind) {
@@ -952,34 +862,25 @@ createPanel({
   },
 });
 
-/* LIGHT IS NOT UP HERE ANY MORE -- it is FIXTURE's own master, the same treatment DEBUG and FRAME already get.
+/* LIGHT IS FIXTURE'S OWN MASTER, the same treatment DEBUG and FRAME get. Beside POWER it is a control for one
+ * section's contents sitting several sections above them, grouped with two things that genuinely are global —
+ * state.lightOn feeds exactly one uniform, and with it off every row under FIXTURE describes something that is
+ * not being drawn. As a master the section collapses with it.
  *
- * It sat beside POWER and REBOOT, which put a control for one section's contents several sections above them
- * and grouped it with two things that genuinely are global. It is not: state.lightOn feeds exactly one uniform,
- * the fixture gate, and with it off every row under FIXTURE describes something that is not being drawn.
- * Moving it makes the section collapse with it, which is the point -- twenty-seven dead rows is a lot of panel
- * to scroll past. FRAME's note says the same thing about frameOn.
+ * POWER stays: it is the tube itself. */
+/* THE LIT STATE IS ASKED FOR, NOT TOGGLED. Third element is a predicate, and an action without one is not a state
+ * and never lights. POWER answers from state.power; WARP and SURGE are things that HAPPEN and are never lit.
  *
- * POWER and REBOOT stay: one is the tube itself, the other is not a state at all. */
-/* THE LIT STATE IS ASKED FOR, NOT TOGGLED. Third element is a predicate, and an action without one is not a
- * state and never lights. POWER answers from state.power, which is the only place that knows; WARP and SURGE are
- * things that HAPPEN and are never lit -- the reference's own distinction, and the reason REBOOT is gone: it was
- * neither a state nor an event anyone needed a button for once the power switch retypes on its own.
- *
- * WARP AND SURGE DIFFER ON ONE POINT, and it is not arbitrary. The warp is the BEAM being bent, so it needs a
- * beam: with the tube dark there is nothing to deflect and the button does nothing, exactly as the reference
- * guards it. The surge is the ROOM's supply failing, so it fires whether or not the monitor is switched on --
- * the fixture and the moulding carry the event on their own. */
-/* FULLSCREEN, WHERE IT EXISTS, AND ABSENT WHERE IT DOES NOT.
- *
- * Safari on iPhone does not implement requestFullscreen -- iPad does, iPhone does not -- so a button offered
- * unconditionally would be a control that visibly does nothing on the one device most in need of the space.
- * Feature-detected instead, and the manifest plus the apple-mobile-web-app-capable meta cover iOS by a
+ * WARP AND SURGE DIFFER ON ONE POINT. The warp is the BEAM being bent, so it needs a beam: with the tube dark
+ * there is nothing to deflect. The surge is the ROOM's supply failing, so it fires whether or not the monitor is
+ * switched on — the fixture and the moulding carry the event on their own. */
+/* FULLSCREEN, WHERE IT EXISTS, AND ABSENT WHERE IT DOES NOT. Safari on iPhone does not implement
+ * requestFullscreen — iPad does, iPhone does not — so an unconditional button would visibly do nothing on the one
+ * device most in need of the space. The manifest and the apple-mobile-web-app-capable meta cover iOS by a
  * different route: added to the home screen, the lab launches with no browser chrome at all.
  *
- * NOT DEBOUNCED AND NOT FOLLOWED BY A MANUAL resize(). Entering or leaving fullscreen fires a real window
- * resize, which the settle handler above already answers; calling resize() here as well would reallocate
- * every buffer twice for one gesture. */
+ * NOT DEBOUNCED AND NOT FOLLOWED BY A MANUAL resize(). Entering or leaving fullscreen fires a real window resize,
+ * which the settle handler above already answers. */
 const canFullscreen = !!(document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen);
 const inFullscreen = () => !!(document.fullscreenElement || document.webkitFullscreenElement);
 function toggleFullscreen() {
@@ -1087,41 +988,35 @@ function resize() {
 window.addEventListener('resize', () => { clearTimeout(rzT); rzT = setTimeout(resize, 120); });
 resize();
 
-/* THE PANEL'S SWITCH. Mounted after the first resize deliberately: on a narrow screen panel.css has already
- * lifted the panel out of the flow, so the stage was measured at full width whichever way the toggle starts.
+/* THE PANEL'S SWITCH. Mounted after the first resize deliberately: on a narrow screen panel.css has already lifted
+ * the panel out of the flow, so the stage measures at full width whichever way the toggle starts.
  *
- * Re-sized on every toggle because the WIDE case genuinely changes the stage -- hiding a 340px sidebar grows
- * the canvas by 340px, and a renderer still sized to the old box stretches until the next window resize. The
- * narrow case moves nothing, and R.size returns immediately when the buffer dimensions are unchanged, so
- * calling it there costs a bounding-rect read and nothing else. Not debounced: a click is one event, and the
- * 120ms settle above exists for resize STREAMS. */
+ * Re-sized on every toggle because the WIDE case genuinely changes the stage — hiding the sidebar grows the canvas,
+ * and a renderer still sized to the old box stretches until the next window resize. The narrow case moves nothing,
+ * and R.size returns immediately when the buffer dimensions are unchanged. Not debounced: a click is one event,
+ * and the settle above exists for resize STREAMS. */
 // NARROW_W and SHORT_H, not a second pair: the panel folding away and the raster scaling up are the same
 // judgement about the display, and two constants that mean "small screen" would eventually disagree.
 mountPanelToggle({ panel: document.getElementById('panel'), breakpoint: NARROW_W, shortSide: SHORT_H,
                    onToggle: () => resize() });
 
-/* A LOST CONTEXT IS A NORMAL EVENT ON THIS HARDWARE, AND NOTHING HERE USED TO HANDLE IT.
+/* A LOST CONTEXT IS A NORMAL EVENT ON THIS HARDWARE. The page drives an integrated adapter hard enough that
+ * Windows can reset the display driver under it, and Chrome then kills the WebGL context: every program, texture
+ * and framebuffer is gone, and every gl call becomes a silent no-op. The loop carries on calling them against a
+ * dead context, so the canvas keeps whatever pixels it died with and the instrument reads as frozen.
  *
- * The page drives an integrated adapter hard enough that Windows can reset the display driver under it (TDR).
- * When that happens Chrome kills the WebGL context: every program, texture and framebuffer this file holds is
- * gone, and every gl call becomes a silent no-op. The rAF loop carried on calling them sixty times a second
- * against a dead context, so the canvas kept whatever pixels it died with and the instrument read as frozen or
- * garbage with no indication of why. Closing the tab was the only recovery, which is exactly how it was found.
- *
- * THREE THINGS ARE REQUIRED AND EACH ONE WAS GOT WRONG FIRST.
+ * THREE THINGS ARE REQUIRED.
  *
  *   preventDefault() on the lost event is what tells Chrome to attempt a restore at all. Without it
  *     'webglcontextrestored' never fires and everything below is dead code.
  *   Restoring is a REBUILD, not a resume: createRenderer allocates fresh, so every memo that remembers having
- *     uploaded something has to be cleared or the new context is left with no LUTs, no content texture and
- *     buffers of the wrong size.
- *   The status message goes in its OWN span. Writing textContent on #hud replaces its children -- #fps,
- *     #scaleinfo, #gpu and #heatread all vanish -- and resize() then throws on the missing #scaleinfo, which
- *     aborted this handler before it could clear glLost and parked the instrument for good. The recovery
- *     bricking itself on its own status message is the same trap the DOM build records about the FPS readout.
+ *     uploaded something has to be cleared or the new context is left with no LUTs and buffers of the wrong size.
+ *   The status message goes in its OWN span. Writing textContent on #hud replaces its children, and resize() then
+ *     throws on the missing #scaleinfo — which aborts this handler before it can clear glLost and parks the
+ *     instrument for good.
  *
- * Verified by driving WEBGL_lose_context: the fingerprint returns to within 0.5 parts per million of the
- * pre-loss render, which is render-probe.js's own documented noise floor for a content raster settling.
+ * Verified by driving WEBGL_lose_context: the fingerprint returns to within render-probe.js's documented noise
+ * floor for a content raster settling.
  */
 let glLost = false;
 const glState = document.getElementById('glstate');
@@ -1179,27 +1074,20 @@ function frame(now) {
   syncLUT();
   syncCal();       // likewise: rebuilds only when a geometry control or the aspect moved
 
-  /* THE REAL FLICKER ENGINE, not a sine.
+  /* THE REAL FLICKER ENGINE, not a sine. crt-flicker is a factory of pure functions: screenFlicker is a stochastic
+   * DIP — a random depth and duration, then a gap scaled by the rate — and bulbFlick is a per-bulb flux model with
+   * jitter, chaos and a health-driven colour strike. A product of sines is periodic, so it reads as a wobble rather
+   * than a tube guttering, and its control is a depth where this one is a RATE in Hz.
    *
-   * crt-flicker is a factory of pure functions: screenFlicker is a stochastic DIP -- a random depth and duration,
-   * then a gap scaled by the rate -- and bulbFlick is a per-bulb flux model with jitter, chaos and a health-driven
-   * colour strike. What was here instead was sin(t*11.3)*sin(t*2.7) cubed: periodic, so it read as a wobble rather
-   * than a tube guttering, and its control was a depth where the lab's is a RATE in Hz.
+   * They arrive as uniforms, which is the point: writing these values into CSS invalidates a group under a filter
+   * and costs most of the frame. Here the number changes and nothing is invalidated. */
+  /* THE POWER LEVEL RIDES ON THE FLICKER, and that is not a shortcut — it is the same quantity. uFlicker is what the
+   * phosphor is putting out this frame, spent in the shader on everything the tube emits and nothing it reflects.
+   * A tube striking is putting out several times its settled output for a moment; a tube collapsing is putting out
+   * nothing by the end.
    *
-   * These are the same functions the DOM lab drives its lamps with, so FLICKER A/B mean here what they mean there.
-   * And they arrive as uniforms, which is the point: crt-flicker's own profiling records frames that wrote these
-   * values running 100.1ms against 16.7ms for frames that did not, because every write invalidated a group under a
-   * reference filter. Here the number changes and nothing is invalidated. */
-  /* THE POWER LEVEL RIDES ON THE FLICKER, and that is not a shortcut -- it is the same quantity.
-   *
-   * uFlicker is what the phosphor is putting out this frame, spent in the shader on everything the tube emits and
-   * on nothing it reflects. A tube striking is putting out four times its settled output for a moment; a tube
-   * collapsing is putting out nothing by the end. Both are statements about the same number, so the animation's
-   * level multiplies into it rather than arriving as a second gate the shader would have to spend in the same
-   * place. It is also why the moulding's screen-lit terms flash with the strike without being wired for it: they
-   * already read uFlicker.
-   *
-   * pwr.lvl > 0 is the flicker engine's own gate -- a dead tube does not gutter. */
+   * It is also why the moulding's screen-lit terms flash with the strike without being wired for it: they already
+   * read uFlicker. pwr.lvl > 0 is the flicker engine's own gate — a dead tube does not gutter. */
   /* THE FAULT IS SAMPLED ONCE AND SPENT EVERYWHERE, which is the whole reason it reads as the room rather than as
    * an effect on the screen. One `sg` feeds the tube's output, both lamps' output, both lamps' HEALTH and the
    * colour temperature the palette is built from -- so nothing in the picture can be half a frame out of step
@@ -1213,18 +1101,13 @@ function frame(now) {
   const fHz   = state.flickHz + (state.surgeHz  - state.flickHz) * bite;
   const fStr  = state.fstr    + (state.surgeStr - state.fstr)    * bite;
   const flk = pwr.lvl * FLK.screenFlicker(now, fHz, fStr, pwr.lvl > 0) * (sg ? sg.screen : 1);
-  /* THE LAMPS ARE GATED ON THE FITTING'S SWITCH AND NOTHING ELSE, and the second gate that used to be here was
-   * a dead end you could not get out of.
-   *
-   * It was `state.lightOn && state.flickerOn`. flickerOn has a default of 1 and NO ROW ANYWHERE ON THE PANEL --
-   * it is a leftover from when the fixture's flicker had its own master -- so any session that ever stored it as
-   * 0 had FLICKER A, FLICK STR A, FLICKER B and FLICK STR B permanently doing nothing, with no control on screen
-   * capable of turning them back on. Found exactly that way: measured over 90 frames, both lamps returned 1.000
-   * with one distinct value between them while the screen's own flicker moved across 25.
+  /* THE LAMPS ARE GATED ON THE FITTING'S SWITCH AND NOTHING ELSE. A second gate on `flickerOn` is a dead end you
+   * cannot get out of: it has a default of 1 and NO ROW ANYWHERE ON THE PANEL, so any session that ever stored it
+   * as 0 has all four flicker controls permanently doing nothing, with nothing on screen able to turn them back on.
    *
    * A per-lamp rate of 0 Hz is already the off switch, and bulbFlick's own guard is `hz > 0.05 && flux > 0.001`.
-   * A tube that is not flickering is a tube whose FLICKER is set to zero -- that is the control, it is visible,
-   * and it cannot strand anyone. */
+   * A tube that is not flickering is a tube whose FLICKER is zero — that is the control, it is visible, and it
+   * cannot strand anyone. */
   const lampOn = !!state.lightOn;
   /* THE LAMPS GUTTER FASTER UNDER THE FAULT TOO, and their own FLICKER rate is the floor rather than the answer:
    * a tube whose supply is collapsing does not keep failing at the leisurely rate its ballast manages on a good
@@ -1232,41 +1115,32 @@ function frame(now) {
   const lampHz = (hz) => hz + (state.surgeLampHz - hz) * bite;
   const lamp = (id, hz, str, health) =>
     FLK.bulbFlick(now, id, lampHz(hz), str, lampOn, state.lfjit, state.lfchaos, health);
-  /* THE BULBS ARE ADVANCED FIRST, because the two things below are read out of the machine they advance.
+  /* THE BULBS ARE ADVANCED FIRST, because the two things below are read out of the machine they advance. Using only
+   * bulbFlick's return value — the brightness multiplier — and never calling bulbState is what makes a fixture read
+   * as a lamp being dimmed rather than a lamp that is broken.
    *
-   * This build was using ONLY bulbFlick's return value -- the brightness multiplier -- and never called
-   * bulbState at all. That is the whole reason the fixture read as a lamp being dimmed rather than a lamp that
-   * is broken: two thirds of what crt-flicker models per cycle was being computed and thrown away.
-   *
-   * HEALTH IS THE SLIDER, NOT THE LIVE VALUE, on the way IN. The reference's own note: the colour strike leans
-   * warm on a dying tube, and the right signal for that is the tube's CONDITION -- the sag is this cycle's
-   * weather, and feeding it back in would compound. */
+   * HEALTH IS THE SLIDER, NOT THE LIVE VALUE, on the way IN: the colour strike leans warm on a dying tube, and the
+   * right signal for that is the tube's CONDITION. The sag is this cycle's weather, and feeding it back compounds. */
   const mA = lamp('A', state.lflickA, state.lfstrA, state.healthA);
   const mB = lamp('B', state.lflickB, state.lfstrB, state.healthB);
   const bA = FLK.bulbState('A') || {}, bB = FLK.bulbState('B') || {};
 
-  /* THE COLOUR STRIKE -- the thing that makes a failing tube read as failing rather than as dimming.
+  /* THE COLOUR STRIKE — what makes a failing tube read as failing rather than as dimming.
    *
-   * crt-flicker picks warmTarget on a re-ignition and SNAPS to it ("an eased colour shift reads as a fade, not
-   * a strike"), so the tube changes colour between one frame and the next and then holds there. It is signed on
-   * purpose: positive drops kelvin for the tired pinkish cast of an old tube, negative RAISES it for the cold
-   * blue-green of an arc that has struck before its phosphor caught up. A hard strike reaches 2.5 units, which
-   * at 1500K each drives straight into the 2200K floor or the 9000K ceiling -- so it reads as a lamp misfiring
-   * rather than as a slightly different white. FLICK CHAOS governs how often that happens.
+   * crt-flicker picks warmTarget on a re-ignition and SNAPS to it, because an eased colour shift reads as a fade
+   * rather than a strike. It is signed on purpose: positive drops kelvin for the tired pinkish cast of an old tube,
+   * negative RAISES it for the cold blue-green of an arc that has struck before its phosphor caught up. A hard
+   * strike drives straight into the floor or the ceiling, so it reads as a lamp misfiring rather than as a
+   * slightly different white. FLICK CHAOS governs how often that happens.
    *
-   * 1500K per unit is the reference's own constant. The surge's share keeps its own control, because that is a
-   * mains fault rather than this tube's chemistry, and the two add.
-   *
-   * QUANTISED TO 20K, the reference's grid, so the palette memo holds still for runs of frames rather than
-   * rebuilding the whole phosphor and bezel model every time a strike nudges the average. */
-  /* COLOUR STRIKE is the kelvin a strike is worth, and it is a control rather than the reference's fixed 1500.
-   *
-   * 1500 is right for a lab where the fixture is one of a dozen things being tuned: a strike lands a few hundred
-   * kelvin off nominal, which is a real drift and reads as one. It is not enough when the fitting is the thing
-   * you are watching -- the machine picks strikes as large as 2.5 units, and at 1500 even those only reach the
-   * rails on the hardest of them. At 2600 an ordinary strike is plainly a different colour of light and a hard
-   * one drives into the 2200K floor or the 9000K ceiling, which is what "this lamp is broken" looks like. The
-   * clamp is what keeps it legible however far this is pushed. */
+   * QUANTISED, so the palette memo holds still for runs of frames rather than rebuilding the whole phosphor and
+   * bezel model every time a strike nudges the average. */
+  /* COLOUR STRIKE is the kelvin a strike is worth, and it is a control rather than a fixed constant. A small value
+   * is right for a lab where the fixture is one of a dozen things being tuned — a strike lands a few hundred kelvin
+   * off nominal, which is a real drift and reads as one. It is not enough when the fitting is the thing you are
+   * watching. Larger, an ordinary strike is plainly a different colour of light and a hard one drives into the
+   * floor or the ceiling, which is what "this lamp is broken" looks like. The clamp keeps it legible however far
+   * this is pushed. */
   const kelvin = (t, warm) => {
     const dK = warm * state.lfwarmK + (sg ? sg.warm * state.surgeWarm : 0);
     return Math.round(Math.min(9000, Math.max(2200, t - dK)) / 20) * 20;
@@ -1292,47 +1166,33 @@ function frame(now) {
   const RN = rasterN();
 
   R.draw({
-    /* FIT: OVERSCAN COMPUTED SO THE PICTURE'S RIM STAYS ON THE GLASS, whatever FACE, DEPTH, CURVE AREA and
-     * FALLOFF do to the projection.
+    /* FIT: OVERSCAN COMPUTED SO THE PICTURE'S RIM STAYS ON THE GLASS, whatever FACE, DEPTH, CURVE AREA and FALLOFF do
+     * to the projection. The rim is pinned, so at the shipped depth the raster already lands exactly on the glass;
+     * push DEPTH up and the amplitude passes what the fold test bounded, and the outer part of the picture is
+     * driven past the aperture and clipped.
      *
-     * The rim is pinned, so at the reference's own depth the raster already lands exactly on the glass and there
-     * is nothing to correct. Push DEPTH up and the amplitude passes what the fold test bounded: at 6x the rim
-     * magnifies 1.319, so the outer third of the picture is driven past the aperture and clipped. Reaching for
-     * OVERSCAN by hand every time another control moves is busywork the panel can do itself.
-     *
-     * The number is the face LUT's own last sample -- the scale factor at s = 1, which is where the raster edge
-     * lands -- so it comes from the same table the shader gathers through rather than from a second derivation of
-     * the same quantity. Clamped to the slider's own range so FIT can never ask for something OVERSCAN could not
-     * have been set to by hand. */
+     * The number is the face LUT's own last sample — the scale factor at s = 1, where the raster edge lands — so it
+     * comes from the same table the shader gathers through. Clamped to the slider's range, so FIT can never ask for
+     * something OVERSCAN could not have been set to by hand. */
     time: t,
     overscan: state.overscan,
     face: view.face, corner: state.corner, bend: state.bend,
-    /* THE PPI RULE, INHERITED FROM THE DOM BUILD: round(span * density / 100), the picture's HEIGHT for the horizontal pass
-     * and its WIDTH for the vertical one -- MEASURED IN CSS PIXELS, which is the whole point of this note.
+    /* THE PPI RULE: round(span * density / 100), the picture's HEIGHT for the horizontal pass and its WIDTH for the
+     * vertical one — MEASURED IN CSS PIXELS, which is the point of this note.
      *
-     * This used to divide the canvas's DEVICE height, so on a 1.74x display 25 PPI produced 423 lines where the
-     * reference produces 276 -- its own comment records "276 horizontal and 390 vertical subpaths" at that
-     * setting. Same number on the slider, a pattern half again as fine, and because it was finer it sat closer to
-     * the pixel grid and got averaged away: the mask measured about a third of the reference's amplitude and
-     * looked like it only appeared where there was content to darken.
+     * Dividing the canvas's DEVICE height instead makes the pattern finer on a high-DPI display for the same number
+     * on the slider, and because it is finer it sits closer to the pixel grid and gets averaged away — the mask then
+     * looks like it only appears where there is content to darken.
      *
-     * The reference takes its span from picSizePx(), i.e. offsetWidth/offsetHeight -- CSS pixels, independent of
-     * both devicePixelRatio and renderScale. A density is a statement about the tube, not about the buffer it is
-     * being rasterised into, so neither of those may enter. Computed on the CPU and handed in as a line count;
-     * the shader should not be deciding what a density means. */
-    /* PITCH IN CSS PIXELS, NOT A DENSITY -- the same geometry, said directly.
+     * A density is a statement about the tube, not about the buffer it is rasterised into, so neither
+     * devicePixelRatio nor renderScale may enter. Computed on the CPU and handed in as a line count. */
+    /* PITCH IN CSS PIXELS, NOT A DENSITY — the same geometry, said directly. count = round(span * density / 100) makes
+     * pitch = span/count, and working that through gives pitch = 100/density exactly, independent of the window.
+     * The density is the reciprocal of the thing anyone actually wants to set.
      *
-     * The old rule was the DOM build's: count = round(span * density / 100), which makes pitch = span/count. Work
-     * that through and pitch = 100/density exactly -- 25 PPI IS a 4px pitch, and always was, independent of the
-     * window. The density was the reciprocal of the thing anyone actually wants to set, and the round() made it
-     * not-quite-exact as the stage resized: a 1060px stage gives 265 lines and a 4.000px pitch, a 1063px one
-     * gives 266 and 3.997px.
-     *
-     * WHAT IS KEPT FROM THAT IS THE MISSING round(). the DOM build rounded the count to a whole number, which makes
-     * the true pitch span/round(...) rather than 100/density -- a 967px stage gives 242 lines and a 3.996px pitch,
-     * a 970px one gives 243 and 3.992px. Dropping the round leaves the density meaning exactly 100/density at
-     * every size. The control is the density again because a pitch and a density are the same setting said two
-     * ways, and this is the way the reference says it. */
+     * WHAT IS KEPT IS THE MISSING round(). Rounding the count to a whole number makes the true pitch span/round(…)
+     * rather than 100/density, which drifts as the stage resizes. Dropping the round leaves the density meaning
+     * exactly 100/density at every size. */
     scanN: RN.sl,
     /* WIDTH IS IN CSS PIXELS TOO, for the same reason the density is -- and it was the other half of the same bug.
      * The reference strokes with vector-effect="non-scaling-stroke" at stroke-width 1.0, and a non-scaling stroke
@@ -1420,17 +1280,16 @@ function frame(now) {
     /* CONVERGENCE, PER GUN, px -> content uv. Against cssPx rather than the render target: these are screen
      * distances, so they must not change meaning when RENDER SCALE moves. The master is a bypass -- off hands
      * over an empty object and the renderer's ||0 puts all three guns on the same raster. */
-    /* AND DIVIDED BY THE RASTER SCALE, so a misconvergence stays the same fraction of a GLYPH rather than the
-     * same number of screen pixels.
+    /* AND DIVIDED BY THE RASTER SCALE, so a misconvergence stays the same fraction of a GLYPH rather than the same
+     * number of screen pixels.
      *
-     * These are authored in CSS px because that is the unit a service manual would use, and on a desktop
-     * 1-3px against a 30px glyph is the couple of percent that reads as a well-set-up tube. The type is 12px
-     * on a phone now, and 3px of green displacement against a 12px glyph is a quarter of its width -- the
-     * text stopped being readable, which is not a subtler version of the same effect but a different one.
+     * These are authored in CSS px because that is the unit a service manual uses, and on a desktop a pixel or two
+     * against a 30px glyph is the couple of percent that reads as a well-set-up tube. Against a 12px glyph on a
+     * phone the same split is a quarter of its width, and the text stops being readable — not a subtler version of
+     * the same effect but a different one.
      *
-     * So the error follows the raster like everything else that shrank with it: 1/k. At k = 2.44 the shipped
-     * split becomes 0.4-1.2px, still a visible fringe on a 3x display and no longer a legibility problem.
-     * On a stage with room -- see roomy() -- k is 1 and these are byte-for-byte the values they always were. */
+     * So the error follows the raster like everything else that shrank with it: 1/k. On a stage with room — see
+     * roomy() — k is 1 and these are byte-for-byte the values they always were. */
     conv: !state.convOn ? {} : {
       rx: state.convRX / RN.k / Math.max(1, cssPx.w), ry: state.convRY / RN.k / Math.max(1, cssPx.h),
       gx: state.convGX / RN.k / Math.max(1, cssPx.w), gy: state.convGY / RN.k / Math.max(1, cssPx.h),
@@ -1530,14 +1389,12 @@ function frame(now) {
   // This lab has its own loop rather than the kit's, so it dismisses the loading ring itself.
   if (!shownOnce) { shownOnce = true; labReady(); }
 }
-/* RENDER ONE FRAME ON DEMAND, WITHOUT THE ANIMATION LOOP -- the thing this project has never been able to do.
+/* RENDER ONE FRAME ON DEMAND, WITHOUT THE ANIMATION LOOP. Chrome runs ZERO animation frames in a tab that is not
+ * front-most, so every measurement of the rendered image would otherwise wait for a human to bring the window
+ * forward. Nothing about the renderer needs rAF: the draw is a plain function of the state.
  *
- * Chrome runs ZERO animation frames in a tab that is not front-most, so every measurement of the rendered image
- * has had to wait for a human to bring the window forward. Nothing about the renderer needs rAF though: the draw
- * is a plain function of the state, and a caller can invoke it directly and read the pixels straight back out.
- *
- * The flag suppresses the re-queue, or a hundred measurements would leave a hundred callbacks parked to fire all
- * at once the moment the tab becomes visible. */
+ * The flag suppresses the re-queue, or a hundred measurements leave a hundred callbacks parked to fire at once the
+ * moment the tab becomes visible. */
 let oneShot = false;
 function renderNow(t) { oneShot = true; try { frame(t == null ? performance.now() : t); } finally { oneShot = false; } }
 requestAnimationFrame(frame);

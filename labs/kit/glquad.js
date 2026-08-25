@@ -34,20 +34,15 @@ function stage(gl, type, src) {
 const VERT = `#version 300 es
 in vec2 p; void main(){ gl_Position = vec4(p, 0.0, 1.0); }`;
 
-/* A LOOKUP TABLE FOR 3D VALUE NOISE, PACKED INTO ONE 2D TEXTURE.
+/* A LOOKUP TABLE FOR 3D VALUE NOISE, PACKED INTO ONE 2D TEXTURE. Computing value noise in the shader costs eight
+ * hashes and seven interpolations per sample, and a shader wanting ten samples per march step spends its whole
+ * budget there. Put the lattice in a texture and the sampler's bilinear unit does x and y for free.
  *
- * Computing value noise in the shader costs eight hashes and seven interpolations per sample. A shader that wants
- * ten samples per march step spends its entire budget there. This is the standard answer: put the lattice in a
- * texture and let the sampler do the work — one filtered fetch, and the hardware's bilinear unit performs the x
- * and y interpolation for free.
+ * THE THIRD DIMENSION IS THE TRICK. The two channels hold the SAME field offset by (37, 17) texels, and the shader
+ * addresses slice z at `xy + vec2(37,17)*z` — so red is slice z and green is slice z+1 of that address, and one
+ * fetch returns both. The offset is coprime with the size, so slices decorrelate rather than repeating.
  *
- * THE THIRD DIMENSION IS THE TRICK. The two channels hold the SAME field offset by (37, 17) texels, and the
- * shader addresses slice z at `xy + vec2(37,17)*z`. So the red channel at a texel is slice z and the green
- * channel is slice z+1 of that same address, and one fetch returns both — the caller only has to mix them by the
- * fractional z. The offset is coprime with the size, so slices decorrelate rather than repeating.
- *
- * 256 is a power of two. WebGL2 wraps NPOT textures happily, so this is no longer a requirement — but the
- * shader addresses slices by adding a coprime offset and wrapping, and that arithmetic assumes this size.
+ * The size must stay a power of two: WebGL2 wraps NPOT textures happily, but the slice arithmetic assumes it.
  */
 export function valueNoiseTexture(size = 256, seed = 1) {
   const n = size * size;
@@ -73,19 +68,14 @@ export function valueNoiseTexture(size = 256, seed = 1) {
   return { data, w: size, h: size };
 }
 
-/* BLUE NOISE, BY ENERGY MINIMISATION.
- *
- * A raymarch jitters where each ray starts so a fixed step count does not band into rings, and the character of
- * that jitter decides how the residual error looks. White noise spreads error across all frequencies including
- * the low ones the eye is most sensitive to, so it reads as clumpy grain. Blue noise pushes the energy into high
- * frequencies the eye averages away, and the same step count looks markedly cleaner.
+/* BLUE NOISE, BY ENERGY MINIMISATION. A raymarch jitters where each ray starts so a fixed step count does not band
+ * into rings, and the character of that jitter decides how the residual error looks: white noise spreads error
+ * across all frequencies including the low ones the eye is most sensitive to, so it reads as clumpy grain. Blue
+ * noise pushes the energy into high frequencies the eye averages away.
  *
  * Void-and-cluster is the textbook construction; this is the cheaper swap-based one — start from white noise and
- * repeatedly exchange two samples when doing so lowers a Gaussian-weighted neighbourhood energy. It converges to
- * a good approximation in a few thousand swaps, which is a few milliseconds once at startup.
- *
- * The neighbourhood is clipped to 4 texels because the Gaussian is negligible beyond that, turning an O(n^2)
- * energy into a constant per swap.
+ * exchange two samples whenever that lowers a Gaussian-weighted neighbourhood energy. The neighbourhood is clipped
+ * to 4 texels because the Gaussian is negligible beyond that, turning an O(n²) energy into a constant per swap.
  */
 function blueNoiseTile(size) {
   const n = size * size;
@@ -149,29 +139,26 @@ function blueNoiseTile(size) {
  *
  * `onRestore` fires after a lost context is rebuilt, so the caller can re-send anything it only sets on change.
  *
- * `fwidth` and the derivatives NEED NOTHING. They are core in WebGL2, so the OES_standard_derivatives dance —
- * an `ext` entry plus a `#extension` directive as the shader's first line — is gone from every caller. `ext` is
- * kept for extensions that are still extensions here, EXT_color_buffer_float being the one likely to matter.
+ * `ext` is for extensions that are still extensions in WebGL2 — EXT_color_buffer_float being the one likely to
+ * matter. Derivatives are core, so no `#extension` directive is needed for fwidth.
  *
  * `textures` maps a sampler name to { data, w, h } — see valueNoiseTexture. They are uploaded on build, so a
  * restored context recreates them along with everything else.
  *
- * `variant(key)` returns a fragment source for a key, and R.use(key) switches to it — for a shader whose cost
- * depends on which parts are switched on. `frag` must then be the SUPERSET, because it is what draws while a
- * narrower build compiles.
+ * `variant(key)` returns a fragment source for a key and R.use(key) switches to it, for a shader whose cost depends
+ * on which parts are switched on. `frag` must then be the SUPERSET, because it is what draws while a narrower
+ * build compiles.
  */
 const HEX = new Map();   // shared by every renderer: a hex string parses to the same vec3 anywhere
 
 export function createQuad(canvas, { frag, uniforms = [], ext = [], textures = {}, onRestore = null,
                                      variant = null, deferLink = false } = {}) {
-  /* WEBGL2, and only WebGL2. There is no WebGL1 fallback and that is deliberate: `experimental-webgl` was a 2013
-     spelling for browsers that no longer exist, and a silent downgrade path is worse than none — a shader using
-     a core-in-2 feature would compile to nothing on the fallback and the page would show black with no error
-     worth reading.
-     THIS IS NOT A SPEED CHANGE. Every lab here draws one fullscreen triangle, so the frame cost is fragment
-     shader arithmetic and the context version does not touch it. What 2 buys is that derivatives, textureLod,
-     texelFetch, round() and NPOT textures are all core, so a shader can use them without an extension dance.
-     The measured cost of each lab before and after this move is the same. */
+  /* WEBGL2, and only WebGL2. There is no WebGL1 fallback and that is deliberate: a silent downgrade path is worse
+     than none, because a shader using a core-in-2 feature compiles to nothing on the fallback and the page shows
+     black with no error worth reading.
+     THIS IS NOT A SPEED CHANGE. Every lab draws one fullscreen triangle, so the frame cost is fragment shader
+     arithmetic and the context version does not touch it. What 2 buys is that derivatives, textureLod, texelFetch,
+     round() and NPOT textures are all core. */
   /* `alpha: false` STAYS, and the reason is that removing it has NOT been shown to help. MDN warns the flag makes
      the browser composite the canvas as though it were opaque "at a significant performance cost" and says to
      write 1.0 from the shader instead — which these shaders already do, so it looks like free money.
@@ -218,10 +205,9 @@ export function createQuad(canvas, { frag, uniforms = [], ext = [], textures = {
     return prog;
   };
 
-  /* Makes a linked program current. The attribute binding and the sampler units are BOTH re-applied on every
-   * switch rather than once at build: a sampler uniform lives in the program like any other, and no vertex array
-   * object is bound here to remember the attribute. WebGL2 has VAOs and this could use one; it does not, because
-   * one program drawing one triangle has nothing to gain from it.
+  /* Makes a linked program current. The attribute binding and the sampler units are BOTH re-applied on every switch
+   * rather than once at build: a sampler uniform lives in the program like any other, and no vertex array object is
+   * bound here to remember the attribute.
    *
    * `last` is per program and is NOT cleared here: uniform values live in the program object and survive being
    * switched away from, so a returning program's cache is still telling the truth.
@@ -316,13 +302,11 @@ export function createQuad(canvas, { frag, uniforms = [], ext = [], textures = {
 
     /* Asks for the program built for `key`, and returns whether that is what is now current.
      *
-     * IT NEVER STALLS AND NEVER SHOWS THE WRONG FRAME. A key that has not been built yet starts compiling and
-     * the CURRENT program keeps drawing — the caller's base shader is the superset, so it is already correct,
-     * only slower. Where the driver offers KHR_parallel_shader_compile that compile costs the main thread
-     * nothing at all; without it the wait lands on whichever frame finds it finished.
+     * IT NEVER STALLS AND NEVER SHOWS THE WRONG FRAME. A key not yet built starts compiling and the CURRENT program
+     * keeps drawing — the caller's base shader is the superset, so it is already correct, only slower.
      *
-     * Call this BEFORE the frame's uniforms: a switch lands on a program whose uniforms are all zero, and it is
-     * the sends that follow which fill it in.
+     * Call this BEFORE the frame's uniforms: a switch lands on a program whose uniforms are all zero, and it is the
+     * sends that follow which fill it in.
      */
     use(key) {
       if (!variant || R.lost) return false;

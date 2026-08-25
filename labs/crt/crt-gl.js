@@ -423,11 +423,9 @@ void main(){
      *
      * Averaged, not max: max answers "is there a bright line here", not "how much light falls on this". Squared to
      * linear, because uContent is stored gamma-encoded and this adds to a linear-light accumulator. */
-    /* ONE FETCH OF THE GLOW BUFFER, not sixteen taps of a disc. The disc existed because there was no
-     * low-frequency copy of the content to read -- so it averaged one by brute force, at 16 taps per moulding
-     * pixel. uGlow is that copy, blurred at 1/16 and unthresholded, which is both smoother than the disc and a
-     * sixteenth of the cost. The sweep still has to be added by hand: it is generated in the picture path, which
-     * this block returns before. */
+    /* ONE FETCH OF THE GLOW BUFFER, not sixteen taps of a disc. uGlow is a low-frequency copy of the content,
+     * blurred at 1/16 and unthresholded — smoother than a brute-force average and a sixteenth of the cost. The
+     * sweep still has to be added by hand: it is generated in the picture path, which this block returns before. */
     vec2 srcRim = cRim * uFrameFit / uOverscan;
     srcRim.x /= uAspect;
     vec2 uvRim = srcRim * 0.5 + 0.5;
@@ -436,21 +434,18 @@ void main(){
                  + exp(-pow((uvRim.y - spR) / max(uSweepH * 7.0, 1e-4), 2.0)) * 0.4;
     vec3 bleed = vec3(glowField(uvRim) * 0.05) + vec3(sweepR * uSweepOn * 0.02);
     bleed *= exp(-t * 2.2);
-    /* ADDED, NEVER SUBSTITUTED. A first attempt scaled the uniform tint down by the local weight so the two
-     * summed to one -- which meant turning SCREEN BLEED up REMOVED the average lift faster than the local one
-     * replaced it, and the whole moulding went darker. Measured: -19.8 on the lit edge at full bleed. The
-     * uniform tint is the tube's ambient contribution and is still true; the local term is what the picture is
-     * doing right here, on top of it. */
-    /* NOT TINTED TWICE. This multiplied the sample by uBzTint, and the sample already carried the phosphor's
-     * colour -- so the product went as R^2 > G^2 > B^2 and the moulding lit up a saturated red that no phosphor
-     * emits. The light leaving the glass is the coating's own colour; the plastic only scales how much of it
-     * comes back. uHalo is that colour, published by crt-phosphor and the same constant the wash and the bloom
-     * are tinted with, so all three agree about what amber is. */
-    /* THE FLAT TINT IS GONE. It mixed ONE colour across the WHOLE moulding at one strength -- a statement
-     * that the plastic is that colour everywhere, which is the one thing a lit surface never is. Everything it
-     * was standing in for now exists properly: the moulding takes the phosphor's own light where the picture is
-     * near it, the fixture's where the lamp is, and its base colour where neither reaches. A uniform wash over
-     * the top of all three could only ever flatten them back out. COLOUR still sets the plastic itself. */
+    /* ADDED, NEVER SUBSTITUTED. Scaling the uniform tint down by the local weight so the two sum to one means
+     * turning SCREEN BLEED up REMOVES the average lift faster than the local one replaces it, and the whole
+     * moulding goes darker. The uniform tint is the tube's ambient contribution and is still true; the local term
+     * is what the picture is doing right here, on top of it. */
+    /* NOT TINTED TWICE. The sample already carries the phosphor's colour, so multiplying it by uBzTint again sends
+     * the product as R² > G² > B² and the moulding lights up a saturated red no phosphor emits. The light leaving
+     * the glass is the coating's own colour; the plastic only scales how much comes back. uHalo is that colour,
+     * the same constant the wash and the bloom are tinted with, so all three agree about what amber is. */
+    /* NO FLAT TINT. One colour mixed across the whole moulding at one strength says the plastic is that colour
+     * everywhere, which is the one thing a lit surface never is. The moulding takes the phosphor's own light where
+     * the picture is near it, the fixture's where the lamp is, and its base colour where neither reaches; a
+     * uniform wash over the top could only flatten all three. COLOUR still sets the plastic itself. */
     /* GAIN, because area-averaging dilutes. The disc covers a patch of coating the text only partly
      * fills, so the mean is a fraction of the glyphs' own brightness -- correct as a measure of the
      * light arriving, and invisible on the plastic without a scale. 28 puts SCREEN BLEED 1 at a clearly
@@ -1258,89 +1253,65 @@ void main(){
    * but that was the ramp's fault, not the lamp's: at ap = 0 the old fres was 0.03, so squaring it drove the
    * centre to 0.0009 and crushed the fixture into invisibility while leaving the rim at full strength. With a flat
    * reflectance there is nothing to shape and squaring would just be a second, invented attenuation. */
-  /* GLARE IS HOW MIRRORED THE FACE IS, and that is a better control than the veil it replaces.
+  /* GLARE IS HOW MIRRORED THE FACE IS, which is a better control than a haze added beside the reflection.
    *
    * fres is what the glass really does: about 4% head-on, rising at the rim. Physically honest and, on its own,
-   * a screen you can barely see anything in -- which is correct for a bonded anti-glare face and useless as the
-   * only option. GLARE lifts that reflectance from the physical value to a full mirror, so at 100% the fitting
-   * is simply THERE in the glass at full strength, and the curve of the face bends it exactly as a curved
-   * mirror would.
+   * a screen you can barely see anything in — correct for a bonded anti-glare face and useless as the only
+   * option. GLARE lifts that reflectance toward a full mirror, so at 100% the fitting is simply THERE in the
+   * glass and the curve of the face bends it as a curved mirror would.
    *
-   * This is one number governing every reflection rather than a separate haze added beside them. The veil I had
-   * here a moment ago could brighten the face but could never make anything appear IN it -- the complaint that
-   * the glass controls did not affect what was being reflected, arriving a second time in a new costume. */
-  /* GLARE IS THE REFLECTANCE ITSELF, from nothing to a mirror, and Fresnel now only shapes it.
+   * One number governing every reflection, rather than a veil that can brighten the face but never make anything
+   * appear IN it. */
+  /* GLARE IS THE REFLECTANCE ITSELF, from nothing to a mirror, and Fresnel only shapes it. Mixing from fres toward
+   * 1 leaves the physical 4% at zero, so the fitting dims but is plainly still there; zero should mean a face
+   * that reflects nothing.
    *
-   * It used to be mix(fres, 1.0, uGlare), which meant GLARE at zero still left the physical 4% -- the fitting
-   * dimmed but plainly still there. Zero should mean zero: a face that reflects nothing. So the control IS the
-   * reflectance, and fres contributes the ANGLE dependence it is actually responsible for, normalised to 1
-   * head-on so the number on the panel means what it says in the middle of the picture.
-   *
-   * The physical value of glass is 4%, so GLARE at 4% is a real anti-glare face -- which makes the readout a
-   * statement about the coating rather than an arbitrary strength. */
-  /* THE TUBE'S OWN MODULATION IS SPENT HERE, BEFORE THE ROOM IS ADDED -- and this is the whole reason a dark
-   * set still shows the ceiling in it.
+   * fres contributes the ANGLE dependence, normalised to 1 head-on so the number on the panel means what it says
+   * in the middle of the picture. The physical value of glass is 4%, so GLARE at 4% is a real anti-glare face. */
+  /* THE TUBE'S OWN MODULATION IS SPENT HERE, BEFORE THE ROOM IS ADDED — which is why a dark set still shows the
+   * ceiling in it.
    *
    * uFlicker is state.power multiplied by the screen's flicker envelope: what the PHOSPHOR is putting out this
-   * frame. It used to be applied at the very end, after the reflection had already been summed in, which meant
-   * POWER off multiplied the reflection by zero along with everything else -- measured, the whole frame went to
-   * a peak of 0. A switched-off CRT is not a black hole; it is a dark grey mirror, and the fitting overhead is
-   * the most visible thing in it.
+   * frame. Applied at the very end instead, POWER off multiplies the reflection by zero along with everything
+   * else. A switched-off CRT is not a black hole; it is a dark grey mirror, and the fitting overhead is the most
+   * visible thing in it.
    *
-   * The reflection is not the tube's light. It is the room's light bouncing off the front of the glass, and it
-   * does not care whether the set is on, guttering, or dead. So everything the tube emits is scaled first, and
-   * the room is added afterwards where nothing can switch it off. */
-  /* AND THE COLLAPSE IS SPENT HERE TOO, for the same reason and on the same side of the line.
-   *
-   * Squeezing suv moves everything drawn THROUGH suv, but the wash is a constant -- uHalo * uPhos * 0.055, the
-   * coating glowing from scatter -- so it has no coordinate to be moved by and would sit at full extent while
-   * the picture fell in on itself, brightening across the whole face as the strike ran. It is still phosphor
-   * emission, so it collapses with the rest of it. Applied to emis rather than to that one term because every
-   * addend above this line is the tube emitting, which is exactly the set the collapse applies to. */
+   * The reflection is the room's light bouncing off the front of the glass, and it does not care whether the set
+   * is on, guttering or dead. So everything the tube emits is scaled first, and the room is added afterwards. */
+  /* AND THE COLLAPSE IS SPENT HERE TOO, on the same side of the line. Squeezing suv moves everything drawn through
+   * suv, but the wash is a constant — the coating glowing from scatter — so it has no coordinate to be moved by
+   * and would sit at full extent while the picture fell in on itself. It is still phosphor emission, so it
+   * collapses with the rest. Applied to emis, because every addend above this line is the tube emitting. */
   emis *= uFlicker * pwrCov;
 
-  /* GLARE IS A TRANSPARENCY NOW, NOT A REFLECTANCE, and the reason is measured.
+  /* GLARE MIXES IN DISPLAY SPACE, NOT IN LINEAR LIGHT.
    *
-   * It used to BE the reflectance -- uGlare multiplied the reflection in linear light, which is the physically
-   * honest thing to do and made "4%" mean a real anti-glare coating. The trouble is what the two curves after it
-   * do to that number. The fitting is deliberately driven well above 1 in linear light (see tubeSurface: an
-   * emitter has to outgun what it lights, or it reads as a bright object rather than a lamp), so it sits on the
-   * flat part of the tone map, and gamma then lifts whatever survives. Measured end to end: GLARE 1% against
-   * 100% cut the light by 114x -- almost exactly the 100x asked for -- and moved the pixel by 3.7x, 237 to 64.
-   * The fitting at "1%" was still a plainly visible bright shape.
+   * As a linear reflectance it is physically honest and a bad control. The fitting is deliberately driven well
+   * above 1 in linear light — an emitter has to outgun what it lights, or it reads as a bright object rather than
+   * a lamp — so it sits on the flat part of the tone map and gamma lifts whatever survives. Cutting the light a
+   * hundredfold moves the pixel by under four, and the whole visible range lives in the bottom few percent of the
+   * slider.
    *
-   * That is not a bug in the arithmetic; it is true of real reflections, and a 1% reflection of something 500x
-   * brighter than its surroundings genuinely is still brighter than them. It is a bad CONTROL, which is a
-   * different complaint and the one worth answering: the whole visible range lived in the bottom 8% of the
-   * slider and the other 92% did nothing anyone could see.
+   * So the mix happens after the tone map and the gamma, against the same picture with no fitting in it at all.
+   * Half means half as visible, by construction rather than by a fitted curve. The ends are untouched: at 0 and 1
+   * the mix is a no-op.
    *
-   * So the mix happens in DISPLAY space, after the tone map and the gamma, against the same picture with no
-   * fitting in it at all. Half means half as visible, by construction rather than by a fitted curve -- there is
-   * no exponent here to be approximately right. The ends are untouched: 0 is the identical black it always was,
-   * and 1 is the identical full reflection, because at both the mix is a no-op.
-   *
-   * fres keeps the job it was actually responsible for -- the ANGLE. Normalised to 1 head-on, so the rim still
-   * takes more than the middle and the number on the panel still means what it says in the centre of the
-   * picture, which is where anyone reads it. */
+   * fres keeps the job it is responsible for — the ANGLE. Normalised to 1 head-on, so the rim still takes more
+   * than the middle and the number on the panel still means what it says in the centre. */
   float reflA = clamp(fres / 0.04, 0.0, 1.0);
   vec3  emisBare = emis;                 // the tube with nothing of the room reflected in it
   emis += room * uFixture * reflA;
 
-  /* SHEEN AND GLARE ARE BOTH THE ROOM, so both are scaled by ROOM LIGHT and neither exists without it. That
-   * coupling is the fix for "the glass sliders do not affect the reflection": they were three independent
-   * constants added on top of a reflection, so turning the room down left them shining regardless.
+  /* SHEEN AND GLARE ARE BOTH THE ROOM, so both are scaled by ROOM LIGHT and neither exists without it. Independent
+   * constants added on top of a reflection go on shining when the room is turned down, which is what "the glass
+   * sliders do not affect the reflection" describes.
    *
-   * SHEEN is the room's light RAKING across the face -- a directional streak, the reflection of a window or an
-   * open door. GLARE is the same light arriving from everywhere at once: the veil that lifts the blacks and is
-   * the reason you cannot read a CRT in a bright room. One has a direction, the other does not, and both go up
-   * and down with how bright the room is. MATTE spreads them, exactly as it spreads the fixture. */
-  /* GLARE IS GONE. It added vec3(uGlare) -- a flat, colourless, positionless lift over the entire face. It
-   * reflected nothing: not the room, not the fixture, not the tubes, not anything that moved when you moved
-   * them. It was a haze standing in for a reflection back when there was no reflection to have. There is one
-   * now, it is ray-traced, and it comes off the same Fresnel two lines above this. A constant added on top
-   * could only ever wash that out -- which is exactly what "the glare does not affect the things being
-   * reflected" describes. Measured before removal: frame mean 26.50 to 27.23 across its whole range, all of it
-   * uniform grey. */
+   * SHEEN is the room's light RAKING across the face — a directional streak, the reflection of a window or an open
+   * door. GLARE is the same light arriving from everywhere at once: the veil that lifts the blacks and is why you
+   * cannot read a CRT in a bright room. MATTE spreads them, exactly as it spreads the fixture. */
+  /* NO FLAT GLARE TERM. A colourless, positionless lift over the entire face reflects nothing — not the room, not
+   * the fixture, not anything that moves when you move it. The reflection is ray-traced and comes off the same
+   * Fresnel two lines above; a constant added on top could only wash it out. */
 
   /* THE EDGE GATHER IS GONE -- a corner-weighted bright band just inside the rim, on uGather / EDGE GLASS.
    * Removed on request: it is not a thing the reference does, and it was one of the layers measured as painting
@@ -1367,30 +1338,27 @@ void main(){
     col = mix(colBare, col, clamp(uGlare, 0.0, 1.0));
   }
 
-  /* THE ELEVATION OVERLAY -- the debug instrument, and it reads the SURFACE, not the picture.
+  /* THE ELEVATION OVERLAY — the debug instrument, and it reads the SURFACE, not the picture.
    *
-   * This is what replaced the ring-band heat map. The bands sampled twenty annuli and reported the worst
-   * COMPRESSION in each, which is elevation's derivative -- so a band told you the surface was changing without
-   * telling you where it had got to. The sag is available in closed form, so the overlay reports it directly, per
-   * pixel, on every ray.
+   * The sag is available in closed form, so the overlay reports it directly, per pixel, on every ray. A band
+   * reporting the worst COMPRESSION in each annulus reports elevation's derivative instead: it says the surface
+   * is changing without saying where it has got to.
    *
    * NOT MEASURED OFF faceK. The obvious shortcut is ap * (faceK(ap) - 1), but that is the PICTURE's displacement,
-   * and since the rim is pinned that quantity is negative everywhere and zero at the rim regardless of which way
-   * the glass bends -- it would report a dished face and a domed one identically. The sag is crt-projection's own
-   * shape term, sign included: sg * A * uB^p, zero inside the band and largest at the rim.
+   * and since the rim is pinned it is negative everywhere and zero at the rim whichever way the glass bends — it
+   * would report a dished face and a domed one identically. The sag is crt-projection's own shape term, sign
+   * included: sg * A * uB^p, zero inside the band and largest at the rim.
    *
-   * Cool where the glass is dished, near-black at flat, warm where it bulges. Contours every 2% of radius, which
-   * is what turns a gradient into something you can read a height off. */
+   * Cool where the glass is dished, near-black at flat, warm where it bulges. */
   if (uHeat > 0.5) {
     float uB = clamp((ap - uSagU0) / max(1e-4, 1.0 - uSagU0), 0.0, 1.0);
     float elev = uSagA * pow(uB, uSagP);
-    /* A PLAIN GRADIENT, NO CONTOUR LINES. The rings were white bands every 2% of radius, and they read as
-     * decoration rather than as slope: a contour tells you where equal heights are, but reading STEEPNESS off one
-     * means eyeballing how close together the rings sit, which is exactly the work a gradient does for you. Their
-     * spacing also had nothing to do with the ramp's own scale, so the two disagreed about where the surface was
-     * changing fastest. Removed rather than tuned.
+    /* A PLAIN GRADIENT, NO CONTOUR LINES. A contour tells you where equal heights are, but reading STEEPNESS off one
+     * means eyeballing how close together the rings sit, which is the work a gradient does for you. Ring spacing
+     * also has nothing to do with the ramp's own scale, so the two disagree about where the surface changes
+     * fastest.
      *
-     * Teal where the glass is dished, near-black at flat, amber where it bulges -- signed, because FACE runs both
+     * Teal where the glass is dished, near-black at flat, amber where it bulges — signed, because FACE runs both
      * ways and a debug view that renders IN and OUT alike is not reporting anything. */
     float e = clamp(elev * 3.0, -1.0, 1.0);
     vec3 cool = vec3(0.10, 0.62, 0.75), flatc = vec3(0.05, 0.05, 0.06), warm = vec3(1.0, 0.42, 0.10);
@@ -1398,21 +1366,18 @@ void main(){
     col = mix(col, hc, 0.55);
   }
 
-  /* DITHER GOES HERE, IN OUTPUT SPACE, AT HALF AN 8-BIT STEP -- and getting that wrong is what made the whole
-   * face shimmer.
+  /* DITHER GOES HERE, IN OUTPUT SPACE, AT HALF AN 8-BIT STEP.
    *
-   * It used to be added to emis, in LINEAR light, at a FIXED 0.010. Dither has to be sized against the
-   * quantisation it is hiding, and the quantisation is in the 8-bit output, not in the linear signal. Empty glass
-   * sits around 0.01-0.05 linear here, so a +-0.005 linear wobble is a large FRACTION of the signal, and the
-   * 1/2.2 encode then stretches the dark end further -- measured at 41% of the frame moving more than 12 levels
-   * between consecutive frames with the flicker, the sweeps and the persistence all switched OFF. That is not
-   * dither, it is noise, and it got worse once the phosphor wash reached the whole faceplate instead of stopping
-   * at the text raster.
+   * Dither has to be sized against the quantisation it is hiding, and the quantisation is in the 8-bit output,
+   * not in the linear signal. Added to emis in linear light at a fixed amplitude it is a large FRACTION of the
+   * signal on empty glass, and the 1/2.2 encode stretches the dark end further — that is not dither, it is noise,
+   * and it is what the large diagonal bands on the faceplate actually were.
    *
-   * After the encode, 1/255 is one output step by definition at every brightness, so +-0.5 of one is the largest
-   * dither that can never be seen as a flicker and the smallest that still breaks a band. It stays TEMPORAL --
-   * hash includes uTime -- because a static pattern reads as fixed-pattern grain on a surface that is meant to be
-   * smooth; at half a step, temporal averaging is what removes the banding without anything visibly moving. */
+   * After the encode, 1/255 is one output step by definition at every brightness, so ±0.5 of one is the largest
+   * dither that can never be seen as a flicker and the smallest that still breaks a band.
+   *
+   * It stays TEMPORAL — hash includes uTime — because a static pattern reads as fixed-pattern grain on a surface
+   * meant to be smooth. At half a step, temporal averaging removes the banding without anything visibly moving. */
   col += (hash(gl_FragCoord.xy + uTime) - 0.5) / 255.0;
 
   // ALPHA CARRIES THE BEAM, LINEAR AND UNTONEMAPPED, for next frame's persistence to decay. The colour channels
@@ -1420,20 +1385,18 @@ void main(){
   // THE MOULDING, COMPOSITED OVER THE PICTURE rather than replacing it -- zero except in the one-pixel band
   // that straddles the glass rim, which is the whole point of computing it this late.
   if (mouldCov > 0.0) col = mix(col, mouldCol, mouldCov);
-  /* THE FIXTURE ON ITS OWN. Everything above composites the fitting as a REFLECTION -- attenuated by GLARE,
-   * folded into the phosphor's light, sitting behind whatever the tube is doing. That is the right way to see
-   * it and the wrong way to BUILD it: at four percent reflectance, behind text, a millimetre of cap or a flute
-   * of prism is invisible, so it cannot be judged and therefore cannot be got right.
+  /* THE FIXTURE ON ITS OWN. Everything above composites the fitting as a REFLECTION — attenuated by GLARE, folded
+   * into the phosphor's light, behind whatever the tube is doing. That is the right way to see it and the wrong
+   * way to BUILD it: at four percent reflectance, behind text, a millimetre of cap or a flute of prism is
+   * invisible, so it cannot be judged and therefore cannot be got right.
    *
-   * This shows the model itself, at full strength, with nothing in front of it. It is not a rendering mode --
-   * nothing about the picture changes -- it is the instrument equivalent of taking the part out and putting it
-   * on the bench. The geometry is identical; only the compositing is skipped. */
+   * This shows the model itself, at full strength, with nothing in front of it — the instrument equivalent of
+   * taking the part out and putting it on the bench. The geometry is identical; only the compositing is skipped. */
   if (uFixSolo > 0.5) {
-    /* GAIN 2.2, NOT 6. The bench view exists to JUDGE the model, and x6 defeated that: everything above about
-     * a sixth of full scale landed on the flat part of x/(1+x), so the glass at 0.9 and the metal cap at 0.25
-     * both came back near white and the materials were indistinguishable. A view that saturates cannot be used
-     * to tell two surfaces apart, which is the one thing it is for. Bright enough to see into the recess,
-     * dim enough that the tone curve is still doing work. */
+    /* GAIN 2.2, NOT 6. The bench view exists to JUDGE the model, and a high gain defeats that: everything above about
+     * a sixth of full scale lands on the flat part of x/(1+x), so glass at 0.9 and a metal cap at 0.25 both come
+     * back near white and the materials are indistinguishable. Bright enough to see into the recess, dim enough
+     * that the tone curve is still doing work. */
     vec3 solo = room * max(uFixture, 0.001) * 2.2;
     col = solo / (1.0 + solo);
     col = pow(clamp(col, 0.0, 1.0), vec3(1.0 / 2.2));
@@ -1459,16 +1422,10 @@ void main(){
   o = vec4(s / wsum * uTint, 1.0);
 }`;
 
-/* THE PRESENT PASS IS A COPY, AND IT WAS BEING DONE WITH THE BLUR.
+/* THE PRESENT PASS IS A COPY, so it takes one tap. Running the blur program with uDir = (0,0), uThresh = 0 and
+ * uTint = 1 is arithmetically an identity and costs thirteen full-resolution fetches per pixel to compute it.
  *
- * The final blit to the default framebuffer ran BLOOM_FRAG with uDir = (0,0), uThresh = 0 and uTint = 1 --
- * which is arithmetically an identity (thirteen taps of the same texel, weighted, divided by the same
- * weights) and costs thirteen full-resolution texture fetches per pixel to compute it. Measured with
- * EXT_disjoint_timer_query_webgl2 on the UHD 630 at 2.53 MP: 2.535 ms of the frame's 15.8 ms, 16% of all
- * GPU time, spent copying a buffer.
- *
- * One tap does the same job. The blur program stays exactly as it was -- it is still the right shader for
- * the two passes that actually blur -- and only the pass that was never blurring anything changes. */
+ * The blur program stays exactly as it was — it is still the right shader for the two passes that actually blur. */
 const COPY_FRAG = `#version 300 es
 precision highp float;
 in vec2 v; out vec4 o;
@@ -1550,12 +1507,10 @@ export function createRenderer(canvas) {
     return t;
   };
   const contentTex = mkTex(), faceTex = mkTex(), outlineTex = mkTex();
-  /* THE LUT MUST BE NEAREST, and getting this wrong is a spectacular silent failure rather than a subtle one.
-   *
-   * R32F is not filterable in WebGL2 without OES_texture_float_linear. With LINEAR set, `texture()` returns 0 for
-   * every sample -- so unwarp() reads 0, k collapses to 0, and the shader samples a pinprick at the centre of the
-   * content and stretches it over the whole tube. The tell was the SCANLINE PITCH: bands about seven times too
-   * coarse, which is a measurement of how far the sampling had zoomed in, not a bug in the scanlines.
+  /* THE LUT MUST BE NEAREST, and getting this wrong fails spectacularly rather than subtly. R32F is not filterable
+   * in WebGL2 without OES_texture_float_linear, and with LINEAR set `texture()` returns 0 for every sample — so
+   * unwarp() reads 0, k collapses to 0, and the shader samples a pinprick at the centre of the content and
+   * stretches it over the whole tube.
    *
    * 512 entries across a monotone curve is far more resolution than a screen radius needs, so point sampling costs
    * nothing here and cannot depend on an extension being present. */
@@ -1581,15 +1536,12 @@ export function createRenderer(canvas) {
     const bw = Math.max(1, w >> 2), bh = Math.max(1, h >> 2);
     bloomA = target(gl, bw, bh); bloomB = target(gl, bw, bh);
     histA  = target(gl, w, h);   histB  = target(gl, w, h);
-    /* FULL RESOLUTION, WITH A MIP CHAIN OVER IT.
+    /* FULL RESOLUTION, WITH A MIP CHAIN OVER IT. The reflection is soft once MATTE is up, but at zero it is a sharp
+     * image of a box with straight edges and two cylinders, and halving the resolution aliases every one of those
+     * edges into stair-steps that upscaling only makes bigger.
      *
-     * Half res was the wrong economy. The reflection is soft ONCE MATTE IS UP -- but at zero it is a sharp image
-     * of a box with straight edges and two cylinders, and halving the resolution aliases every one of those
-     * edges into stair-steps that upscaling only makes bigger. Softness is what the mip chain is FOR; the base
-     * level has no business being pre-softened, and it was buying a quarter of a cost that is already only one
-     * trace per pixel.
-     *
-     * Level 0 is the sharp fixture, each level above it twice as blurred, and MATTE picks between them. */
+     * Softness is what the mip chain is FOR; the base level has no business being pre-softened. Level 0 is the
+     * sharp fixture, each level above it twice as blurred, and MATTE picks between them. */
     fixT = target(gl, w, h, true);
   };
   /* THE DOMAIN TRAVELS WITH THE TABLE. buildFaceLUT hands back { u, r1, rimK }: the samples, the screen radius
@@ -1619,44 +1571,34 @@ export function createRenderer(canvas) {
 
   /* THE FIXTURE'S INPUT SIGNATURE, ACCUMULATED AS THE UNIFORMS ARE UPLOADED RATHER THAN LISTED BY HAND.
    *
-   * The fixture pass is skipped when nothing it reads has moved (see the note in draw), and that needs a key
-   * over its inputs. Writing that key as a list of uniform names would be a SECOND description of what the
-   * fixture shader reads, free to drift from the first the next time a uniform is added to it -- the exact
-   * failure this file keeps one setAll to avoid.
+   * The fixture pass is skipped when nothing it reads has moved, and that needs a key over its inputs. Writing
+   * that key as a list of uniform names would be a second description of what the fixture shader reads, free to
+   * drift the next time a uniform is added.
    *
-   * So the key is recorded by the uploads themselves, and filtered by `U(prog, n)` being non-null. A uniform
-   * the fixture program does not declare -- or that the compiler dropped as unused, which is what happens to
-   * uTime -- has no location, contributes nothing to the key, and is already a silently-ignored upload. Add a
-   * uniform to the fitting and it joins the key on its own; delete one and it leaves. The list cannot be wrong
-   * because there is no list.
+   * So the key is recorded by the uploads themselves, filtered by `U(prog, n)` being non-null: a uniform the
+   * fixture program does not declare — or that the compiler dropped as unused — has no location and contributes
+   * nothing. Add a uniform to the fitting and it joins the key on its own. The list cannot be wrong because there
+   * is no list.
    *
-   * uTextRect is the case that shows why the filter matters and not merely tidies: it is uploaded to both
-   * programs, it moves whenever the text does, and the fitting does not read it. Keyed on unfiltered uploads
-   * the cache would miss on every character typed.
+   * uTextRect shows why the filter matters rather than merely tidies: it is uploaded to both programs, it moves
+   * whenever the text does, and the fitting does not read it. Unfiltered, the cache would miss on every character.
    *
    * RECORDING IS `sig !== null`, NOT `sig`. The accumulator starts as the empty string, which is falsy, so a
-   * truthiness test switches recording off until the first append -- meaning nothing ever appends and the key
-   * is the constant '' forever. That was written once and caught by the invalidation test: the fixture traced
-   * on the first frame and never again, and every scene in the fingerprint wore the first scene's fitting. */
+   * truthiness test switches recording off before the first append and the key stays '' forever — the fixture
+   * traces on the first frame and never again. */
   let sig = null;
   const keep = (n, l, v) => { if (sig !== null && l !== null) { sig += n; sig += v; sig += ';'; } };
 
-  /* ONE PLACE THAT KNOWS THE NUMBERS, TWO PROGRAMS THAT NEED THEM.
-   *
-   * The fixture is traced in its own pass now, and it has to trace the SAME fitting as the main pass believes in
-   * -- same lamp positions, same housing, same flicker phase. Two copies of these uploads would be two places to
-   * forget one, and a fixture whose reflection disagreed with its own glow is exactly the class of bug this file
-   * keeps a single source of truth to avoid. Unused uniforms in either program resolve to -1 and are ignored. */
+  /* ONE PLACE THAT KNOWS THE NUMBERS, TWO PROGRAMS THAT NEED THEM. The fixture is traced in its own pass and has to
+   * trace the SAME fitting the main pass believes in — same lamp positions, same housing, same flicker phase. Two
+   * copies of these uploads are two places to forget one. Unused uniforms in either program resolve to -1 and are
+   * ignored. */
   const setAll = (prog, s) => {
-    /* uAspect BELONGS IN HERE, and leaving it out cost the whole fixture.
+    /* uAspect BELONGS IN HERE. Set on the main program alone, the fixture pass traces with an aspect of zero — the
+     * default for an unset uniform — which collapses boxHi.x, degenerates the aperture and returns black for
+     * every pixel. The fitting does not go dim or land in the wrong place; it has no width to be seen at.
      *
-     * It was set on the main program alone, a few lines below where this block was lifted from. The fixture pass
-     * therefore traced with an aspect of zero -- the default for an unset uniform -- which collapses boxHi.x to
-     * zero, degenerates the aperture, and returns black for every pixel. The fitting did not go dim or land in
-     * the wrong place; it had no width to be seen at.
-     *
-     * Anything the two programs share has to be uploaded by the one function that knows about both. A uniform
-     * set beside the draw call instead of inside here is a uniform only one of them will ever get. */
+     * Anything the two programs share has to be uploaded by the one function that knows about both. */
     { const l = U(prog, 'uAspect'); keep('uAspect', l, W / H); gl.uniform1f(l, W / H); }
       const f = (n, x) => { const l = U(prog, n); keep(n, l, x); gl.uniform1f(l, x); };
       f('uTime',s.time); f('uOverscan',s.overscan);
@@ -1712,28 +1654,18 @@ export function createRenderer(canvas) {
         f2('uConvB', cv.bx||0, cv.by||0); }
       f('uFixture',s.fixture); f('uFixY',s.fixY); f('uFixW',s.fixW); f('uFixH',s.fixH);
       f('uFixGap',s.fixGap); f('uFixTilt',s.fixTilt); f('uFixDist',s.fixDist);
-    /* THE LENS THE FITTING IS SEEN THROUGH, and it was a fisheye.
+    /* THE LENS THE FITTING IS SEEN THROUGH, and a 90° field of view is a fisheye for this.
      *
-     * The ray was normalize(vec3(sp2, -1.0)), which puts the screen one unit from the eye and spans it +/-1 --
-     * a 90 degree vertical field of view. At that focal length a tilt throws one edge of the fitting far nearer
-     * than the other and it wedges hard: measured at TILT 64, the near edge came out 1.62x the width of the far
-     * edge, and the recess inside it exaggerated by the same factor. That is what "the depth is too much" was.
+     * A reflection's field of view is the angle the SCREEN subtends at the viewer: a ~30cm tube seen from ~60cm is
+     * about 28°, which is a focal length near 4. At one unit a tilt throws one edge of the fitting far nearer than
+     * the other and it wedges hard, taking the recess inside it with it.
      *
-     * A reflection's field of view is not free -- it is the angle the SCREEN subtends at the viewer. A ~30cm
-     * tube seen from ~60cm is about 28 degrees, not 90, which is a focal length near 4. So the wide angle was
-     * never right; it was just never questioned.
+     * THE DISTANCE SCALES WITH IT, which is what makes this safe. Longer lens and proportionally further away is
+     * the same apparent size with less divergence — ordinary telephoto compression — so sp2 = X/uFixDist either
+     * way and an untilted fitting does not move. Only the tilted case changes.
      *
-     * THE DISTANCE SCALES WITH IT, which is what makes this safe. Longer lens and proportionally further away
-     * is the same apparent size with less divergence -- ordinary telephoto compression -- so sp2 = X/uFixDist
-     * either way and nothing about an untilted fitting moves. Verified rather than assumed: at TILT 0 the
-     * silhouette measures 633x314 px at lens 1.0 and 633x314 at lens 4.0, identical. Only the tilted case
-     * changes, which is the only case that was wrong.
-     *
-     *     lens    1.0   1.5   2.0   3.0   4.0
-     *     wedge  1.62  1.38  1.27  1.17  1.13     (near edge / far edge at TILT 64)
-     *
-     * 3.0 rather than the fully physical 4.0: a reflection with no taper at all stops reading as tilted, and
-     * TILT is a control someone is meant to see working. `window.__fixLens` overrides it live for tuning. */
+     * 3.0 rather than the fully physical 4.0: a reflection with no taper at all stops reading as tilted, and TILT
+     * is a control someone is meant to see working. `window.__fixLens` overrides it live for tuning. */
       f('uFixLens', window.__fixLens !== undefined ? window.__fixLens : 3.0);
       f('uFixX',s.fixX || 0);
       f('uOpenW',s.openW); f('uOpenH',s.openH);
@@ -1762,34 +1694,24 @@ export function createRenderer(canvas) {
   };
 
   const draw = (s) => {
-    /* THE FIXTURE FIRST, ONCE, INTO ITS OWN HALF-RESOLUTION TARGET, then a mip chain over it.
+    /* THE FIXTURE FIRST, ONCE, INTO ITS OWN HALF-RESOLUTION TARGET, then a mip chain over it. One ray-cast per pixel
+     * of a quarter-sized buffer replaces 4 to 16 per pixel in the main pass, and the cost stops depending on MATTE
+     * at all, because roughness picks a mip level instead of a tap count. generateMipmap runs in hardware.
      *
-     * This replaces 4 to 16 ray-casts PER PIXEL in the main pass with one ray-cast per pixel of a buffer that
-     * has a quarter of them -- and the cost stops depending on MATTE entirely, because roughness now picks a mip
-     * level instead of a tap count. generateMipmap is done by the driver, in hardware.
+     * The same uniforms go to this program as to the main one: it traces the same fitting with the same numbers. */
+    /* AND SKIPPED ENTIRELY WHEN NOTHING IT READS HAS MOVED, which most frames it has not. fixT holds the result
+     * until something overwrites it, and the only writer is this pass, so identical uniforms would re-trace the
+     * same fitting into the same buffer and rebuild the same mip chain.
      *
-     * The same uniforms go to this program as to the main one: it traces the same fitting with the same numbers,
-     * and the two disagreeing about where the lamps are would be the exact class of bug this project keeps
-     * having. */
-    /* AND SKIPPED ENTIRELY WHEN NOTHING IT READS HAS MOVED, which most frames it has not.
+     * The uniforms are still uploaded — setAll runs, and that is what BUILDS the key. Only the draw and the mipmap
+     * are skipped, and they are the entire cost.
      *
-     * fixT holds the result until something overwrites it, and the only writer is this pass -- so a frame
-     * whose fixture uniforms are identical to the last one's would re-trace the same fitting into the same
-     * buffer and rebuild the same mip chain for it. Measured on the UHD 630 at 2.53 MP: 2.59 ms for the trace
-     * and 0.57 ms for the chain, 23% of the frame's GPU time, to produce a byte-identical texture.
+     * THE KEY MUST INCLUDE THE BUFFER, and size() is where it is invalidated: a resize reallocates fixT, and the
+     * fresh texture is empty however familiar the uniforms look.
      *
-     * The uniforms are still uploaded -- setAll runs, and that is what BUILDS the key -- because the upload
-     * is the cheap part and the fixture program is not the only consumer of the values. Only the draw and the
-     * mipmap are skipped, and they are the entire cost.
-     *
-     * THE KEY MUST INCLUDE THE BUFFER, and size() is where it is invalidated: a resize reallocates fixT, and
-     * the fresh texture is empty however familiar the uniforms look.
-     *
-     * WHEN IT DOES NOT HIT, and this is honest rather than a caveat: any lamp that is actively guttering moves
-     * uFlkA or uFlkB every frame, and RIPPLE moves uMainsPh every frame at any non-zero setting. Those frames
-     * pay the full cost, exactly as before. What this recovers is the steady state -- flicker at rest between
-     * bursts, both lamps off, or the panel simply sitting still -- which is most of the time the page is open
-     * and all of the time it spends being looked at rather than driven. */
+     * WHEN IT DOES NOT HIT: a lamp that is actively guttering moves uFlkA or uFlkB every frame, and RIPPLE moves
+     * uMainsPh every frame at any non-zero setting. Those frames pay the full cost. What this recovers is the
+     * steady state, which is most of the time the page is open. */
     /* useProgram FIRST, THEN setAll. gl.uniform* writes to the program that is CURRENTLY BOUND, not to the one
      * the location came from, so uploading fixp's locations while another program is active is an
      * INVALID_OPERATION per call and the values never land. setAll therefore runs once, in the right order,
@@ -1813,18 +1735,15 @@ export function createRenderer(canvas) {
     gl.viewport(0, 0, bloomA.w, bloomA.h);
     gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, contentTex);
     gl.uniform1i(U(blur,'uTex'), 0);
-    /* THE TAP SPACING IS THE BLOOM'S SIZE. It was hard-wired to one texel, which made the radius a constant of
-     * the buffer's resolution -- the panel could say how MUCH bloom but never how WIDE, and the reference's only
-     * bloom control is exactly the width. Thirteen taps weighted exp(-i*i/18) is a sigma of three taps, so the
-     * blur is three times whatever one step covers, and stretching the step stretches the gaussian with it.
+    /* THE TAP SPACING IS THE BLOOM'S SIZE. Hard-wired to one texel it is a constant of the buffer's resolution, so
+     * the panel can say how MUCH bloom but never how WIDE. Thirteen taps weighted exp(-i²/18) is a sigma of three
+     * taps, so the blur is three times whatever one step covers, and stretching the step stretches the gaussian.
      *
-     * The caller hands over a spacing already in texels of THIS buffer -- see where bloomSpread is computed --
-     * because turning a CSS-pixel radius into texels needs the device ratio and the render scale, and neither
-     * belongs in here. Same boundary the scanline width is converted at.
+     * The caller hands over a spacing already in texels of THIS buffer, because turning a CSS-pixel radius into
+     * texels needs the device ratio and the render scale and neither belongs in here.
      *
-     * HONEST LIMIT: past about three texels of spacing thirteen taps no longer sample the gaussian densely and
-     * the tail starts to band. Bloom is a soft wash over the brightest peaks, so it hides this far better than a
-     * sharp image would, but it is undersampling and not a wider blur. More taps is the fix if it ever shows. */
+     * HONEST LIMIT: past about three texels of spacing, thirteen taps no longer sample the gaussian densely and
+     * the tail bands. That is undersampling, not a wider blur. More taps is the fix if it ever shows. */
     const spread = s.bloomSpread == null ? 1 : s.bloomSpread;
     gl.uniform2f(U(blur,'uDir'), spread/bloomA.w, 0);
     gl.uniform1f(U(blur,'uThresh'), s.bloomThresh);
@@ -1848,28 +1767,16 @@ export function createRenderer(canvas) {
     gl.activeTexture(gl.TEXTURE4); gl.bindTexture(gl.TEXTURE_2D, outlineTex); gl.uniform1i(U(main,'uOutline'),4);
     gl.activeTexture(gl.TEXTURE5); gl.bindTexture(gl.TEXTURE_2D, fixT.tex);   gl.uniform1i(U(main,'uFix'),5);
     // HOW MANY LEVELS THE CHAIN HAS, so MATTE at 1 lands on the last one rather than off the end.
-    /* FIVE LEVELS -- a 32-texel filter, and the cap this started with.
+    /* FIVE LEVELS — a 32-texel filter.
      *
-     * It is worth recording that this number was blamed for the "fixture disappears at MATTE 100%" bug and was
-     * changed to 3 to fix it. That was wrong. The cause was a leftover crossfade inside traceFixture (see the
-     * long note there) which discarded the fitting before the chain was ever sampled, and the tell was that
-     * capping at 1, 2, 3, 4, 5 and 6 levels all produced THE SAME FRAME TO THE LAST DECIMAL. A control that
-     * changes nothing across its whole range is not the control that is breaking something.
+     * Measured on the fitting's own region, peak falls while the mean holds as the cap rises: that is scattering,
+     * light trading structure for area. Past about five the mean falls too, which means the fitting is being
+     * smeared out of its own region and into the field, and that is the disappearance the cap exists to prevent.
+     * Five sits at the end of the flat part of the mean: the strongest blur that still moves light around rather
+     * than away.
      *
-     * With the crossfade gone the depth finally reads as a blur, measured on the fitting's own region:
-     *
-     *     cap    1     2     3     4     5     6     8
-     *     peak  182   172   171   160   141   120    62
-     *     mean   62    62    64    66    70    69    53
-     *
-     * Peak falling while the mean HOLDS is scattering -- light trading structure for area. At 8 the mean falls
-     * too, which means the fitting is being smeared out of its own region and into the field, and that is the
-     * disappearance the cap does have to prevent. Five sits at the end of the flat part of the mean: the
-     * strongest blur that still moves light around rather than away.
-     *
-     * `window.__fixLods` overrides it live, which is how the table above was measured -- set it, call
-     * renderNow(), read the frame back; leave it undefined and the constant applies. It costs one property
-     * lookup per frame and it is the reason the false lead was caught rather than shipped. */
+     * `window.__fixLods` overrides it live — set it, call renderNow(), read the frame back; leave it undefined and
+     * the constant applies. It costs one property lookup per frame. */
     gl.uniform1f(U(main,'uFixLods'), window.__fixLods !== undefined ? window.__fixLods : 5.0);
     gl.uniform1f(U(main,'uAspect'), W / H);
     gl.uniform1f(U(main,'uFaceN'), faceN); gl.uniform1f(U(main,'uOutlineN'), outlineN);

@@ -1,16 +1,15 @@
 /* catalogue.js — the back catalogue: seventeen shipped products as a rack of cases and one display case.
  *
- * READ FROM THE MARKUP, NEVER FROM AN ARRAY. Every product and every proof is written out in index.html and
- * this script is what turns them into the rack, exactly as shelf.js did before it — so a crawler running no
- * JavaScript, which is most of the AI ones, still reads all seventeen records in full. The prototype this grew
- * from built them from a record because it was arguing about layout; shipping it that way would have deleted
- * the page's content for anyone not running scripts. If it is not in the markup it does not exist.
+ * READ FROM THE MARKUP, NEVER FROM AN ARRAY. Every product and every proof is written out in index.html and this
+ * script turns them into the rack, so a crawler running no JavaScript still reads all seventeen records in full.
+ * Building them from a record instead would delete the page's content for anyone not running scripts. If it is not
+ * in the markup it does not exist.
  *
- * The case itself is drawn by case3d.js: one projected wireframe, corners sampled as curves, sides built as
- * real per-segment quads. This file owns the rack, the company bar and what the case is showing.
+ * The case itself is drawn by case3d.js: one projected wireframe, corners sampled as curves, sides built as real
+ * per-segment quads. This file owns the rack, the company bar and what the case is showing.
  *
- * The ARTWORK is in site/cover-art/, one module per product keyed by the record's own id, and the LOCKUP over
- * it is built here in HTML so the title stays selectable and reflows at blade size.
+ * The ARTWORK is in site/cover-art/, one module per product keyed by the record's own id, and the LOCKUP over it is
+ * built here in HTML so the title stays selectable and reflows at blade size.
  */
 import { coverArt } from './cover-art/index.js';
 
@@ -216,13 +215,12 @@ import { coverArt } from './cover-art/index.js';
 
   /* ---- the flip rack ----
    *
-   * A JUKEBOX SELECTOR, not a row that scrolls and not a fan. The boxes hang from a rail at the top and you tip
-   * them forward one at a time: the one you are on faces you square, the ones still to come stack up behind it,
-   * and the ones you have passed lie over toward you almost flat. That is the gesture anybody who has flicked
-   * through a rack of records or a wall of game boxes already owns.
+   * A JUKEBOX SELECTOR, not a row that scrolls and not a fan. The boxes hang from a rail at the top and you tip them
+   * forward one at a time: the one you are on faces you square, the ones still to come stack up behind it, and the
+   * ones you have passed lie over toward you almost flat.
    *
-   * It is also the page's own axis used a third way. The calculator's phone turns about Y; a rack hinged at the
-   * TOP turns about X, so this is a gesture of its own rather than a second copy of that one.
+   * It is also the page's own axis used a third way. The calculator's phone turns about Y; a rack hinged at the TOP
+   * turns about X, so this is a gesture of its own rather than a second copy of that one.
    *
    * EVERY BOX IS PLACED FROM ITS OFFSET AND NOTHING ELSE. One expression owns the whole rack, so the hinge, the
    * stack and the pile cannot drift apart, and a box's position is never a state to keep in step.
@@ -836,15 +834,15 @@ import { coverArt } from './cover-art/index.js';
 
   /* ---- and the case rides the same playhead the rack does ----
    *
-   * THE CASE READS `pos`, NOT ITS OWN CLOCK. It used to be thrown: one exit transition, one swap, one entry,
-   * on a CSS timeline of its own — so crossing ten boxes showed the reader two covers and a wait, while the
-   * rack beside it turned all ten. Two descriptions of one movement, which is the fault this whole file is
-   * written to avoid. Now the case is a function of `pos` exactly as every blade is: the cover it shows is the
-   * nearest whole box, and how far it sits off centre is the fraction left over. Every cover crossed comes
-   * through it, in step with the blade that carries the same artwork.
+   * THE CASE READS `pos`, NOT ITS OWN CLOCK. Thrown on a CSS timeline of its own — one exit, one swap, one entry —
+   * crossing ten boxes shows the reader two covers and a wait while the rack beside it turns all ten: two
+   * descriptions of one movement.
    *
-   * The direction falls out and is not written down. `k - pos` is negative while the playhead is still short of
-   * box k, so a cover leaves to the left as the rack walks right, which is the way the blades already go.
+   * The cover it shows is the nearest whole box, and how far it sits off centre is the fraction left over, so every
+   * cover crossed comes through it in step with the blade carrying the same artwork.
+   *
+   * The direction falls out and is not written down: `k - pos` is negative while the playhead is still short of box
+   * k, so a cover leaves to the left as the rack walks right.
    */
   const CASE_TRAVEL = 1.35;   // case widths a cover crosses between one box and the next
   let showing = -1;
@@ -903,15 +901,12 @@ import { coverArt } from './cover-art/index.js';
      pixels of screen still holding the whole name — and it reads as a sliver stuck to the edge of the box rather
      than as type on a rim. The floor is above zero width on purpose: a face that vanishes exactly at grazing
      pops, and one that fades from about a quarter facing does not. */
-  /* HOW PRESENT A FACE IS, from how squarely it faces the reader. f is the cosine of that angle: 1 square on,
-     0 edge on, negative when it is the far side seen through the case.
-     ONE CONTINUOUS RAMP, not two clamped ones. This was max(GRAZE(f), THROUGH * GRAZE(-f)) with GRAZE zeroing
-     anything under .22 — and near edge-on BOTH terms are zero, so every face switched off across a 26 degree
-     window and switched back on. Swept and measured: front and back each read exactly 0.00 from about 75 to 105
-     degrees. A face turning away should fade, and reach nothing only where it truly has no area, which is
-     edge-on and nowhere else.
-     The two sides differ by a multiplier, not by a separate curve, so the crossover at edge-on is continuous:
-     the ramp is already zero there, whichever side takes over. */
+  /* HOW PRESENT A FACE IS, from how squarely it faces the reader. f is the cosine of that angle: 1 square on, 0 edge
+     on, negative when it is the far side seen through the case.
+     ONE CONTINUOUS RAMP, not two clamped ones. Two ramps with a dead zone leave both terms zero near edge-on, so
+     every face switches off across a wide window and switches back on. A face turning away should fade, and reach
+     nothing only where it truly has no area, which is edge-on and nowhere else.
+     The two sides differ by a multiplier, not by a separate curve, so the crossover at edge-on is continuous. */
   const THROUGH = .3;
   const LOCK_THROUGH = .2;   // how much of THAT the lockup gets when it is the far face
   const fade = (a) => Math.min(1, a / .28);
@@ -931,15 +926,10 @@ import { coverArt } from './cover-art/index.js';
     const t = 'rotateY(' + turn.toFixed(1) + 'deg) rotateX(' + tilt.toFixed(1) + 'deg)';
     print.style.transform = t;
     printFar.style.transform = t;
-    /* HOW SQUARELY EACH FACE POINTS AT THE READER, from the REAL normal after both rotations.
-       This used to read the yaw alone, so pitch could not reveal anything: turning the case upside down left
-       the front still counted as front-facing and the back still hidden, however far it went over. CSS applies
-       `rotateY(turn) rotateX(tilt)` right to left, so a face normal n comes out as Ry(turn) * Rx(tilt) * n, and
-       what matters is the z of that.
-         front (0,0,1)   -> z = cos(tilt) * cos(turn)
-         spine (-1,0,0)  -> z = sin(turn), untouched by pitch, because rotateX leaves the x axis alone.
-       Past a quarter turn of pitch the cosine goes negative on its own and the back takes over, which is the
-       whole behaviour, with no case for "upside down" written anywhere. */
+    /* HOW SQUARELY EACH FACE POINTS AT THE READER, from the REAL normal after both rotations. Reading the yaw alone
+       means pitch cannot reveal anything — turning the case upside down leaves the front still counted as
+       front-facing. CSS applies `rotateY(turn) rotateX(tilt)` right to left, so a face normal n comes out as
+       Ry(turn) · Rx(tilt) · n, and what matters is the z of that. */
     const a = turn * Math.PI / 180, b = tilt * Math.PI / 180;
     const fF = Math.cos(b) * Math.cos(a), fS = Math.sin(a);
     depthSort(front, fF); depthSort(back, -fF); depthSort(spineFace, fS);

@@ -1,22 +1,18 @@
 /* panel.js — THE CONTROL PANEL'S WIDGETS, FOR EVERY LAB.
  *
- * ONE COPY, for the reason [[panel.css]] gives: a slider existed three times in this repo and three
- * implementations drift. Pairs with panel.css -- this file decides STRUCTURE and BEHAVIOUR, that one decides
- * appearance, and neither should start doing the other's job.
- *
- * PLAIN DOM AND NO FRAMEWORK. Everything here takes a host element and returns elements.
+ * ONE COPY, for the reason panel.css gives: a slider existed three times in this repo and three implementations
+ * drift. This file decides STRUCTURE and BEHAVIOUR, panel.css decides appearance, and neither should start doing
+ * the other's job. Plain DOM, no framework: everything here takes a host element and returns elements.
  *
  * A ROW READS STATE ONCE and owns its DOM afterwards, so a drag writes one number and one text node. The price is
- * that a value changed from OUTSIDE the panel leaves its row stale: a caller that writes state itself (applying a
- * preset, say) must rebuild the panel.
+ * that a value changed from OUTSIDE the panel leaves its row stale — a caller that writes state itself must
+ * rebuild the panel.
  *
- * IT KNOWS NOTHING ABOUT ANY LAB. It is handed a state object, a table of formatters and one callback, and it
- * has no other way to reach the page. Anything a lab needs to do on a change -- invalidate a memo, resize --
- * arrives as (key, kind) on onChange.
+ * IT KNOWS NOTHING ABOUT ANY LAB. It is handed a state object, a table of formatters and one callback, and has no
+ * other way to reach the page. Anything a lab needs to do on a change arrives as (key, kind) on onChange.
  *
- * WHAT IS DELIBERATELY NOT HERE: anything a single lab needs. CRT Lab's phosphor selector and its POWER / WARP /
- * SURGE actions live in CRT Lab, because a kit that grows a special case per caller is three implementations
- * again wearing one filename.
+ * WHAT IS DELIBERATELY NOT HERE: anything a single lab needs. A kit that grows a special case per caller is three
+ * implementations again wearing one filename.
  */
 
 /* A ROW'S KIND IS ITS SPEC'S SHAPE, so a section never has to say which control it wants.
@@ -84,14 +80,13 @@ function rowToggle(ctx, k, label) {
 
 /* A NUMBER: slider, a stepper either side of the readout, and real units.
  *
- * The steppers repeat on hold, because a 0.01 step over a 0..2 range is 200 clicks otherwise, and they are
+ * The steppers repeat on hold, because a fine step over a wide range is hundreds of clicks otherwise, and they are
  * tabindex -1: the slider is the focusable thing in a row, and three tab stops per row across seventy rows would
- * make the panel unusable from the keyboard. Arrow keys already do the same job once a row has focus.
+ * make the panel unusable from the keyboard.
  *
- * THE READOUT IS AN INPUT, NOT A LABEL, and it is typeable in the unit it displays — see units.js for where the
- * inverse lives. It was previously a span, which selects like text and so reads as editable while doing nothing;
- * an affordance that lies is worse than one that is absent. It is tabindex -1 for the reason above: reachable by
- * click, not another stop between every slider.
+ * THE READOUT IS AN INPUT, NOT A LABEL, and it is typeable in the unit it displays — see units.js for the inverse.
+ * A span selects like text and so reads as editable while doing nothing, and an affordance that lies is worse than
+ * one that is absent. tabindex -1 for the reason above: reachable by click, not another stop between every slider.
  */
 function rowSlider(ctx, k, label, lo, hi, st) {
   const row = document.createElement('div'); row.className = 'row';
@@ -227,15 +222,12 @@ export function buildSection(ctx, name, rowSpecs, masterKey) {
   return [head, group];
 }
 
-/* UP/DOWN WALK THE LIST, LEFT/RIGHT CHANGE THE VALUE.
+/* UP/DOWN WALK THE LIST, LEFT/RIGHT CHANGE THE VALUE. A range input binds all four arrows to its own value, so out
+ * of the box Up/Down cannot move between rows and the panel is unnavigable from the keyboard beyond Tab. Since the
+ * two pairs are redundant on a slider, taking the vertical one for navigation costs nothing.
  *
- * A range input binds all four arrows to its own value -- up and right increment, down and left decrement -- so
- * out of the box Up/Down cannot move between rows and the panel is unnavigable from the keyboard beyond Tab.
- * Since up/down and left/right are redundant with each other on a slider, taking the vertical pair for
- * navigation costs nothing: every value is still reachable with Left/Right, and now the rows are too.
- *
- * PageUp/PageDown jump a whole section, Home/End go to the ends of the panel, and the focused row is scrolled
- * into view -- a focus ring you have to hunt for is not much better than none.
+ * PageUp/PageDown jump a whole section, Home/End go to the ends of the panel, and the focused row is scrolled into
+ * view — a focus ring you have to hunt for is not much better than none.
  */
 export function attachKeyNav(host) {
   host.addEventListener('keydown', (e) => {
@@ -280,23 +272,19 @@ export function buildActions(host, actions, after) {
   return sync;
 }
 
-/* THE SWITCH THAT HIDES THE PANEL, because 340px of controls is a sidebar on a desktop and most of the screen
- * on a phone. panel.css owns what hiding LOOKS like at each width -- removed from the flow when wide, slid over
- * the stage when narrow -- and this owns only the state and the button.
+/* THE SWITCH THAT HIDES THE PANEL, because 340px of controls is a sidebar on a desktop and most of the screen on a
+ * phone. panel.css owns what hiding LOOKS like at each width; this owns only the state and the button.
  *
- * IT REPORTS THE CHANGE RATHER THAN ACTING ON IT, for the reason the file header gives: this kit cannot reach
- * the page. Hiding the panel on a wide screen grows the stage, and a renderer sized to the old box will stretch
- * until something else resizes it -- so `onToggle(hidden)` fires AFTER the class lands, with layout already
- * settled, and the lab does whatever re-sizing it needs. On a narrow screen the panel is out of the flow and
- * nothing moves, so the same callback is harmless there.
+ * IT REPORTS THE CHANGE RATHER THAN ACTING ON IT, for the reason the file header gives. Hiding the panel on a wide
+ * screen grows the stage, and a renderer sized to the old box will stretch until something else resizes it — so
+ * `onToggle(hidden)` fires AFTER the class lands, with layout already settled. On a narrow screen the panel is out
+ * of the flow and nothing moves, so the same callback is harmless there.
  *
- * THE DEFAULT IS PER-SIZE AND NOT REMEMBERED. A phone opens with the tube visible and the controls put away;
- * a desktop opens as it always has. Persisting it was considered and dropped -- a stored "hidden" restored onto
- * a desktop is a lab that opens looking broken, and the state is one button away either direction.
+ * THE DEFAULT IS PER-SIZE AND NOT REMEMBERED: a stored "hidden" restored onto a desktop is a lab that opens looking
+ * broken, and the state is one button away either direction.
  *
- * `shortSide` IS THE HANDSET ON ITS SIDE, and it is the half that was missing. A width test alone calls a phone
- * in landscape a desktop -- 852x393 is wider than any phone breakpoint -- so the panel came back into the flex
- * flow and took 340 of those 852 px, leaving the tube a 512x393 box on a screen that had 852 to give. The
+ * `shortSide` IS THE HANDSET ON ITS SIDE. A width test alone calls a phone in landscape a desktop — 852x393 is
+ * wider than any phone breakpoint — so the panel comes back into the flex flow and takes 340 of those 852 px. The
  * numbers pair with the `(max-width), (max-height)` query in panel.css and must move together with it.
  */
 export function mountPanelToggle({ panel, host = document.body, breakpoint = 820, shortSide = 500,

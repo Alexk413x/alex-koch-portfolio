@@ -19,3 +19,6 @@ desktop.ini
 # Per-machine Claude Code permissions; .claude/settings.json is the shared one
 .claude/settings.local.json
 
+
+# git worktrees created under the repo by tooling; each is its own checkout
+.claude/worktrees/

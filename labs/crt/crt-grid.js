@@ -1,15 +1,12 @@
-/* crt/crt-grid.js — the calibration grid, PLOTTED rather than resampled.
+/* crt-grid.js — the calibration grid, PLOTTED rather than resampled.
  *
  * The lines are generated, so they can be generated bent. Each one is walked through the same projection F the guide
- * rings ride, so a grid line lands exactly on its ring BY CONSTRUCTION rather than approximately — which is the whole
- * point of the twenty guides matching the grid.
+ * rings ride, so a grid line lands exactly on its ring BY CONSTRUCTION.
  *
- * This replaces drawing the grid flat on a canvas and pushing it through the displacement filter. That route resampled
- * the very lines the warp is judged by: it softened them, it carried the filter's 8-bit quantisation and its half-LSB DC
- * bias into the ruler, and it needed an oversized source plus a device-pixel parity dance to keep the centre line
- * centred. None of that exists here. An SVG path in a stretched viewBox has no pixel grid to be misaligned against, and
- * because F and the box radius are both even functions of the angle, the result is mirror-exact in both axes with no
- * mirroring code at all.
+ * Drawing the grid flat and pushing it through a displacement filter resamples the very lines the warp is judged by:
+ * it softens them and carries the filter's quantisation into the ruler. An SVG path in a stretched viewBox has no
+ * pixel grid to be misaligned against, and because F and the box radius are both even functions of the angle, the
+ * result is mirror-exact in both axes with no mirroring code at all.
  *
  * Pure: no DOM, no canvas, no component state.
  */
@@ -17,71 +14,55 @@
 // strings -- because two copies of "how a coordinate is written" is two ways for two layers to disagree by a rounding.
 import { fixed } from './crt-geometry.js';
 
-/* THE BOX RADIUS along a ray — the distance from centre to the edge of the RECTANGLE at that angle — is written INLINE
- * in radialMap and nowhere else.
+/* THE BOX RADIUS along a ray — the distance from centre to the edge of the RECTANGLE at that angle — is written
+ * INLINE in radialMap and nowhere else.
  *
- * The source raster IS the box, so everything is measured in box fractions. Normalising the destination by the guide
- * radius while scaling the source by the box radius is what once painted concentric rings through the middle.
+ * The source raster IS the box, so everything is measured in box fractions: normalising the destination by the guide
+ * radius while scaling the source by the box radius is what paints concentric rings through the middle.
  *
- * It was a function taking an ANGLE, boxRadius(hw, hh, th), and its only caller had just computed that angle from a
- * point: it took |cos th| and |sin th| back apart to get the ratios |x|/r and |y|/r it had started from. Since the only
- * place this quantity is ever wanted is that one loop, and it is the innermost loop in the instrument, it lives there
- * in terms of the point rather than as a second conversion of the same fact. If something ever needs it from an angle
- * alone, hw/|cos th| and hh/|sin th| is the same two lines.
+ * As a function of an ANGLE its only caller had just computed that angle from a point, then took |cos th| and
+ * |sin th| back apart to recover the ratios it started from. This is the innermost loop in the instrument, so it
+ * lives there in terms of the point. From an angle alone it is hw/|cos th| and hh/|sin th|.
  */
 
-/* WHY HORIZONTAL LINES DO NOT BOW HERE, and why no constant in this file will make them.
+/* WHY HORIZONTAL LINES DO NOT BOW UNDER THE RADIAL MAP, and why no constant in this file will make them.
  *
  * u = r / boxRadius(theta), so u = 1 everywhere on the rectangle's PERIMETER: the level sets of u are concentric
- * RECTANGLES. radialMap then scales each point along its own ray by k = F(u)/u. A radial scale applied to concentric
- * rectangles sends concentric rectangles to concentric rectangles -- so straight edges stay straight BY CONSTRUCTION.
- * This map cannot barrel-distort. The flatness is not a strength that can be turned up; it is the shape of the level sets.
+ * RECTANGLES. radialMap scales each point along its own ray, and a radial scale sends concentric rectangles to
+ * concentric rectangles — so straight edges stay straight BY CONSTRUCTION. This map cannot barrel-distort.
  *
- * FOUR ATTEMPTS TO FIX IT FROM HERE FAILED, all the same way, and they are recorded so the fifth is not attempted.
- * Blending the normaliser toward the inscribed circle does change the level sets, so it does bend lines -- but circular
- * level sets on a box wider than it is tall put the CORNERS at u ~ 1.3, where the profile sags them hardest, so every gain
- * in side bow arrived with corner damage. Weighting that blend by angle (toward the diagonals; then toward the axes; then
- * with a separate cos^2 term for the sides) only moved the damage around, because side bow and corner shape are not
- * independent under a radial map -- both are consequences of ONE level-set family. Undercutting the circle target made it
- * worse everywhere at once. Unclamping u past the rim flattens the corners into a plateau or blows them out, depending on
- * which way it is done.
+ * FOUR ATTEMPTS TO FIX IT FROM HERE FAILED, all the same way, and they are recorded so a fifth is not attempted.
+ * Blending the normaliser toward the inscribed circle does change the level sets and does bend lines — but circular
+ * level sets on a box wider than it is tall put the CORNERS past u = 1, where the profile sags them hardest, so
+ * every gain in side bow arrives with corner damage. Weighting that blend by angle only moves the damage around,
+ * because side bow and corner shape are consequences of ONE level-set family. Undercutting the circle target makes
+ * it worse everywhere at once.
  *
- * If horizontals genuinely need to bow, the change is to the LEVEL SETS -- normalise against the guide outline, the way
- * crt-projection's faceShaped already normalises the sag against the faceplate's shape -- not to a fudge factor on the
- * radius. That is a deliberate decision about what surface this is, and it belongs in the projection, not in a tuning
- * constant here.
+ * The bow is therefore added as its own term — see radialMap — rather than extracted from the radial one. If the
+ * level sets themselves ever need to change, that is a decision about what surface this is and belongs in the
+ * projection, not in a tuning constant here.
  */
 
-/* The same radial map the grid and the rings use, as a reusable point mapper.
+/* The same radial map the grid and the rings use, as a reusable point mapper. A point at box-fraction u along its
+ * ray lands at F(u) times the box radius, so the scale is F(u)/u. Sharing one mapper is why a scanline, a grid line
+ * and a ring cannot end up describing three slightly different surfaces.
  *
- * Everything plotted in curved space goes through this: a point at box-fraction u along its ray lands at F(u) times the
- * box radius, so the scale is F(u)/u. Sharing one mapper is the reason a scanline, a grid line and a ring cannot end up
- * describing three slightly different surfaces.
- *
- * F TAKES THE RAY AS WELL AS THE RADIUS -- F(u, theta). The angle is already computed here for the box radius, so passing
- * it costs nothing, and a projection that reads it (crt-projection's faceShaped, which scales the sag by the faceplate's
- * shape ratio) reaches every plotted layer through this one call. A one-argument F simply ignores it.
+ * F TAKES THE RAY AS WELL AS THE RADIUS — F(u, theta). The angle is already computed here for the box radius, so
+ * passing it costs nothing, and a projection that reads it reaches every plotted layer through this one call. A
+ * one-argument F simply ignores it.
  */
 function radialMap(w, H, F) {
   const hw = w / 2, hh = H / 2;
-  /* THE BOW TERM, and why the radial scale alone cannot produce it.
+  /* THE BOW TERM. The radial scale cannot produce it — see the note at the top of this file — so it is added
+   * separately rather than extracted from the radial one.
    *
-   * u = r / boxRadius(theta) puts u = 1 on the whole RECTANGLE perimeter, so the level sets of u are concentric rectangles
-   * and a radial scale maps concentric rectangles to concentric rectangles: straight edges stay straight by construction.
-   * That is why the top edge and the horizontal scanlines came out flat however hard the profile was driven, and why four
-   * attempts to fix it by reshaping the normalising radius all failed -- they were changing the strength of a map whose
-   * geometry cannot bow a straight line at all.
+   * A point's vertical distance from the centre line is reduced in proportion to how far out it sits horizontally:
+   * the ends of a horizontal line are pulled toward the centre while its middle stays put, which is the arc a domed
+   * faceplate shows. (x/hw)² makes it zero on the vertical centre line and strongest at the sides, and the y factor
+   * makes it zero on the horizontal centre line and strongest at the top and bottom edges.
    *
-   * So the bow is added as its OWN term rather than extracted from the radial one. A point's vertical distance from the
-   * centre line is reduced in proportion to how far out it sits horizontally: the ends of a horizontal line are pulled
-   * toward the centre while its middle stays put, which is exactly the arc a domed faceplate shows. (x/hw)^2 makes it zero
-   * on the vertical centre line and strongest at the sides, and the y factor makes it zero on the horizontal centre line
-   * and strongest at the top and bottom edges -- so the centre row stays straight, as it must, and the top edge bows most.
-   *
-   * SCALED BY THE PROFILE'S OWN SAG, so it is not a second independent surface: 1 - F(1) is zero for a flat face and grows
-   * with FACE, which means a flat tube gets no bow and every setting in between is proportionate. HORIZONTAL EXTENT IS
-   * UNTOUCHED -- only y moves -- so the corners keep the width they had and none of the corner damage the earlier attempts
-   * caused can come back through this term.
+   * SCALED BY THE PROFILE'S OWN SAG, so it is not a second independent surface: 1 - F(1) is zero for a flat face and
+   * grows with FACE. HORIZONTAL EXTENT IS UNTOUCHED — only y moves — so the corners keep the width they had.
    */
   const sag = F ? Math.max(0, 1 - F(1, 0)) : 0;
   const bow = sag * 0.55;
