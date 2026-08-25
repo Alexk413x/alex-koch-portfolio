@@ -21,19 +21,20 @@ import { NOISE, PALETTE, TUNNEL } from './wormhole-glsl.js';
 
 export const UNIFORMS = [
   'uRes', 'uTime', 'uSteps', 'uSpread', 'uBend', 'uBendFlow', 'uBendScale',
+  'uFov', 'uCov', 'uWall', 'uRibs', 'uRibScale', 'uRibFlow',
   'uGlow', 'uChroma', 'uVignette', 'uExposure', 'uThroatTint', 'uThroatRays',
   'uCoreCol', 'uCoreAuto', 'uCoreSpin', 'uCorePulse', 'uCorePulseRate', 'uCoreFade', 'uCoreFadeRate',
   'uNebOn', 'uNebCol', 'uNebColB', 'uNebMode', 'uNebHue',
   'uNebDensity', 'uNebFill', 'uNebFluff', 'uNebStreak', 'uNebVar', 'uNebScale', 'uNebOct',
-  'uNebSpeed', 'uNebTwist', 'uNebSpin', 'uNebCov',
+  'uNebSpeed', 'uNebTwist', 'uNebSpin',
   'uLsOn', 'uLsCol', 'uLsColB', 'uLsMode', 'uLsHue',
   'uLsDensity', 'uLsCount', 'uLsLen', 'uLsThick', 'uLsVar', 'uLsRadial',
-  'uLsSpeed', 'uLsTwist', 'uLsSpin', 'uLsCov',
+  'uLsSpeed', 'uLsTwist', 'uLsSpin',
   'uPlOn', 'uPlCol', 'uPlColB', 'uPlMode', 'uPlHue',
   'uPlDensity', 'uPlCrackle', 'uPlFlash', 'uPlFlashRate', 'uPlLight',
   'uPlFill', 'uPlOcclude',
   'uPlScale', 'uPlStreak',
-  'uPlSpeed', 'uPlTwist', 'uPlSpin', 'uPlCov',
+  'uPlSpeed', 'uPlTwist', 'uPlSpin',
 ];
 
 /* THE BODY IS NOT A SHADER UNTIL A LAYER SET IS CHOSEN — see fragFor at the foot of this file. Each layer's
@@ -45,22 +46,27 @@ out vec4 fragColor;
 
 uniform vec2 uRes;
 uniform float uTime, uSteps, uSpread, uBend, uBendFlow, uBendScale;
+/* ONE COVERAGE, ONE UNIFORM. It was three — one per layer — long after the panel stopped offering three rows to
+ * set them from, so the shader evaluated wallProfile twice per step against two numbers the host had just sent
+ * the same value to. Collapsed, the profile is computed ONCE and both marched layers read it: 2.6% of the frame,
+ * for a byte-identical picture. */
+uniform float uFov, uCov, uWall, uRibs, uRibScale, uRibFlow;
 uniform float uGlow, uChroma, uVignette, uExposure, uThroatTint, uThroatRays;
 uniform float uCoreAuto, uCoreSpin, uCorePulse, uCorePulseRate, uCoreFade, uCoreFadeRate;
 uniform vec3  uCoreCol;
 
 uniform float uNebOn, uNebMode, uNebHue, uNebDensity, uNebFill, uNebFluff, uNebStreak, uNebVar, uNebScale, uNebOct;
-uniform float uNebSpeed, uNebTwist, uNebSpin, uNebCov;
+uniform float uNebSpeed, uNebTwist, uNebSpin;
 uniform vec3  uNebCol, uNebColB;
 
 uniform float uLsOn, uLsMode, uLsHue, uLsDensity, uLsCount, uLsLen, uLsThick, uLsVar, uLsRadial;
-uniform float uLsSpeed, uLsTwist, uLsSpin, uLsCov;
+uniform float uLsSpeed, uLsTwist, uLsSpin;
 uniform vec3  uLsCol, uLsColB;
 
 uniform float uPlOn, uPlMode, uPlHue, uPlDensity, uPlCrackle, uPlFlash, uPlFlashRate, uPlLight;
 uniform float uPlFill, uPlOcclude;
 uniform float uPlScale, uPlStreak;
-uniform float uPlSpeed, uPlTwist, uPlSpin, uPlCov;
+uniform float uPlSpeed, uPlTwist, uPlSpin;
 uniform vec3  uPlCol, uPlColB;
 
 #define TUBE 1.25
@@ -91,23 +97,25 @@ vec2 bendAt(float z, float sec){
  * low floods it into thick cover.
  */
 #ifdef HAVE_NEB
-vec2 nebula(vec3 p, float sec){
+vec2 nebula(vec3 p, float sec, float inv){
   vec2 xy = spin(p.xy, uNebSpin * sec + uNebTwist * p.z * 0.05);
   float z = p.z + sec * uNebSpeed * 0.55;
 
   vec3 q = vec3(xy, z * uNebStreak) * (uNebScale * 0.34);
-  float w = fbm(q, int(uNebOct), uNebFluff);
 
   /* VARIANCE AND THE COLOUR BAND ARE TRIGONOMETRIC, NOT NOISE, and that is the single biggest saving in the
    * shader. Both want a term that changes SLOWLY over the tunnel; a noise sample costs eight hashes to deliver
    * that, and three incommensurate sines deliver it for a few multiplies. Two of the nebula's five samples per
    * step were being spent on values that never needed to be random, only unrepeating. */
   float band = sin(z * 0.21) * sin(xy.x * 0.47 + 1.7) * sin(xy.y * 0.39 - 0.6);
-  float var = mix(1.0, 1.0 + 0.85 * band, uNebVar);
-  float v = w * var;
+  float var = max(mix(1.0, 1.0 + 0.85 * band, uNebVar), 1e-3);
 
+  /* THE THRESHOLD IS DIVIDED BY THE VARIANCE RATHER THAN THE FIELD MULTIPLIED BY IT, so the fbm knows what it has
+   * to beat before it starts fetching and can stop as soon as it cannot. Both sides are positive, so it is the
+   * same comparison either way round -- see fbm. */
   float lo = mix(0.80, 0.30, clamp(uNebFill, 0.0, 1.0));
-  float dens = smoothstep(lo, lo + 0.26, v);
+  float w = fbm(q, int(uNebOct), uNebFluff, inv, lo / var, (lo + 0.26) / var);
+  float dens = smoothstep(lo, lo + 0.26, w * var);
 
   // Colour holds over a stretch of tunnel rather than cycling per sample, which is what stops the ramp averaging
   // itself to grey across the march.
@@ -164,7 +172,7 @@ Streaks lightspeed(vec3 rd, float sec){
   float slots = max(8.0, floor(uLsCount));
   float k = max(length(rd.xy), 1e-5);
 
-  float inner = (1.0 - clamp(uLsCov, 0.0, 1.0)) * TUBE;
+  float inner = (1.0 - clamp(uCov, 0.0, 1.0)) * TUBE;
   float halfLen = max(uLsLen, 0.02) * (FAR * 0.5);
   float chaos = clamp(uLsVar, 0.0, 1.0);
 
@@ -360,7 +368,12 @@ float plasmaLive(PSite s, float sec){
 
 void main(){
   vec2 uv = (gl_FragCoord.xy - 0.5 * uRes) / uRes.y;
-  vec3 rd = normalize(vec3(uv, 1.3));
+  /* THE LENS IS A CONTROL, AND IT IS THE LARGEST SINGLE THING SEPARATING A TUNNEL FROM A BACKDROP. At a narrow
+   * angle the wall never reaches the edge of the frame and the whole field sits out in front of the eye like
+   * weather; opened up, the wall sweeps past the periphery and the picture closes around the viewer. uFov is the
+   * ray's z, so SMALL IS WIDE -- the host sends it from an angle in degrees, which is the number a person means.
+   */
+  vec3 rd = normalize(vec3(uv, uFov));
   float sec = uTime;
 
   int steps = int(uSteps);
@@ -374,10 +387,8 @@ void main(){
   /* LIGHTSPEED IS NOT IN THIS TEST any more, and that is most of what it bought. It is solved rather than
    * marched, so with it lit alone there is no march at all — steps falls to zero and every ray exits before the
    * loop. It still occludes correctly, by the transmittance captured at its own depth below. */
-  float innerMin = 1.0;
-  if (uNebOn > 0.5) innerMin = min(innerMin, 1.0 - clamp(uNebCov, 0.0, 1.0));
-  if (uPlOn  > 0.5) innerMin = min(innerMin, 1.0 - clamp(uPlCov,  0.0, 1.0));
   bool anyLayer = (uNebOn + uPlOn) > 0.5;
+  float innerMin = anyLayer ? 1.0 - clamp(uCov, 0.0, 1.0) : 1.0;
 
 #ifdef HAVE_LS
   Streaks ls;
@@ -415,13 +426,20 @@ void main(){
   float growth = max(pow(max(uSpread, 1.0), 1.0 / max(float(steps), 1.0)), 1.0001);
   float gp = pow(growth, float(steps));
   float dt = span * (growth - 1.0) / (gp - 1.0);
-  float t = tEnter + dt * dither(gl_FragCoord.xy);
+  float t = tEnter + dt * dither(gl_FragCoord.xy, sec);
   if (!anyLayer || span <= 0.0) steps = 0;
 
   vec3 col = vec3(0.0);
   float trans = 1.0;
 
+#ifdef HAVE_NEB
+  // One value per frame, not per sample: fbm needs the FULL normaliser to stop early without renormalising.
+  float nebInv = fbmNorm(int(uNebOct), uNebFluff);
+#endif
+
   vec3 plCol = ramp(1.0, uPlCol, uPlColB, uPlMode, uPlHue);
+  // How sharply the wall arrives. Uniform-derived, so it is resolved once rather than at every sample.
+  float wallSoft = mix(0.35, 0.045, clamp(uWall, 0.0, 1.0));
 
   for (int i = 0; i < 96; i++){
     if (i >= steps || trans < 0.02) break;
@@ -434,6 +452,38 @@ void main(){
     // Rotation-invariant, so ONE radial distance serves every layer however each happens to be spinning.
     float s01 = clamp(length(p.xy) / TUBE, 0.0, 1.0);
 
+    // Both marched layers read the same wall, so it is resolved once. RIBS scale it; see below.
+    float covProf = wallProfile(s01, uCov, wallSoft);
+
+    /* RIBS ARE RINGS OF THICK AND THIN WALL, spaced along the axis and sliding toward the eye. They are the
+     * cheapest strong cue in the lab: a ring lives at a fixed DEPTH, so it foreshortens toward the throat and
+     * arrives faster as it comes, and an eye reads that as travelling rather than as watching weather. The layers'
+     * own flow rates are theirs; this one is the tunnel's.
+     *
+     * IT SCALES THE PROFILE, NOT THE COVERAGE, and that distinction is the whole effect. Fed through coverage it
+     * only moved the wall's INNER edge, and wallProfile saturates at 1 for every sample beyond the wall — which is
+     * most of the ray for most of the frame, since a ray leaves the tube early and keeps marching. So the rings
+     * appeared in one thin annulus near the throat and nowhere else. Scaling the finished profile corrugates the
+     * whole depth of the field, and the rings run out to the corners.
+     *
+     * READ FROM p.z ALONE, so they are planes across the tube and belong to the tunnel rather than to any one
+     * layer — the same reason COVERAGE and BEND are single values. Behind a uniform test, because a scene with
+     * RIBS off should not pay a cosine per sample for it, and a test on a uniform never diverges.
+     */
+    float ribK = 1.0;
+    if (uRibs > 0.001) {
+      /* THE RINGS ARE DENSE AND THE TUBE BETWEEN THEM IS THIN, not the other way round. Written as a groove —
+       * density REMOVED at each ring — nothing was visible: a ray crosses several ribs on its way out and thinning
+       * a few of them only changes a sum that was already smooth. A ring has to OCCLUDE to read as a ring, so the
+       * near one stands in front of the far one and the eye is given the depth order for free.
+       *
+       * The crest is a fourth power, which is narrow, and the trough is scaled down to match, so lighting the
+       * control does not simply make the frame brighter. */
+      float rc0 = 0.5 + 0.5 * cos((p.z + sec * uRibFlow) * uRibScale);
+      float band = rc0 * rc0; band *= band;
+      ribK = mix(1.0, 0.25 + 3.2 * band, uRibs);
+    }
+
     vec3 emit = vec3(0.0);
     float dens = 0.0;
 
@@ -443,7 +493,7 @@ void main(){
 #ifdef HAVE_PL
     // Each test guards the work behind it FROM THE LOOP, not from inside a function — see the note above
     // plasmaSite. Nesting them here is what makes them real.
-    float pProf = wallProfile(s01, uPlCov);
+    float pProf = covProf * ribK;
     if (uPlOn > 0.5 && pProf > 0.003){
       PSite ps = plasmaSite(p, sec);
       if (ps.region >= 0.004){
@@ -472,9 +522,9 @@ void main(){
 #endif
 
 #ifdef HAVE_NEB
-    float nProf = wallProfile(s01, uNebCov);
+    float nProf = covProf * ribK;
     if (uNebOn > 0.5 && nProf > 0.003){
-      vec2 nb = nebula(p, sec);
+      vec2 nb = nebula(p, sec, nebInv);
       float a = nb.x * nProf;
       emit += (ramp(nb.y, uNebCol, uNebColB, uNebMode, uNebHue) + plCol * lightHere * uPlLight * 9.0) * a;
       dens += a;
@@ -516,11 +566,11 @@ void main(){
    * belong to the frame rather than to the tunnel.
    *
    * THE CORE IS NOT, and must follow the bend. It is the far end of the TUNNEL, so it sits where the axis
-   * has got to at FAR — project that world point the way the ray direction was built, rd = vec3(uv, 1.3),
-   * and the offset is bend * 1.3 / FAR. Left at the screen centre it drifts off the mouth of its own
+   * has got to at FAR — project that world point the way the ray direction was built, rd = vec3(uv, uFov),
+   * and the offset is bend * uFov / FAR. Left at the screen centre it drifts off the mouth of its own
    * tunnel: at full BEND the far end sits 15% of the way to the edge of the frame. */
   float r = length(uv);
-  vec2 cuv = uv - bendAt(FAR, sec) * (1.3 / FAR);
+  vec2 cuv = uv - bendAt(FAR, sec) * (uFov / FAR);
   float rc = length(cuv);
 
   vec3 tc = vec3(0.0);
@@ -545,7 +595,14 @@ void main(){
   float rays = 0.5 + 0.5 * sin(a * 7.0 + sin(a * 3.0 - sec * 0.37) * 1.6);
   float corona = smoothstep(0.34, 0.0, rc) * mix(1.0, 0.30 + 0.70 * rays, uThroatRays);
 
-  vec3 throat = vec3(1.0, 0.97, 0.92) * smoothstep(0.045, 0.0, rc) * 2.6 * pulse
+  /* THE HOT CENTRE HAS NO EDGE, and it used to have a hard one. A smoothstep over 0.045 of the frame is a DISC,
+   * and a disc at this brightness reads as a ball pasted over the picture rather than as the far end of anything
+   * — every shot of this scene showed it as exactly that. Cubed, the falloff peaks at the same value in the same
+   * place and reaches zero over three times the radius, so it blooms into the corona instead of stopping against
+   * it. */
+  float hot = smoothstep(0.135, 0.0, rc);
+  hot = hot * hot * hot;
+  vec3 throat = vec3(1.0, 0.97, 0.92) * hot * 2.6 * pulse
               + tc * corona * 0.55 * pulse;
   col += throat * uGlow * fade * trans;
 

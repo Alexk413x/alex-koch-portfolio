@@ -101,7 +101,7 @@ if (!R) { reportNoGL(); throw new Error('WebGL unavailable'); }
 const SWATCHES = ['nebCol', 'nebColB', 'lsCol', 'lsColB', 'plCol', 'plColB', 'coreCol'];
 const MASTERS = SECTIONS.map(([, , master]) => master).filter(Boolean);
 const state = defaultPreset(R.gpu);
-const store = persist({ key: 'wormhole', version: 8, state, sections: SECTIONS,
+const store = persist({ key: 'wormhole', version: 9, state, sections: SECTIONS,
                         extra: MASTERS.concat(SWATCHES) });
 store.restore();
 
@@ -164,9 +164,15 @@ function draw(dt, sec) {
   R.f('uTime', sec);
   R.f('uSteps', s.steps); R.f('uSpread', s.stepSpread);
   R.f('uBend', s.bend); R.f('uBendFlow', s.bendFlow); R.f('uBendScale', s.bendScale);
-  // ONE COVERAGE, SENT THREE TIMES. The shader keeps a uniform per layer because wallProfile is evaluated per
-  // layer inside the march; what changed is that one control stands behind all three.
-  R.f('uNebCov', s.coverage); R.f('uLsCov', s.coverage); R.f('uPlCov', s.coverage);
+  /* FOV IS STORED AS AN ANGLE AND SENT AS A RAY LENGTH. The shader wants the ray's z, where small is wide, and a
+     slider that runs backwards from the number printed beside it is a control nobody can aim. The conversion is
+     one line and it lives here rather than in a formatter, because a formatter is display only. */
+  R.f('uFov', 0.5 / Math.tan(s.fov * Math.PI / 360));
+  R.f('uWall', s.wall);
+  R.f('uRibs', s.ribs); R.f('uRibScale', s.ribScale); R.f('uRibFlow', s.ribFlow);
+  // ONE COVERAGE, SENT ONCE. It used to be three uniforms carrying one control's value, which meant the march
+  // evaluated the same wall profile twice a step against two copies of the same number.
+  R.f('uCov', s.coverage);
   // CORE's master rides on uGlow rather than a uniform of its own: the core is added as throat * uGlow, so a glow
   // of zero already IS off, and the shader needs nothing it does not already have.
   R.f('uGlow', s.coreOn ? s.glow : 0);

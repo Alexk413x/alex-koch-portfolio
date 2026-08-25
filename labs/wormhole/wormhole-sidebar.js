@@ -60,24 +60,43 @@ export const SECTIONS = [
               ['steps', 'QUALITY', 12, 88, 1],
               ['stepSpread', 'STEP SPREAD', 1, 16, 0.1]]],
 
-  /* IMAGE SITS SECOND BECAUSE IT APPLIES TO EVERYTHING BELOW IT. EXPOSURE, CHROMA and VIGNETTE are whole-frame
-   * post — the last thing done to whatever the march produced — so reading the panel top to bottom matches the
-   * order the pixels are actually built in: how much is drawn, what is done to the finished frame, then each
-   * thing that draws.
+  /* IMAGE SITS SECOND BECAUSE IT APPLIES TO EVERYTHING BELOW IT. FOV, EXPOSURE, CHROMA and VIGNETTE are the lens
+   * and the whole-frame post — the last things done to whatever the march produced — so reading the panel top to
+   * bottom matches the order the pixels are actually built in: how much is drawn, what the frame is seen through,
+   * then each thing that draws.
    *
-   * COVERAGE IS NOT POST, and it is here for the other reason this section exists: it is one value that governs
-   * all three layers. It was three separate rows, one per layer, and they were being kept in step by hand. How
-   * far in from the wall the field reaches is a property of the tunnel rather than of any one layer. */
-  /* BEND makes the tunnel's AXIS a curve instead of a line, and it lives here for the same reason COVERAGE
-   * does: it describes the tunnel, not any one layer, and all three lean into it together. FLOW slides the
-   * curve toward the eye so corners arrive rather than sit still; TIGHTNESS is how close together they come. */
-  ['IMAGE', [['coverage', 'COVERAGE', 0, 1, 0.01],
-             ['bend', 'BEND', 0, 1, 0.01],
-             ['bendFlow', 'BEND FLOW', -20, 20, 0.1],
-             ['bendScale', 'TIGHTNESS', 0.1, 3, 0.01],
+   * FOV IS FIRST AND IT IS THE STRONGEST ROW ON THE PANEL. A narrow angle keeps the wall away from the edge of
+   * the frame and the whole field reads as weather out in front; a wide one sweeps it past the periphery and the
+   * picture closes around the viewer. It is stored in degrees and converted to the ray's z where it is sent. */
+  ['IMAGE', [['fov', 'FOV', 28, 104, 1],
              ['exposure', 'EXPOSURE', 0.2, 3, 0.01],
              ['chroma', 'CHROMA', 0, 3, 0.05],
              ['vignette', 'VIGNETTE', 0, 1, 0.01]]],
+
+  /* TUNNEL IS THE SHAPE OF THE TUBE, and every row in it governs all three layers at once. They were scattered —
+   * COVERAGE and BEND sat in IMAGE among the post, and each layer used to carry its own copy of COVERAGE that was
+   * kept in step by hand. How far in from the wall the field reaches, how hard its edge is, and where its axis
+   * goes are properties of the tunnel, not of any one thing drawn in it.
+   *
+   * WALL is that edge. Soft, the density climbs over a third of the radius and there is no boundary anywhere,
+   * which is a cloud the camera happens to be inside; hard, it arrives over a few percent and there is a surface
+   * with a mouth in it.
+   *
+   * RIBS are rings of dense wall with a thin tube between them, sliding toward the eye at their own FLOW. They
+   * are the cheapest strong cue in the lab: a ring sits at a fixed DEPTH, so it foreshortens toward the throat
+   * and arrives faster as it comes, which is what an eye reads as travelling rather than as watching a sky.
+   * SPACING reads as how many of them stand between here and the far end.
+   *
+   * BEND makes the axis a curve instead of a line. FLOW slides the curve toward the eye so corners arrive rather
+   * than sit still; TIGHTNESS is how close together they come. */
+  ['TUNNEL', [['coverage', 'COVERAGE', 0, 1, 0.01],
+              ['wall', 'WALL', 0, 1, 0.01],
+              ['ribs', 'RIBS', 0, 1, 0.01],
+              ['ribScale', 'RIB SPACING', 0.3, 12, 0.05],
+              ['ribFlow', 'RIB FLOW', -20, 20, 0.1],
+              ['bend', 'BEND', 0, 1, 0.01],
+              ['bendFlow', 'BEND FLOW', -20, 20, 0.1],
+              ['bendScale', 'TIGHTNESS', 0.1, 3, 0.01]]],
 
   ['NEBULA', colour('neb').concat([
     ['nebDensity', 'DENSITY', 0, 3, 0.02],
@@ -192,7 +211,14 @@ export const FMT = {
   coreFade:      as.off(as.pct()),
   coreFadeRate:  as.mult(1),
 
+  fov:         as.deg(),
   coverage:    as.pct(),
+  wall:        as.ends(as.pct(), 'FOG', 'SURFACE', 1),
+  ribs:        as.off(as.pct()),
+  // Spacing reads as how many rings stand between the eye and the throat, which is the thing being set. FAR is
+  // 13 world units and a ring repeats every TAU / uRibScale of them.
+  ribScale:    as.scaled(13 / (2 * Math.PI), 1, ' rings'),
+  ribFlow:     as.raw(1, 'c'),
   bend:        as.off(as.pct()),
   bendFlow:    as.raw(1, 'c'),
   bendScale:   as.mult(2),
