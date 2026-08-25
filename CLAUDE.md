@@ -30,7 +30,7 @@ site that silently disagreed with its source. That is the same failure this proj
 level up from the geometry. It is deleted. If Pages is wanted again, serve the repo ROOT — it already works
 as-is — or add a script that copies; do not reintroduce a hand-kept mirror.
 
-The same rule caught the **control panel**, which existed three times: inline in CRT GL, again in the DC
+The same rule caught the **control panel**, which existed three times: inline in CRT Lab, again in the DC
 `Sidebar.dc.html`, and a third time in `components/ControlPanel.dc.html`. All that survives is
 `labs/kit/panel.js` + `panel.css`, and every lab uses it, tinted through custom properties. **Do not add a
 second.** It caught the **host scaffolding** too: Reactor and Wormhole came out 113 lines identical — 58% of one
@@ -41,24 +41,30 @@ of them — and that is now `labs/kit/lab.js`.
 There is no framework, no CDN and no build step in any lab. `labs/kit/` is the shared kit; a lab is a thin host
 page plus pure modules for its shader, its sim, its control table and its values.
 
+**The home page is now a consumer of `labs/`.** `site/hero-core.js` imports `labs/kit/glquad.js`, `labs/kit/lab.js`
+and four of `labs/reactor/`'s modules to draw the reactor's core, alone and ring-off, behind the hero. It is the
+lab's scene, not a copy of it — the uniform block both pages upload lives in `labs/reactor/reactor-uniforms.js`
+for that reason. So `labs/` is no longer only a lab: renaming or deleting anything in it breaks `index.html`.
+
 **Start a new lab from `labs/shell/Shell.html`.** It is the base lab — a live catalogue of every control type and
 every formatter, annotated with why each is the kind it is, built on the same scaffold the real labs use. It is
 not linked from the index and is not meant for users.
 
-Five `.dc.html` pages remain **at the repository root** — the portfolio, the console, the intro and two notes.
-They still run on `support.js` (React + Babel from unpkg). They are on their way out, and `support.js` goes with
-the last of them. Migrating one is a deliberate job with measurements either side, not something to do
-incidentally.
+**Nothing here runs React, Babel or a CDN any more.** Five `.dc.html` pages sat at the repository root — the
+portfolio, the console, the intro and two notes — on a `support.js` runtime that pulled React and Babel from
+unpkg. They were deleted along with `support.js` and `experience.html`, whose role viewer the back catalogue
+replaced. Every page that ships is now plain HTML plus ES modules, and the only network dependency left on first
+load is fonts from Google.
 
 ## Running it
 
 ES modules mean `file://` will not work. Needs a real server from the repo root:
 
 ```
-python -m http.server 8000     # then http://localhost:8000/labs/crt/CRT%20Lab.dc.html
+python -m http.server 8000     # then http://localhost:8000/labs/crt/CRT%20Lab.html
 ```
 
-First load needs network: React + Babel from unpkg, fonts from Google.
+First load needs network for the fonts from Google, and nothing else.
 
 **Editing anything in `labs/crt/` needs a hard reload**, and a plain reload is not always enough — the browser will
 serve the modules from cache while the HTML is fresh, which looks exactly like a maths bug. Either hard-reload
@@ -73,8 +79,8 @@ lab's own handle.
 ### `python bench.py` — the whole measurement in one command
 
 ```
-python bench.py                     # CRT GL, 12 samples, verdict
-python bench.py --page reactor      # any lab: crtgl | reactor | wormhole | shell, or a literal path
+python bench.py                     # CRT Lab, 12 samples, verdict
+python bench.py --page reactor      # any lab: crt | reactor | wormhole | shell, or a literal path
 python bench.py --uncapped          # frame COST, not frame rate
 python bench.py --inject "<js>"     # pin a setting first, so two runs are comparable
 ```
@@ -112,7 +118,7 @@ chrome --user-data-dir=%TEMP%\crt-bench --no-first-run --disable-extensions ^
        --remote-debugging-port=9222 --remote-allow-origins=* ^
        --disable-backgrounding-occluded-windows --disable-renderer-backgrounding ^
        --disable-features=CalculateNativeWinOcclusion ^
-       --new-window --window-size=1600,1000 "http://localhost:8000/labs/crt/CRT%20Lab.dc.html"
+       --new-window --window-size=1600,1000 "http://localhost:8000/labs/crt/CRT%20Lab.html"
 ```
 
 Verified: without those flags the page reported `hidden` and 0 rAF callbacks per second; with them, `visible` and
@@ -120,7 +126,7 @@ Verified: without those flags the page reported `hidden` and 0 rAF callbacks per
 
 The debugging port then lets you drive the page without a human at the keyboard — `POST /json/new`,
 `GET /json/activate/<id>`, and `Runtime.evaluate` over the websocket. A throwaway profile also starts with an EMPTY
-HTTP CACHE, so load the page once to pull React/Babel/fonts before measuring anything.
+HTTP CACHE, so load the page once to pull the fonts before measuring anything.
 
 **Measure on an IDLE machine, in ONE tab.** This is not fussiness — it is the difference between a number and a
 mood. During one session an *unchanged* build measured 33ms early and 71ms late, and the per-second curve degraded
@@ -153,6 +159,8 @@ These are the checks a small embedded preview cannot perform. They are the reaso
    chevron: the stage grows without the window changing, and a buffer sized from `innerWidth` instead of the
    stage would stretch here.
 3. **Settings persistence.** Each lab stores under its own key — `crtgl`, `reactor`, `wormhole`, `labshell` —
+   and **`crtgl` deliberately no longer matches its lab's name**: a storage key is an address, not a label, and
+   moving it orphans every stored configuration silently. See the note above `SAVE_KEY` before touching it —
    carrying a `v` that is checked on the way in. The shipped defaults are a real saved configuration, not a
    neutral baseline, so to see them you need an origin with no stored state; clearing localStorage and calling
    `location.reload()` does NOT give you one, because the flush on hide writes the in-memory state straight back.
@@ -185,23 +193,20 @@ maths bug.
   displacement lens) but it still sets how deep FACE bends, and every stored setting is calibrated against
   it. Change it knowingly or not at all.
 
-`labs/crt/CRT Lab HANDOFF.md` has the full "settled decisions — please don't relitigate" list. **It is named for
-a build that no longer exists, and most of it still binds**: the projection, the outline and the geometry it
-argues about are the shared modules CRT GL walks. Read it before touching either. Its companion
-`CRT Lab LAYER HANDOFF.md` is more mixed — the thirteen-layer model is gone with the DOM build, but the sections
-on the face's shape and the rim's pinning are still current.
+**The two CRT handoff documents are gone.** They recorded the settled decisions of a build that no longer
+exists, and every decision in them that still binds is already stated where it applies: the sag amplitude in
+`crt-projection.js`'s header, the `BEND` double root in `crt-geometry.js`'s, and the rest in the list above.
+A decision written twice is two descriptions that can drift, which is the fault this whole file is about.
 
 ## Not yet done
 
-- **The root pages are still `.dc.html`.** Portfolio, Console OS, Cinematic Intro and the two notes. They are the
-  last users of `support.js`, React and Babel; migrating them retires all three.
 - **Reactor's two frozen uniforms** (above) are uncut.
 - **Reactor's `renderNow` is not reproducible**, because `sim.step` carries phase forward — so that lab has no
-  render fingerprint of the kind `render-probe.js` gives CRT GL. Resetting the sim would be the way in.
+  render fingerprint of the kind `render-probe.js` gives CRT Lab. Resetting the sim would be the way in.
 - **Mobile is a fold-away panel, not a layout.** Below 820px wide *or 500px tall* each lab hides its panel behind
-  a chevron and CRT GL applies a small-display override table; the control density is still built for a large
+  a chevron and CRT Lab applies a small-display override table; the control density is still built for a large
   window. **Both halves of that test are load-bearing** — a phone on its side is 852x393, wide enough to pass any
-  width test — and the pair lives in three places that must move together: `NARROW_W`/`SHORT_H` in CRT GL, the
+  width test — and the pair lives in three places that must move together: `NARROW_W`/`SHORT_H` in CRT Lab, the
   `breakpoint`/`shortSide` defaults in `labs/kit/panel.js`, and the `(max-width), (max-height)` queries in
   `panel.css` and `lab.css`. A stylesheet cannot be read from the script; if they disagree the panel overlays the
   stage while the script still believes it is in the flow.

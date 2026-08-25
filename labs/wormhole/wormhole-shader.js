@@ -1,18 +1,18 @@
 /* The wormhole as a volumetric march through a 3D field. Pure source, no GL calls.
  *
  * THE FIELD IS SAMPLED AT THE REAL 3D POINT, which is what makes it a volume. Collapsing the sample position to
- * its angle — the trick a single-sample tunnel shader uses — gives every step down a ray the same lateral
- * coordinate, and the march then smears radially instead of building structure. The tunnel comes from the
- * radial DENSITY PROFILE instead: clear along the axis, filling toward the wall.
+ * its angle gives every step down a ray the same lateral coordinate, and the march then smears radially instead of
+ * building structure. The tunnel comes from the radial DENSITY PROFILE instead: clear along the axis, filling
+ * toward the wall.
  *
  * THE THREE LAYERS ARE MIXED BY DEPTH, NOT STACKED. Every step asks each enabled layer for a density and an
  * emission and composites front-to-back, so a cloud can sit in front of a bolt which sits in front of another
- * cloud. Compositing three finished images could not do that — one would always be on top.
+ * cloud. Compositing three finished images could not do that.
  *
- * EVERY LAYER OWNS ITS OWN FLOW: speed, twist and spin. Nothing about the motion is shared, and THE
- * CAMERA DOES NOT MOVE AT ALL — each layer slides its own field along z instead. Moving the camera is the obvious
- * way to fly down a tunnel and it forces one speed on everything; sliding the fields is the same motion and it is
- * the only version in which three layers can travel at three rates.
+ * EVERY LAYER OWNS ITS OWN FLOW: speed, twist and spin. THE CAMERA DOES NOT MOVE AT ALL — each layer slides its own
+ * field along z instead. Moving the camera is the obvious way to fly down a tunnel and it forces one speed on
+ * everything; sliding the fields is the same motion and the only version in which three layers travel at three
+ * rates.
  *
  * Each layer returns `vec2(density, gradient)`; the gradient is what its colour ramp reads, and each defines it
  * differently so the three do not read as one field tinted three ways.
@@ -41,6 +41,7 @@ export const UNIFORMS = [
  */
 const BODY = `
 precision highp float;
+out vec4 fragColor;
 
 uniform vec2 uRes;
 uniform float uTime, uSteps, uSpread, uBend, uBendFlow, uBendScale;
@@ -69,12 +70,9 @@ ${NOISE}
 ${PALETTE}
 ${TUNNEL}
 
-/* THE AXIS IS A CURVE, NOT A LINE — the rollercoaster.
- *
- * The camera still does not move. Bending the TUNNEL around a stationary eye is the same picture as flying a
- * curved track, and it is the only version that keeps every layer agreeing: each one measures its radius from
- * this curve rather than from the z axis, so clouds, bolts and streaks all lean into the same bend instead of
- * three fields curving separately.
+/* THE AXIS IS A CURVE, NOT A LINE — the rollercoaster. The camera still does not move: bending the TUNNEL around a
+ * stationary eye is the same picture as flying a curved track, and it is the only version that keeps every layer
+ * agreeing, because each measures its radius from this curve rather than from the z axis.
  *
  * Two incommensurate sines per axis, so the track never repeats on a countable beat. BEND FLOW slides the curve
  * toward the eye, which is what makes the corners arrive rather than sit still.
@@ -118,21 +116,18 @@ vec2 nebula(vec3 p, float sec){
 }
 #endif
 
-/* LIGHTSPEED — SOLVED, NOT MARCHED.
+/* LIGHTSPEED — SOLVED, NOT MARCHED. A streak is a CAPSULE: a segment running parallel to the tunnel axis with a
+ * radius, so its ends are round by construction rather than faded by a window function.
  *
- * A streak is a CAPSULE: a segment running parallel to the tunnel axis with a radius, so its ends are round by
- * construction rather than faded by a window function.
- *
- * THE MARCH COULD NOT DRAW THIS, and that is why the layer was rebuilt rather than tuned. A marched ray either
- * lands on a thin line or misses it, so the kernel has to be widened to the sampling rate and then dimmed to
- * conserve energy — measured at 18x too wide and 0.3% of intended brightness at the far end, and still 9x too
- * wide at maximum QUALITY. Distance to a shape has no such floor: the width here is the width asked for, at any
- * step count and any resolution.
+ * THE MARCH COULD NOT DRAW THIS, which is why the layer was rebuilt rather than tuned. A marched ray either lands
+ * on a thin line or misses it, so the kernel has to be widened to the sampling rate and then dimmed to conserve
+ * energy — many times too wide even at maximum QUALITY. Distance to a shape has no such floor: the width here is
+ * the width asked for, at any step count and any resolution.
  *
  * WHY IT CLOSES: the camera sits ON the axis and the capsules run parallel to it, so a ray's xy direction never
- * changes — in cross-section it sweeps ONE radial line out from the centre. Only streaks near that angle can ever
- * be hit, so bucketing by angle turns "which of two hundred streaks does this pixel see" into three candidates
- * per shell. No traversal, no marching, no step count.
+ * changes — in cross-section it sweeps ONE radial line out from the centre. Only streaks near that angle can be
+ * hit, so bucketing by angle turns "which of two hundred streaks does this pixel see" into three candidates per
+ * shell. No traversal, no marching, no step count.
  */
 
 // Ray-to-capsule distance for a segment parallel to z, and the depth it happens at. Exact: the closest approach
@@ -151,16 +146,14 @@ float capsuleDist(vec3 rd, vec2 c, float z1, float z2, out float tHit){
   return length(P - vec3(c, clamp(P.z, z1, z2)));
 }
 
-/* THE LAYER COMES BACK IN DEPTH BANDS, NOT AS ONE COLOUR, and that is what lets it weave.
+/* THE LAYER COMES BACK IN DEPTH BANDS, NOT AS ONE COLOUR, and that is what lets it weave. A solved layer has no
+ * natural place in a marched one: it is finished before the march starts, so handing back a single colour and depth
+ * means the whole layer is occluded by whatever sits in front of its NEAREST streak, and the set moves as a sheet.
+ * Splitting the emission by depth and dimming each band by the transmittance the march reaches IT at is what puts
+ * some streaks behind a cloud and others in front of the same one.
  *
- * A solved layer has no natural place in a marched one: it is finished before the march starts. Handing back a
- * single colour and a single depth means the whole layer is occluded by whatever sits in front of its NEAREST
- * streak — so the set moves as a sheet, in front of the cloud or behind it, never through it. Splitting the
- * emission by depth and dimming each band by the transmittance the march reaches IT at is what puts some streaks
- * behind a cloud and others in front of the same one.
- *
- * Four bands is a judgement, not a law: it is four compares per step and four accumulators, and the banding is
- * invisible because a streak is thin enough that neighbouring bands rarely both carry one.
+ * Four bands is a judgement, not a law: four compares per step and four accumulators, and the banding is invisible
+ * because a streak is thin enough that neighbouring bands rarely both carry one.
  */
 struct Streaks { vec3 b0; vec3 b1; vec3 b2; vec3 b3; };
 
@@ -188,15 +181,13 @@ Streaks lightspeed(vec3 rd, float sec){
   for (int s = 0; s < 3; s++){
     float rr = inner + (float(s) + 0.5) * bandW;
 
-    /* ROTATION IS RESOLVED PER BAND, BEFORE THE BUCKET IS CHOSEN, and it has to be. The bucket is picked from the
-     * ray's screen angle, so a capsule rotated AFTER that lands outside the bucket that was searched for it and is
-     * never found — which is a black screen, not a subtle error.
+    /* ROTATION IS RESOLVED PER BAND, BEFORE THE BUCKET IS CHOSEN, and it has to be: the bucket is picked from the ray's
+     * screen angle, so a capsule rotated AFTER that lands outside the bucket searched for it and is never found —
+     * which is a black screen, not a subtle error.
      *
-     * SPIN is rigid and needs no depth. TWIST does, and this is the approximation: a band has a known middle
-     * radius, so the depth a ray crosses it at solves directly, and the whole band rotates by the twist there. A
-     * helix has no closed form, but a capsule only has to be in the right place where the ray meets it. Streaks
-     * scattered off the band's middle carry a little of that band's rotation instead of their own, which is a
-     * small angular lean and never a miss — the capsule is always in the bucket that was searched. */
+     * SPIN is rigid and needs no depth. TWIST does, and this is the approximation: a band has a known middle radius,
+     * so the depth a ray crosses it at solves directly, and the whole band rotates by the twist there. A helix has no
+     * closed form, but a capsule only has to be in the right place where the ray meets it. */
     float zMeet = clamp(rr * rd.z / k, 0.0, FAR);
     /* THE BEND MOVES THE BUCKET, NOT ONLY THE CAPSULE. This layer finds a streak by the ray's ANGLE about
      * the tunnel centre; offsetting capsules without offsetting the search looks for them where they are
@@ -239,19 +230,16 @@ Streaks lightspeed(vec3 rd, float sec){
       float rad = inner + mod(rr - inner + (rRad - 0.5) * mix(bandW, wall, chaos) + wall, wall);
       vec2 c = bendM + rad * vec2(cos(th), sin(th));
 
-      /* EACH PASS IS A NEW BEAM. Keyed to the lane ALONE — which is what it was — about two hundred
-       * streaks repeat unchanged for the life of the page: a streak that wraps out of view comes back
-       * identical, so VARIANCE only ever varied them against each other and never over time. Seeding the
-       * length, thickness and brightness with the lane AND the cycle number gives every pass its own.
+      /* EACH PASS IS A NEW BEAM. Keyed to the lane alone, every streak repeats unchanged for the life of the page, so
+       * VARIANCE only ever varies them against each other and never over time. Seeding the length, thickness and
+       * brightness with the lane AND the cycle number gives every pass its own.
        *
-       * THE CYCLE IS COUNTED ON THE NOMINAL LENGTH, not the drawn one, or the count would depend on the
-       * draw it seeds. Three half-lengths of span rather than two is the headroom for the longest a pass
-       * can be at full VARIANCE, so a streak still clears the view before its next one enters.
+       * THE CYCLE IS COUNTED ON THE NOMINAL LENGTH, not the drawn one, or the count would depend on the draw it
+       * seeds. The headroom is for the longest a pass can be at full VARIANCE.
        *
-       * SEEDS ARE KEPT SMALL. hash11 starts with fract(p * 0.1031), and a float32 near 60000 holds only
-       * about eight bits of fraction — feeding it a lane index multiplied by a cycle count degrades to a
-       * handful of distinct outcomes. Hashing the lane to 0..1 first keeps every argument under a
-       * thousand. */
+       * SEEDS ARE KEPT SMALL. hash11 starts with fract(p * 0.1031), and a large float32 holds only a few bits of
+       * fraction, so feeding it a lane index multiplied by a cycle count degrades to a handful of distinct outcomes.
+       * Hashing the lane to 0..1 first keeps every argument small. */
       float vel = uLsSpeed * (1.0 + chaos * (rSpd - 0.5));
       float sp = FAR + 3.0 * halfLen;
       float u = rPhase * sp - sec * vel * 0.55;
@@ -292,21 +280,17 @@ Streaks lightspeed(vec3 rd, float sec){
 }
 #endif
 
-/* PLASMA — lightning filaments that crawl and crackle.
+/* PLASMA — lightning filaments that crawl and crackle. CRACKLE is the reciprocal thickness, taking bolts from soft
+ * veins to hair-thin forks. FLASH gates regions out of step with each other, so the ring does not blink as one.
  *
- * CRACKLE is the reciprocal thickness, taking bolts from soft veins to hair-thin forks. FLASH gates regions out
- * of step with each other, so the ring does not blink as one.
+ * THE LAYER TURNS ON SPIN AND TWIST AND NOTHING ELSE, which is what NEBULA does. A separate CRAWL carrying its own
+ * constant angular rate fights SPIN, so the layer turns the opposite way from the number on screen. Two controls
+ * for one rate is the bug; one is the fix.
  *
- * THE LAYER TURNS ON SPIN AND TWIST AND NOTHING ELSE, which is what NEBULA does. There was a CRAWL as well,
- * carrying a constant angular rate that fought SPIN — +0.30 rad/s against SPIN's -0.25, so the layer turned the
- * opposite way from the number on screen. Two controls for one rate is the bug; one is the fix.
- *
- * THE LAYER IS THREE FUNCTIONS AND THE MARCH CHOOSES BETWEEN THEM. That is not a stylistic split, and collapsing
- * it back into one function with early returns costs half the layer's speed: the compiler FLATTENS an early
- * return out of a small function and evaluates it anyway. Measured — 16% of samples reach the filament and 1.4%
- * reach the gate, yet deleting both tests was free, and ADDING two texture fetches behind them made the frame
- * 36% FASTER. Both readings say the same thing: the tests were not skipping anything. With them in the loop
- * instead, the layer costs 2.45 ms where it cost 5.07, and the frame is byte-identical.
+ * THE LAYER IS THREE FUNCTIONS AND THE MARCH CHOOSES BETWEEN THEM. That is not a stylistic split: collapsing it
+ * back into one function with early returns costs half the layer's speed, because the compiler FLATTENS an early
+ * return out of a small function and evaluates it anyway. With the tests in the loop instead, the layer costs less
+ * than half what it did and the frame is byte-identical.
  */
 
 #ifdef HAVE_PL
@@ -322,15 +306,14 @@ PSite plasmaSite(vec3 p, float sec){
   PSite s;
   s.xy = spin(p.xy, uPlSpin * sec + uPlTwist * p.z * 0.05);
   s.z = p.z + sec * uPlSpeed * 0.55;
-  /* THE SPARSITY MASK IS FRAMED LIKE THE FIELD IT GATES, at a third of its frequency. It used to sample at
-   * vec3(xy * 0.45, z * 0.12), which spans 1.1 lattice cells across the whole tube and 1.6 over the whole
-   * visible depth — far too coarse to vary with angle, so all it could do was switch SLABS of depth on and off,
-   * and they swept past as distinct layers. At this framing it is 3 cells across and 3.7 deep: patchy in three
-   * dimensions, which is what a sparsity mask is for.
+  /* THE SPARSITY MASK IS FRAMED LIKE THE FIELD IT GATES, at a third of its frequency. Sampled far too coarsely it
+   * spans barely one lattice cell across the whole tube, so all it can do is switch SLABS of depth on and off, and
+   * they sweep past as distinct layers. At this framing it is patchy in three dimensions, which is what a sparsity
+   * mask is for.
    *
-   * THE OFFSET IS NOT DECORATION. Without it this samples the same field the filament does, only slower, and
-   * the two anti-correlate — where the mask passes, the filament's own value is far from its crossing, so
-   * nothing survives and the layer renders black. */
+   * THE OFFSET IS NOT DECORATION. Without it this samples the same field the filament does, only slower, and the two
+   * anti-correlate — where the mask passes, the filament's own value is far from its crossing, so nothing survives
+   * and the layer renders black. */
   float lo = mix(0.85, 0.30, clamp(uPlFill, 0.0, 1.0));
   float n = noise3(vec3(s.xy, s.z * uPlStreak) * uPlScale * 0.35 + vec3(47.3, 11.9, 23.7));
   s.region = smoothstep(lo, lo + 0.20, n);
@@ -346,21 +329,17 @@ PSite plasmaSite(vec3 p, float sec){
 
 /* The bolt: two more fetches, worth spending only where the sparsity mask survived.
  *
- * SCALE AND STREAK ARE THE SAME TWO CONTROLS NEBULA HAS, and they were a pair of constants here until the
- * ribbing made the difference matter. STREAK squashes the depth axis so filaments run lengthwise down the
- * tunnel; SCALE sets how big the whole field is.
+ * SCALE AND STREAK ARE THE SAME TWO CONTROLS NEBULA HAS. STREAK squashes the depth axis so filaments run lengthwise
+ * down the tunnel; SCALE sets how big the whole field is.
  *
- * THE TWO TOGETHER ARE WHY THE BOLTS LOOKED RIBBED. Squashing depth stretches the noise along the exact
- * direction a filament runs, so the field's own features read as beads strung along it — at the old framing,
- * one every 2.2 world units, which looked like fish bones through half the strands. Relaxing the squash clears
- * them and costs the lengthwise character, turning the layer into smoke; keeping the squash and RAISING SCALE
- * clears them by making the beads too small and too many to read as anything but texture. The shipped pair does
- * the latter. The cost is stipple — finer features are harder to sample — so the layer wants its two samples
- * per step more than ever.
+ * THE TWO TOGETHER ARE WHY THE BOLTS LOOKED RIBBED. Squashing depth stretches the noise along the exact direction a
+ * filament runs, so the field's own features read as beads strung along it. Relaxing the squash clears them and
+ * costs the lengthwise character, turning the layer into smoke; keeping the squash and RAISING SCALE clears them by
+ * making the beads too small to read as anything but texture. The shipped pair does the latter, and the cost is
+ * stipple, so the layer wants its two samples per step more than ever.
  *
- * FOUR OTHER CAUSES WERE TESTED AND ARE NOT IT, so do not spend the time again: more samples per step (that
- * fixes dots, not rungs), a quintic interpolant in noise3 (the creases are not a second-derivative artefact),
- * rotating the second noise field so the two lattices share no axes, and a second octave on each field.
+ * FOUR OTHER CAUSES WERE TESTED AND ARE NOT IT, so do not spend the time again: more samples per step, a quintic
+ * interpolant in noise3, rotating the second noise field so the two lattices share no axes, and a second octave.
  */
 float plasmaFil(PSite s){
   vec3 q = vec3(s.xy, s.z * uPlStreak) * uPlScale;
@@ -386,16 +365,12 @@ void main(){
 
   int steps = int(uSteps);
 
-  /* THE MARCH STARTS WHERE THE RAY ENTERS THE SHELL, NOT AT THE EYE.
+  /* THE MARCH STARTS WHERE THE RAY ENTERS THE SHELL, NOT AT THE EYE. Nothing exists inside the clear throat, and every
+   * layer's density begins at its own radius, so the depth at which a ray first reaches the innermost enabled layer
+   * solves exactly — and every step before that was integrating vacuum.
    *
-   * Nothing exists inside the clear throat, and every layer's density begins at its own radius: wallProfile is
-   * identically zero below 1 - COVERAGE. A ray's radial distance is |rd.xy| * t, so the depth at which it first
-   * reaches the innermost enabled layer solves exactly — and every step before that was integrating vacuum.
-   *
-   * This is most of the cost of this shader. Measured with all layers OFF the loop still took two thirds of the
-   * frame, because a ray down the middle of the screen never reaches the wall at all and was marching the full
-   * range regardless. Rays that never enter now skip the loop entirely rather than stepping through nothing.
-   */
+   * This is most of the cost of this shader: with all layers OFF the loop still took two thirds of the frame,
+   * because a ray down the middle of the screen never reaches the wall at all. */
   /* LIGHTSPEED IS NOT IN THIS TEST any more, and that is most of what it bought. It is solved rather than
    * marched, so with it lit alone there is no march at all — steps falls to zero and every ray exits before the
    * loop. It still occludes correctly, by the transmittance captured at its own depth below. */
@@ -422,21 +397,17 @@ void main(){
   float tEnter = max(0.3, (innerMin * TUBE - uBend * 0.752) / max(k, 1e-5));
 
   /* THE STEPS GROW WITH DEPTH. A uniform march spends as much on the far half of the tunnel — where everything is
-   * small, dim and already half-occluded — as on the near half that fills the screen. Growing the step by a fixed
-   * ratio covers the same range in far fewer samples and puts the detail where it is visible.
+   * small, dim and already half-occluded — as on the near half that fills the screen.
    *
-   * WHAT IS FIXED IS THE RATIO BETWEEN THE FIRST STEP AND THE LAST, not the per-step growth. Growth used to be a
-   * constant 1.055, which made that ratio compound with the step count — 1.8x at 12 steps and 105x at 88 — so
-   * every sample QUALITY added went to the near field and the far field stayed where it was. Measured: doubling
-   * QUALITY from 44 to 88 costs 86% more and refines the far end by 1.2%, while the near end becomes eleven
-   * times finer than anything there needs.
+   * WHAT IS FIXED IS THE RATIO BETWEEN THE FIRST STEP AND THE LAST, not the per-step growth. A constant growth rate
+   * makes that ratio compound with the step count, so every sample QUALITY adds goes to the near field and the far
+   * field stays where it was.
    *
-   * Solving growth from the step count instead pins the near-to-far ratio at SPREAD, so every extra step refines
-   * the WHOLE ray and QUALITY means what it says. 8 is close to what 44 steps happened to give before, so the
-   * shipped scene is about where it was.
+   * Solving growth from the step count instead pins the near-to-far ratio at SPREAD, so every extra step refines the
+   * WHOLE ray and QUALITY means what it says.
    *
-   * STEP SPREAD is that ratio, and it is a control because it is a real trade rather than a right answer:
-   * 1 marches evenly and gives the far field the most samples it can, high concentrates them at the eye. */
+   * STEP SPREAD is that ratio, and it is a control because it is a real trade rather than a right answer: 1 marches
+   * evenly and gives the far field the most samples it can, high concentrates them at the eye. */
   float span = max(FAR - tEnter, 0.0);
   /* NUDGED OFF 1.0, because the step below divides by (growth^n - 1) and an EVEN march makes that exactly zero
    * over an exactly-zero numerator. NaN, and a black frame at the one end of the slider a reader would try
@@ -476,16 +447,15 @@ void main(){
     if (uPlOn > 0.5 && pProf > 0.003){
       PSite ps = plasmaSite(p, sec);
       if (ps.region >= 0.004){
-        /* TWO SAMPLES ACROSS THE STEP, NOT ONE. A bolt is thinner than a step is long over most of the tunnel,
-         * so point-sampling lands on one or misses it and the layer reads as scattered dots rather than lines.
-         * Averaging across the step is what the march is meant to be integrating in the first place.
+        /* TWO SAMPLES ACROSS THE STEP, NOT ONE. A bolt is thinner than a step is long over most of the tunnel, so
+         * point-sampling lands on one or misses it and the layer reads as scattered dots rather than lines. Averaging
+         * across the step is what the march is meant to be integrating in the first place.
          *
-         * It is nearly free ONLY because it sits inside the branch — a sixth of samples reach it. Measured
-         * against a converged render it cuts the error from 9.1 to 5.4 of 255 for -1.5% of a frame, where
-         * doubling QUALITY costs +86% and still sits at 7.7.
+         * It is nearly free ONLY because it sits inside the branch — a sixth of samples reach it — and it cuts the
+         * error against a converged render by far more than doubling QUALITY does, for a fraction of the cost.
          *
-         * The second sample takes its OWN sparsity value. Reusing this one's, to save a fetch, measured 8.0 —
-         * barely better than not sub-sampling at all. */
+         * The second sample takes its OWN sparsity value; reusing this one's, to save a fetch, is barely better than
+         * not sub-sampling at all. */
         float bolt = 0.5 * (plasmaFil(ps) + plasmaFil(plasmaSite(p + rd * dt * 0.5, sec)));
         if (bolt >= 0.002){
           float d = bolt * plasmaLive(ps, sec) * uPlDensity;
@@ -532,17 +502,16 @@ void main(){
   col += ls.b0 * tb0 + ls.b1 * tb1 + ls.b2 * tb2 + ls.b3 * tb3;
 #endif
 
-  /* THE CORE CAN TAKE ITS COLOUR FROM WHATEVER IS LIT, so the far end of the tunnel belongs to the scene instead
-   * of being a white dot pasted over it. SOURCE blends between the swatch and the average of the enabled layers'
-   * ramps, which is why it is one slider and not a mode: the useful settings are the ends AND between them.
+  /* THE CORE CAN TAKE ITS COLOUR FROM WHATEVER IS LIT, so the far end of the tunnel belongs to the scene instead of
+   * being a white dot pasted over it. SOURCE blends between the swatch and the average of the enabled layers' ramps,
+   * which is why it is one slider and not a mode: the useful settings are the ends AND between them. With no layer
+   * lit there is nothing to average, so the swatch is the only answer.
    *
-   * With no layer lit there is nothing to average, so the swatch is the only answer and SOURCE has no effect.
+   * The centre stays near-white and only the CORONA takes the tint, which is how an actual bright source reads: hot
+   * enough to clip in the middle, coloured at the edges.
    *
-   * The centre stays near-white and only the CORONA takes the tint, which is how an actual bright source reads:
-   * hot enough to clip in the middle, coloured at the edges. TINT at 0 restores the plain white source.
-   *
-   * Added AFTER the march and multiplied by the surviving transmittance, so cloud in front of it occludes it
-   * rather than being washed out by a glow drawn on top. */
+   * Added AFTER the march and multiplied by the surviving transmittance, so cloud in front of it occludes it rather
+   * than being washed out by a glow drawn on top. */
   /* r IS THE SCREEN RADIUS and stays screen-centred, because CHROMA and VIGNETTE are lens effects that
    * belong to the frame rather than to the tunnel.
    *
@@ -587,24 +556,20 @@ void main(){
   col *= mix(1.0, smoothstep(1.4, 0.1, r), uVignette);
   col *= uExposure;
   col = col / (col + 1.0);
-  gl_FragColor = vec4(pow(col, vec3(0.85)), 1.0);
+  fragColor = vec4(pow(col, vec3(0.85)), 1.0);
 }`;
 
-/* A SHADER PER LAYER SET, because a layer costs whether or not it runs.
- *
- * Measured on integrated graphics at 480x360 and 32 steps: PLASMA alone costs 9.14 ms in a shader carrying all
- * three layers and 4.88 ms in one carrying only plasma, for a byte-identical frame. NEBULA alone goes 6.84 to
- * 5.23 the same way. Switching a layer off zeroes its uniform; it does not take its code out of the binary, and
+/* A SHADER PER LAYER SET, because a layer costs whether or not it runs. Measured on integrated graphics, one layer
+ * alone costs roughly half as much in a shader carrying only that layer as in one carrying all three, for a
+ * byte-identical frame. Switching a layer off zeroes its uniform; it does not take its code out of the binary, and
  * the code is what the march is paying for.
  *
- * LIGHTSPEED gains nothing here and is included for completeness — it is solved rather than marched, so its cost
- * does not multiply by the step count and there is little to remove.
- *
- * The uniforms still decide what draws. A mask that disagrees with them silently loses a layer, so the host must
- * derive one from the other — never keep two lists.
- */
+ * LIGHTSPEED gains nothing here and is included for completeness — it is solved rather than marched. */
 export function fragFor(neb, ls, pl) {
-  return (neb ? '#define HAVE_NEB 1\n' : '')
+  /* THE VERSION LEADS THE DEFINES. #version must precede everything but comments and whitespace, and this
+     function is the only place the pieces are joined — so it is the only place that can guarantee the order. */
+  return '#version 300 es\n'
+       + (neb ? '#define HAVE_NEB 1\n' : '')
        + (ls ? '#define HAVE_LS 1\n' : '')
        + (pl ? '#define HAVE_PL 1\n' : '')
        + BODY;

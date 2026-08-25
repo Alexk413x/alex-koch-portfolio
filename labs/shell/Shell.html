@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Lab Shell — the base lab</title>
+<title>Lab Shell</title>
 <!-- NOT A USER-FACING PAGE. This is the reference wiring for a lab screen and a live catalogue of every control
      the kit offers. It is not linked from the site index; noindex says the same thing to a crawler. -->
 <meta name="robots" content="noindex, nofollow">
@@ -12,6 +12,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Archivo:wght@700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../kit/panel.css">
+<link rel="stylesheet" href="../kit/loading.css">
 <link rel="stylesheet" href="../kit/lab.css">
 <!-- A lab's own style block holds only what is true of that lab. Here that is one line. -->
 <style>
@@ -19,6 +20,11 @@
 </style>
 </head>
 <body>
+
+<!-- Empty, and fixed black over the whole viewport from the first paint, so a cold load never flashes.
+     mountLoader() fills it in; see labs/kit/lab.js. -->
+<div class="kit-load" role="status" aria-live="polite"></div>
+
 <div id="stage">
   <canvas id="subject"></canvas>
   <div id="mast">
@@ -58,17 +64,19 @@
  */
 import { createQuad } from '../kit/glquad.js';
 import { createPanel, buildActions, mountPanelToggle } from '../kit/panel.js';
-import { persist, fitCanvas, runLoop, textOut, reportNoGL } from '../kit/lab.js';
+import { persist, fitCanvas, runLoop, textOut, reportNoGL, escapeLeaves, mountLoader } from '../kit/lab.js';
+
 import { FRAG, UNIFORMS } from './shell-shader.js';
 import { SECTIONS, FMT, SHAPES } from './shell-sidebar.js';
 import { PRESETS, defaultPreset, matchIdx } from './shell-presets.js';
+mountLoader();
+// Escape leaves the instrument, the way the back button does.
+escapeLeaves();
 
 // 1 — THE RENDERER. Returns null when WebGL is unavailable; say so on the page rather than showing black.
 const stage = document.getElementById('stage');
 const R = createQuad(document.getElementById('subject'), {
-  // `ext` IS NOT OPTIONAL WHEN THE SHADER USES fwidth: WebGL1 has no derivatives without it, the shader compiles
-  // to nothing, and the page simply never starts. See the note at the top of shell-shader.js.
-  frag: FRAG, uniforms: UNIFORMS, ext: ['OES_standard_derivatives'], onRestore: () => fit(true),
+  frag: FRAG, uniforms: UNIFORMS, onRestore: () => fit(true),
 });
 if (!R) { reportNoGL(); throw new Error('WebGL unavailable'); }
 

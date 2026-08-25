@@ -3,129 +3,1761 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Alex Koch — Portfolio &amp; Labs</title>
-<meta name="description" content="A portfolio site and a set of instruments, including an amber CRT simulated two independent ways.">
+<title>Alex Koch, Agentic Mobile Engineer</title>
+<meta name="description" content="Alex Koch, agentic mobile engineer. 14 years shipping mobile at scale with Yahoo!, Target, Kohl's and Vacasa. Now building QAAI, a multi-agent QA platform.">
+<meta name="color-scheme" content="dark">
+<link rel="canonical" href="https://alexk413x.github.io/alex-koch-portfolio/">
+
+<!-- Absolute URLs, because a scraper resolves these against nothing. og:image must be a raster format and at
+     least 200x200: Slack, iMessage and LinkedIn all decline an SVG, which is why the card is a PNG built from
+     the same 413X glyphs as favicon.svg. -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Alex Koch">
+<meta property="og:url" content="https://alexk413x.github.io/alex-koch-portfolio/">
+<meta property="og:title" content="Alex Koch, Agentic Mobile Engineer">
+<meta property="og:description" content="Alex Koch, agentic mobile engineer. 14 years shipping mobile at scale with Yahoo!, Target, Kohl's and Vacasa. Now building QAAI, a multi-agent QA platform.">
+<meta property="og:image" content="https://alexk413x.github.io/alex-koch-portfolio/site/og-card.png">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="The 413X mark over the name Alex Koch and the role agentic mobile engineer.">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Alex Koch, Agentic Mobile Engineer">
+<meta name="twitter:description" content="Alex Koch, agentic mobile engineer. 14 years shipping mobile at scale with Yahoo!, Target, Kohl's and Vacasa. Now building QAAI, a multi-agent QA platform.">
+<meta name="twitter:image" content="https://alexk413x.github.io/alex-koch-portfolio/site/og-card.png">
+
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon.ico" sizes="48x48 32x32 16x16">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
-<style>
-  /* Deliberately single-look: this is the porch light for a set of amber CRT instruments, so it does not
-     follow the viewer's colour scheme. Everything below is self-contained -- no build step, one file. */
-  :root{
-    --bg:#0b0906; --panel:#141009; --line:#3a2a16;
-    --ink:#f0a24a; --hi:#ffe0c0; --dim:#997d5a; --warn:#ff8a3c;
-  }
-  *{box-sizing:border-box}
-  html,body{margin:0;padding:0}
-  body{
-    background:var(--bg); color:var(--ink);
-    font-family:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
-    font-size:14px; line-height:1.7; letter-spacing:.02em;
-    padding:clamp(24px,5vw,72px) clamp(20px,5vw,40px);
-    /* the faintest scanline wash, so the page belongs to the things it links to */
-    background-image:repeating-linear-gradient(180deg,rgba(0,0,0,.28) 0 1px,transparent 1px 3px);
-  }
-  .wrap{max-width:860px;margin:0 auto}
-  h1{
-    font-size:clamp(22px,4.5vw,34px); font-weight:700; margin:0 0 4px;
-    color:var(--hi); letter-spacing:.12em; text-transform:uppercase;
-    text-shadow:0 0 18px rgba(255,180,84,.28);
-  }
-  .sub{color:var(--dim);margin:0 0 8px}
-  a{color:var(--ink)}
-  h2{
-    font-size:12px; font-weight:700; letter-spacing:.22em; text-transform:uppercase;
-    color:var(--dim); margin:44px 0 14px; padding-bottom:8px; border-bottom:1px solid var(--line);
-  }
-  .grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
-  .card{
-    display:block; padding:16px 18px; text-decoration:none; color:inherit;
-    background:var(--panel); border:1px solid var(--line); border-radius:3px;
-    transition:border-color .15s, transform .15s, box-shadow .15s;
-  }
-  .card:hover,.card:focus-visible{
-    border-color:var(--ink); transform:translateY(-2px);
-    box-shadow:0 0 0 1px rgba(240,162,74,.25),0 8px 26px rgba(0,0,0,.5); outline:none;
-  }
-  .card .name{color:var(--hi);font-weight:700;letter-spacing:.06em}
-  .card .tag{color:var(--warn);font-size:10px;letter-spacing:.18em;text-transform:uppercase}
-  .card p{margin:6px 0 0;color:var(--dim);font-size:12.5px;line-height:1.6}
-  ul.plain{list-style:none;padding:0;margin:0}
-  ul.plain li{padding:5px 0;border-bottom:1px solid rgba(58,42,22,.5)}
-  .note{
-    margin-top:44px;padding:14px 16px;border-left:2px solid var(--warn);
-    background:rgba(255,138,60,.05);color:var(--dim);font-size:12.5px;line-height:1.65;
-  }
-  footer{margin-top:44px;padding-top:16px;border-top:1px solid var(--line);color:var(--dim);font-size:12px}
-</style>
+<!-- BOOTING IS SET BEFORE THE FIRST PAINT AND CLEARED ON DOMContentLoaded. Inline and not in a module: this
+     has to be true for the very first frame, and a module is deferred to after parsing, which is exactly the
+     moment it is meant to have been true before. Without JavaScript the class is never set, so the hero is
+     visible from the start rather than faded out forever waiting for a reveal that cannot come. -->
+<script>
+  (function () {
+    var el = document.documentElement;
+    el.classList.add('booting');
+    // WAIT FOR THE TYPE, NOT JUST THE DOM. display-lockup.js measures each line's real ink edges and retracks
+    // the shorter one, which it can only do once the webfont has arrived — measured, that moves the lockup 30px.
+    // Revealing on DOMContentLoaded alone put that move inside the fade on a slow font, so the name appeared to
+    // slide into place. Behind fonts.ready it happens while the hero is still at zero opacity.
+    var done = false;
+    var reveal = function () { if (done) return; done = true; el.classList.remove('booting'); };
+    var ready = document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve();
+    ready.then(function () {
+      // One more frame after the fonts land, so the retrack has been laid out before anything becomes visible.
+      requestAnimationFrame(function () { requestAnimationFrame(reveal); });
+    });
+    // A font that never arrives must not cost the reader the page.
+    setTimeout(reveal, 2500);
+  })();
+</script>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="site/site.css">
 </head>
 <body>
-<div class="wrap">
 
-  <h1>Alex Koch</h1>
-  <p class="sub">Portfolio, and a set of instruments.</p>
-  <p class="sub" style="max-width:64ch">
-    Tools built to make something physical <em>measurable</em> rather than merely to look like it.
-    Hand-authored — no build step, no bundler.
-  </p>
-
-  <h2>The CRT</h2>
-  <div class="grid">
-    <a class="card" href="labs/crt/CRT%20GL.html">
-      <span class="tag">WebGL2</span>
-      <div class="name">CRT GL</div>
-      <p>The tube as a fragment shader: face curvature, shadow mask, beam, phosphor persistence and a
-         ray-traced light fitting reflected in the glass, solved per pixel.</p>
+<!-- Three zones on one row: the mark, the sections, the marks. The middle zone is centred against the viewport
+     rather than against whatever the two sides weigh, so the links hold still when either side changes width. -->
+<nav id="nav">
+  <div class="brand">
+    <a class="mark" href="#alex">ALEXK413X</a>
+  </div>
+  <div class="links">
+    <a href="#alex">ALEX</a>
+    <a href="#cartographer">CARTOGRAPHER</a>
+    <a href="#app">CALCULATOR</a>
+    <a href="#experience">EXPERIENCE</a>
+    <a href="#labs">LABS</a>
+    <a href="#contact">CONTACT</a>
+  </div>
+  <!-- Deliberately the quietest thing in the bar: all three are reachable again in CONTACT, so up here they are
+       a shortcut rather than the route. -->
+  <div class="tools">
+    <!-- The only route off the page that is an invitation rather than a destination, so it leads the cluster and
+         names itself on hover: an envelope alone does not say WHICH address it opens. -->
+    <a class="tip" data-tip="Alexk413x@gmail.com" href="mailto:Alexk413x@gmail.com" aria-label="Email Alexk413x@gmail.com">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 5h17A1.5 1.5 0 0 1 22 6.5v11a1.5 1.5 0 0 1-1.5 1.5H19v-9.2l-7 5.25-7-5.25V19H3.5A1.5 1.5 0 0 1 2 17.5v-11A1.5 1.5 0 0 1 3.5 5m1.1 1.6L12 12.15 19.4 6.6z"/></svg>
     </a>
-  </div>
-  <p class="sub" style="font-size:12.5px;margin-top:12px">
-    The curve is <em>plotted</em>, not resampled: the shader walks the same pure geometry modules that describe
-    the glass, so nothing on screen can disagree about its shape.
-  </p>
-
-  <h2>Other labs</h2>
-  <div class="grid">
-    <a class="card" href="labs/reactor/Reactor.html">
-      <span class="tag">WebGL</span>
-      <div class="name">Reactor Lab</div>
-      <p>A containment core, sphere-traced: a goo core with sub-cores torn out of it by a pulse, nine alloy
-         ring fragments, and a shield that fails on a schedule.</p>
+    <a class="tip" data-tip="linkedin.com/in/alexk413x" href="https://www.linkedin.com/in/alexk413x/" target="_blank" rel="noopener" aria-label="LinkedIn">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.98 3.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5M3 9h4v12H3zM9 9h3.8v1.7h.05c.53-.95 1.83-1.95 3.76-1.95 4.02 0 4.76 2.5 4.76 5.76V21h-4v-5.6c0-1.34-.02-3.06-1.95-3.06-1.95 0-2.25 1.45-2.25 2.96V21H9z"/></svg>
     </a>
-    <a class="card" href="labs/wormhole/Wormhole.html">
-      <span class="tag">WebGL</span>
-      <div class="name">Wormhole Lab</div>
-      <p>A domain-warped noise tunnel down the throat of a wormhole, in three flavours.</p>
+    <a class="tip" data-tip="github.com/Alexk413x" href="https://github.com/Alexk413x" target="_blank" rel="noopener" aria-label="GitHub">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 0 0-3.16 19.49c.5.09.68-.22.68-.48v-1.7c-2.78.6-3.37-1.34-3.37-1.34-.45-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.61.07-.61 1 .07 1.53 1.03 1.53 1.03.9 1.53 2.35 1.09 2.92.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.94 0-1.09.39-1.98 1.03-2.68-.1-.25-.45-1.27.1-2.64 0 0 .84-.27 2.75 1.02a9.5 9.5 0 0 1 5 0c1.91-1.29 2.75-1.02 2.75-1.02.55 1.37.2 2.39.1 2.64.64.7 1.03 1.59 1.03 2.68 0 3.84-2.34 4.68-4.57 4.93.36.31.68.92.68 1.86v2.75c0 .27.18.58.69.48A10 10 0 0 0 12 2"/></svg>
     </a>
+    <!-- One dialog, two triggers. share.js binds every [data-qr-open], so this and the contact button are two
+         doors into the same drawn-once canvas rather than two descriptions of it. -->
+    <button class="tip" data-tip="Show QR code" type="button" data-qr-open aria-label="Show QR code for this site">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3h8v8H3zm2 2v4h4V5zM13 3h8v8h-8zm2 2v4h4V5zM3 13h8v8H3zm2 2v4h4v-4zM13 13h3v3h-3zm5 0h3v3h-3zm-5 5h3v3h-3zm5 0h3v3h-3z"/></svg>
+    </button>
   </div>
+</nav>
 
-  <h2>Portfolio</h2>
-  <div class="grid">
-    <a class="card" href="Alex%20Koch%20Portfolio.dc.html"><div class="name">Portfolio</div></a>
-    <a class="card" href="Alex%20Koch%20Cinematic%20Intro.dc.html"><div class="name">Cinematic Intro</div></a>
-    <a class="card" href="Alex%20Koch%20Console%20OS.dc.html"><div class="name">Console OS</div></a>
-  </div>
+<!-- data-range: scene 01 is absolutely positioned inside a sticky stage, so #alex's own offset is not a page
+     position at all. The scroll range it occupies is this container. -->
+<div id="scroll" data-range>
+<!-- THE SCENE'S SECOND BEAT. A one-pixel snap target that scenes.js positions at the scroll offset where the
+     words have finished leaving and the reactor holds the frame on its own; scroll-snap-stop: always is what
+     arrests a fling on it rather than letting the gesture carry straight through the hand-off. The first beat
+     is the top of the page and needs no target. -->
+<i id="hero-snap" aria-hidden="true"></i>
+<div id="stage">
 
-  <h2>Notes</h2>
-  <ul class="plain">
-    <li><a href="Portfolio%20Directions.dc.html">Portfolio Directions</a></li>
-    <li><a href="Realistic%20Light%20Roadmap.dc.html">Realistic Light Roadmap</a></li>
-    <li><a href="https://github.com/Alexk413x/alex-koch-portfolio">Source on GitHub</a></li>
-  </ul>
+  <!-- The ring, from its inner surface: two mirrored edges of one band, sweeping out of the ground and
+       converging as it recedes overhead. Behind everything, the core included.
+       EVERY control point sits on the end point's x. That is what makes the approach monotonic and the top run
+       true vertical: with a control x past the end, the curve bows out and eases back, which is visible. It also
+       means the y values alone decide how low the bend happens, and low is what the name needs — the two are
+       tuned against the clear air between KOCH's right edge and this curve, which is 74px at 1600x1000.
+       Reaching the corner AND clearing the lockup is the constraint. The name's ink runs to 36% of the width
+       and 68% of the height, so a curve that rises out of the corner gently is still left of it at that height
+       and crosses the name. -->
+  <svg id="hero-halo" viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-hidden="true">
+    <path d="M 0 1000 C 450 930 450 660 450 0" pathLength="100"/>
+    <path d="M 1000 1000 C 550 930 550 660 550 0" pathLength="100"/>
+  </svg>
 
-  <div class="note">
-    <strong>Best on desktop.</strong> These are instruments laid out at around 1560&times;1100. On a narrow
-    screen the control panel folds away behind a chevron so the picture gets the screen to itself, but the
-    control density is still built for a large window. Every lab is WebGL and demanding; if one struggles,
-    <strong>RENDER SCALE</strong> in its panel is the lever, and it already starts lower on integrated graphics.
-    No framework and no build step — the labs load nothing at runtime but their own modules and the fonts.
-  </div>
+  <!-- The reactor's core, and the whole of what sits behind this scene. site/hero-core.js drives it; without
+       WebGL the element stays empty. -->
+  <canvas id="hero-core" aria-hidden="true"></canvas>
 
-  <footer>
-    <a href="mailto:Alexk413x@gmail.com">Alexk413x@gmail.com</a> ·
-    <a href="https://www.linkedin.com/in/alexk413x/">LinkedIn</a> ·
-    <a href="https://github.com/Alexk413x">GitHub</a>
-  </footer>
+  <!-- SCENE 01 · IDENTITY -->
+  <section class="scene" id="alex">
+    <div class="hero">
+      <div class="hero-grid">
+
+        <div>
+          <div class="kicker" data-display-fill>AGENTIC MOBILE ENGINEER</div>
+          <h1 class="lockup" data-display-stack>
+            <span class="l1">ALEX</span><span class="l2">KOCH</span>
+          </h1>
+        </div>
+
+        <div class="aside">
+          14 years shipping mobile at scale with Yahoo!, Target, Kohl&rsquo;s and Vacasa. Now leveraging the power
+          and speed of agentic development to continue bringing the best experience for users.
+        </div>
+
+      </div>
+    </div>
+
+    <div class="hero-foot">
+      <div class="inner">
+        <div class="cue" aria-hidden="true"><span>↓</span></div>
+      </div>
+    </div>
+  </section>
 
 </div>
+</div>
+
+<!-- WORDS ON THE LEFT, THE MECHANISM ON THE RIGHT. What a run covers and what it costs, not how it works. The
+     prose was eight sentences arguing one case eight times; the terms are what a reader scans for, and the
+     detail is one click away in the report the demo opens. The flow graph carries the shape of a run, which is
+     the one thing a list of terms cannot say. -->
+<div id="loop-scroll" data-range>
+<!-- THE SCENE'S HARD STOP. A one-pixel snap target that scenes.js positions at the scroll offset where
+     the graph is whole; scroll-snap-stop: always is what stops a fling on it instead of letting the
+     gesture carry past the only moment this section is worth seeing. -->
+<i id="loop-snap" aria-hidden="true"></i>
+<div id="loop-stage">
+  <section id="cartographer">
+    <div class="inner">
+      <div class="loop-grid">
+
+      <!-- THE TITLE IS IN THE COLUMN, not above the grid. Outside it, the grid centred the graph against the
+           prose alone and the title's height was never counted — which is why the phones hung a title's worth too
+           low against everything on the left. -->
+      <div class="loop-say">
+      <h2 class="sec-title">QA<br><span style="color:var(--accent)">CARTOGRAPHER</span></h2>
+      <p class="tagline">AI only where judgement is needed.</p>
+      <p class="sec-lede">
+        One recorded app flow covers the whole surface, and replays for free.
+      </p>
+
+      <!-- Reach, before coverage, and as a claim rather than as a row of the spec sheet: "will it work with what
+           we already have" is the question an enterprise asks before any of the others.
+           Three spans rather than one string, so the gap between the claims is set rather than being whatever a
+           space character happens to measure at this size — and so a narrow window breaks it between claims. -->
+      <p class="reach"><span>Any Platform</span><span>Any App</span><span>Any LLM</span></p>
+
+      <!-- How it runs and what comes back, as prose; the list below is what it covers. The argument is read
+           before the evidence, and evidence read before the claim is just a list. -->
+      <p class="sec-lede">
+        Explore, guide, and replay test cases. AI will automatically create and repair tests as the app evolves.
+      </p>
+
+      <!-- Testing is the only enumerated row — six numbered names read as a count, which is what makes them
+           scannable. -->
+      <div class="terms">
+        <div class="term">
+          <b>Test Coverage</b>
+          <!-- Read ACROSS, not down: the grid is row-major, so this order is the pairing on screen. -->
+          <ul class="checks">
+            <li>End-to-End</li>
+            <li>Accessibility</li>
+            <li>Performance</li>
+            <li>WCAG 2.2 AA</li>
+            <li>Screenshot</li>
+            <li>EAA</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Deliberately unfinished, and the page it opens says so. The snapshot it will carry is a real run
+           against the RPN Dominator app; until that part of the plugin is refined enough to publish, this is a
+           walkable section of this site. -->
+      <a class="demo-cta" href="cartographer-demo.html">
+        <i class="live-dot" aria-hidden="true"></i>Live demo
+      </a>
+      </div>
+
+      <!-- ONE SCALAR BUILDS ALL OF IT. scenes.js writes --g on the stage; every rectangle and every track
+           derives its own progress from that and its own --d, so a scroll frame still touches a single element.
+           The only per-element numbers here are --d (build order), --dx/--dy (where a rectangle arrives from)
+           and --sd (a pulse's place in the shared cycle).
+           --d IS THE STORY: a row's track reaches out, its second rectangle lands on the end of it, the track
+           carries on, the third lands. Then the next row. Top to bottom, one row at a time.
+           DEPTH IS DRAWN, NOT PROJECTED. The second and third rectangles are the same object; the third is
+           smaller and nearer the eye line because it is further back. One vanishing point, no matrix to keep in
+           step with the layout. -->
+      <div class="loop-show">
+      <svg class="flow" viewBox="0 0 660 662" role="img"
+           aria-label="One recorded screen branches into three replayed paths, each running back through two more screens.">
+        <defs>
+          <!-- Stop colours are set in the stylesheet, not here: var() does not substitute inside a presentation
+               attribute, so a stop-color attribute would silently paint black. -->
+          <radialGradient id="cartoPool">
+            <stop class="p0" offset="0" stop-opacity=".3"/>
+            <stop class="p1" offset=".5" stop-opacity=".1"/>
+            <stop class="p2" offset="1" stop-opacity="0"/>
+          </radialGradient>
+        </defs>
+
+        <!-- THE DEPTH IS IN THE COORDINATES, and it has to be: an SVG subtree is a FLAT rendering context, so a
+             CSS perspective() on a group here is applied as one uniform scale rather than per vertex. Measured --
+             with perspective(400px) rotateY(45deg) the near rank and the far rank came out the same height, at
+             every perspective distance.
+             So these are PROJECTED. ONE phone, a face 74 x 156 turned 2.5 degrees about its own vertical axis,
+             drawn seven times at three depths through a short lens. The ranks behind come out smaller because
+             they sit further away. Nothing here is drawn smaller by hand. -->
+
+        <!-- THE FLOOR MEETS THE FEET AND GOES NO HIGHER. Its top edge sits at 614, which is the bottom of the
+             lowest phone in the picture -- high enough that the devices are standing ON it rather than in front
+             of a glow, low enough that it is not washing up THROUGH a row of them. Most of it lies below the
+             frame, which is correct: it is the ground in front, and the frame is not where it ends.
+             NINE TO ONE, not five. A pool that is nearly circular reads as a light source hanging behind the
+             scene; a plane seen from close to its own level is a long flat smear, and that is what says floor. -->
+        <ellipse class="fg-floor" cx="300" cy="722" rx="485" ry="50" style="--d:0;--df:.42"/>
+
+        <!-- CENTRE TO CENTRE, and drawn UNDER the phones — which is what dims the stretch of a line that is
+             genuinely behind one. The fan out of the near phone curves because it changes row; the run from the
+             second rank to the third is straight, because it does not. -->
+        <g class="fg-edges">
+          <path class="fg-edge" pathLength="100" style="--d:.24;--df:.23" d="M132.0,330 C260.6,330 271.4,115 400,115"/>
+          <path class="fg-edge" pathLength="100" style="--d:.33;--df:.03" d="M406.2,115 L570,140.8"/>
+          <path class="fg-edge" pathLength="100" style="--d:.42;--df:.28" d="M132.0,330 L400,330"/>
+          <path class="fg-edge" pathLength="100" style="--d:.51;--df:.08" d="M406.2,330 L570,330.0"/>
+          <path class="fg-edge" pathLength="100" style="--d:.60;--df:.33" d="M132.0,330 C260.6,330 271.4,545 400,545"/>
+          <path class="fg-edge" pathLength="100" style="--d:.69;--df:.13" d="M406.2,545 L570,519.2"/>
+        </g>
+
+        <g class="fg-nodes">
+          <g class="fg-node z1" style="--d:0;--df:.46;--dy:-20">
+            <path class="edges" d="M236.1,144.1 L233.5,131.3 L226.0,120.7 L214.9,113.9 L201.8,111.9 L64.1,118.0 L51.9,121.1 L41.5,128.6 L34.6,139.4 L32.2,151.9 L32.2,508.1 L34.6,520.6 L41.5,531.4 L51.9,538.9 L64.1,542.0 L201.8,548.1 L214.9,546.1 L226.0,539.3 L233.5,528.7 L236.1,515.9 Z M222.1,144.1 L236.1,144.1 M187.8,111.9 L201.8,111.9 M50.1,118.0 L64.1,118.0 M18.2,151.9 L32.2,151.9 M18.2,508.1 L32.2,508.1 M50.1,542.0 L64.1,542.0 M187.8,548.1 L201.8,548.1 M222.1,515.9 L236.1,515.9"/>
+            <path class="face" d="M222.1,144.1 L219.5,131.3 L212.0,120.7 L200.9,113.9 L187.8,111.9 L50.1,118.0 L37.9,121.1 L27.5,128.6 L20.6,139.4 L18.2,151.9 L18.2,508.1 L20.6,520.6 L27.5,531.4 L37.9,538.9 L50.1,542.0 L187.8,548.1 L200.9,546.1 L212.0,539.3 L219.5,528.7 L222.1,515.9 Z"/>
+          </g>
+
+          <g class="fg-node z2" style="--d:.30;--df:.20;--dx:-54">
+            <path class="edges" d="M451.4,34.2 L450.3,28.6 L447.1,23.9 L442.3,20.8 L436.6,19.8 L376.1,21.0 L370.6,22.2 L365.9,25.4 L362.8,30.2 L361.7,35.7 L361.7,194.3 L362.8,199.8 L365.9,204.6 L370.6,207.8 L376.1,209.0 L436.6,210.2 L442.3,209.2 L447.1,206.1 L450.3,201.4 L451.4,195.8 Z M445.3,34.2 L451.4,34.2 M430.5,19.8 L436.6,19.8 M369.9,21.0 L376.1,21.0 M355.6,35.7 L361.7,35.7 M355.6,194.3 L361.7,194.3 M369.9,209.0 L376.1,209.0 M430.5,210.2 L436.6,210.2 M445.3,195.8 L451.4,195.8"/>
+            <path class="face" d="M445.3,34.2 L444.1,28.6 L440.9,23.9 L436.1,20.8 L430.5,19.8 L369.9,21.0 L364.4,22.2 L359.8,25.4 L356.7,30.2 L355.6,35.7 L355.6,194.3 L356.7,199.8 L359.8,204.6 L364.4,207.8 L369.9,209.0 L430.5,210.2 L436.1,209.2 L440.9,206.1 L444.1,201.4 L445.3,195.8 Z"/>
+          </g>
+          <g class="fg-node z3" style="--d:.39;--df:.00;--dx:-40">
+            <path class="edges" d="M615.2,69.8 L614.2,64.9 L611.4,60.7 L607.2,58.0 L602.2,57.1 L548.9,58.0 L544.1,59.1 L540.0,61.9 L537.2,66.1 L536.3,70.9 L536.3,210.7 L537.2,215.5 L540.0,219.7 L544.1,222.5 L548.9,223.6 L602.2,224.5 L607.2,223.6 L611.4,220.9 L614.2,216.7 L615.2,211.8 Z M609.8,69.8 L615.2,69.8 M596.8,57.1 L602.2,57.1 M543.5,58.0 L548.9,58.0 M530.9,70.9 L536.3,70.9 M530.9,210.7 L536.3,210.7 M543.5,223.6 L548.9,223.6 M596.8,224.5 L602.2,224.5 M609.8,211.8 L615.2,211.8"/>
+            <path class="face" d="M609.8,69.8 L608.8,64.9 L606.0,60.7 L601.8,58.0 L596.8,57.1 L543.5,58.0 L538.7,59.1 L534.6,61.9 L531.8,66.1 L530.9,70.9 L530.9,210.7 L531.8,215.5 L534.6,219.7 L538.7,222.5 L543.5,223.6 L596.8,224.5 L601.8,223.6 L606.0,220.9 L608.8,216.7 L609.8,211.8 Z"/>
+          </g>
+          <g class="fg-node z2" style="--d:.48;--df:.25;--dx:-54">
+            <path class="edges" d="M451.4,249.2 L450.3,243.6 L447.1,238.9 L442.3,235.8 L436.6,234.8 L376.1,236.0 L370.6,237.2 L365.9,240.4 L362.8,245.2 L361.7,250.7 L361.7,409.3 L362.8,414.8 L365.9,419.6 L370.6,422.8 L376.1,424.0 L436.6,425.2 L442.3,424.2 L447.1,421.1 L450.3,416.4 L451.4,410.8 Z M445.3,249.2 L451.4,249.2 M430.5,234.8 L436.6,234.8 M369.9,236.0 L376.1,236.0 M355.6,250.7 L361.7,250.7 M355.6,409.3 L361.7,409.3 M369.9,424.0 L376.1,424.0 M430.5,425.2 L436.6,425.2 M445.3,410.8 L451.4,410.8"/>
+            <path class="face" d="M445.3,249.2 L444.1,243.6 L440.9,238.9 L436.1,235.8 L430.5,234.8 L369.9,236.0 L364.4,237.2 L359.8,240.4 L356.7,245.2 L355.6,250.7 L355.6,409.3 L356.7,414.8 L359.8,419.6 L364.4,422.8 L369.9,424.0 L430.5,425.2 L436.1,424.2 L440.9,421.1 L444.1,416.4 L445.3,410.8 Z"/>
+          </g>
+          <g class="fg-node z3" style="--d:.57;--df:.05;--dx:-40">
+            <path class="edges" d="M615.2,259.0 L614.2,254.1 L611.4,249.9 L607.2,247.2 L602.2,246.3 L548.9,247.2 L544.1,248.3 L540.0,251.1 L537.2,255.3 L536.3,260.1 L536.3,399.9 L537.2,404.7 L540.0,408.9 L544.1,411.7 L548.9,412.8 L602.2,413.7 L607.2,412.8 L611.4,410.1 L614.2,405.9 L615.2,401.0 Z M609.8,259.0 L615.2,259.0 M596.8,246.3 L602.2,246.3 M543.5,247.2 L548.9,247.2 M530.9,260.1 L536.3,260.1 M530.9,399.9 L536.3,399.9 M543.5,412.8 L548.9,412.8 M596.8,413.7 L602.2,413.7 M609.8,401.0 L615.2,401.0"/>
+            <path class="face" d="M609.8,259.0 L608.8,254.1 L606.0,249.9 L601.8,247.2 L596.8,246.3 L543.5,247.2 L538.7,248.3 L534.6,251.1 L531.8,255.3 L530.9,260.1 L530.9,399.9 L531.8,404.7 L534.6,408.9 L538.7,411.7 L543.5,412.8 L596.8,413.7 L601.8,412.8 L606.0,410.1 L608.8,405.9 L609.8,401.0 Z"/>
+          </g>
+          <g class="fg-node z2" style="--d:.66;--df:.30;--dx:-54">
+            <path class="edges" d="M451.4,464.2 L450.3,458.6 L447.1,453.9 L442.3,450.8 L436.6,449.8 L376.1,451.0 L370.6,452.2 L365.9,455.4 L362.8,460.2 L361.7,465.7 L361.7,624.3 L362.8,629.8 L365.9,634.6 L370.6,637.8 L376.1,639.0 L436.6,640.2 L442.3,639.2 L447.1,636.1 L450.3,631.4 L451.4,625.8 Z M445.3,464.2 L451.4,464.2 M430.5,449.8 L436.6,449.8 M369.9,451.0 L376.1,451.0 M355.6,465.7 L361.7,465.7 M355.6,624.3 L361.7,624.3 M369.9,639.0 L376.1,639.0 M430.5,640.2 L436.6,640.2 M445.3,625.8 L451.4,625.8"/>
+            <path class="face" d="M445.3,464.2 L444.1,458.6 L440.9,453.9 L436.1,450.8 L430.5,449.8 L369.9,451.0 L364.4,452.2 L359.8,455.4 L356.7,460.2 L355.6,465.7 L355.6,624.3 L356.7,629.8 L359.8,634.6 L364.4,637.8 L369.9,639.0 L430.5,640.2 L436.1,639.2 L440.9,636.1 L444.1,631.4 L445.3,625.8 Z"/>
+          </g>
+          <g class="fg-node z3" style="--d:.75;--df:.10;--dx:-40">
+            <path class="edges" d="M615.2,448.2 L614.2,443.3 L611.4,439.1 L607.2,436.4 L602.2,435.5 L548.9,436.4 L544.1,437.5 L540.0,440.3 L537.2,444.5 L536.3,449.3 L536.3,589.1 L537.2,593.9 L540.0,598.1 L544.1,600.9 L548.9,602.0 L602.2,602.9 L607.2,602.0 L611.4,599.3 L614.2,595.1 L615.2,590.2 Z M609.8,448.2 L615.2,448.2 M596.8,435.5 L602.2,435.5 M543.5,436.4 L548.9,436.4 M530.9,449.3 L536.3,449.3 M530.9,589.1 L536.3,589.1 M543.5,602.0 L548.9,602.0 M596.8,602.9 L602.2,602.9 M609.8,590.2 L615.2,590.2"/>
+            <path class="face" d="M609.8,448.2 L608.8,443.3 L606.0,439.1 L601.8,436.4 L596.8,435.5 L543.5,436.4 L538.7,437.5 L534.6,440.3 L531.8,444.5 L530.9,449.3 L530.9,589.1 L531.8,593.9 L534.6,598.1 L538.7,600.9 L543.5,602.0 L596.8,602.9 L601.8,602.0 L606.0,599.3 L608.8,595.1 L609.8,590.2 Z"/>
+          </g>
+        </g>
+
+        <!-- THE GLOW. Per device: the phone's own outline grows from the middle of its front plane to its front
+             edges, runs bodily front-to-back along the sides, then closes from the back edges in on the middle of
+             the back. Then a bead down the line to the next one, and the same again.
+             Three paths take turns on a 20.7s cycle of three even 6.9s slots, so only one is ever crossing -- but
+             the NEAR phone is on all three of them, so it runs on a 6.9s cycle of its own and fires every beat. One clock for both would mean either the near phone lighting once in three, or three beads
+             crossing at once. A delay longer than its own cycle simply wraps, which is what lets the far end of
+             a path keep counting past the slot it started in. -->
+        <g class="fg-sparks" aria-hidden="true">
+          <path class="fg-wave beat" style="--wd:14.0px;--wj:.05;--tb:.44s;--wk:1.0;--wo:1.0" d="M222.1,144.1 L219.5,131.3 L212.0,120.7 L200.9,113.9 L187.8,111.9 L50.1,118.0 L37.9,121.1 L27.5,128.6 L20.6,139.4 L18.2,151.9 L18.2,508.1 L20.6,520.6 L27.5,531.4 L37.9,538.9 L50.1,542.0 L187.8,548.1 L200.9,546.1 L212.0,539.3 L219.5,528.7 L222.1,515.9 Z"/>
+          <path class="fg-spark" pathLength="100" style="--sd:1.6s;--wk:0.9" d="M132.0,330 C260.6,330 271.4,115 400,115"/>
+          <path class="fg-wave" style="--wd:6.2px;--wj:.09;--tb:.37s;--wk:0.7;--wo:0.8;--sd:2.5s" d="M445.3,34.2 L444.1,28.6 L440.9,23.9 L436.1,20.8 L430.5,19.8 L369.9,21.0 L364.4,22.2 L359.8,25.4 L356.7,30.2 L355.6,35.7 L355.6,194.3 L356.7,199.8 L359.8,204.6 L364.4,207.8 L369.9,209.0 L430.5,210.2 L436.1,209.2 L440.9,206.1 L444.1,201.4 L445.3,195.8 Z"/>
+          <path class="fg-spark" pathLength="100" style="--sd:4.0s;--wk:0.7" d="M406.2,115 L570,140.8"/>
+          <path class="fg-wave fade" style="--wd:5.4px;--wj:.04;--tb:.51s;--wk:0.7;--wo:0.8;--sd:4.9s" d="M609.8,69.8 L608.8,64.9 L606.0,60.7 L601.8,58.0 L596.8,57.1 L543.5,58.0 L538.7,59.1 L534.6,61.9 L531.8,66.1 L530.9,70.9 L530.9,210.7 L531.8,215.5 L534.6,219.7 L538.7,222.5 L543.5,223.6 L596.8,224.5 L601.8,223.6 L606.0,220.9 L608.8,216.7 L609.8,211.8 Z"/>
+          <path class="fg-spark" pathLength="100" style="--sd:8.5s;--wk:0.9" d="M132.0,330 L400,330"/>
+          <path class="fg-wave" style="--wd:6.2px;--wj:.11;--tb:.41s;--wk:0.7;--wo:0.8;--sd:9.4s" d="M445.3,249.2 L444.1,243.6 L440.9,238.9 L436.1,235.8 L430.5,234.8 L369.9,236.0 L364.4,237.2 L359.8,240.4 L356.7,245.2 L355.6,250.7 L355.6,409.3 L356.7,414.8 L359.8,419.6 L364.4,422.8 L369.9,424.0 L430.5,425.2 L436.1,424.2 L440.9,421.1 L444.1,416.4 L445.3,410.8 Z"/>
+          <path class="fg-spark" pathLength="100" style="--sd:10.9s;--wk:0.7" d="M406.2,330 L570,330.0"/>
+          <path class="fg-wave fade" style="--wd:5.4px;--wj:.06;--tb:.58s;--wk:0.7;--wo:0.8;--sd:11.8s" d="M609.8,259.0 L608.8,254.1 L606.0,249.9 L601.8,247.2 L596.8,246.3 L543.5,247.2 L538.7,248.3 L534.6,251.1 L531.8,255.3 L530.9,260.1 L530.9,399.9 L531.8,404.7 L534.6,408.9 L538.7,411.7 L543.5,412.8 L596.8,413.7 L601.8,412.8 L606.0,410.1 L608.8,405.9 L609.8,401.0 Z"/>
+          <path class="fg-spark" pathLength="100" style="--sd:15.4s;--wk:0.9" d="M132.0,330 C260.6,330 271.4,545 400,545"/>
+          <path class="fg-wave" style="--wd:6.2px;--wj:.08;--tb:.34s;--wk:0.7;--wo:0.8;--sd:16.3s" d="M445.3,464.2 L444.1,458.6 L440.9,453.9 L436.1,450.8 L430.5,449.8 L369.9,451.0 L364.4,452.2 L359.8,455.4 L356.7,460.2 L355.6,465.7 L355.6,624.3 L356.7,629.8 L359.8,634.6 L364.4,637.8 L369.9,639.0 L430.5,640.2 L436.1,639.2 L440.9,636.1 L444.1,631.4 L445.3,625.8 Z"/>
+          <path class="fg-spark" pathLength="100" style="--sd:17.8s;--wk:0.7" d="M406.2,545 L570,519.2"/>
+          <path class="fg-wave fade" style="--wd:5.4px;--wj:.13;--tb:.47s;--wk:0.7;--wo:0.8;--sd:18.7s" d="M609.8,448.2 L608.8,443.3 L606.0,439.1 L601.8,436.4 L596.8,435.5 L543.5,436.4 L538.7,437.5 L534.6,440.3 L531.8,444.5 L530.9,449.3 L530.9,589.1 L531.8,593.9 L534.6,598.1 L538.7,600.9 L543.5,602.0 L596.8,602.9 L601.8,602.0 L606.0,599.3 L608.8,595.1 L609.8,590.2 Z"/>
+        </g>
+      </svg>
+      </div>
+
+      </div>
+    </div>
+  </section>
+</div>
+</div>
+
+<!-- One calculator, not two. Scroll interpolates it from a replica faceplate into the shipped app; the DOM tree
+     and the live stack machine behind it never change. -->
+<div id="app-scroll" data-range>
+<!-- THE SCENE'S TWO BEATS, at the ends of the pin: the faceplate the section arrives at, and the shipped app it
+     leaves as. scenes.js positions both; scroll-snap-stop: always is what arrests a fling on each of them so the
+     turn is met from either direction rather than scrolled past. -->
+<i id="app-snap-old" aria-hidden="true"></i>
+<i id="app-snap-app" aria-hidden="true"></i>
+<div id="app-stage">
+  <section id="app">
+    <div class="inner app-grid">
+      <div class="app-copy">
+        <h2 class="sec-title">RPN DOMINATOR<br><span style="color:var(--accent)">CALCULATOR</span></h2>
+        <p class="sec-lede">
+          Most RPN calculators on the store replicate the HP 15c exactly, from the functions down to the look of
+          the buttons. This one takes full advantage of the touch screen and the hardware to better optimise the
+          user experience for modern devices.
+        </p>
+
+        <div class="then-now">
+          <div class="tn then"><b>Then</b>A 1982 fossil that survived with one display row and no modern comforts</div>
+          <div class="tn now"><b>Now</b>A supercomputer in your pocket that uses everything today's tech offers</div>
+        </div>
+
+        <div class="cta-row">
+          <a class="store play" href="https://play.google.com/store/apps/details?id=com.gmail.alexk413x.RPN_Dominator_Calculator" target="_blank" rel="noopener noreferrer">
+            <img src="site/store-badges/google-play.png" alt="Get it on Google Play">
+          </a>
+        </div>
+      </div>
+
+      <div class="phone-wrap">
+        <div class="phone" id="rpn" tabindex="0" role="group" aria-label="Working RPN calculator demo">
+          <!-- The slab's four edges. Elements rather than pseudo-elements because the chassis has only two of
+               those and the back outline holds one; the turn shows the left edge at one end of the morph and the
+               right at the other, and the tilt shows the top or the bottom, so all four have to exist. -->
+          <i class="edge l" aria-hidden="true"></i><i class="edge r" aria-hidden="true"><i class="pwr"></i></i>
+          <i class="edge t" aria-hidden="true"></i><i class="edge b" aria-hidden="true"></i>
+          <div class="phone-inner">
+            <div class="rpn-readout">
+              <div class="rpn-row"><span class="n">4</span><span class="v"></span></div>
+              <div class="rpn-row"><span class="n">3</span><span class="v"></span></div>
+              <div class="rpn-row"><span class="n">2</span><span class="v"></span></div>
+              <div class="rpn-row"><span class="n">1</span><span class="v"></span></div>
+              <div class="rpn-row rpn-in"><span class="n">IN</span><span class="v">0</span></div>
+            </div>
+            <div class="rpn-band" aria-hidden="true"><span>ALEXK413X</span><span>RPN</span></div>
+            <div class="rpn-pad"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+</div>
+
+<section id="experience">
+  <!-- The barrier for this beat, at the section's own top. Inside the section rather than at page level, so its
+       offset is 0 and the position it guards is the section's top by construction. -->
+  <i id="exp-snap" aria-hidden="true"></i>
+  <div class="inner">
+    <h2 class="sec-title" data-reveal>FOURTEEN YEARS<br><span style="color:var(--accent)">OF USER-DRIVEN SUCCESS</span></h2>
+
+    <div class="expertise" data-reveal>
+      <div><b>Languages</b>Kotlin, Java, Python, XML, HTML5, JavaScript, TypeScript, CSS</div>
+      <div><b>Platforms</b>Android, iOS, Windows, Web</div>
+      <!-- Same three rows as the .cat block's .keys. One is the no-JS fallback and one is the built view, so a
+           reader sees exactly one; edit them together. -->
+      <div><b>Tools</b>Claude Code, Cursor, Codex, Copilot, Agentic Development, Antigravity, Android Studio,
+        Jetpack, Firebase, Azure, JUnit, Espresso, Xamarin, Git</div>
+    </div>
+
+    <!-- THE BACK CATALOGUE. The product leads and the employer is withheld until one is picked — the shelf is
+         what was shipped, and who paid for it is the answer rather than the heading.
+         NOT PINNED. Each rack is a plain horizontal scroller, so sideways belongs to the shelf and down always
+         belongs to the page; scrolling past this section is never converted into driving it.
+         EVERY PROOF IS WRITTEN OUT HERE. catalogue.js reads them into the rack below and hides this block, so a
+         crawler running no JavaScript — which is most of the AI ones — reads all seventeen records in full, and
+         so does a reader whose scripts failed. Nothing is built from an array. -->
+    <div class="shelf-intro" data-reveal>
+      <div class="sec-label">THE BACK CATALOGUE</div>
+      <h3>SEVENTEEN SHIPPED PRODUCTS<br><span>ACROSS FOUR ACTS</span></h3>
+      <p>Pick one and it proves itself before it says who paid for it. The dates and the employers are all
+        still here. They are just no longer the first thing you have to read.</p>
+    </div>
+
+    <div class="shelf" id="shelf">
+
+      <!-- ONE ROW, oldest at the far end. Newest first because the section below it is newest first, because
+           that is how a resume is read, and because the strongest work must not be off-screen on arrival.
+           The act is a label on each spine rather than a divider standing between them: a divider in a single
+           horizontal row can only be read sideways, and one row was the point. -->
+      <div class="rack-wrap">
+        <div class="rack" role="group" aria-label="Shipped products, newest first">
+
+
+          <article class="spine">
+            <button class="spine-face" type="button" aria-expanded="false" aria-controls="pf-qaai">
+              <span class="p-name">QAAI</span>
+              <span class="p-tag">Accurate Agentic Testing</span>
+              <span class="p-marks"><i>Multi-agent</i><i>CI/CD</i><i>All platforms</i></span>
+              <span class="p-domain">Act IV &middot; Agents Agents Agents</span>
+            </button>
+          </article>
+          <article class="spine">
+            <button class="spine-face" type="button" aria-expanded="false" aria-controls="pf-mail">
+              <span class="p-name">Yahoo! Mail</span>
+              <span class="p-tag">Email in the Agentic World</span>
+              <span class="p-marks"><i>Android</i><i>Compose</i><i>A11y</i></span>
+              <span class="p-domain">Act IV &middot; Agents Agents Agents</span>
+            </button>
+          </article>
+          <article class="spine">
+            <button class="spine-face" type="button" aria-expanded="false" aria-controls="pf-sc">
+              <span class="p-name">Store Companion</span>
+              <span class="p-tag">Every Document, One Answer</span>
+              <span class="p-marks"><i>Android</i><i>Gen AI</i><i>Scanner</i></span>
+              <span class="p-domain">Act IV &middot; Agents Agents Agents</span>
+            </button>
+          </article>
+          <article class="spine">
+            <button class="spine-face" type="button" aria-expanded="false" aria-controls="pf-myday">
+              <span class="p-name">myDay</span>
+              <span class="p-tag">Efficiency at Scale</span>
+              <span class="p-marks"><i>Android</i><i>Compose</i><i>Zebra</i></span>
+              <span class="p-domain">Act III &middot; Leadership at scale</span>
+            </button>
+          </article>
+
+
+          <article class="spine">
+            <button class="spine-face" type="button" aria-expanded="false" aria-controls="pf-isu">
+              <span class="p-name">ISU</span>
+              <span class="p-tag">One Library to Rule Them All</span>
+              <span class="p-marks"><i>Android</i><i>Core library</i></span>
+              <span class="p-domain">Act III &middot; Leadership at scale</span>
+            </button>
+          </article>
+          <article class="spine">
+            <button class="spine-face" data-cover-title="SELF|PICKUP" type="button" aria-expanded="false" aria-controls="pf-self">
+              <span class="p-name">Self Pickup</span>
+              <span class="p-tag">Pickup Orders Made Easy</span>
+              <span class="p-marks"><i>Web</i></span>
+              <span class="p-domain">Act III &middot; Leadership at scale</span>
+            </button>
+          </article>
+          <article class="spine">
+            <button class="spine-face" type="button" aria-expanded="false" aria-controls="pf-pick">
+              <span class="p-name">Pickup</span>
+              <span class="p-tag">Orders Brought to You</span>
+              <span class="p-marks"><i>Android</i><i>Offline</i><i>Zebra</i></span>
+              <span class="p-domain">Act III &middot; Leadership at scale</span>
+            </button>
+          </article>
+          <article class="spine">
+            <button class="spine-face" type="button" aria-expanded="false" aria-controls="pf-oro">
+              <span class="p-name">ORO Pay</span>
+              <span class="p-tag">Digital Banking for the Underbanked</span>
+              <span class="p-marks"><i>Android</i><i>Camera</i><i>GPS</i></span>
+              <span class="p-domain">Act III &middot; Leadership at scale</span>
+            </button>
+          </article>
+          <article class="spine">
+            <button class="spine-face" type="button" aria-expanded="false" aria-controls="pf-merch">
+              <span class="p-name">ORO Merchant</span>
+              <span class="p-tag">Payments for the Underbanked</span>
+              <span class="p-marks"><i>Android</i><i>QR</i><i>ML Kit</i></span>
+              <span class="p-domain">Act III &middot; Leadership at scale</span>
+            </button>
+          </article>
+
+
+          <article class="spine">
+            <button class="spine-face" type="button" aria-expanded="false" aria-controls="pf-fv">
+              <span class="p-name">FieldView</span>
+              <span class="p-tag">Your Eyes in the Field</span>
+              <span class="p-marks"><i>Android</i><i>iOS</i><i>Windows</i><i>Offline</i></span>
+              <span class="p-domain">Act II &middot; Into the unknown</span>
+            </button>
+          </article>
+          <article class="spine">
+            <button class="spine-face" type="button" aria-expanded="false" aria-controls="pf-team">
+              <span class="p-name">Team</span>
+              <span class="p-tag">Forms for the Digital World</span>
+              <span class="p-marks"><i>Android</i><i>iOS</i><i>Windows</i></span>
+              <span class="p-domain">Act II &middot; Into the unknown</span>
+            </button>
+          </article>
+          <article class="spine">
+            <button class="spine-face" type="button" aria-expanded="false" aria-controls="pf-tab">
+              <span class="p-name">TabbedOut</span>
+              <span class="p-tag">Tabs Automated</span>
+              <span class="p-marks"><i>Android</i></span>
+              <span class="p-domain">Act II &middot; Into the unknown</span>
+            </button>
+          </article>
+          <article class="spine">
+            <button class="spine-face" data-cover-title="HOUSE|KEEPING" type="button" aria-expanded="false" aria-controls="pf-house">
+              <span class="p-name">Housekeeping</span>
+              <span class="p-tag">Everything to Get the Job Done</span>
+              <span class="p-marks"><i>Android</i><i>Offline</i><i>GPS</i></span>
+              <span class="p-domain">Act II &middot; Into the unknown</span>
+            </button>
+          </article>
+
+
+          <article class="spine">
+            <button class="spine-face" type="button" aria-expanded="false" aria-controls="pf-rexel">
+              <span class="p-name">Rexel USA</span>
+              <span class="p-tag">Every Brand, One Build</span>
+              <span class="p-marks"><i>Android</i><i>iOS</i><i>Scanner</i></span>
+              <span class="p-domain">Act I &middot; Learning the ropes</span>
+            </button>
+          </article>
+          <article class="spine">
+            <button class="spine-face" type="button" aria-expanded="false" aria-controls="pf-123">
+              <span class="p-name">123 Calling</span>
+              <span class="p-tag">Linguistics Is Child&rsquo;s Play</span>
+              <span class="p-marks"><i>iOS</i><i>Localised</i></span>
+              <span class="p-domain">Act I &middot; Learning the ropes</span>
+            </button>
+          </article>
+          <article class="spine">
+            <button class="spine-face" type="button" aria-expanded="false" aria-controls="pf-kiosk">
+              <span class="p-name">Asian Art Museum</span>
+              <span class="p-tag">Secure Interactive Kiosk</span>
+              <span class="p-marks"><i>Android</i><i>Kiosk</i></span>
+              <span class="p-domain">Act I &middot; Learning the ropes</span>
+            </button>
+          </article>
+          <article class="spine">
+            <button class="spine-face" type="button" aria-expanded="false" aria-controls="pf-ink">
+              <span class="p-name">Ink Usage Dashboard</span>
+              <span class="p-tag">From Hours to Minutes</span>
+              <span class="p-marks"><i>Web</i><i>Graphs</i></span>
+              <span class="p-domain">Act I &middot; Learning the ropes</span>
+            </button>
+          </article>
+
+        </div>
+      </div>
+
+      <!-- ONE BAY for the whole shelf. Every proof is written out here and catalogue.js reads them, so a
+           crawler running no JavaScript reads all seventeen records in full. Nothing is built from an array. -->
+      <div class="bay">
+
+        <div class="proof" id="pf-qaai">
+          <div class="proof-fig"><span data-count="500">500</span><i>+</i></div>
+          <p class="proof-say">Tests generated, executed and self-healed from natural language, at a 95%+ pass rate in CI/CD.</p>
+          <div class="proof-at">
+            <span class="pa-label">Built at</span>
+            <h4 data-site="https://www.yahoo.com/" data-via="Mindlance" data-via-site="https://www.mindlance.com/">Yahoo!</h4>
+            <span class="pa-role">Agentic Engineer</span>
+            <time datetime="2025-09/2026-07">Sep 2025 &ndash; Jul 2026</time>
+          </div>
+          <p class="proof-more">App-, platform- and LLM-agnostic: one test case runs unchanged on iOS, Android and
+            Web. Saves executives, project managers, QA and developers across every app team hundreds of hours weekly.</p>
+          <p class="proof-lede">A multi-agent QA platform and dashboard. It turns a description of a test into a running end-to-end test, updating itself as the app changes.</p>
+          <p class="proof-lede">Created an agentic team to help with building and iterating on the QAAI engine and dashboard. Then distributed the team as a plugin for others to use in their work internally.</p>
+          <ul class="proof-wins">
+            <li><b>500+ tests</b> generated with <b>8 bugs</b> caught before a release</li>
+            <li><b>100s of hours</b> saved for each team from QA, devs, PMs and executives</li>
+            <li><b>1 test</b> for Android, iOS, and Web</li>
+            <li>Cost savings with swappable or even <b>local LLMs</b></li>
+            <li>Every run with recorded video and logs for review and <b>LLM training</b></li>
+          </ul>
+          <p class="proof-kit"><b>Features</b>Android 9&ndash;16</p>
+          <p class="proof-kit"><b>Tools</b>Claude Code, Cursor, Codex, Copilot, LLM Agents, Kotlin, Compose, Android Studio, Python, GCP</p>
+        </div>
+
+        <div class="proof" id="pf-mail">
+          <div class="proof-fig said">Accessible by law</div>
+          <p class="proof-say">Features built to EAA compliance, and the QA pain points taken out behind them.</p>
+          <div class="proof-at">
+            <span class="pa-label">Built at</span>
+            <h4 data-site="https://www.yahoo.com/" data-via="Mindlance" data-via-site="https://www.mindlance.com/">Yahoo!</h4>
+            <span class="pa-role">Agentic Engineer</span>
+            <time datetime="2025-09/2026-07">Sep 2025 &ndash; Jul 2026</time>
+          </div>
+          <p class="proof-more">Developed and maintained features on Yahoo! Mail alongside the agentic plugin work,
+            with a focus on accessibility.</p>
+          <p class="proof-lede">Developed an agentic workflow for exploring and fixing issues within the Yahoo! Mail app. Turned the workflow into a Claude Code plugin for internal distribution at Yahoo! Focusing on reproducible issues and fixes that the agentic team could produce before and after evidence for review to ensure proper fixes.</p>
+          <ul class="proof-wins">
+            <li>Increased <b>EAA compliance to 100%</b> throughout the whole app</li>
+            <li>Maintained features by fixing bugs and removing <b>legacy code</b></li>
+            <li>Streamlined <b>CI/CD</b> testing with nightly QAAI test runs</li>
+          </ul>
+          <p class="proof-get"><span class="pa-label">Get it on</span>
+            <a href="https://play.google.com/store/apps/details?id=com.yahoo.mobile.client.android.mail" data-store="play" target="_blank" rel="noopener noreferrer">Google Play</a>
+            <a href="https://apps.apple.com/us/app/yahoo-mail-your-email-inbox/id577586159" data-store="ios" target="_blank" rel="noopener noreferrer">App Store</a>
+          </p>
+          <p class="proof-kit"><b>Features</b>Android 9&ndash;16</p>
+          <p class="proof-kit"><b>Tools</b>Claude Code, Cursor, Codex, Copilot, LLM Agents, Kotlin, Compose, Android Studio, Python, GCP</p>
+        </div>
+
+        <div class="proof" id="pf-sc">
+          <div class="proof-fig said">Tens of thousands of documents, one question</div>
+          <p class="proof-say">Generative AI answering store team members straight out of Target&rsquo;s own documentation.</p>
+          <div class="proof-at">
+            <span class="pa-label">Built at</span>
+            <h4 data-site="https://www.target.com/">Target</h4>
+            <span class="pa-role">Lead Android Developer</span>
+            <time datetime="2022-08/2025-04">Aug 2022 &ndash; Apr 2025</time>
+          </div>
+          <p class="proof-more">Created the chat experience for free-form questions: viewing responses, giving
+            feedback on the AI&rsquo;s answers, and scanning barcodes to enquire about items or guest orders.</p>
+          <p class="proof-lede">A place to consolidate Target&rsquo;s documentation and give store team members somewhere to get answers quickly. Generative AI answers free-form questions straight out of tens of thousands of Target documents.</p>
+          <ul class="proof-wins">
+            <li>Accurate answers in <b>seconds</b> quickly enabling team members</li>
+            <li>Created and rolled out to <b>100% of stores in 3 months</b></li>
+            <li>Self improving <b>LLM</b> through in app team member feedback</li>
+            <li><b>Barcode scanning</b> enabled AI assisted order and item look up for faster guest assistance</li>
+          </ul>
+          <p class="proof-kit"><b>Features</b>Barcode scanner, Zebra devices, Android 8&ndash;13</p>
+          <p class="proof-kit"><b>Tools</b>Android Studio, Kotlin, Compose, MVI, Dagger, Hilt, Firebase, Git, Jetpack, Unit Testing, Espresso, Robolectric, Generative AI</p>
+        </div>
+
+        <div class="proof" id="pf-myday">
+          <div class="proof-fig"><span data-count="100000">100,000</span><i>+</i></div>
+          <p class="proof-say">Daily active team members, completing in-store tasks, generating billions of calls a day.</p>
+          <div class="proof-at">
+            <span class="pa-label">Built at</span>
+            <h4 data-site="https://www.target.com/">Target</h4>
+            <span class="pa-role">Lead Android Developer</span>
+            <time datetime="2022-08/2025-04">Aug 2022 &ndash; Apr 2025</time>
+          </div>
+          <p class="proof-more">Led the myDay team through updating and maintaining a multi-module monolith,
+            mentoring on Compose and Kotlin and working with other teams on shared components and the backing APIs.</p>
+          <p class="proof-lede">Led the myDay app team, through the ambiguity of a legacy code base and modernizing the architecture. Worked with library, UI/UX, and backend teams to create efficient and modern workflow that even new team members could quickly pick up and immediately be effective at work.</p>
+          <ul class="proof-wins">
+            <li><b>100,000+ daily active team members</b> completing in-store tasks, generating billions of calls worth of traffic each day</li>
+            <li>Improved workflows to remove tech debt and reduced screens by <b>1&ndash;3 per flow</b></li>
+            <li>Upgraded Gradle to Kotlin and reduced initial build time by <b>15 min</b></li>
+            <li>Mentored <b>10 engineers</b> on the team to utilize Compose and MVI/MVVM architecture</li>
+            <li>Shared Compose components used across <b>all of Target&rsquo;s internal apps</b></li>
+          </ul>
+        </div>
+
+        <div class="proof" id="pf-isu">
+          <div class="proof-fig said">The library every app depends on</div>
+          <p class="proof-say">Inventory, stock and unload, plus the core library sitting under every associate app Kohl&rsquo;s ships.</p>
+          <div class="proof-at">
+            <span class="pa-label">Built at</span>
+            <h4 data-site="https://www.kohls.com/">Kohl&rsquo;s</h4>
+            <span class="pa-role">Senior Android Developer</span>
+            <time datetime="2021-01/2022-08">Jan 2021 &ndash; Aug 2022</time>
+          </div>
+          <p class="proof-more">Focused on reducing tech debt and bringing the core library up to current practice,
+            with automated testing added to the apps and their build pipeline.</p>
+          <p class="proof-lede">Worked with balanced teams on a variety of associate and customer-facing applications. Led the implementation of best practices to improve an aging code base, providing training and mentorship to junior engineers</p>
+          <p class="proof-lede"><b>Inventory, Stock and Unload</b> is the core library supporting all of Kohl&rsquo;s internal applications.</p>
+          <ul class="proof-wins">
+            <li><b>All store apps</b> needed the inventory and item location data</li>
+            <li>Automated testing improved <b>build quality</b> by catching issues sooner</li>
+            <li>Modernized the architecture to use <b>Kotlin and Compose</b></li>
+          </ul>
+          <p class="proof-kit"><b>Features</b>Offline, barcode scanner, Zebra devices, Android 8&ndash;10</p>
+          <p class="proof-kit"><b>Tools</b>Android Studio, Kotlin, Java, Next.js, Compose, MVVM, Firebase, Git, Jetpack, Unit Testing, Espresso, Cucumber, GitLab, Balanced Teams</p>
+        </div>
+        <div class="proof" id="pf-self">
+          <div class="proof-fig said">Zero associates</div>
+          <p class="proof-say">Walk into the store, enter a code, collect the order, walk out.</p>
+          <div class="proof-at">
+            <span class="pa-label">Built at</span>
+            <h4 data-site="https://www.kohls.com/">Kohl&rsquo;s</h4>
+            <span class="pa-role">Senior Android Developer</span>
+            <time datetime="2021-01/2022-08">Jan 2021 &ndash; Aug 2022</time>
+          </div>
+          <p class="proof-more">Designed and developed a web app letting customers collect online orders with no
+            staff involved. The customer gets an email when the order is ready.</p>
+          <p class="proof-lede">Designed and developed a web app letting customers walk into a store and collect online orders without an associate. Customers receive an email when the order is ready, go to the store, enter a code, pick up and walk out</p>
+          <ul class="proof-wins">
+            <li><b>Minutes</b> of waiting removed, where an associate had to fetch the order from the back room</li>
+            <li><b>Labor cost reduced</b>, with associates staying on higher-value tasks</li>
+            <li><b>Millions of orders</b> collected across <b>all stores</b></li>
+          </ul>
+          <p class="proof-kit"><b>Features</b>Offline, barcode scanner, Zebra devices, Android 8&ndash;10</p>
+          <p class="proof-kit"><b>Tools</b>Android Studio, Kotlin, Java, Next.js, Compose, MVVM, Firebase, Git, Jetpack, Unit Testing, Espresso, Cucumber, GitLab, Balanced Teams</p>
+        </div>
+
+        <div class="proof" id="pf-pick">
+          <div class="proof-fig said">Works with the signal down</div>
+          <p class="proof-say">In-store, drive-up and self-pickup orders, found by scan or by customer details, online or off.</p>
+          <div class="proof-at">
+            <span class="pa-label">Built at</span>
+            <h4 data-site="https://www.kohls.com/">Kohl&rsquo;s</h4>
+            <span class="pa-role">Senior Android Developer</span>
+            <time datetime="2021-01/2022-08">Jan 2021 &ndash; Aug 2022</time>
+          </div>
+          <p class="proof-more">A redesign of the associate-facing app to simplify adoption, increase productivity
+            and add offline capability.</p>
+          <p class="proof-lede">Redesigned the associate-facing app to simplify adoption, increase productivity and add offline capability. Scanning an order number or entering customer details helps associates find and deliver in-store, drive-up and self-pickup orders, handed over with a simple, easy to follow code trade that leaves customers happy with the convenience.</p>
+          <ul class="proof-wins">
+            <li><b>Offline first</b> development, because there is no wifi in the parking lot</li>
+            <li><b>Simplified adoption</b> for associates picking the app up</li>
+            <li><b>1 minute per order</b> saved finding and delivering orders</li>
+          </ul>
+          <p class="proof-kit"><b>Features</b>Offline, barcode scanner, Zebra devices, Android 8&ndash;10</p>
+          <p class="proof-kit"><b>Tools</b>Android Studio, Kotlin, Java, Next.js, Compose, MVVM, Firebase, Git, Jetpack, Unit Testing, Espresso, Cucumber, GitLab, Balanced Teams</p>
+        </div>
+
+
+        <div class="proof" id="pf-oro">
+          <div class="proof-fig said">Banking without a bank</div>
+          <p class="proof-say">Card accounts for the underbanked in Brazil. Store money, send it and spend it with no bank account and no credit card.</p>
+          <div class="proof-at">
+            <span class="pa-label">Built at</span>
+            <h4>i2020 Fintech</h4>
+            <span class="pa-role">Senior Android Developer</span>
+            <time datetime="2019-08/2020-09">Aug 2019 &ndash; Sep 2020</time>
+          </div>
+          <p class="proof-more">An ORO Store for digital goods, Lot&eacute;rica and ATM transfers, and in-app phone
+            top-ups, then a greenfield Kotlin rewrite with Cognito login and a new card carousel.</p>
+          <p class="proof-lede">An app for the underbanked in Brazil. ORO Pay provides cards with account balances so users can store and transfer money safely without a bank account or credit card.</p>
+          <ul class="proof-wins">
+            <li><b>ORO Store</b> for buying digital items and codes for Spotify, Uber and others</li>
+            <li>Account transfers through <b>Lot&eacute;rica</b> and ATM withdrawals, plus phone top-ups in-app</li>
+            <li>Greenfield rewrite in <b>Kotlin</b>, replacing the original Java and its out-of-date design patterns</li>
+            <li>Streamlined login with <b>Amazon Cognito</b>, a new card carousel, and peer-to-peer and card-to-card transfers</li>
+            <li>Built with backend teams in both the <b>US and Brazil</b></li>
+          </ul>
+          <p class="proof-get"><span class="pa-label">Get it on</span>
+            <a href="https://play.google.com/store/apps/details?id=com.oropay.app" data-store="play" target="_blank" rel="noopener noreferrer">Google Play</a>
+            <!-- /cy/, not /us/: the app ships in Cyprus and is not in the US store, where this id 404s. -->
+            <a href="https://apps.apple.com/cy/app/oropay/id6449222840" data-store="ios" target="_blank" rel="noopener noreferrer">App Store</a>
+          </p>
+          <p class="proof-kit"><b>Features</b>Online/offline, camera, GPS, Android 5.0&ndash;11.0</p>
+          <p class="proof-kit"><b>Tools</b>Android Studio, Kotlin, Java, MVVM, Amazon Amplify with Cognito, Firebase, Git, Google ML Kit</p>
+        </div>
+
+        <div class="proof" id="pf-merch">
+          <div class="proof-fig said">Paid by pointing a camera</div>
+          <p class="proof-say">A QR renderer paired with Google ML Kit scanning, for peer-to-peer transfers at a merchant.</p>
+          <div class="proof-at">
+            <span class="pa-label">Built at</span>
+            <h4>i2020 Fintech</h4>
+            <span class="pa-role">Senior Android Developer</span>
+            <time datetime="2019-08/2020-09">Aug 2019 &ndash; Sep 2020</time>
+          </div>
+          <p class="proof-more">The merchant side of ORO, taking payments from ORO Pay and from card readers at
+            Brazilian businesses.</p>
+          <p class="proof-lede">The merchant side of ORO, taking payments from ORO Pay and from card readers at Brazilian businesses.</p>
+          <ul class="proof-wins">
+            <li><b>QR renderer</b> paired with Google ML Kit scanning, for peer-to-peer transfers at a merchant</li>
+            <li>Accepts payment from <b>ORO Pay</b> without either side needing a bank</li>
+          </ul>
+          <p class="proof-kit"><b>Features</b>Online/offline, camera, GPS, Android 5.0&ndash;11.0</p>
+          <p class="proof-kit"><b>Tools</b>Android Studio, Kotlin, Java, MVVM, Amazon Amplify with Cognito, Firebase, Git, Google ML Kit</p>
+        </div>
+
+        <div class="proof" id="pf-fv">
+          <div class="proof-fig"><span data-count="10000">10,000</span><i>+</i></div>
+          <p class="proof-say">Active devices globally, on sites, in an app dating back to the Pocket PC days.</p>
+          <div class="proof-at">
+            <span class="pa-label">Built at</span>
+            <h4 data-site="https://viewpoint.com/">Viewpoint</h4>
+            <span class="pa-role">Mobile Developer</span>
+            <time datetime="2017-07/2019-03">Jul 2017 &ndash; Mar 2019</time>
+          </div>
+          <p class="proof-more">Construction personnel navigate a site in real time, file forms, complete task lists
+            and track progress, so companies can record who completed what and compile a digital record of
+            all activity.</p>
+          <p class="proof-lede">The largest and oldest app at Viewpoint. Construction personnel navigate a site in real time, file forms, complete task lists and track progress of work. Used on large construction projects, from skyscrapers to schools and even nuclear power plants.</p>
+          <ul class="proof-wins">
+            <li><b>10,000+ active devices</b> globally</li>
+            <li>Dates back to the <b>Pocket PC</b> days</li>
+            <li>Companies record <b>who completed what</b>, and compile a digital record of all activity</li>
+            <li>Whole projects tracked from the same record</li>
+            <li>One feature set across <b>Android, iOS and Windows</b></li>
+          </ul>
+          <p class="proof-get"><span class="pa-label">Get it on</span>
+            <a href="https://play.google.com/store/apps/details?id=com.viewpoint.fieldview" data-store="play" target="_blank" rel="noopener noreferrer">Google Play</a>
+            <a href="https://apps.apple.com/us/app/viewpoint-field-view/id1051411527" data-store="ios" target="_blank" rel="noopener noreferrer">App Store</a>
+          </p>
+          <p class="proof-kit"><b>Features</b>Online/offline, camera, GPS, Android 4.1&ndash;9.0, iOS 8&ndash;12, Windows 8.1&ndash;10, telemetry, analytics</p>
+          <p class="proof-kit"><b>Tools</b>Android Studio, Xamarin, Java, C#, Xamarin Forms, Visual Studio, Microsoft Azure</p>
+        </div>
+
+        <div class="proof" id="pf-team">
+          <div class="proof-fig said">Three platforms, every month</div>
+          <p class="proof-say">Android, iOS and Windows shipping the same feature set in every monthly release.</p>
+          <div class="proof-at">
+            <span class="pa-label">Built at</span>
+            <h4 data-site="https://viewpoint.com/">Viewpoint</h4>
+            <span class="pa-role">Mobile Developer</span>
+            <time datetime="2017-07/2019-03">Jul 2017 &ndash; Mar 2019</time>
+          </div>
+          <p class="proof-more">Team lets users raise RFIs (requests for information) to get what they
+            need to finish a job on site. Xamarin for Windows and iOS, native on Android.</p>
+          <p class="proof-lede">Team lets users raise RFIs, requests for information, to get what they need to finish a job on site.</p>
+          <ul class="proof-wins">
+            <li>Same feature set shipped on <b>all three platforms</b> in every monthly release</li>
+            <li><b>Xamarin</b> for Windows and iOS, native on Android</li>
+            <li>New features built, existing ones maintained, and older code updated to modern practice</li>
+          </ul>
+          <p class="proof-get"><span class="pa-label">Get it on</span>
+            <a href="https://play.google.com/store/apps/details?id=com.viewpoint.field" data-store="play" target="_blank" rel="noopener noreferrer">Google Play</a>
+            <a href="https://apps.apple.com/us/app/viewpoint-team/id1264886008" data-store="ios" target="_blank" rel="noopener noreferrer">App Store</a>
+          </p>
+          <p class="proof-kit"><b>Features</b>Online/offline, camera, GPS, Android 4.1&ndash;9.0, iOS 8&ndash;12, Windows 8.1&ndash;10, telemetry, analytics</p>
+          <p class="proof-kit"><b>Tools</b>Android Studio, Xamarin, Java, C#, Xamarin Forms, Visual Studio, Microsoft Azure</p>
+        </div>
+
+        <div class="proof" id="pf-tab">
+          <div class="proof-fig said">Consistent at any size</div>
+          <p class="proof-say">The UI fixed across every screen size, and the crashes stopped.</p>
+          <div class="proof-at">
+            <span class="pa-label">Built at</span>
+            <h4 data-site="https://www.ravesocial.com/">Rave</h4>
+            <span class="pa-role">Android Developer</span>
+            <time datetime="2017-03/2017-05">Mar 2017 &ndash; May 2017</time>
+          </div>
+          <p class="proof-more">A contract through a partnership between the two companies, maintaining and updating
+            the app&rsquo;s features.</p>
+          <p class="proof-lede">Contracted to maintain and update the TabbedOut application, through a partnership between the two companies.</p>
+          <ul class="proof-wins">
+            <li>UI issues fixed across every screen size</li>
+            <li>Crashes stopped</li>
+            <li>Features maintained, updated and released</li>
+          </ul>
+          <p class="proof-kit"><b>Tools</b>Java, Android SDK, Android Studio, Git, JIRA</p>
+        </div>
+
+        <div class="proof" id="pf-house">
+          <div class="proof-fig said">The whole job, in one place</div>
+          <p class="proof-say">Cleaning details, hours worked, maintenance tickets, supplies, directions and the key house details.</p>
+          <div class="proof-at">
+            <span class="pa-label">Built at</span>
+            <h4 data-site="https://www.vacasa.com/">Vacasa</h4>
+            <span class="pa-role">Android Developer</span>
+            <time datetime="2015-03/2017-01">Mar 2015 &ndash; Jan 2017</time>
+          </div>
+          <p class="proof-more">An internal Android app for Vacasa&rsquo;s housekeepers, with the data it runs on
+            designed alongside the API team.</p>
+          <p class="proof-lede">An internal Android app for Vacasa&rsquo;s housekeepers, improving the efficiency of their everyday work.</p>
+          <ul class="proof-wins">
+            <li><b>Cleaning information</b> for the home</li>
+            <li><b>Hours worked</b></li>
+            <li><b>Maintenance tickets</b></li>
+            <li><b>Supplies</b></li>
+            <li><b>Directions</b> to homes</li>
+            <li><b>Key house details</b></li>
+            <li>Collaborated with <b>design and backend teams</b></li>
+          </ul>
+          <p class="proof-kit"><b>Features</b>Online/offline, GPS, camera, phone, encryption, Google API, multiple languages, Android 4.0&ndash;7.1</p>
+          <p class="proof-kit"><b>Tools</b>Java, Android SDK, Android Studio, Fabric, JIRA, Git, Appsee, Appaloosa</p>
+        </div>
+
+        <div class="proof" id="pf-rexel">
+          <div class="proof-fig said">One codebase, every brand</div>
+          <p class="proof-say">All of Rexel&rsquo;s brands and their languages out of a single Titanium build.</p>
+          <div class="proof-at">
+            <span class="pa-label">Built at</span>
+            <h4 data-site="https://www.rexelusa.com/">Rexel</h4>
+            <span class="pa-role">Mobile App Developer</span>
+            <time datetime="2014-07/2015-02">Jul 2014 &ndash; Feb 2015</time>
+          </div>
+          <p class="proof-more">A mobile e-commerce app leaning on device hardware, including a barcode scanner, to make buying on a phone worth doing.</p>
+          <p class="proof-lede">A mobile e-commerce app for Rexel and all the brands beneath it.</p>
+          <ul class="proof-wins">
+            <li>One source of code covering every brand and language, built with <b>Titanium</b></li>
+            <li>Device hardware used to make buying on a phone worth doing, a <b>barcode scanner</b> among it</li>
+            <li>Features created, updated, maintained and released</li>
+          </ul>
+          <p class="proof-get"><span class="pa-label">Get it on</span>
+            <a href="https://play.google.com/store/apps/details?id=com.rexel.storefront.releaserexel" data-store="play" target="_blank" rel="noopener noreferrer">Google Play</a>
+            <a href="https://apps.apple.com/us/app/rexelusa-mobile/id1537022597" data-store="ios" target="_blank" rel="noopener noreferrer">App Store</a>
+          </p>
+          <p class="proof-kit"><b>Tools</b>Titanium SDK, JavaScript, Agile, Android, iOS</p>
+        </div>
+
+        <div class="proof" id="pf-123">
+          <div class="proof-fig said">English, taught in Chinese</div>
+          <p class="proof-say">An iOS app converted to Simplified Chinese so Chinese students could use it to learn English.</p>
+          <div class="proof-at">
+            <span class="pa-label">Built at</span>
+            <h4>Itsy Bitsy Stories</h4>
+            <span class="pa-role">Mobile / Web Developer</span>
+            <time datetime="2012-05/2014-07">May 2012 &ndash; Jul 2014</time>
+          </div>
+          <p class="proof-more">The first mobile role, and the start of the fourteen years.</p>
+          <p class="proof-lede">An iOS app converted and updated so Chinese students could use it to learn English.</p>
+          <ul class="proof-wins">
+            <li>Converted from English to <b>Simplified Chinese</b></li>
+            <li>The first mobile role, and the start of the fourteen years</li>
+          </ul>
+          <p class="proof-kit"><b>Tools</b>Corona SDK, Android, iOS, Xcode, Hype, HTML5, CSS</p>
+        </div>
+
+        <div class="proof" id="pf-kiosk">
+          <div class="proof-fig said">Installed beside the art</div>
+          <p class="proof-say">A tablet in the gallery, letting visitors open up the work in front of them.</p>
+          <div class="proof-at">
+            <span class="pa-label">Built at</span>
+            <h4>Itsy Bitsy Stories</h4>
+            <span class="pa-role">Mobile / Web Developer</span>
+            <time datetime="2012-05/2014-07">May 2012 &ndash; Jul 2014</time>
+          </div>
+          <p class="proof-more">Ran on an Android tablet placed beside a piece at the San Francisco Asian Art Museum,
+            letting visitors select and learn more about aspects of the work and zoom in on close-up detail.</p>
+          <p class="proof-lede">An Android kiosk app for the San Francisco Asian Art Museum, running on a tablet placed beside a piece of art.</p>
+          <ul class="proof-wins">
+            <li>Visitors select and learn more about aspects of the work</li>
+            <li>Zoom in on close-up detail</li>
+          </ul>
+          <p class="proof-kit"><b>Tools</b>Corona SDK, Android, iOS, Xcode, Hype, HTML5, CSS</p>
+        </div>
+
+        <div class="proof" id="pf-ink">
+          <div class="proof-fig said">Hours &rarr; minutes</div>
+          <p class="proof-say">Weekly graph production, cut from an afternoon to a coffee break.</p>
+          <div class="proof-at">
+            <span class="pa-label">Built at</span>
+            <h4 data-site="https://www.hp.com/">Hewlett-Packard</h4>
+            <span class="pa-role">Software Engineer Intern</span>
+            <time datetime="2012-06/2012-08">Jun 2012 &ndash; Aug 2012</time>
+          </div>
+          <p class="proof-more">An internal web page displaying and graphing printhead and ink usage, with a new
+            heat-map graph for analysing usage trends.</p>
+          <p class="proof-lede">An internal web page displaying and graphing printhead and ink usage.</p>
+          <ul class="proof-wins">
+            <li>Weekly graph production cut from <b>hours to minutes</b></li>
+            <li>New <b>heat-map graph</b> for analysing usage trends</li>
+          </ul>
+          <p class="proof-kit"><b>Tools</b>PHP, JavaScript, HTML, CSS, JpGraph, SCRUM</p>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+
+  <!-- THE CATALOGUE, built by catalogue.js from the records above and shown only once it has run. Everything a
+       reader without JavaScript needs is in .inner; this is the same seventeen products as an object you can
+       turn over. -->
+  <div class="cat" id="cat">
+
+    <div class="cat-left">
+      <!-- NO EYEBROW. The section names itself in the title, so a label above saying the same thing was two
+           headings for one section and height the carousel was competing for. -->
+      <h2 class="sec-title">THE CATALOGUE<br><span>SEVENTEEN SHIPPED PRODUCTS</span></h2>
+      <p class="cat-degree">BS Computer Science <em>Northern Arizona University</em></p>
+
+      <!-- THE KEY WORDS AS TEXT, not chips. They are facts about the catalogue rather than items in it, and as
+           bordered chips they were twenty-five more rectangles in a column that already has seventeen. -->
+      <div class="keys">
+        <div class="key-row"><b>Languages</b><p>Kotlin, Java, Python, XML, HTML5, JavaScript, TypeScript, CSS</p></div>
+        <div class="key-row"><b>Platforms</b><p>Android, iOS, Windows, Web</p></div>
+        <div class="key-row"><b>Tools</b><p>Claude Code, Cursor, Codex, Copilot, Agentic Development, Antigravity, Android Studio,
+          Jetpack, Firebase, Azure, JUnit, Espresso, Xamarin, Git</p></div>
+      </div>
+
+      <!-- THE COMPANY BAR IS NAVIGATION, NOT A FILTER. Every employer stays listed whatever is showing — hiding
+           fifteen products to look at two is the opposite of a catalogue — and the one the carousel is on lights
+           up. Clicking jumps the carousel there, which is the fast way through seventeen boxes.
+           Built by catalogue.js from the record, so a company cannot be listed here and missing from the reel. -->
+      <nav class="firms" id="firms" aria-label="Jump to a company"></nav>
+
+      <!-- ONE CAROUSEL, not four shelves. The company bar reaches any product in a click and the act reads out
+           under the row, so splitting seventeen into four rows bought nothing and cost three quarters of the
+           height each box could have had. Sideways belongs to the carousel; down belongs to the page. -->
+      <div class="reel-wrap">
+        <!-- THE ACT LEADS THE CRATE. It says what you are about to look at rather than captioning what you have
+             already looked at, and it keeps the plinth under the boxes as the shelf they stand on. -->
+        <div class="reel-act" id="reel-act"></div>
+        <div class="reel" id="reel" role="listbox" aria-label="Shipped products, newest first"></div>
+      </div>
+    </div>
+
+    <div class="case" id="case">
+      <div class="case-box">
+        <!-- THE SLIDE IS ITS OWN ELEMENT. The box inside it turns over on `transform`, and one element cannot run
+             two transitions on one property — a slide written onto the same node would cancel the flip mid-turn. -->
+        <div class="case-slide" id="case-slide">
+          <!-- THE WIREFRAME IS DRAWN, THE PRINT IS TEXT. The SVG carries the whole object as one path set, so the
+               corners are real curves and every line is the same stroke; the two HTML faces over it are laid out
+               in a CSS-3D box under the same perspective and the same two angles, which is what keeps the title,
+               the blurb and the spine selectable and wrapping like text. -->
+          <div class="case-body" id="case-body" role="img" aria-label="Product case">
+            <!-- THE PRINT STRADDLES THE GLASS. Whichever faces are turned away live in this first layer, UNDER the
+                 drawing, so the case's own side walls and panels dim them the way a real one would. With the whole
+                 print above the SVG the far side showed through at full ghost strength wherever a wall crossed it,
+                 and the box read as see-through in places it should have been solid. -->
+            <div class="c3-print" id="case-print-far"></div>
+            <svg class="c3-wire" id="case-wire" aria-hidden="true"></svg>
+            <div class="c3-print" id="case-print">
+              <div class="c3-side c3-front" id="case-front"></div>
+              <div class="c3-side c3-back" id="case-back"></div>
+              <div class="c3-side c3-spine"><span id="case-spine"></span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="case-foot">
+        <button class="flip" id="flip" type="button">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 0 1 15.5-6.2M21 12a9 9 0 0 1-15.5 6.2"></path><path d="M18 3v4h-4M6 21v-4h4"></path></svg>
+          <span>Turn it over</span>
+        </button>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ITS OWN SECTION, because none of it is a job. Education has no employer and no duration worth reading, and
+     the off-hours list is not work at all; both were sitting in the timeline's tail where they read as two more
+     entries in a career. -->
+<section id="labs">
+  <i id="labs-snap" aria-hidden="true"></i>
+  <div class="inner">
+    <h2 class="sec-title">BEHIND<br><span style="color:var(--accent)">THE SCENES</span></h2>
+    <p class="sec-lede">
+      Where the technique gets proven before it reaches anything that ships. Each one is an instrument,
+      hand-authored with no framework and no build step, built to make something physical <em>measurable</em>
+      rather than merely to look like it.
+    </p>
+    <div class="lab-grid">
+      <a class="lab-card" href="labs/crt/CRT%20Lab.html">
+        <div class="obj crt cold"><div class="obj-3d">
+          <div class="tube">
+            <div class="fr"><div class="face"><s></s><u class="r"></u><u class="g"></u><u class="b"></u></div></div>
+          </div>
+        </div></div>
+        <div class="tag">WEBGL2</div>
+        <div class="name">CRT Lab</div>
+        <p>The tube as a fragment shader: face curvature, shadow mask, beam, phosphor persistence and a
+           ray-traced light fitting reflected in the glass, solved per pixel.</p>
+        <div class="go">INSPECT →</div>
+      </a>
+      <a class="lab-card" href="labs/reactor/Reactor.html">
+        <div class="obj rx cold"><div class="obj-3d">
+          <div class="blob"><div class="core"><b></b><b></b><b></b></div></div>
+        </div></div>
+        <div class="tag">WEBGL2</div>
+        <div class="name">Reactor Lab</div>
+        <p>A containment core, sphere-traced: a goo core with sub-cores torn out of it by a pulse, nine alloy
+           ring fragments, and a shield that fails on a schedule.</p>
+        <div class="go">INSPECT →</div>
+      </a>
+      <a class="lab-card" href="labs/wormhole/Wormhole.html">
+        <div class="obj wh"><div class="obj-3d"><div class="roll"></div></div></div>
+        <div class="tag">WEBGL2</div>
+        <div class="name">Wormhole Lab</div>
+        <p>A domain-warped noise tunnel down the throat of a wormhole, in three flavours.</p>
+        <div class="go">INSPECT →</div>
+      </a>
+    </div>
+
+  </div>
+</section>
+
+<section id="contact">
+  <i id="contact-snap" aria-hidden="true"></i>
+  <div class="inner">
+    <h2 class="sec-title">LET&rsquo;S CONNECT</h2>
+    <div class="contact-links">
+      <a href="mailto:Alexk413x@gmail.com">Alexk413x@gmail.com</a>
+      <a href="https://www.linkedin.com/in/alexk413x/" target="_blank" rel="noopener">LINKEDIN ↗</a>
+      <a href="https://github.com/Alexk413x" target="_blank" rel="noopener">GITHUB ↗</a>
+      <button id="qr-open" type="button" data-qr-open>SHOW QR CODE</button>
+    </div>
+  </div>
+</section>
+
+<div id="qr-dialog" role="dialog" aria-modal="true" aria-labelledby="qr-title" tabindex="-1" hidden>
+  <div class="qr-panel">
+    <div class="sec-label" id="qr-title">SCAN TO OPEN</div>
+    <img id="qr-image" alt="QR code linking to alexk413x.github.io/alex-koch-portfolio">
+    <div class="qr-url">alexk413x.github.io/alex-koch-portfolio</div>
+  </div>
+</div>
+
+<!-- First: everything below reaches for AKKIT as it initialises. -->
+<script src="site/kit.js"></script>
+<script src="site/display-lockup.js"></script>
+<script src="site/scenes.js"></script>
+<script src="site/nav.js"></script>
+<script src="site/qr.js"></script>
+<script src="site/share.js"></script>
+<script src="site/rpn.js"></script>
+<script src="site/rpn-demo.js"></script>
+<script src="site/lab-objects.js"></script>
+<script src="site/case3d.js"></script>
+<script type="module" src="site/catalogue.js"></script>
+<script src="site/timeline.js"></script>
+<script type="module" src="site/hero-core.js"></script>
+
+<!-- WHAT THE PAGE ALREADY SAYS, IN THE FORM A MACHINE READS. Every claim below has a visible counterpart
+     above it; nothing is asserted here that a reader cannot also find on the page. That is the whole line
+     between structured data and hidden text, and Google's structured-data guidelines draw it in the same place.
+     AT THE END OF THE BODY, not in the head. A parser does not care where it sits, and 20KB standing ahead of
+     the stylesheet and font links would delay their discovery for no gain.
+     The seventeen products are the shelf's own records restated; test/suite_seo.py fails when they disagree. -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "@id": "https://alexk413x.github.io/alex-koch-portfolio/#site",
+      "url": "https://alexk413x.github.io/alex-koch-portfolio/",
+      "name": "Alex Koch",
+      "inLanguage": "en",
+      "publisher": {
+        "@id": "https://alexk413x.github.io/alex-koch-portfolio/#alex"
+      }
+    },
+    {
+      "@type": "ProfilePage",
+      "@id": "https://alexk413x.github.io/alex-koch-portfolio/#page",
+      "url": "https://alexk413x.github.io/alex-koch-portfolio/",
+      "name": "Alex Koch, Agentic Mobile Engineer",
+      "isPartOf": {
+        "@id": "https://alexk413x.github.io/alex-koch-portfolio/#site"
+      },
+      "mainEntity": {
+        "@id": "https://alexk413x.github.io/alex-koch-portfolio/#alex"
+      },
+      "about": [
+        {
+          "@id": "https://alexk413x.github.io/alex-koch-portfolio/#alex"
+        },
+        {
+          "@id": "https://alexk413x.github.io/alex-koch-portfolio/#qacartographer"
+        }
+      ],
+      "primaryImageOfPage": "https://alexk413x.github.io/alex-koch-portfolio/site/og-card.png"
+    },
+    {
+      "@type": "Person",
+      "@id": "https://alexk413x.github.io/alex-koch-portfolio/#alex",
+      "name": "Alex Koch",
+      "url": "https://alexk413x.github.io/alex-koch-portfolio/",
+      "image": "https://alexk413x.github.io/alex-koch-portfolio/site/og-card.png",
+      "email": "mailto:Alexk413x@gmail.com",
+      "jobTitle": [
+        "Agentic Mobile Engineer",
+        "Lead Android Developer",
+        "Senior Android Developer"
+      ],
+      "description": "Agentic mobile engineer with 14 years shipping mobile at scale with Yahoo!, Target, Kohl’s and Vacasa, now using agentic development to build the tools that test it.",
+      "worksFor": {
+        "@id": "https://alexk413x.github.io/alex-koch-portfolio/#org-yahoo"
+      },
+      "alumniOf": {
+        "@type": "CollegeOrUniversity",
+        "name": "Northern Arizona University",
+        "url": "https://nau.edu/"
+      },
+      "hasCredential": {
+        "@type": "EducationalOccupationalCredential",
+        "credentialCategory": "bachelor degree",
+        "name": "BS Computer Science",
+        "educationalLevel": "Bachelor of Science"
+      },
+      "hasOccupation": {
+        "@type": "Occupation",
+        "name": "Mobile Software Engineer",
+        "occupationalCategory": "15-1252.00",
+        "skills": "Android, iOS, Kotlin, Compose, Agentic Development, End-to-End testing, Accessibility"
+      },
+      "knowsAbout": [
+        "Kotlin",
+        "Java",
+        "Python",
+        "JavaScript",
+        "TypeScript",
+        "HTML5",
+        "CSS",
+        "XML",
+        "Android",
+        "iOS",
+        "Windows",
+        "Web",
+        "Compose",
+        "Jetpack",
+        "Android Studio",
+        "Firebase",
+        "Azure",
+        "GCP",
+        "JUnit",
+        "Espresso",
+        "Xamarin",
+        "Git",
+        "Agentic Development",
+        "Claude Code",
+        "Cursor",
+        "Codex",
+        "Copilot",
+        "Antigravity",
+        "End-to-End",
+        "Accessibility",
+        "Performance",
+        "CI/CD",
+        "WCAG 2.2 AA",
+        "EAA"
+      ],
+      "sameAs": [
+        "https://www.linkedin.com/in/alexk413x/",
+        "https://github.com/Alexk413x"
+      ]
+    },
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://alexk413x.github.io/alex-koch-portfolio/#qacartographer",
+      "name": "QACartographer",
+      "alternateName": "Cartographer",
+      "applicationCategory": "DeveloperApplication",
+      "applicationSubCategory": "QA and test automation",
+      "operatingSystem": "Android, iOS, Windows, Web",
+      "abstract": "AI only where judgement is needed.",
+      "description": "A QA tool that records one app flow and replays it as end-to-end, accessibility, performance, WCAG 2.2 AA, screenshot and EAA test coverage. Platform-, app- and LLM-agnostic: it explores, guides and replays test cases, and creates and repairs them automatically as the app evolves.",
+      "featureList": [
+        "End-to-End test coverage",
+        "Accessibility test coverage",
+        "Performance test coverage",
+        "WCAG 2.2 AA conformance",
+        "Screenshot test coverage",
+        "EAA conformance",
+        "Records one app flow and replays it for free",
+        "Creates and repairs its own tests as the app evolves",
+        "Runs against any platform, any app and any LLM"
+      ],
+      "author": {
+        "@id": "https://alexk413x.github.io/alex-koch-portfolio/#alex"
+      }
+    },
+    {
+      "@type": "ItemList",
+      "@id": "https://alexk413x.github.io/alex-koch-portfolio/#catalogue",
+      "name": "The catalogue: seventeen shipped products",
+      "numberOfItems": 17,
+      "itemListOrder": "https://schema.org/ItemListOrderDescending",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "item": {
+            "@type": "SoftwareApplication",
+            "@id": "https://alexk413x.github.io/alex-koch-portfolio/#qaai",
+            "name": "QAAI",
+            "abstract": "Accurate Agentic Testing",
+            "applicationCategory": "MobileApplication",
+            "operatingSystem": "Android, iOS, Web",
+            "keywords": [
+              "Multi-agent",
+              "CI/CD",
+              "All platforms"
+            ],
+            "author": {
+              "@id": "https://alexk413x.github.io/alex-koch-portfolio/#alex"
+            },
+            "publisher": {
+              "@id": "https://alexk413x.github.io/alex-koch-portfolio/#org-yahoo"
+            }
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "item": {
+            "@type": "SoftwareApplication",
+            "@id": "https://alexk413x.github.io/alex-koch-portfolio/#yahoo-mail",
+            "name": "Yahoo! Mail",
+            "abstract": "Email in the Agentic World",
+            "applicationCategory": "MobileApplication",
+            "operatingSystem": "Android",
+            "keywords": [
+              "Android",
+              "Compose",
+              "A11y"
+            ],
+            "author": {
+              "@id": "https://alexk413x.github.io/alex-koch-portfolio/#alex"
+            },
+            "publisher": {
+              "@id": "https://alexk413x.github.io/alex-koch-portfolio/#org-yahoo"
+            }
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "item": {
+            "@type": "SoftwareApplication",
+            "@id": "https://alexk413x.github.io/alex-koch-portfolio/#store-companion",
+            "name": "Store Companion",
+            "abstract": "Every Document, One Answer",
+            "applicationCategory": "MobileApplication",
+            "operatingSystem": "Android",
+            "keywords": [
+              "Android",
+              "Gen AI",
+              "Scanner"
+            ],
+            "author": {
+              "@id": "https://alexk413x.github.io/alex-koch-portfolio/#alex"
+            },
+            "publisher": {
+              "@id": "https://alexk413x.github.io/alex-koch-portfolio/#org-target"
+            }
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 4,
+          "item": {
+            "@type": "SoftwareApplication",
+            "@id": "https://alexk413x.github.io/alex-koch-portfolio/#myday",
+            "name": "myDay",
+            "abstract": "Efficiency at Scale",
+            "applicationCategory": "MobileApplication",
+            "operatingSystem": "Android",
+            "keywords": [
+              "Android",
+              "Compose",
+              "Zebra"
+            ],
+            "author": {
+              "@id": "https://alexk413x.github.io/alex-koch-portfolio/#alex"
+            },
+            "publisher": {
+              "@id": "https://alexk413x.github.io/alex-koch-portfolio/#org-target"
+            }
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 5,
+          "item": {
+            "@type": "SoftwareApplication",
+            "@id": "https://alexk413x.github.io/alex-koch-portfolio/#isu",
+            "name": "ISU",
+            "abstract": "One Library to Rule Them All",
+            "applicationCategory": "MobileApplication",
+            "operatingSystem": "Android",
+            "keywords": [
+              "Android",
+              "Core library"
+            ],
+            "author": {
+              "@id": "https://alexk413x.github.io/alex-koch-portfolio/#alex"
+            },
+            "publisher": {
+              "@id": "https://alexk413x.github.io/alex-koch-portfolio/#org-kohl-s"
+            }
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 6,
+          "item": {
+            "@type": "SoftwareApplication",
+            "@id": "https://alexk413x.github.io/alex-koch-portfolio/#self-pickup",
+            "name": "Self Pickup",
+            "abstract": "Pickup Orders Made Easy",
+            "applicationCategory": "WebApplication",
+            "operatingSystem": "Web",
+            "keywords": [
+              "Web"
+            ],
+            "author": {
+              "@id": "https://alexk413x.github.io/alex-koch-portfolio/#alex"
+            },
+            "publisher": {
+              "@id": "https://alexk413x.github.io/alex-koch-portfolio/#org-kohl-s"
+            }
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 7,
+          "item": {
+            "@type": "SoftwareApplication",
+            "@id": "https://alexk413x.github.io/alex-koch-portfolio/#pickup",
+            "name": "Pickup",
+            "abstract": "Orders Brought to You",
+            "applicationCategory": "MobileApplication",
+            "operatingSystem": "Android",
+            "keywords": [
+              "Android",
+              "Offline",
+              "Zebra"
+            ],
+            "author": {
+              "@id": "https://alexk413x.github.io/alex-koch-portfolio/#alex"
+            },
+            "publisher": {
+              "@id": "https://alexk413x.github.io/alex-koch-portfolio/#org-kohl-s"
+            }
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 8,
+          "item": {
+            "@type": "SoftwareApplication",
+            "@id": "https://alexk413x.github.io/alex-koch-portfolio/#oro-pay",
+            "name": "ORO Pay",
+            "abstract": "Digital Banking for the Underbanked",
+            "applicationCategory": "MobileApplication",
+            "operatingSystem": "Android",
+            "keywords": [
+              "Android",
+              "Camera",
+              "GPS"
+            ],
+            "author": {
+              "@id": "https://alexk413x.github.io/alex-koch-portfolio/#alex"
+            },
+            "publisher": {
+              "@id": "https://alexk413x.github.io/alex-koch-portfolio/#org-i2020-fintech"
+            }
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 9,
+          "item": {
+            "@type": "SoftwareApplication",
+            "@id": "https://alexk413x.github.io/alex-koch-portfolio/#oro-merchant",
+            "name": "ORO Merchant",
+            "abstract": "Payments for the Underbanked",
+            "applicationCategory": "MobileApplication",
+            "operatingSystem": "Android",
+            "keywords": [
+              "Android",
+              "QR",
+              "ML Kit"
+            ],
+            "author": {
+              "@id": "https://alexk413x.github.io/alex-koch-portfolio/#alex"
+            },
+            "publisher": {
+              "@id": "https://alexk413x.github.io/alex-koch-portfolio/#org-i2020-fintech"
+            }
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 10,
+          "item": {
+            "@type": "SoftwareApplication",
+            "@id": "https://alexk413x.github.io/alex-koch-portfolio/#fieldview",
+            "name": "FieldView",
+            "abstract": "Your Eyes in the Field",
+            "applicationCategory": "MobileApplication",
+            "operatingSystem": "Android, iOS, Windows",
+            "keywords": [
+              "Android",
+              "iOS",
+              "Windows",
+              "Offline"
+            ],
+            "author": {
+              "@id": "https://alexk413x.github.io/alex-koch-portfolio/#alex"
+            },
+            "publisher": {
+              "@id": "https://alexk413x.github.io/alex-koch-portfolio/#org-viewpoint"
+            }
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 11,
+          "item": {
+            "@type": "SoftwareApplication",
+            "@id": "https://alexk413x.github.io/alex-koch-portfolio/#team",
+            "name": "Team",
+            "abstract": "Forms for the Digital World",
+            "applicationCategory": "MobileApplication",
+            "operatingSystem": "Android, iOS, Windows",
+            "keywords": [
+              "Android",
+              "iOS",
+              "Windows"
+            ],
+            "author": {
+              "@id": "https://alexk413x.github.io/alex-koch-portfolio/#alex"
+            },
+            "publisher": {
+              "@id": "https://alexk413x.github.io/alex-koch-portfolio/#org-viewpoint"
+            }
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 12,
+          "item": {
+            "@type": "SoftwareApplication",
+            "@id": "https://alexk413x.github.io/alex-koch-portfolio/#tabbedout",
+            "name": "TabbedOut",
+            "abstract": "Tabs Automated",
+            "applicationCategory": "MobileApplication",
+            "operatingSystem": "Android",
+            "keywords": [
+              "Android"
+            ],
+            "author": {
+              "@id": "https://alexk413x.github.io/alex-koch-portfolio/#alex"
+            },
+            "publisher": {
+              "@id": "https://alexk413x.github.io/alex-koch-portfolio/#org-rave"
+            }
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 13,
+          "item": {
+            "@type": "SoftwareApplication",
+            "@id": "https://alexk413x.github.io/alex-koch-portfolio/#housekeeping",
+            "name": "Housekeeping",
+            "abstract": "Everything to Get the Job Done",
+            "applicationCategory": "MobileApplication",
+            "operatingSystem": "Android",
+            "keywords": [
+              "Android",
+              "Offline",
+              "GPS"
+            ],
+            "author": {
+              "@id": "https://alexk413x.github.io/alex-koch-portfolio/#alex"
+            },
+            "publisher": {
+              "@id": "https://alexk413x.github.io/alex-koch-portfolio/#org-vacasa"
+            }
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 14,
+          "item": {
+            "@type": "SoftwareApplication",
+            "@id": "https://alexk413x.github.io/alex-koch-portfolio/#rexel-usa",
+            "name": "Rexel USA",
+            "abstract": "Every Brand, One Build",
+            "applicationCategory": "MobileApplication",
+            "operatingSystem": "Android, iOS",
+            "keywords": [
+              "Android",
+              "iOS",
+              "Scanner"
+            ],
+            "author": {
+              "@id": "https://alexk413x.github.io/alex-koch-portfolio/#alex"
+            },
+            "publisher": {
+              "@id": "https://alexk413x.github.io/alex-koch-portfolio/#org-rexel"
+            }
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 15,
+          "item": {
+            "@type": "SoftwareApplication",
+            "@id": "https://alexk413x.github.io/alex-koch-portfolio/#123-calling",
+            "name": "123 Calling",
+            "abstract": "Linguistics Is Child’s Play",
+            "applicationCategory": "MobileApplication",
+            "operatingSystem": "iOS",
+            "keywords": [
+              "iOS",
+              "Localised"
+            ],
+            "author": {
+              "@id": "https://alexk413x.github.io/alex-koch-portfolio/#alex"
+            },
+            "publisher": {
+              "@id": "https://alexk413x.github.io/alex-koch-portfolio/#org-itsy-bitsy-stories"
+            }
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 16,
+          "item": {
+            "@type": "SoftwareApplication",
+            "@id": "https://alexk413x.github.io/alex-koch-portfolio/#asian-art-museum",
+            "name": "Asian Art Museum",
+            "abstract": "Secure Interactive Kiosk",
+            "applicationCategory": "MobileApplication",
+            "operatingSystem": "Android",
+            "keywords": [
+              "Android",
+              "Kiosk"
+            ],
+            "author": {
+              "@id": "https://alexk413x.github.io/alex-koch-portfolio/#alex"
+            },
+            "publisher": {
+              "@id": "https://alexk413x.github.io/alex-koch-portfolio/#org-itsy-bitsy-stories"
+            }
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 17,
+          "item": {
+            "@type": "SoftwareApplication",
+            "@id": "https://alexk413x.github.io/alex-koch-portfolio/#ink-usage-dashboard",
+            "name": "Ink Usage Dashboard",
+            "abstract": "From Hours to Minutes",
+            "applicationCategory": "WebApplication",
+            "operatingSystem": "Web",
+            "keywords": [
+              "Web",
+              "Graphs"
+            ],
+            "author": {
+              "@id": "https://alexk413x.github.io/alex-koch-portfolio/#alex"
+            },
+            "publisher": {
+              "@id": "https://alexk413x.github.io/alex-koch-portfolio/#org-hewlett-packard"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://alexk413x.github.io/alex-koch-portfolio/#faq",
+      "about": {
+        "@id": "https://alexk413x.github.io/alex-koch-portfolio/#alex"
+      },
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What is QACartographer?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "QACartographer is a QA tool that records one app flow and replays it as end-to-end, accessibility, performance, WCAG 2.2 AA, screenshot and EAA test coverage. It runs against any platform, any app and any LLM, using AI only where judgement is needed, and it creates and repairs its tests automatically as the app evolves."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What is QAAI?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "QAAI is a multi-agent QA platform and dashboard built at Yahoo!. It turns a description of a test into a running end-to-end test and updates it as the app changes. It is app-, platform- and LLM-agnostic, so one test case runs unchanged on iOS, Android and Web."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Who is Alex Koch?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Alex Koch is an agentic mobile engineer with 14 years shipping mobile at scale with Yahoo!, Target, Kohl’s and Vacasa, and a BS in Computer Science from Northern Arizona University."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What has Alex Koch shipped?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Seventeen shipped products across Yahoo!, Target, Kohl’s, i2020 Fintech, Viewpoint, Rave, Vacasa, Rexel, Itsy Bitsy Stories and Hewlett-Packard, spanning Android, iOS, Windows and Web."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What does Alex Koch work with?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Kotlin, Java, Python, XML, HTML5, JavaScript, TypeScript and CSS, across Android, iOS, Windows and Web, with Claude Code, Cursor, Codex, Copilot, Android Studio, Jetpack, Firebase, Azure, JUnit, Espresso, Xamarin and Git."
+          }
+        }
+      ]
+    },
+    {
+      "@type": "Organization",
+      "@id": "https://alexk413x.github.io/alex-koch-portfolio/#org-yahoo",
+      "name": "Yahoo!",
+      "url": "https://www.yahoo.com/"
+    },
+    {
+      "@type": "Organization",
+      "@id": "https://alexk413x.github.io/alex-koch-portfolio/#org-target",
+      "name": "Target",
+      "url": "https://www.target.com/"
+    },
+    {
+      "@type": "Organization",
+      "@id": "https://alexk413x.github.io/alex-koch-portfolio/#org-kohl-s",
+      "name": "Kohl’s",
+      "url": "https://www.kohls.com/"
+    },
+    {
+      "@type": "Organization",
+      "@id": "https://alexk413x.github.io/alex-koch-portfolio/#org-i2020-fintech",
+      "name": "i2020 Fintech"
+    },
+    {
+      "@type": "Organization",
+      "@id": "https://alexk413x.github.io/alex-koch-portfolio/#org-viewpoint",
+      "name": "Viewpoint",
+      "url": "https://viewpoint.com/"
+    },
+    {
+      "@type": "Organization",
+      "@id": "https://alexk413x.github.io/alex-koch-portfolio/#org-rave",
+      "name": "Rave",
+      "url": "https://www.ravesocial.com/"
+    },
+    {
+      "@type": "Organization",
+      "@id": "https://alexk413x.github.io/alex-koch-portfolio/#org-vacasa",
+      "name": "Vacasa",
+      "url": "https://www.vacasa.com/"
+    },
+    {
+      "@type": "Organization",
+      "@id": "https://alexk413x.github.io/alex-koch-portfolio/#org-rexel",
+      "name": "Rexel",
+      "url": "https://www.rexelusa.com/"
+    },
+    {
+      "@type": "Organization",
+      "@id": "https://alexk413x.github.io/alex-koch-portfolio/#org-itsy-bitsy-stories",
+      "name": "Itsy Bitsy Stories"
+    },
+    {
+      "@type": "Organization",
+      "@id": "https://alexk413x.github.io/alex-koch-portfolio/#org-hewlett-packard",
+      "name": "Hewlett-Packard",
+      "url": "https://www.hp.com/"
+    }
+  ]
+}
+</script>
 </body>
 </html>

@@ -103,7 +103,7 @@ export function fitCanvas({ stage, R, scale, onFit, settle = 60 }) {
  */
 export function runLoop({ draw, onTick, tickMs = 500, maxDt = 0.05 }) {
   let t0 = performance.now(), last = t0, sec = 0, raf = 0;
-  let frames = 0, tickT = t0, pausedAt = 0;
+  let frames = 0, tickT = t0, pausedAt = 0, shown = false;
 
   const frame = (now) => {
     raf = requestAnimationFrame(frame);
@@ -115,6 +115,7 @@ export function runLoop({ draw, onTick, tickMs = 500, maxDt = 0.05 }) {
     last = now;
     sec = (now - t0) / 1000;
     draw(dt, sec);
+    if (!shown) { shown = true; labReady(); }   // the first frame is the thing the ring was covering for
     frames++;
     if (onTick && now - tickT >= tickMs) {
       onTick(Math.round(frames * 1000 / (now - tickT)), dt, sec);
@@ -142,6 +143,77 @@ export function runLoop({ draw, onTick, tickMs = 500, maxDt = 0.05 }) {
     stop() { if (raf) { cancelAnimationFrame(raf); raf = 0; } },
     renderNow(dt, at) { draw(dt == null ? 1 / 60 : dt, at == null ? sec : at); },
   };
+}
+
+/* Draws the loading ring into the .kit-load element the page already carries.
+ *
+ * The element stays in the markup, empty, because .kit-load is a fixed black sheet over the whole viewport and
+ * that has to be true from the first paint — built from script it would arrive after the page had already
+ * flashed its background. Its contents are what is shared: four rings at four radii, three of them turning at
+ * rates that do not divide into each other. The name comes from document.title, so a lab says what it is in one
+ * place rather than two.
+ */
+export function mountLoader(stage = 'Compiling shaders') {
+  const el = document.querySelector('.kit-load');
+  if (!el || el.firstElementChild) return el;
+  const ring = (cls, r, w, extra) =>
+    '<svg' + (cls ? ' class="' + cls + '"' : '') + ' viewBox="0 0 120 120"><circle cx="60" cy="60" r="' + r +
+    '" fill="none" stroke-width="' + w + '"' + extra + '/></svg>';
+  el.innerHTML =
+    '<div class="kit-ring" aria-hidden="true">' +
+      '<svg viewBox="0 0 120 120">' +
+        '<circle cx="60" cy="60" r="56" fill="none" stroke="rgba(255,180,84,.13)" stroke-width="1"/>' +
+        '<circle cx="60" cy="60" r="52" fill="none" stroke="rgba(255,180,84,.15)" stroke-width="2.5"/>' +
+        '<circle cx="60" cy="60" r="33" fill="none" stroke="rgba(255,180,84,.17)" stroke-width="1" stroke-dasharray="1 14"/>' +
+      '</svg>' +
+      ring('kr-dash', 46, 1.5, ' stroke="var(--panel-accent, #ffb454)" stroke-dasharray="2 11" opacity=".55"') +
+      ring('kr-hair', 41, 1,   ' stroke="rgba(255,217,160,.24)" stroke-dasharray="1 8"') +
+      ring('kr-arc',  52, 2.5, ' stroke="var(--panel-accent, #ffb454)" stroke-linecap="round"' +
+                               ' stroke-dasharray="70 257" transform="rotate(-90 60 60)"') +
+    '</div>' +
+    '<div class="kit-load-name"></div><div class="kit-load-stage"></div>';
+  el.querySelector('.kit-load-name').textContent = document.title;
+  el.querySelector('.kit-load-stage').textContent = stage;
+  return el;
+}
+
+/* Dismisses the loading ring once there is something behind it to look at.
+ *
+ * The overlay is markup and a stylesheet; this is the only line of script it needs, and it exists because CSS
+ * cannot know when a shader finished compiling. runLoop calls it after the first frame it draws, so the three
+ * labs that use the loop get it for nothing and only a lab with its own loop has to say so.
+ *
+ * REMOVED, not merely faded: an overlay left at opacity 0 is an invisible sheet across the whole instrument
+ * that quietly eats every click.
+ */
+export function labReady() {
+  const el = document.querySelector('.kit-load');
+  if (!el || el.classList.contains('done')) return;
+  el.classList.add('done');
+  const drop = () => el.remove();
+  el.addEventListener('transitionend', drop, { once: true });
+  setTimeout(drop, 900);   // transitionend never fires under reduced motion, where there is no transition
+}
+
+/* Escape leaves the instrument, the way the back button does.
+ *
+ * A lab is a full-screen app with no chrome, reached by a click from somewhere else, and the way out of one is
+ * otherwise not obvious. Called explicitly by each lab rather than run as a side effect of importing this
+ * module, because site/hero-core.js imports it too — the home page must not grow a key that navigates away from
+ * itself.
+ *
+ * defaultPrevented is the guard that matters: the panel's numeric fields already take Escape to cancel a typed
+ * value, and cancelling an edit must not also leave the page.
+ */
+export function escapeLeaves(fallback = '../../index.html') {
+  addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape' || e.defaultPrevented || e.metaKey || e.ctrlKey || e.altKey) return;
+    const el = document.activeElement;
+    if (el && el.closest && el.closest('input, textarea, select, [contenteditable="true"]')) return;
+    // Opened in a new tab there is nothing to go back to, so it goes home rather than nowhere.
+    if (history.length > 1 && document.referrer) history.back();
+    else location.href = fallback;
+  });
 }
 
 // Puts the reason on screen when a renderer could not be built, so the page is not merely black.

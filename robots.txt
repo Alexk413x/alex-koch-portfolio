@@ -1,0 +1,18 @@
+# Everything here is meant to be read, by people and by machines alike.
+#
+# ONE GROUP, DELIBERATELY. A crawler obeys only the most specific group that names it, so a separate
+# `User-agent: GPTBot` block would take GPTBot out of the rules below rather than adding to them. The
+# AI crawlers -- GPTBot, OAI-SearchBot, ClaudeBot, PerplexityBot, Google-Extended -- are allowed here by
+# being unmentioned, which is what allowed means in this file.
+User-agent: *
+Allow: /
+
+# The repository's own README ships to the site root because the site IS the repository root, but it is
+# documentation for the source and not a page of the site.
+#
+# THIS FILE ONLY TAKES EFFECT AT A HOST ROOT. A crawler reads https://<host>/robots.txt and nothing else, so
+# while the site is served from a GitHub project path this file sits at a path no crawler asks for and the
+# sitemap has to be handed to Search Console directly. It becomes live the moment a custom domain is.
+Disallow: /README.md
+
+Sitemap: https://alexk413x.github.io/alex-koch-portfolio/sitemap.xml

@@ -1,0 +1,66 @@
+/* loading.css — the wait, as the instrument coming up.
+ *
+ * A lab click loads a page, pulls fonts, builds a GL context and compiles every shader, and on a cold profile
+ * that last part is the slow one by a wide margin. Between the click and the first frame there was nothing to
+ * look at, which reads as a broken link rather than as work happening.
+ *
+ * The calibration ring at working size, with the arc free-running instead of reporting a fraction. It is the
+ * brand's one device and it is already the shape of a thing being measured, so it costs no new vocabulary: the
+ * reader has met it on the home page and meets it again while the instrument warms. Under it, the name of what
+ * is loading and a plain word for the stage — COMPILING SHADERS is more reassuring than a percentage that lies.
+ *
+ * It takes --panel-accent, so it is already the colour of the lab it belongs to; Reactor's is green.
+ */
+
+.kit-load {
+  position: fixed; inset: 0; z-index: 200;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px;
+  background: #000;
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  transition: opacity .45s cubic-bezier(.2, .85, .25, 1);
+}
+
+/* Removed from the flow the moment it is done, so it can never eat a pointer event from the instrument behind
+   it — a full-screen overlay left at opacity 0 is an invisible sheet over the whole lab. */
+.kit-load.done { opacity: 0; pointer-events: none }
+
+.kit-ring { position: relative; width: 104px; height: 104px }
+
+/* A ground behind the dial so it reads as lit rather than drawn onto the page. Static on purpose: a glow that
+   pulses is decoration, a glow that simply sits there is a light source. */
+.kit-ring::before {
+  content: ''; position: absolute; inset: -26%; border-radius: 50%; pointer-events: none;
+  background: radial-gradient(circle, rgba(255, 180, 84, .10), rgba(255, 180, 84, .03) 46%, transparent 72%);
+}
+
+/* ONE SVG PER MOVING RING, and the SVG is what rotates. This is the whole fix for the jumpiness: circles
+   animated INSIDE a single drawing are not layer-promoted, so every frame re-rasterises the entire SVG and the
+   rate wobbles the moment the main thread is busy — which, during a shader compile, it entirely is. Rotating
+   the <svg> element is an ordinary HTML transform the compositor can promote, and it holds a constant rate
+   whatever else the page is doing. A spinner is the one component where that matters most. */
+.kit-ring svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block }
+
+/* THREE RATES THAT DO NOT DIVIDE INTO EACH OTHER, so the figure never repeats and never appears to stall. A
+   single spinning element is the failure mode: at some rates the eye locks onto it and it reads as stuck. The
+   static rings underneath give the moving ones something to move against. */
+.kit-ring .kr-dash { animation: kit-spin 7s linear infinite; will-change: transform }
+.kit-ring .kr-hair { animation: kit-spin-r 11s linear infinite; will-change: transform }
+.kit-ring .kr-arc { animation: kit-spin 2.4s linear infinite; will-change: transform }
+
+@keyframes kit-spin { to { transform: rotate(360deg) } }
+@keyframes kit-spin-r { to { transform: rotate(-360deg) } }
+
+.kit-load-name {
+  font-size: 13px; letter-spacing: .18em; text-transform: uppercase;
+  color: var(--panel-accent, #ffb454); font-weight: 700;
+}
+
+.kit-load-stage { font-size: 10.5px; letter-spacing: .16em; text-transform: uppercase; color: #6d7278 }
+
+/* The rings stop and the arc holds where it rests. A still ring with a label under it still says "working", and
+   this is the one component where honouring the preference matters most: it runs for the whole time the reader
+   is waiting, not for eight hundred milliseconds. */
+@media (prefers-reduced-motion: reduce) {
+  .kit-load .kr-dash, .kit-load .kr-hair, .kit-load .kr-arc { animation: none }
+  .kit-load { transition: none }
+}

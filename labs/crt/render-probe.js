@@ -1,4 +1,4 @@
-/* render-probe.js — a deterministic render fingerprint for CRT GL.
+/* render-probe.js — a deterministic render fingerprint for CRT Lab.
  *
  * NOTHING IN THE LAB LOADS THIS, and nothing should -- it is an instrument that attaches on demand, so it costs
  * nothing when it is not in use.

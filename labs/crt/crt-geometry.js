@@ -9,46 +9,38 @@
 
 const QUAD = Math.PI / 2;
 
-/* ROUND A COORDINATE TO A FIXED NUMBER OF DECIMALS -- and let the number print itself.
+/* ROUND A COORDINATE TO A FIXED NUMBER OF DECIMALS — and let the number print itself.
  *
- * Every path in this instrument is built by concatenating coordinates, and every one of them used Number#toFixed. That
- * is the slowest way to do it AND the most verbose: toFixed(3) formats 50 as "50.000", so a third of the bytes in a
- * 64KB path string are trailing zeros that no parser needs. Math.round(v * m) / m lands on the same double, and V8
- * prints a double as the SHORTEST decimal that round-trips to it -- "50" for 50, "50.123" for 50.123 -- so the digits
- * that survive are exactly the ones that carry information.
+ * Every path here is built by concatenating coordinates, and toFixed is the slowest way to do it AND the most
+ * verbose: toFixed(3) formats 50 as "50.000", so much of a large path string is trailing zeros no parser needs.
+ * Math.round(v * m) / m lands on the same double, and V8 prints a double as the SHORTEST decimal that round-trips
+ * to it, so the digits that survive are exactly the ones carrying information.
  *
- * Measured on the 3604-point outline: 1.26ms and 74.6KB via map + toFixed(5) + join, against 0.49ms and 54.8KB via this
- * in a loop -- 2.6x faster and 27% smaller at IDENTICAL precision. The callers keep whatever decimal count they had, so
- * this is a change of formatter and not of fidelity.
- *
- * m is the multiplier, passed as a literal (1e3, 1e5) so nobody pays for a Math.pow per coordinate.
+ * The callers keep whatever decimal count they had, so this is a change of formatter and not of fidelity. m is the
+ * multiplier, passed as a literal so nobody pays for a Math.pow per coordinate.
  */
 export function fixed(v, m) { return Math.round(v * m) / m; }
 
-/* The guide outline: ONE superellipse, |x/hw|^n + |y/hh|^n = 1. One exponent describes the corner AND the edge, because
- * they are the same curve read at different angles -- so there is no tangent to match and no fillet-versus-bow
- * competition to referee.
+/* The guide outline: ONE superellipse, |x/hw|^n + |y/hh|^n = 1. One exponent describes the corner AND the edge,
+ * because they are the same curve read at different angles — so there is no tangent to match and no
+ * fillet-versus-bow competition to referee.
  *
- * sq = SQUIRCLE, 0..100, MAPPED IN THE THING YOU SEE. A superellipse's diagonal reach is exactly 2^(-1/n) of the box
- * corner, so inverting that puts the slider on a straight line from 1.000 (square) to 0.707 (circle). Linear-in-n spent
- * 90% of its travel on shapes that all look square, and was not even monotonic.
+ * sq = SQUIRCLE, MAPPED IN THE THING YOU SEE. A superellipse's diagonal reach is exactly 2^(-1/n) of the box corner,
+ * so inverting that puts the slider on a straight line from square to circle. Linear-in-n spends most of its travel
+ * on shapes that all look square, and is not even monotonic.
  *
- * bend = BEND, 0..15 (%). It bulges the STRAIGHT RUNS outward and leaves the corners rounded. wAx = (1 - q^2)^2, where q
- * is the position ALONG the run (0 at the edge midpoint, 1 at the diagonal), so it peaks on the axes and vanishes at the
- * diagonal with a DOUBLE root. The double root is load-bearing: q comes from min(sx, sy), which kinks where the nearer
- * edge switches, and only a term vanishing to second order there hides that kink. BEND MUST NOT BE INVERTED to bow the
- * runs inward -- that exposes it.
+ * bend = BEND. It bulges the STRAIGHT RUNS outward and leaves the corners rounded. wAx = (1 - q²)², where q is the
+ * position ALONG the run, so it peaks on the axes and vanishes at the diagonal with a DOUBLE root. The double root
+ * is load-bearing: q comes from min(sx, sy), which kinks where the nearer edge switches, and only a term vanishing
+ * to second order there hides that kink. BEND MUST NOT BE INVERTED to bow the runs inward — that exposes it.
  *
  * Returns { pts, w, H, hw, hh, rQ, rhoQ, rhoMin }: the closed outline in centred px, the box it was measured in, the
- * radius function, and THE SHAPE RATIO. rQ is the same shape as a function -- exact at every angle including the axes,
- * where a ray/polyline intersection used to fail and return 0 (a 38px error at an edge midpoint).
+ * radius function, and THE SHAPE RATIO.
  *
- * rhoQ(ang) = rQ(ang) / boxRadius(ang): how far inside the raster's own box the glass sits on that ray. It is 1 on both
- * axes for every setting (the superellipse's axis extent is hw/hh, and BEND is normalised by its own peak, so the bowed
- * midpoint lands exactly on the glass edge) and dips to rhoMin at the box's diagonal. That makes it the one number that
- * says "this ray is a corner" without anybody having to define corner-ness: SQUIRCLE and BEND both lower it, and the
- * projection reads it as the ray's share of the face's sag. Returned from HERE rather than derived by a caller for the
- * usual reason -- it is a property of the outline, and a second computation of it is a second outline.
+ * rhoQ(ang) = rQ(ang) / boxRadius(ang): how far inside the raster's own box the glass sits on that ray. It is 1 on
+ * both axes for every setting and dips to rhoMin at the box's diagonal, which makes it the one number that says
+ * "this ray is a corner" without anybody having to define corner-ness. Returned from HERE rather than derived by a
+ * caller, because a second computation of it is a second outline.
  */
 export function guideOutline(w, H, sq, bend) {
   const hw = w / 2, hh = H / 2;
@@ -58,20 +50,15 @@ export function guideOutline(w, H, sq, bend) {
   // the box corner, a visibly nipped one), so the square is the plain box formula, evaluated exactly.
   const isSq = sqe <= 0;
   const nExp = isSq ? 0 : -1 / (Math.log(rTgt) / Math.LN2);
-  /* THE CEILING IS 100, RAISED FROM 15, AND WHAT IT BUYS IS A DIFFERENT SHAPE RATHER THAN MORE OF THIS ONE.
-   *
-   * The term is (1 + bendE*wAx)/(1 + bendE), with wAx 1 on the axes and 0 at the diagonal -- so it holds the edge
-   * midpoints and pulls the CORNERS in. Measured, corner over axis: 0.943 at 6, 0.870 at 15, 0.769 at 30, 0.667
-   * at 50, 0.500 at 100. Past roughly 50 the outline stops being a barrelled rectangle and becomes a rounded
-   * diamond with its points at the edge midpoints, which is not a CRT but is a legitimate thing to want to draw.
+  /* THE CEILING IS 100, AND WHAT IT BUYS IS A DIFFERENT SHAPE RATHER THAN MORE OF THIS ONE. The term holds the edge
+   * midpoints and pulls the CORNERS in, and past roughly 50 the outline stops being a barrelled rectangle and
+   * becomes a rounded diamond with its points at the edge midpoints — not a CRT, but a legitimate thing to draw.
    *
    * BACKWARDS COMPATIBLE: the parameter is unchanged in meaning, so every stored setting still measures the same.
-   * (The DOM build capped its own slider at 15 and so never reached this; that build is gone.)
    *
-   * NOT MIRRORED IN crt-projection. faceShaped's bow clamps at 0.15 separately and deliberately -- its note
-   * records that BEND's whole range is meant to be a few percent there, against rho's ~20% at the diagonal. That
-   * is the WARP's bow, a different quantity from the OUTLINE's, and raising one is not a reason to raise the
-   * other. Past 15 the two therefore diverge on purpose: the glass takes a shape the picture does not follow. */
+   * NOT MIRRORED IN crt-projection. faceShaped's bow clamps separately and deliberately — that is the WARP's bow, a
+   * different quantity from the OUTLINE's, and raising one is not a reason to raise the other. Past the projection's
+   * cap the two diverge on purpose: the glass takes a shape the picture does not follow. */
   const bendE = Math.max(0, Math.min(100, bend || 0)) / 100;
   const NS = 900, sA = new Float64Array(NS + 1), sR = new Float64Array(NS + 1), sRho = new Float64Array(NS + 1), sW = new Float64Array(NS + 1);
   let rhoMin = 1;
@@ -122,19 +109,15 @@ export function guideOutline(w, H, sq, bend) {
   return { pts: pts, w: w, H: H, hw: hw, hh: hh, rQ: (ang) => ip(sR, ang), rhoQ: (ang) => ip(sRho, ang), wQ: (ang) => ip(sW, ang), rhoMin: rhoMin };
 }
 
-/* FOLD A RAY INTO THE FIRST QUADRANT: the angle in [0, pi/2] with the same |sin| and |cos|. The outline is symmetric in
- * both axes by construction, so every lookup below is a first-quadrant lookup and every caller arrives with a signed
- * angle.
+/* FOLD A RAY INTO THE FIRST QUADRANT: the angle in [0, pi/2] with the same |sin| and |cos|. The outline is symmetric
+ * in both axes by construction, so every lookup below is a first-quadrant lookup and every caller arrives with a
+ * signed angle.
  *
- * ARITHMETIC, NOT TRIGONOMETRY, and this is a measured hot path rather than a micro-optimisation. It was
- * atan2(|sin t|, |cos t|) -- three transcendental calls to answer a question about the QUADRANT -- and it sits two deep
- * in the innermost loop of the whole instrument: crt-projection's faceShaped asks for the shape ratio AND the axis
- * weight at every plotted point, so each of the ~25k points in a rebuild paid for six. Measured 139ns against 27ns, and
- * the two agree to 3.3e-16 rad over +-2pi -- a fourteen-orders-of-magnitude smaller error than one step of the 901-sample
- * table it indexes.
+ * ARITHMETIC, NOT TRIGONOMETRY, and this is a measured hot path. atan2(|sin t|, |cos t|) is three transcendental
+ * calls to answer a question about the QUADRANT, and it sits two deep in the innermost loop of the whole instrument:
+ * faceShaped asks for the shape ratio AND the axis weight at every plotted point, so each point pays for six.
  *
- * |t| mod pi lands in [0, pi); anything past pi/2 mirrors about the vertical axis, which is the reflection |cos| already
- * applied. That is the whole derivation.
+ * The two agree to within a rounding error many orders below one step of the table it indexes.
  */
 export function foldQuad(theta) {
   const a = Math.abs(theta) % Math.PI;

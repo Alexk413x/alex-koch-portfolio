@@ -9,3 +9,7 @@
 *.md    text
 *.py    text
 *.webp  binary
+
+# The code graph is SQLite. diff=codegraph renders it as its JSON export in git diff for any clone
+# that has run /codebase-kg:setup-diff; without the driver it simply falls back to "binary".
+knowledge/code_graph.db binary diff=codegraph

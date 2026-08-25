@@ -6,19 +6,18 @@
  *
  * Pure source, no GL calls: [[glquad]] compiles it and the host decides what the numbers mean.
  *
- * `fwidth` NEEDS THE DERIVATIVES EXTENSION, in the shader AND on the context. WebGL1 has no derivatives by
- * default, so a shader using one compiles to nothing and createQuad returns null -- which surfaces as a page that
- * never initialises rather than as anything mentioning fwidth. The host must pass
- * `ext: ['OES_standard_derivatives']`; the directive below is the other half and has to be the FIRST line.
+ * `fwidth` NEEDS NOTHING. Derivatives are core in WebGL2, which is the only context [[glquad]] creates, so the
+ * old two-part dance -- an `ext` entry on the host plus a `#extension` directive as this shader's first line --
+ * is gone. Both halves had to agree or the shader compiled to nothing and the page simply never initialised.
  */
 export const UNIFORMS = [
   'uRes', 'uTime', 'uShape', 'uSize', 'uAspect', 'uRot', 'uRadius', 'uWeight',
   'uHue', 'uGlow', 'uOpacity', 'uInk', 'uDebug', 'uOutline', 'uCross',
 ];
 
-export const FRAG = `
-#extension GL_OES_standard_derivatives : enable
+export const FRAG = `#version 300 es
 precision highp float;
+out vec4 fragColor;
 uniform vec2 uRes;
 uniform float uTime, uShape, uSize, uAspect, uRot, uRadius, uWeight, uHue, uGlow, uOpacity;
 uniform float uDebug, uOutline, uCross;
@@ -81,5 +80,5 @@ void main(){
   }
 
   col = col / (col + 0.85);
-  gl_FragColor = vec4(pow(col, vec3(0.85)), 1.0);
+  fragColor = vec4(pow(col, vec3(0.85)), 1.0);
 }`;
