@@ -1115,5 +1115,649 @@
 <script type="module" src="site/catalogue.js"></script>
 <script src="site/timeline.js"></script>
 <script type="module" src="site/hero-core.js"></script>
+
+<!-- WHAT THE PAGE ALREADY SAYS, IN THE FORM A MACHINE READS. Every claim below has a visible counterpart
+     above it; nothing is asserted here that a reader cannot also find on the page. That is the whole line
+     between structured data and hidden text, and Google's structured-data guidelines draw it in the same place.
+     AT THE END OF THE BODY, not in the head. A parser does not care where it sits, and 20KB standing ahead of
+     the stylesheet and font links would delay their discovery for no gain.
+     The seventeen products are the shelf's own records restated; test/suite_seo.py fails when they disagree. -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "@id": "https://www.alexk413x.com/#site",
+      "url": "https://www.alexk413x.com/",
+      "name": "Alex Koch",
+      "inLanguage": "en",
+      "publisher": {
+        "@id": "https://www.alexk413x.com/#alex"
+      }
+    },
+    {
+      "@type": "ProfilePage",
+      "@id": "https://www.alexk413x.com/#page",
+      "url": "https://www.alexk413x.com/",
+      "name": "Alex Koch, Agentic Mobile Engineer",
+      "isPartOf": {
+        "@id": "https://www.alexk413x.com/#site"
+      },
+      "mainEntity": {
+        "@id": "https://www.alexk413x.com/#alex"
+      },
+      "about": [
+        {
+          "@id": "https://www.alexk413x.com/#alex"
+        },
+        {
+          "@id": "https://www.alexk413x.com/#qacartographer"
+        }
+      ],
+      "primaryImageOfPage": "https://www.alexk413x.com/site/og-card.png"
+    },
+    {
+      "@type": "Person",
+      "@id": "https://www.alexk413x.com/#alex",
+      "name": "Alex Koch",
+      "url": "https://www.alexk413x.com/",
+      "image": "https://www.alexk413x.com/site/og-card.png",
+      "email": "mailto:Alexk413x@gmail.com",
+      "jobTitle": [
+        "Agentic Mobile Engineer",
+        "Lead Android Developer",
+        "Senior Android Developer"
+      ],
+      "description": "Agentic mobile engineer with 14 years shipping mobile at scale with Yahoo!, Target, Kohl’s and Vacasa, now using agentic development to build the tools that test it.",
+      "worksFor": {
+        "@id": "https://www.alexk413x.com/#org-yahoo"
+      },
+      "alumniOf": {
+        "@type": "CollegeOrUniversity",
+        "name": "Northern Arizona University",
+        "url": "https://nau.edu/"
+      },
+      "hasCredential": {
+        "@type": "EducationalOccupationalCredential",
+        "credentialCategory": "bachelor degree",
+        "name": "BS Computer Science",
+        "educationalLevel": "Bachelor of Science"
+      },
+      "hasOccupation": {
+        "@type": "Occupation",
+        "name": "Mobile Software Engineer",
+        "occupationalCategory": "15-1252.00",
+        "skills": "Android, iOS, Kotlin, Compose, Agentic Development, End-to-End testing, Accessibility"
+      },
+      "knowsAbout": [
+        "Kotlin",
+        "Java",
+        "Python",
+        "JavaScript",
+        "TypeScript",
+        "HTML5",
+        "CSS",
+        "XML",
+        "Android",
+        "iOS",
+        "Windows",
+        "Web",
+        "Compose",
+        "Jetpack",
+        "Android Studio",
+        "Firebase",
+        "Azure",
+        "GCP",
+        "JUnit",
+        "Espresso",
+        "Xamarin",
+        "Git",
+        "Agentic Development",
+        "Claude Code",
+        "Cursor",
+        "Codex",
+        "Copilot",
+        "Antigravity",
+        "End-to-End",
+        "Accessibility",
+        "Performance",
+        "CI/CD",
+        "WCAG 2.2 AA",
+        "EAA"
+      ],
+      "sameAs": [
+        "https://www.linkedin.com/in/alexk413x/",
+        "https://github.com/Alexk413x"
+      ]
+    },
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://www.alexk413x.com/#qacartographer",
+      "name": "QACartographer",
+      "alternateName": "Cartographer",
+      "applicationCategory": "DeveloperApplication",
+      "applicationSubCategory": "QA and test automation",
+      "operatingSystem": "Android, iOS, Windows, Web",
+      "abstract": "AI only where judgement is needed.",
+      "description": "A QA tool that records one app flow and replays it as end-to-end, accessibility, performance, WCAG 2.2 AA, screenshot and EAA test coverage. Platform-, app- and LLM-agnostic: it explores, guides and replays test cases, and creates and repairs them automatically as the app evolves.",
+      "featureList": [
+        "End-to-End test coverage",
+        "Accessibility test coverage",
+        "Performance test coverage",
+        "WCAG 2.2 AA conformance",
+        "Screenshot test coverage",
+        "EAA conformance",
+        "Records one app flow and replays it for free",
+        "Creates and repairs its own tests as the app evolves",
+        "Runs against any platform, any app and any LLM"
+      ],
+      "author": {
+        "@id": "https://www.alexk413x.com/#alex"
+      }
+    },
+    {
+      "@type": "ItemList",
+      "@id": "https://www.alexk413x.com/#catalogue",
+      "name": "The catalogue: seventeen shipped products",
+      "numberOfItems": 17,
+      "itemListOrder": "https://schema.org/ItemListOrderDescending",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "item": {
+            "@type": "SoftwareApplication",
+            "@id": "https://www.alexk413x.com/#qaai",
+            "name": "QAAI",
+            "abstract": "Accurate Agentic Testing",
+            "applicationCategory": "MobileApplication",
+            "operatingSystem": "Android, iOS, Web",
+            "keywords": [
+              "Multi-agent",
+              "CI/CD",
+              "All platforms"
+            ],
+            "author": {
+              "@id": "https://www.alexk413x.com/#alex"
+            },
+            "publisher": {
+              "@id": "https://www.alexk413x.com/#org-yahoo"
+            }
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "item": {
+            "@type": "SoftwareApplication",
+            "@id": "https://www.alexk413x.com/#yahoo-mail",
+            "name": "Yahoo! Mail",
+            "abstract": "Email in the Agentic World",
+            "applicationCategory": "MobileApplication",
+            "operatingSystem": "Android",
+            "keywords": [
+              "Android",
+              "Compose",
+              "A11y"
+            ],
+            "author": {
+              "@id": "https://www.alexk413x.com/#alex"
+            },
+            "publisher": {
+              "@id": "https://www.alexk413x.com/#org-yahoo"
+            }
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "item": {
+            "@type": "SoftwareApplication",
+            "@id": "https://www.alexk413x.com/#store-companion",
+            "name": "Store Companion",
+            "abstract": "Every Document, One Answer",
+            "applicationCategory": "MobileApplication",
+            "operatingSystem": "Android",
+            "keywords": [
+              "Android",
+              "Gen AI",
+              "Scanner"
+            ],
+            "author": {
+              "@id": "https://www.alexk413x.com/#alex"
+            },
+            "publisher": {
+              "@id": "https://www.alexk413x.com/#org-target"
+            }
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 4,
+          "item": {
+            "@type": "SoftwareApplication",
+            "@id": "https://www.alexk413x.com/#myday",
+            "name": "myDay",
+            "abstract": "Efficiency at Scale",
+            "applicationCategory": "MobileApplication",
+            "operatingSystem": "Android",
+            "keywords": [
+              "Android",
+              "Compose",
+              "Zebra"
+            ],
+            "author": {
+              "@id": "https://www.alexk413x.com/#alex"
+            },
+            "publisher": {
+              "@id": "https://www.alexk413x.com/#org-target"
+            }
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 5,
+          "item": {
+            "@type": "SoftwareApplication",
+            "@id": "https://www.alexk413x.com/#isu",
+            "name": "ISU",
+            "abstract": "One Library to Rule Them All",
+            "applicationCategory": "MobileApplication",
+            "operatingSystem": "Android",
+            "keywords": [
+              "Android",
+              "Core library"
+            ],
+            "author": {
+              "@id": "https://www.alexk413x.com/#alex"
+            },
+            "publisher": {
+              "@id": "https://www.alexk413x.com/#org-kohl-s"
+            }
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 6,
+          "item": {
+            "@type": "SoftwareApplication",
+            "@id": "https://www.alexk413x.com/#self-pickup",
+            "name": "Self Pickup",
+            "abstract": "Pickup Orders Made Easy",
+            "applicationCategory": "WebApplication",
+            "operatingSystem": "Web",
+            "keywords": [
+              "Web"
+            ],
+            "author": {
+              "@id": "https://www.alexk413x.com/#alex"
+            },
+            "publisher": {
+              "@id": "https://www.alexk413x.com/#org-kohl-s"
+            }
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 7,
+          "item": {
+            "@type": "SoftwareApplication",
+            "@id": "https://www.alexk413x.com/#pickup",
+            "name": "Pickup",
+            "abstract": "Orders Brought to You",
+            "applicationCategory": "MobileApplication",
+            "operatingSystem": "Android",
+            "keywords": [
+              "Android",
+              "Offline",
+              "Zebra"
+            ],
+            "author": {
+              "@id": "https://www.alexk413x.com/#alex"
+            },
+            "publisher": {
+              "@id": "https://www.alexk413x.com/#org-kohl-s"
+            }
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 8,
+          "item": {
+            "@type": "SoftwareApplication",
+            "@id": "https://www.alexk413x.com/#oro-pay",
+            "name": "ORO Pay",
+            "abstract": "Digital Banking for the Underbanked",
+            "applicationCategory": "MobileApplication",
+            "operatingSystem": "Android",
+            "keywords": [
+              "Android",
+              "Camera",
+              "GPS"
+            ],
+            "author": {
+              "@id": "https://www.alexk413x.com/#alex"
+            },
+            "publisher": {
+              "@id": "https://www.alexk413x.com/#org-i2020-fintech"
+            }
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 9,
+          "item": {
+            "@type": "SoftwareApplication",
+            "@id": "https://www.alexk413x.com/#oro-merchant",
+            "name": "ORO Merchant",
+            "abstract": "Payments for the Underbanked",
+            "applicationCategory": "MobileApplication",
+            "operatingSystem": "Android",
+            "keywords": [
+              "Android",
+              "QR",
+              "ML Kit"
+            ],
+            "author": {
+              "@id": "https://www.alexk413x.com/#alex"
+            },
+            "publisher": {
+              "@id": "https://www.alexk413x.com/#org-i2020-fintech"
+            }
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 10,
+          "item": {
+            "@type": "SoftwareApplication",
+            "@id": "https://www.alexk413x.com/#fieldview",
+            "name": "FieldView",
+            "abstract": "Your Eyes in the Field",
+            "applicationCategory": "MobileApplication",
+            "operatingSystem": "Android, iOS, Windows",
+            "keywords": [
+              "Android",
+              "iOS",
+              "Windows",
+              "Offline"
+            ],
+            "author": {
+              "@id": "https://www.alexk413x.com/#alex"
+            },
+            "publisher": {
+              "@id": "https://www.alexk413x.com/#org-viewpoint"
+            }
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 11,
+          "item": {
+            "@type": "SoftwareApplication",
+            "@id": "https://www.alexk413x.com/#team",
+            "name": "Team",
+            "abstract": "Forms for the Digital World",
+            "applicationCategory": "MobileApplication",
+            "operatingSystem": "Android, iOS, Windows",
+            "keywords": [
+              "Android",
+              "iOS",
+              "Windows"
+            ],
+            "author": {
+              "@id": "https://www.alexk413x.com/#alex"
+            },
+            "publisher": {
+              "@id": "https://www.alexk413x.com/#org-viewpoint"
+            }
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 12,
+          "item": {
+            "@type": "SoftwareApplication",
+            "@id": "https://www.alexk413x.com/#tabbedout",
+            "name": "TabbedOut",
+            "abstract": "Tabs Automated",
+            "applicationCategory": "MobileApplication",
+            "operatingSystem": "Android",
+            "keywords": [
+              "Android"
+            ],
+            "author": {
+              "@id": "https://www.alexk413x.com/#alex"
+            },
+            "publisher": {
+              "@id": "https://www.alexk413x.com/#org-rave"
+            }
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 13,
+          "item": {
+            "@type": "SoftwareApplication",
+            "@id": "https://www.alexk413x.com/#housekeeping",
+            "name": "Housekeeping",
+            "abstract": "Everything to Get the Job Done",
+            "applicationCategory": "MobileApplication",
+            "operatingSystem": "Android",
+            "keywords": [
+              "Android",
+              "Offline",
+              "GPS"
+            ],
+            "author": {
+              "@id": "https://www.alexk413x.com/#alex"
+            },
+            "publisher": {
+              "@id": "https://www.alexk413x.com/#org-vacasa"
+            }
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 14,
+          "item": {
+            "@type": "SoftwareApplication",
+            "@id": "https://www.alexk413x.com/#rexel-usa",
+            "name": "Rexel USA",
+            "abstract": "Every Brand, One Build",
+            "applicationCategory": "MobileApplication",
+            "operatingSystem": "Android, iOS",
+            "keywords": [
+              "Android",
+              "iOS",
+              "Scanner"
+            ],
+            "author": {
+              "@id": "https://www.alexk413x.com/#alex"
+            },
+            "publisher": {
+              "@id": "https://www.alexk413x.com/#org-rexel"
+            }
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 15,
+          "item": {
+            "@type": "SoftwareApplication",
+            "@id": "https://www.alexk413x.com/#123-calling",
+            "name": "123 Calling",
+            "abstract": "Linguistics Is Child’s Play",
+            "applicationCategory": "MobileApplication",
+            "operatingSystem": "iOS",
+            "keywords": [
+              "iOS",
+              "Localised"
+            ],
+            "author": {
+              "@id": "https://www.alexk413x.com/#alex"
+            },
+            "publisher": {
+              "@id": "https://www.alexk413x.com/#org-itsy-bitsy-stories"
+            }
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 16,
+          "item": {
+            "@type": "SoftwareApplication",
+            "@id": "https://www.alexk413x.com/#asian-art-museum",
+            "name": "Asian Art Museum",
+            "abstract": "Secure Interactive Kiosk",
+            "applicationCategory": "MobileApplication",
+            "operatingSystem": "Android",
+            "keywords": [
+              "Android",
+              "Kiosk"
+            ],
+            "author": {
+              "@id": "https://www.alexk413x.com/#alex"
+            },
+            "publisher": {
+              "@id": "https://www.alexk413x.com/#org-itsy-bitsy-stories"
+            }
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 17,
+          "item": {
+            "@type": "SoftwareApplication",
+            "@id": "https://www.alexk413x.com/#ink-usage-dashboard",
+            "name": "Ink Usage Dashboard",
+            "abstract": "From Hours to Minutes",
+            "applicationCategory": "WebApplication",
+            "operatingSystem": "Web",
+            "keywords": [
+              "Web",
+              "Graphs"
+            ],
+            "author": {
+              "@id": "https://www.alexk413x.com/#alex"
+            },
+            "publisher": {
+              "@id": "https://www.alexk413x.com/#org-hewlett-packard"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://www.alexk413x.com/#faq",
+      "about": {
+        "@id": "https://www.alexk413x.com/#alex"
+      },
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What is QACartographer?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "QACartographer is a QA tool that records one app flow and replays it as end-to-end, accessibility, performance, WCAG 2.2 AA, screenshot and EAA test coverage. It runs against any platform, any app and any LLM, using AI only where judgement is needed, and it creates and repairs its tests automatically as the app evolves."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What is QAAI?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "QAAI is a multi-agent QA platform and dashboard built at Yahoo!. It turns a description of a test into a running end-to-end test and updates it as the app changes. It is app-, platform- and LLM-agnostic, so one test case runs unchanged on iOS, Android and Web."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Who is Alex Koch?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Alex Koch is an agentic mobile engineer with 14 years shipping mobile at scale with Yahoo!, Target, Kohl’s and Vacasa, and a BS in Computer Science from Northern Arizona University."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What has Alex Koch shipped?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Seventeen shipped products across Yahoo!, Target, Kohl’s, i2020 Fintech, Viewpoint, Rave, Vacasa, Rexel, Itsy Bitsy Stories and Hewlett-Packard, spanning Android, iOS, Windows and Web."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What does Alex Koch work with?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Kotlin, Java, Python, XML, HTML5, JavaScript, TypeScript and CSS, across Android, iOS, Windows and Web, with Claude Code, Cursor, Codex, Copilot, Android Studio, Jetpack, Firebase, Azure, JUnit, Espresso, Xamarin and Git."
+          }
+        }
+      ]
+    },
+    {
+      "@type": "Organization",
+      "@id": "https://www.alexk413x.com/#org-yahoo",
+      "name": "Yahoo!",
+      "url": "https://www.yahoo.com/"
+    },
+    {
+      "@type": "Organization",
+      "@id": "https://www.alexk413x.com/#org-target",
+      "name": "Target",
+      "url": "https://www.target.com/"
+    },
+    {
+      "@type": "Organization",
+      "@id": "https://www.alexk413x.com/#org-kohl-s",
+      "name": "Kohl’s",
+      "url": "https://www.kohls.com/"
+    },
+    {
+      "@type": "Organization",
+      "@id": "https://www.alexk413x.com/#org-i2020-fintech",
+      "name": "i2020 Fintech"
+    },
+    {
+      "@type": "Organization",
+      "@id": "https://www.alexk413x.com/#org-viewpoint",
+      "name": "Viewpoint",
+      "url": "https://viewpoint.com/"
+    },
+    {
+      "@type": "Organization",
+      "@id": "https://www.alexk413x.com/#org-rave",
+      "name": "Rave",
+      "url": "https://www.ravesocial.com/"
+    },
+    {
+      "@type": "Organization",
+      "@id": "https://www.alexk413x.com/#org-vacasa",
+      "name": "Vacasa",
+      "url": "https://www.vacasa.com/"
+    },
+    {
+      "@type": "Organization",
+      "@id": "https://www.alexk413x.com/#org-rexel",
+      "name": "Rexel",
+      "url": "https://www.rexelusa.com/"
+    },
+    {
+      "@type": "Organization",
+      "@id": "https://www.alexk413x.com/#org-itsy-bitsy-stories",
+      "name": "Itsy Bitsy Stories"
+    },
+    {
+      "@type": "Organization",
+      "@id": "https://www.alexk413x.com/#org-hewlett-packard",
+      "name": "Hewlett-Packard",
+      "url": "https://www.hp.com/"
+    }
+  ]
+}
+</script>
 </body>
 </html>

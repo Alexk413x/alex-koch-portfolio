@@ -1,0 +1,14 @@
+# Everything here is meant to be read, by people and by machines alike.
+#
+# ONE GROUP, DELIBERATELY. A crawler obeys only the most specific group that names it, so a separate
+# `User-agent: GPTBot` block would take GPTBot out of the rules below rather than adding to them. The
+# AI crawlers -- GPTBot, OAI-SearchBot, ClaudeBot, PerplexityBot, Google-Extended -- are allowed here by
+# being unmentioned, which is what allowed means in this file.
+User-agent: *
+Allow: /
+
+# The repository's own README ships to the site root because the site IS the repository root, but it is
+# documentation for the source and not a page of the site.
+Disallow: /README.md
+
+Sitemap: https://www.alexk413x.com/sitemap.xml

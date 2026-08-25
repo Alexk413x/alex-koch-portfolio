@@ -20,8 +20,9 @@ import suite_layout       # noqa: E402
 import suite_morph        # noqa: E402
 import suite_qr           # noqa: E402
 import suite_rpn          # noqa: E402
+import suite_seo          # noqa: E402
 
-SUITES = [suite_rpn, suite_morph, suite_qr, suite_hero, suite_layout]
+SUITES = [suite_rpn, suite_morph, suite_qr, suite_hero, suite_layout, suite_seo]
 
 
 def main():
