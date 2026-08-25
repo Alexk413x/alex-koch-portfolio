@@ -169,7 +169,7 @@ function draw(dt, sec) {
      one line and it lives here rather than in a formatter, because a formatter is display only. */
   R.f('uFov', 0.5 / Math.tan(s.fov * Math.PI / 360));
   R.f('uWall', s.wall);
-  R.f('uRibs', s.ribs); R.f('uRibScale', s.ribScale); R.f('uRibFlow', s.ribFlow);
+  R.f('uRibs', s.ribs);
   // ONE COVERAGE, SENT ONCE. It used to be three uniforms carrying one control's value, which meant the march
   // evaluated the same wall profile twice a step against two copies of the same number.
   R.f('uCov', s.coverage);

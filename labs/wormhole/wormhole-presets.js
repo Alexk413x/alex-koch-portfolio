@@ -84,7 +84,9 @@ export function defaultPreset(gpu) {
      * tunnel rather than a lamp pasted over it. */
     coreOn: 1,
     glow: 0.18, throatTint: 1.0, throatRays: 0.55,
-    coreCol: '#ff5900', coreAuto: 0.65,
+    /* SOURCE SHIPS AT CUSTOM so the core is the COLOR swatch and nothing else — the row and the picture agree
+     * the moment anyone drags it. Slide SOURCE toward LAYERS to average whatever is lit instead. */
+    coreCol: '#ff5900', coreAuto: 0.0,
     coreSpin: -0.74, corePulse: 0.51, corePulseRate: 4.0, coreFade: 0.0, coreFadeRate: 3.95,
 
     /* THE LENS IS WIDE, and that is the single change that stopped this scene reading as weather. At the 42° it
@@ -103,12 +105,14 @@ export function defaultPreset(gpu) {
     /* RINGS ACROSS THE TUBE, and they carry most of the sense of speed. About nine stand between the eye and the
      * throat; each foreshortens as it recedes and arrives faster as it comes, which is the cue the scene had
      * nothing of at all before. FLOW runs a little ahead of the clouds, so the tunnel reads as passing them. */
-    ribs: 0.72, ribScale: 4.4, ribFlow: 7.4,
+    ribs: 0.72,
 
-    /* BEND IS OFF FULL. At 1.0 the axis leaned 0.75 of a world unit against a 1.25 radius and the throat spent
-     * most of its time off the side of the frame, which reads as drifting rather than as traveling. A third of
-     * that keeps the corners and leaves the far end where an eye can find it. */
-    bend: 0.34, bendFlow: 6.0, bendScale: 0.5,
+    /* BEND RUNS WELL PAST WHAT IT USED TO REACH, because the curve is now anchored at the eye. It was capped at
+     * 1.0 by a real constraint -- the curve was displaced at the CAMERA as well as down the tunnel, so the near
+     * wall closed in before the far end had leaned very far. With the axis pinned to the viewer the offset grows
+     * with depth instead, and at 2.2 the tube visibly bends away: the streaks curve along it and the throat
+     * swings off centre and out of sight rather than sitting in the middle of the frame. */
+    bend: 2.2, bendFlow: 6.0, bendScale: 0.5,
     exposure: 1.94, chroma: 1.0, vignette: 1.0,
     // NEBULA and LIGHTSPEED open folded: the scene is tuned, and the sections worth reaching first are the ones
     // that change the whole frame.
