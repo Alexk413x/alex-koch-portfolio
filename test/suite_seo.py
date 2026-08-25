@@ -267,6 +267,36 @@ def run(page, r):
             r.check('%s credits its author' % path, d['author']['@id'], CANON + '#alex')
             r.check('%s is source code' % path, d['@type'], 'SoftwareSourceCode')
 
+    # --- the link preview card agrees with the site it advertises ---------------------------------------
+    # THE CARD IS A PNG AND A PNG CANNOT BE DIFFED, so what is checked is its SOURCE: og-card.html carries a copy
+    # of three site.css tokens because a template cannot import a stylesheet it does not share a page with, and a
+    # copy is exactly the thing this repository does not allow to drift quietly. If the site changes its ink or
+    # its accent, this fails and the card gets re-rendered with `python og-card.py`.
+    root = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    css = io.open(os.path.join(root, 'site', 'site.css'), encoding='utf-8').read()
+    card = io.open(os.path.join(root, 'site', 'og-card.html'), encoding='utf-8').read()
+    for token in ('ink', 'accent', 'text-strong'):
+        want = re.search(r'--%s:\s*(#[0-9a-fA-F]{3,8})' % token, css)
+        got = re.search(r'--%s:\s*(#[0-9a-fA-F]{3,8})' % token, card)
+        r.ok('the card copies --%s from site.css' % token,
+             bool(want and got) and want.group(1).lower() == got.group(1).lower(),
+             '%s vs %s' % (want and want.group(1), got and got.group(1)))
+
+    # The mark is drawn from favicon.svg's paths rather than redrawn. The card once lost a stroke this way and
+    # rendered 413-slash for months underneath alt text that said 413X.
+    fav = io.open(os.path.join(root, 'favicon.svg'), encoding='utf-8').read()
+    paths = re.findall(r'<path d="([^"]+)"', fav)
+    r.ok('the card carries every glyph of the mark',
+         bool(paths) and all(d in card for d in paths), '%d/%d in the card' % (
+             sum(1 for d in paths if d in card), len(paths)))
+
+    # 1.91:1 is what Open Graph and summary_large_image want, and the renderer's viewport is set to it.
+    png = os.path.join(root, 'site', 'og-card.png')
+    with open(png, 'rb') as fh:
+        head = fh.read(24)
+    w, h = int.from_bytes(head[16:20], 'big'), int.from_bytes(head[20:24], 'big')
+    r.check('the card is 1200x630', (w, h), (1200, 630))
+
     # The base lab is not for readers, and says so rather than relying on not being linked.
     page.goto('labs/shell/Shell.html')
     r.ok('the base lab stays out of the index',
