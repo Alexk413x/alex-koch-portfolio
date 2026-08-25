@@ -9,6 +9,7 @@ import io
 import json
 import os
 import re
+import time
 import urllib.parse
 import urllib.request
 
@@ -69,11 +70,19 @@ def norm(s):
 def fetch(page, path):
     # Quoted, because one lab's filename has a space in it and a raw space in a request line is not a request.
     url = 'http://127.0.0.1:%d/%s' % (page.port, urllib.parse.quote(path, safe='/%'))
-    try:
-        res = urllib.request.urlopen(url, timeout=5)
-        return res.getcode(), res.read().decode('utf-8', 'replace')
-    except Exception as exc:
-        return getattr(exc, 'code', 0), ''
+    # RETRIED ONCE. The suite fetches every addressed file while the browser is loading the same ones, and the
+    # single-threaded server in the harness resets a connection under that overlap -- which reads as a missing
+    # file rather than as the timing it is.
+    for attempt in (0, 1):
+        try:
+            res = urllib.request.urlopen(url, timeout=5)
+            return res.getcode(), res.read().decode('utf-8', 'replace')
+        except Exception as exc:
+            code = getattr(exc, 'code', 0)
+            if code or attempt:
+                return code, ''
+            time.sleep(0.2)
+    return 0, ''
 
 
 def index_by_id(node, out):
