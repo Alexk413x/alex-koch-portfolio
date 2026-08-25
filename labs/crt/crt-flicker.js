@@ -1,6 +1,6 @@
 /* crt-flicker.js — the two flicker engines.
  *
- * Pure state machines: no DOM. Each returns a brightness MULTIPLIER centred near 1, and the caller decides how to
+ * Pure state machines: no DOM. Each returns a brightness MULTIPLIER centerd near 1, and the caller decides how to
  * spend it. createFlicker() carries the machines' state, so two instruments cannot share each other's phase.
  */
 import { kelvinRgb, mix } from './crt-phosphor.js';
@@ -10,9 +10,9 @@ export function createFlicker() {
   const bulbs = {};
   // The screen's own phosphor flicker is a single event, not a cycle.
   let flkEv = null, flkNext = null;
-  /* One remembered emission pair, keyed on the two quantised inputs. tubeHealth caches inside the fixture, but the
+  /* One remembered emission pair, keyed on the two quantized inputs. tubeHealth caches inside the fixture, but the
    * Object.assign that feeds it and the cache key it builds are paid on every call regardless -- and health and temp are
-   * quantised here precisely so they hold still for stretches, so on most frames of a burst both are unchanged. */
+   * quantized here precisely so they hold still for stretches, so on most frames of a burst both are unchanged. */
   const thMemo = { ka: '', va: null, kb: '', vb: null };
 
   /* THE SURGE: one scripted mains fault, start to finish.
@@ -27,19 +27,19 @@ export function createFlicker() {
    *   COLLAPSE 1400ms  the rail failing, keyframed as lurches and false recoveries rather than an eased slide.
    *                    Brightness bounces; warmth ratchets one way only, driving through the 2200K floor.
    *   STRUGGLE 1000ms  guttering, and HEALING as it gutters — the level climbs while short steps keep chopping into
-   *                    it, so the tube reads as fighting its way back rather than as simply broken. The colour does
+   *                    it, so the tube reads as fighting its way back rather than as simply broken. The color does
    *                    NOT recover with it: a re-striking arc brings its brightness back long before the phosphor
    *                    and mercury warm up. Hard-edged steps rather than a sine, because an arc losing and regaining
    *                    its strike is a switch. Deterministic, hashed off the step index.
    *   BUILD     300ms  the core coming back, BRIGHTNESS ONLY. The only quiet phase, and it exists to buy the flash
    *                    its impact — without a ramp the flash is just another spike.
    *   FLASH     130ms  everything at once, AND STILL ORANGE. Health is clamped back to full so the whole tube lights,
-   *                    but the warmth holds: swinging the colour cold reads as a different, whiter lamp switching on,
+   *                    but the warmth holds: swinging the color cold reads as a different, whiter lamp switching on,
    *                    where it should read as THIS lamp driven far past what it can take.
-   *   CUT        70ms  the breaker, with fall time rather than a step to zero, and the colour still held.
+   *   CUT        70ms  the breaker, with fall time rather than a step to zero, and the color still held.
    *   DARK      900ms  nothing. Long enough to stop waiting, which is what makes the recovery a surprise.
    *   RECOVER   800ms  three decaying gulps converging on 1 as the arc re-establishes, and the ONLY place the
-   *                    temperature unwinds — so the colour is the last thing to come home.
+   *                    temperature unwinds — so the color is the last thing to come home.
    *
    * Returns null when no surge is running, which is the caller's signal to leave every value alone.
    */
@@ -57,7 +57,7 @@ export function createFlicker() {
    * So the phase is keyframed rather than eased, each leg smoothstepped between its keys so the motion swoops. The
    * drama is in the ORDER of the levels, not in the easing.
    *
-   * The colour ratchets one way only: brightness bounces, warmth climbs monotonically, because a cooling arc does not
+   * The color ratchets one way only: brightness bounces, warmth climbs monotonically, because a cooling arc does not
    * un-cool when the voltage momentarily returns. That divergence is what stops the recoveries reading as the fault
    * being over.
    */
@@ -78,7 +78,7 @@ export function createFlicker() {
     if (dt < 0 || dt > SURGE_MS) { surgeT0 = null; return null; }
     if (dt < 1400) return sgKey(dt);
     if (dt < 2400) {
-      /* THE BULB HEALS WHILE IT GUTTERS, and the COLOUR DOES NOT — two things a real re-strike separates. Holding the
+      /* THE BULB HEALS WHILE IT GUTTERS, and the COLOR DOES NOT — two things a real re-strike separates. Holding the
        * level flat reads as a bulb that is simply broken; letting it climb while the gutter keeps interrupting reads
        * as one fighting its way back. warm stays pinned, so the recovery is in the brightness alone.
        *
@@ -93,7 +93,7 @@ export function createFlicker() {
     if (dt < 2830) { const q = sEase((dt - 2700) / 130); return { lamp: 1.30 + q * 2.30, screen: 1.30 + q * 2.70, warm: 2.6 }; }
     if (dt < 2900) { const q = sEase((dt - 2830) / 70); return { lamp: 3.6 * (1 - q), screen: 4.0 * (1 - q), warm: 2.6 }; }
     if (dt < 3800) return { lamp: 0, screen: 0, warm: 2.6 };
-    /* THE COLOUR COMES HOME LAST. Warmth is held at 2.6 right through the flash, the cut and the dark, and only unwinds
+    /* THE COLOR COMES HOME LAST. Warmth is held at 2.6 right through the flash, the cut and the dark, and only unwinds
      * across the recovery -- so the temperature is the final thing to return, after the level already has. */
     const p = (dt - 3800) / 800, gulp = Math.abs(Math.sin(p * Math.PI * 3)) * (1 - p);
     const lvl = p * (1 - gulp * 0.85) + gulp * 0.25;
@@ -145,7 +145,7 @@ export function createFlicker() {
       return 1;
     }
     const dt = Math.min(120, now - st.last); st.last = now;
-    st.warm = st.warmTarget;   // snapped, not eased: an eased colour shift reads as a fade, not a strike
+    st.warm = st.warmTarget;   // snapped, not eased: an eased color shift reads as a fade, not a strike
     st.hmod = st.hmodTarget;
     const baseMs = 1000 / hz;
     /* Electrical buzz: ±~6% of flux at a fast, per-tube detuned rate, independent of the main cycle. Rides only SOME
@@ -178,10 +178,10 @@ export function createFlicker() {
       if (!st.started) { st.started = true; st.t = Math.random() * st.period; }   // random phase, so A and B desync from the start
       const reach = 1 - Math.random() * chaos;                  // dip depth fraction (1 = the full flux range)
       st.dip = Math.max(0, 1 - flux * reach);
-      /* A COLOUR STRIKE: an occasional re-ignition at a genuinely DIFFERENT temperature, and not every cycle.
+      /* A COLOR STRIKE: an occasional re-ignition at a genuinely DIFFERENT temperature, and not every cycle.
        *
        * Tying the shift to dip depth means a tube can dim visibly and come back at exactly the temperature it left. A
-       * failing fluorescent does the opposite: the striking colour is set by what the arc does at re-ignition, not by
+       * failing fluorescent does the opposite: the striking color is set by what the arc does at re-ignition, not by
        * how far it fell, so the jump is sometimes large after a small dip and absent after a big one.
        *
        * NEGATIVE IS ALLOWED, and that is most of the point: warm > 0 drops kelvin for the tired pinkish cast of an old
@@ -189,11 +189,11 @@ export function createFlicker() {
        * toward warm, because that is the commoner fault.
        *
        * CHAOS GOVERNS THE ODDS rather than a new slider, and it stays a CHANCE at every setting — a jump every cycle
-       * reads as an effect, and the whole reason this is rare is that a colour that changes only sometimes looks
+       * reads as an effect, and the whole reason this is rare is that a color that changes only sometimes looks
        * electrical.
        */
       /* TWO SIZES OF STRIKE, because one range cannot be both. A modest ceiling is a believable drift — clearly a
-       * different colour but still the same fixture. What it cannot do is misfire: a tube that strikes on the wrong
+       * different color but still the same fixture. What it cannot do is misfire: a tube that strikes on the wrong
        * gas mix goes somewhere unreasonable, and clamping is what makes that legible — a HARD strike drives straight
        * into the 2200K floor or the 9000K ceiling.
        *
@@ -208,7 +208,7 @@ export function createFlicker() {
          * healthy tube striking warm is an ordinary misfire, and a dying one can still flash cold on re-ignition.
          *
          * So the odds lean with health and are NEVER 0 or 1 at either end. The magnitude is untouched by health, so
-         * every colour stays reachable from every state — which keeps the bias readable as a tendency rather than
+         * every color stays reachable from every state — which keeps the bias readable as a tendency rather than
          * felt as a rule.
          */
         const pWarm = 0.5 + (1 - h) * 0.4;
@@ -217,9 +217,9 @@ export function createFlicker() {
       // A chance to shift warmth this cycle, scaled by the dip depth; otherwise it cools back toward neutral.
       else if (Math.random() < 0.28) st.warmTarget = (1 - st.dip) * (0.55 + Math.random() * 0.85);
       else st.warmTarget *= 0.5;
-      /* A chance to sag this tube's health — the coating dying back, greying out and dimming; otherwise recovers.
+      /* A chance to sag this tube's health — the coating dying back, graying out and dimming; otherwise recovers.
        *
-       * HEALTH BIASES HOW OFTEN THE SAG COMES AND HOW LONG IT HOLDS, on the same terms the colour strike uses: it
+       * HEALTH BIASES HOW OFTEN THE SAG COMES AND HOW LONG IT HOLDS, on the same terms the color strike uses: it
        * leans the odds, it never decides them, and it is never 0 or 1 at either end. Flat, a tube at 30% health sags
        * about as often as one at full health, which is the opposite of how a lamp dies.
        *

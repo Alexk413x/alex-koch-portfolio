@@ -55,7 +55,7 @@ def render(out_path):
         # Pinned to 1, or a hi-dpi desktop renders the card at its scale factor and the PNG comes out oversized.
         '--force-device-scale-factor=1',
         '--hide-scrollbars',
-        # NO LCD SUBPIXEL TEXT. Chrome renders type with coloured subpixel fringes by default, which is right on
+        # NO LCD SUBPIXEL TEXT. Chrome renders type with colored subpixel fringes by default, which is right on
         # a physical RGB-striped panel and wrong in a PNG that will be scaled and shown on anything. It put 2181
         # red-and-blue fringed pixels through the card's mono line; the CSS font-smoothing property does not turn
         # it off for a screenshot, and this flag does.

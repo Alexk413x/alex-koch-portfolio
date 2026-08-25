@@ -28,8 +28,8 @@ actually did.
   rest in cleanly. A key whose start plus span exceeded 1 once sat stranded mid-flight in a state that is
   meant to be still, so the grid is asserted at both ends: 39 keys in 10x4, 28 keys in 4x7, no overlaps.
 - **`suite_hero`** — the WebGL core in the hero: that it compiled, that it draws a lit frame, that the lit
-  surface renders at the ACCENT'S HUE (the shader tone maps per channel, so the colour it is handed is not the
-  colour it produces — this check is what caught a butter-yellow core at 38 degrees and an over-corrected blood
+  surface renders at the ACCENT'S HUE (the shader tone maps per channel, so the color it is handed is not the
+  color it produces — this check is what caught a butter-yellow core at 38 degrees and an over-corrected blood
   red at 9.9), that the canvas never takes a click, and that a throw of the mouse spins the face the way the
   hand went rather than against it.
 - **`suite_qr`** — decodes what the encoder draws, across the versions and a multibyte payload. An early
@@ -39,7 +39,7 @@ actually did.
   shapes, the hero fitting on a landscape phone, reduced motion collapsing both rigs, and every internal
   link resolving.
 - **`suite_seo`** — the JSON-LD against the page it describes. Structured data is a second copy of the
-  truth, which is the failure this repository is organised against, so the two are made to disagree loudly:
+  truth, which is the failure this repository is organized against, so the two are made to disagree loudly:
   the seventeen products must match the shelf in name, tagline, employer and order, and every skill, job
   title, employer and proper noun the graph asserts must appear in the page's own text. A claim left in the
   graph after its visible counterpart is deleted is hidden text, which Google's spam policies name as
@@ -64,7 +64,7 @@ Half the point here is that a key is reachable *where it appears to be*.
 
 The phone is turned about 15 degrees, and that breaks both obvious ways of measuring:
 
-- `getBoundingClientRect` returns the axis-aligned box of the *projected* quad, so neighbouring keys
+- `getBoundingClientRect` returns the axis-aligned box of the *projected* quad, so neighboring keys
   appear to overlap when nothing is wrong.
 - `offsetLeft`/`offsetTop` are the *layout* box and ignore transforms — but every key is laid out once at
   a home rectangle and moved by transform, so at the faceplate the shared keys report their app cells and

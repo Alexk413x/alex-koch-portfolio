@@ -42,7 +42,7 @@
      Body copy does not follow it — .sec-lede, .role p and the rest cap their own measure. */
   --content-max: var(--hero-max);
   /* Both of scene 01's side columns, and the only declaration of that width. They are equal so the hero reads as
-     balanced about the core, which sits on the centre line between them. 530px is what the lockup's ink needs at
+     balanced about the core, which sits on the center line between them. 530px is what the lockup's ink needs at
      its full 176px size, measured — under that it wraps. */
   --hero-col: 530px;
   /* Scene 01 is THREE of those: the lockup, the core's lane, the aside. It is therefore wider than the 1400px
@@ -129,7 +129,7 @@ a:hover { color: var(--accent-hover) }
 }
 
 /* The core, on the same clock. It falls back between pulses and is at full strength on the frame the next ring
-   leaves, so what catches the eye is a change rather than a light that is simply on. Colour and glow rather than
+   leaves, so what catches the eye is a change rather than a light that is simply on. Color and glow rather than
    opacity, because opacity here would take the halo down with it — the halo is a child of this element.
    IT HOLDS FULL FOR THE FIRST THIRD and only falls part way. A deeper trough reached sooner reads as going out
    and coming back rather than as a light that pulses. Linear, like the ring: on an ease-out the drop front-loads,
@@ -158,7 +158,7 @@ a:hover { color: var(--accent-hover) }
 
 /* Never a solid bar. It sits over the hero on a gradient that fades to nothing, so the ring is never cropped by
    a horizon line across the top of the page. */
-/* 1fr auto 1fr, so the middle zone is centred against the VIEWPORT rather than against whatever the two sides
+/* 1fr auto 1fr, so the middle zone is centerd against the VIEWPORT rather than against whatever the two sides
    happen to weigh. With space-between the links slid every time the mark or the mark cluster changed width. */
 /* ONE BAR, ALL THE WAY DOWN. Never a solid ground and never a rule under it, at any scroll position: the
    gradient fades to nothing so no horizon line ever crosses the stage, and the same bar over the document is
@@ -172,21 +172,21 @@ a:hover { color: var(--accent-hover) }
 }
 
 /* The bar's left zone: ONE cell of the grid holding two things, so the mark keeps its place against the viewport
-   while a second item sits beside it. baseline, not centre — the two are different sizes and their tops and
+   while a second item sits beside it. baseline, not center — the two are different sizes and their tops and
    bottoms would disagree either way, but their baselines are the line the eye reads them on. */
 /* NO min-width: 0 HERE. The bar's outer columns are 1fr, which is minmax(auto, 1fr) — they refuse to shrink
-   below their own content, and that floor is the only thing keeping the left zone off the centre links. Zeroing
+   below their own content, and that floor is the only thing keeping the left zone off the center links. Zeroing
    it let the column shrink to 55px around 77px of wordmark at 830, and the mark overlapped ALEX by 2px. */
 #nav .brand { justify-self: start; display: flex; align-items: baseline; gap: 14px }
 
-/* The same grey as the marks opposite it, so the two ends of the bar weigh the same and the lit section is the
+/* The same gray as the marks opposite it, so the two ends of the bar weigh the same and the lit section is the
    only thing in the row asking to be read. */
 #nav .mark {
   color: var(--text-faint); font-weight: 700;
   transition: color .2s var(--ease-settle);
 }
 #nav .mark:hover { color: var(--accent) }#nav .links { display: flex; justify-content: center; gap: 24px; align-items: center }
-/* nowrap, or a two-word label breaks inside its own box, grows taller than its neighbours and reads as a
+/* nowrap, or a two-word label breaks inside its own box, grows taller than its neighbors and reads as a
    two-line nav even though the row itself never wrapped. */
 #nav .links a {
   position: relative; padding-bottom: 7px;
@@ -224,7 +224,7 @@ a:hover { color: var(--accent-hover) }
 #nav .tools svg { width: 15px; height: 15px; display: block; fill: currentColor }
 
 /* A mark should say where it goes, or what it opens, before it is clicked. Right-aligned to the mark, because
-   this cluster sits against the page edge and a centred label would hang off it. */
+   this cluster sits against the page edge and a centerd label would hang off it. */
 #nav .tools .tip { position: relative }
 #nav .tools .tip::after {
   content: attr(data-tip);
@@ -253,7 +253,7 @@ section[id] { scroll-margin-top: 84px }
   height: calc(100dvh + (var(--scene-hold) + var(--scene-exit)) * 100dvh);
 }
 
-/* FLAT, not a radial gradient. It carried a warm pool centred at 50% 42% — which is exactly where the core
+/* FLAT, not a radial gradient. It carried a warm pool centerd at 50% 42% — which is exactly where the core
    sits, so the object read as having a second, softer glow parked behind it that nothing in the scene was
    casting. The core brings its own light; the stage should bring none. */
 /* ONE GROUND FOR THE WHOLE PAGE. --ink here and on every section below, so nothing between the hero and the
@@ -309,8 +309,8 @@ section[id] { scroll-margin-top: 84px }
    would grow and shrink as the window was dragged wider. */
 #hero-core {
   /* 48% was the calibration ring's, and a decorative device could sit high. This is the object the columns are
-     arranged around, so it belongs on the line they are centred on: the scene's padding-top and the foot are
-     within 10px of each other, which puts the content's centre 5px below the stage's middle at every height. */
+     arranged around, so it belongs on the line they are centerd on: the scene's padding-top and the foot are
+     within 10px of each other, which puts the content's center 5px below the stage's middle at every height. */
   position: absolute; top: calc(50% + 5px); left: 50%;
   width: min(94vh, 900px); height: min(94vh, 900px);
   /* It collapses into itself on the way out. A core that only dims reads as a light being turned down; one
@@ -407,7 +407,7 @@ html:not(.core-lit) #hero-halo path {
 
 .hero-foot { padding: 0 var(--pad-page) 30px; position: relative; z-index: 3 }
 
-/* One item, centred on the stage rather than on the hero's column: the arrow answers "there is more below",
+/* One item, centerd on the stage rather than on the hero's column: the arrow answers "there is more below",
    which is about the screen and not about the grid the text is set on. */
 .hero-foot .inner { display: flex; align-items: flex-end; justify-content: center }
 
@@ -457,7 +457,7 @@ html:not(.core-lit) #hero-halo path {
 #app-stage.is-new .now { color: var(--text-body) }
 #app-stage.is-new .now b { color: var(--accent) }
 
-/* RAIL TO RAIL, like every other section, with the phone CENTRED in what is left. The copy is capped at its own
+/* RAIL TO RAIL, like every other section, with the phone CENTERD in what is left. The copy is capped at its own
    measure so a fractional track cannot set the text width; the second track takes the remainder. Pushed to the far
    edge instead, the phone sits against the right margin with the gap all on one side. */
 .app-grid {
@@ -475,10 +475,10 @@ html:not(.core-lit) #hero-halo path {
   transition: background .18s var(--ease-settle);
 }
 
-/* The store's own mark in the button's ink rather than its four brand colours: the row is one accent slab, and a
-   full-colour logo dropped into it reads as a pasted-in badge. currentColor also follows the label on hover.
+/* The store's own mark in the button's ink rather than its four brand colors: the row is one accent slab, and a
+   full-color logo dropped into it reads as a pasted-in badge. currentColor also follows the label on hover.
    FOUR WEDGES, NOT ONE SHAPE. As a single path with abutting subpaths it fills into a plain triangle and stops
-   being the Play mark; each wedge is its own path pulled slightly toward its centre, and the gaps that opens are
+   being the Play mark; each wedge is its own path pulled slightly toward its center, and the gaps that opens are
    what the logo is made of. */
 .cta-row .primary svg { width: 16px; height: 16px; flex: none; fill: currentColor }
 /* The out-arrow, smaller than the store mark and set after the label: it says the link LEAVES, which is
@@ -490,7 +490,7 @@ html:not(.core-lit) #hero-halo path {
 .phone-wrap {
   justify-self: center; position: relative; z-index: 0;
   /* FIXED at the widest state, deliberately. A column that tracks the phone's width keeps the gutter constant but
-     recentres the pair as the phone narrows, dragging the copy sideways for the whole scrub. A wider gutter at the
+     recenters the pair as the phone narrows, dragging the copy sideways for the whole scrub. A wider gutter at the
      end buys text that does not move while the calculator animates. */
   width: min(470px, 82vw);
   display: flex; flex-direction: column; align-items: center; gap: 16px;
@@ -505,7 +505,7 @@ html:not(.core-lit) #hero-halo path {
    LIT FOR THE WHOLE SCRUB, not faded in on --m: the wall does not care which object stands in front of it, and a
    glow that arrives with the phone reads as the phone's halo rather than as the room it sits in.
    THE SAME LAMP AS THE CARTOGRAPHER FLOOR POOL. Two pools of light in one scroll that are nearly but not quite
-   the same colour read as two mistakes, so this carries #cartoPool's numbers rather than the accent's. */
+   the same color read as two mistakes, so this carries #cartoPool's numbers rather than the accent's. */
 .phone-wrap::before {
   content: ''; position: absolute; z-index: 0; pointer-events: none;
   left: 50%; top: 46%; width: 190%; height: 120%;
@@ -522,7 +522,7 @@ html:not(.core-lit) #hero-halo path {
 .phone { position: relative; z-index: 1 }
 
 /* THE MORPH RUNS ENTIRELY IN CSS off one scalar, --m, which scenes.js writes on the stage each frame. Every
-   number below is "old + (new - old) * m" and every colour a color-mix by the same scalar; a morph split across
+   number below is "old + (new - old) * m" and every color a color-mix by the same scalar; a morph split across
    CSS and JS is two descriptions of it.
    Each declaration states the SHIPPED value first, so a browser without color-mix, or a page with no JS, gets the
    finished calculator rather than a beige faceplate nobody asked to see. */
@@ -542,11 +542,11 @@ html:not(.core-lit) #hero-halo path {
   border-radius: var(--r);
   background: #16161a;
   background: color-mix(in srgb, #2b2b2d var(--mix), #16161a);
-  /* THE FRONT IS A WIREFRAME EDGE AT BOTH ENDS OF THE MORPH, held at one colour across the scrub. Interpolating a
-     grey bezel to a translucent accent gives a line too faint to read as a line at the phone, and neither end the
+  /* THE FRONT IS A WIREFRAME EDGE AT BOTH ENDS OF THE MORPH, held at one color across the scrub. Interpolating a
+     gray bezel to a translucent accent gives a line too faint to read as a line at the phone, and neither end the
      same object as the back outline and the four edges beside it.
-     ONE COLOUR FOR THE WHOLE OBJECT, so the calculator is a single wireframe rather than a lit front in front of
-     a dim drawing. The depth is carried by the perspective offset and the occlusion; a second, dimmer colour says
+     ONE COLOR FOR THE WHOLE OBJECT, so the calculator is a single wireframe rather than a lit front in front of
+     a dim drawing. The depth is carried by the perspective offset and the occlusion; a second, dimmer color says
      the same thing again and makes the back read as a different material.
      --line, not 1px, for the reason every other line here reads it: six lines at two weights are not one set. */
   border: var(--line) solid var(--accent);
@@ -559,7 +559,7 @@ html:not(.core-lit) #hero-halo path {
   --dep: calc(110 + (95 - 110) * var(--m));
   transform-style: preserve-3d;
   /* Starts left and turned one way, sweeps through flat and ends facing the other. The travel is what sells the
-     object as a thing on a surface rather than a picture that changed colour. */
+     object as a thing on a surface rather than a picture that changed color. */
   transform:
     translateX(calc((-24 + (0 - -24) * var(--m)) * 1px))
     rotateY(calc((18 + (-15 - 18) * var(--m)) * 1deg))
@@ -580,7 +580,7 @@ html:not(.core-lit) #hero-halo path {
    standing --dep behind the chassis. The perspective does the rest. */
 .phone::before {
   content: ''; position: absolute; inset: 0; pointer-events: none;
-  /* The flow graph's node exactly, in this object's own colour: an outline over a quarter-black face. The face is
+  /* The flow graph's node exactly, in this object's own color: an outline over a quarter-black face. The face is
      what closes the shape. It stays black rather than tinting with the line, or the back plane glows through the
      front instead of sitting behind it. */
   background: rgba(0, 0, 0, .25);
@@ -764,10 +764,10 @@ html:not(.core-lit) #hero-halo path {
  * Each one is a substitution the engine performs per element per frame, and at fifty-one keys they add up fast
  * enough to double the frame cost. Legibility loses this one.
  *
- * COLOURS INTERPOLATE ON THE KEY'S OWN --e, the same number that moves it, rather than swapping as a block at a
+ * COLORS INTERPOLATE ON THE KEY'S OWN --e, the same number that moves it, rather than swapping as a block at a
  * halfway class. The keys are staggered, so at the halfway point the shared ones are already most of the way
- * across and the faceplate-only ones have gone — the pad reads as the app in faceplate colours, and scrolling
- * past at the wrong moment catches it there. Sharing --e means shape and colour cannot disagree.
+ * across and the faceplate-only ones have gone — the pad reads as the app in faceplate colors, and scrolling
+ * past at the wrong moment catches it there. Sharing --e means shape and color cannot disagree.
  *
  * clamp() guards the mix: --e carries an overshoot term and peaks just above 1, and a color-mix percentage
  * outside 0-100 is invalid, which would drop the declaration and leave the key unpainted. */
@@ -802,7 +802,7 @@ html:not(.core-lit) #hero-halo path {
 }
 
 /* The faceplate's own accents. f and g have no app counterpart — they fade out as they travel — so they mix
-   toward the pad's base rather than to a colour they never reach. */
+   toward the pad's base rather than to a color they never reach. */
 .rpn-pad .k-shift-f { background: color-mix(in oklab, #c8961e var(--mixed), #b4530e) }
 .rpn-pad .k-shift-g { background: color-mix(in oklab, #3f8fc4 var(--mixed), #b4530e) }
 
@@ -849,7 +849,7 @@ html:not(.core-lit) #hero-halo path {
 /* ---------------- cartographer ---------------- */
 
 /* THE PIN IS ZERO, and that is the whole design. The build ends where the section seats and the strike begins
-   there, so every frame of either happens while the section is travelling, in both directions. A pin of any
+   there, so every frame of either happens while the section is traveling, in both directions. A pin of any
    length would only buy scroll during which an envelope runs and the section does not move.
    The stopping point is this pin's midpoint, derived in scenes.js rather than written down; at zero that midpoint
    is the section's own seat. The dwell the reader gets there is TIME, not distance: the snap target below stops
@@ -992,7 +992,7 @@ html.booting { scroll-snap-type: none }
 }
 .demo-cta:hover { background: var(--accent); color: var(--on-accent) }
 /* Steady while the button is under the pointer. animation-name, not background: an animation's declarations
-   outrank a normal one whatever the selector, so the running keyframes would otherwise win the colour back. */
+   outrank a normal one whatever the selector, so the running keyframes would otherwise win the color back. */
 .demo-cta:hover .live-dot { background: var(--on-accent); animation-name: none }
 
 /* ---- the flow graph ----
@@ -1045,11 +1045,11 @@ html.booting { scroll-snap-type: none }
    wireframe past this point takes the lines with it, which is the one thing it is made of. */
 .fg-node.z2 { --z: .94 }
 
-/* WIREFRAME, in the hero arches' line colour, and SEE-THROUGH. No screen inside, no speaker, no content: the
+/* WIREFRAME, in the hero arches' line color, and SEE-THROUGH. No screen inside, no speaker, no content: the
    outline is what says "a phone", and a drawn UI inside a 60-unit box is a texture nobody reads.
    ONE OBJECT, ONE LINE. Every edge is the same stroke at the same weight, and what makes the far ones read as far
    is the GLASS: the face carries a translucent black fill, so whatever lies behind it is knocked back by exactly
-   the surface it is seen through — no second colour deciding which edges are hidden. */
+   the surface it is seen through — no second color deciding which edges are hidden. */
 .fg-node > * { vector-effect: non-scaling-stroke; stroke: var(--scenery); stroke-width: 1.4 }
 .fg-node .edges { fill: none }
 .fg-node .face { fill: rgba(0, 0, 0, .25) }
@@ -1060,7 +1060,7 @@ html.booting { scroll-snap-type: none }
 .fg-floor { fill: url(#cartoPool); opacity: calc(var(--p) * .34) }
 #cartoPool .p0, #cartoPool .p1, #cartoPool .p2 { stop-color: #b03c10 }
 
-/* pathLength normalises every track to 100 units, so one dasharray draws all three at the same rate whatever
+/* pathLength normalizes every track to 100 units, so one dasharray draws all three at the same rate whatever
    their real geometry — and the numbers here stay readable instead of tracking bezier arc lengths. */
 .fg-edge {
   fill: none; stroke: var(--scenery); stroke-width: 1.25;
@@ -1068,7 +1068,7 @@ html.booting { scroll-snap-type: none }
   filter: drop-shadow(0 0 5px rgba(221, 106, 32, .3));
 }
 
-/* THE IDLE. A DOT, NOT A STREAK: the dash is one normalised unit against a stroke five wide, so the round caps
+/* THE IDLE. A DOT, NOT A STREAK: the dash is one normalized unit against a stroke five wide, so the round caps
    close over it and what travels is a bead of light. A dash long enough to read as a line reads as the track
    being redrawn; a dot reads as something moving along it.
    TWO CLOCKS, because two things are being timed. The three paths take turns on a cycle of three even slots, one
@@ -1078,7 +1078,7 @@ html.booting { scroll-snap-type: none }
 /* opacity 0 IN THE BASE STATE, and the keyframes turn it on. Before its delay elapses an animated element shows
    its ordinary styles — which for a dashed path is the dash sitting at the start of it, a stationary dot on every
    line until its first turn came round. The dash pattern does the hiding once running; this covers the wait. */
-/* THE SAME LIGHT AS THE WAVEFRONT. Same core colour, same chained halo, same --wk depth factor — a bead in a
+/* THE SAME LIGHT AS THE WAVEFRONT. Same core color, same chained halo, same --wk depth factor — a bead in a
    different orange with a flat glow reads as a second effect borrowing the first one's path. */
 .fg-spark {
   fill: none; stroke: var(--accent-hover); stroke-linecap: round;
@@ -1107,13 +1107,13 @@ html.booting { scroll-snap-type: none }
    out to the furthest corner of the BOX — the clip is the whole silhouette, so it carries off the front, across
    the side and onto the back rather than stopping at the front rim.
    SCREEN, which is the difference between energy and a tint: the ring ADDS to whatever it crosses, so the
-   wireframe's lines flare as it passes over them. Painted normally it is a coloured shape sitting on top.
+   wireframe's lines flare as it passes over them. Painted normally it is a colored shape sitting on top.
    --wr is written per phone from its own geometry, so a small one behind lights in the same beat a big one in
    front does. `r` animates as a CSS property, which is why this needs no script. */
 /* THE OBJECT'S OWN SHAPE, not the viewer's: the wavefront is a copy of that phone's face path, so it arrives at
    the device already keystoned and already at its angle. non-scaling-stroke is what makes the scaling work —
    without it the line is a hairline while the front is small and a slab once it reaches the rim. */
-/* Two haloes rather than one hard line: a tight hot one on the leading colour and a wide soft one on the accent.
+/* Two haloes rather than one hard line: a tight hot one on the leading color and a wide soft one on the accent.
    A single flat stroke reads as an outline being switched on, where a bright core bleeding into a wash reads as
    something with energy in it.
    opacity 0 IN THE BASE STATE, for the reason the beads carry it: until its delay elapses an element shows its
@@ -1148,7 +1148,7 @@ html.booting { scroll-snap-type: none }
    NOT LINEAR, and not landing flat on the rim. It leaves fast and decelerates into an overshoot of --wj past its
    own outline, settles back onto it, then goes. A front that grows at a constant rate and stops dead on the edge
    is the stiff version of this, and slowing it down does not fix that.
-   THE LEGS ARE NOT EVEN. The close onto the back centre is the longest of the four: it is the beat the eye
+   THE LEGS ARE NOT EVEN. The close onto the back center is the longest of the four: it is the beat the eye
    follows longest and the one that reads as the device absorbing the pulse rather than passing it on. It keeps
    speed into the dot, because a front that decelerates all the way in reads as running out rather than arriving.
    IT SNAPS OUT, IT DOES NOT FADE — full strength down to a dot, then gone in a frame. A front that dims as it
@@ -1196,7 +1196,7 @@ html.booting { scroll-snap-type: none }
 #loop-stage.is-drawing .fg-wave { animation-play-state: paused }
 
 /* Narrower measure than the page's, but capped on the CONTENT rather than on .inner: shrinking the container would
-   centre it and pull the left edge in from every other section, and that misalignment is visible the moment you
+   center it and pull the left edge in from every other section, and that misalignment is visible the moment you
    scroll past. Capping the children keeps the left rail true and only brings the right edge in. */
 #cartographer .inner > * { max-width: 1060px }
 
@@ -1244,16 +1244,16 @@ html.booting { scroll-snap-type: none }
   text-transform: uppercase; color: var(--amber);
 }
 
-/* ---- the back catalogue ----
+/* ---- the back catalog ----
  * Seventeen shipped products as a rack of cases and one display case, on two columns that hold exactly one
  * screen. The product leads and the employer is withheld until one is picked.
  *
- * The shelf in the markup is still the source of every record — see catalogue.js. What this changes is the
+ * The shelf in the markup is still the source of every record — see catalog.js. What this changes is the
  * presentation, not where the content lives.
  */
 
 /* The written-out records, hidden once the rack is built — and only then. They stay in the DOM because they ARE
-   the content: catalogue.js reads them, and a crawler running no JavaScript gets all seventeen in full. The swap
+   the content: catalog.js reads them, and a crawler running no JavaScript gets all seventeen in full. The swap
    is keyed on a class the script adds, so if it never runs the shelf is what the reader sees. */
 #experience.js-cat > .inner { display: none }
 #experience .cat { display: none }
@@ -1268,11 +1268,11 @@ html.booting { scroll-snap-type: none }
 
 .cat {
   /* ONE SCREEN, NOTHING SCROLLING. The section is a beat on the page's rail, so it holds the viewport exactly and
-     the carousel takes whatever the blocks above it leave, measured in catalogue.js rather than guessed at here.
+     the carousel takes whatever the blocks above it leave, measured in catalog.js rather than guessed at here.
      overflow: hidden makes that a promise: anything that does not fit is a bug to see, not a scrollbar. */
   height: 100vh;
   height: 100dvh;
-  /* ON THE PAGE'S OWN RAIL, like every other section. .inner caps its content at --content-max and centres it, so on
+  /* ON THE PAGE'S OWN RAIL, like every other section. .inner caps its content at --content-max and centers it, so on
      a wide screen every heading on the page steps in together rather than this one running the full viewport.
      The gutter is the section's; this is the rail. */
   max-width: var(--content-max); margin: 0 auto;
@@ -1290,8 +1290,8 @@ html.booting { scroll-snap-type: none }
 
 /* ---- the left column ---- */
 
-/* CENTRED, like the case column beside it. Top-aligned, the column's slack all sat under the rack — measured
-   at 1440 the content ran 132..763 in a box ending at 808 — so the two columns did not share a centre line and
+/* CENTERD, like the case column beside it. Top-aligned, the column's slack all sat under the rack — measured
+   at 1440 the content ran 132..763 in a box ending at 808 — so the two columns did not share a center line and
    the case started 51px below the title. */
 /* min-width: 0 IS LOAD-BEARING. A grid item's automatic minimum size is its content, so without it this column
    grows to whatever its widest child wants and takes the case's track with it — and nothing inside can overflow
@@ -1349,10 +1349,10 @@ html.booting { scroll-snap-type: none }
   font-family: var(--font-mono); font-size: 10.5px; font-weight: 500; letter-spacing: .14em;
   text-transform: uppercase; color: var(--text-muted);
 }
-/* Brighter than the muted grey they started at: these are the words a recruiter's eye is actually hunting for,
+/* Brighter than the muted gray they started at: these are the words a recruiter's eye is actually hunting for,
    and the label beside them is quiet enough to carry the structure on its own. */
 /* THE PAGE'S OWN BODY COPY, exactly. These three lists are the section's plain prose, so they take .sec-lede's size
-   and colour rather than a pair of numbers of their own. A near-white of my own choosing is the same mistake in
+   and color rather than a pair of numbers of their own. A near-white of my own choosing is the same mistake in
    the other direction: it makes these lists brighter than the lede under any other title on the page. */
 .key-row > p {
   margin: 0; font-size: clamp(14px, 1.5vw, 17px); line-height: 1.65; color: var(--text-body);
@@ -1361,13 +1361,13 @@ html.booting { scroll-snap-type: none }
 /* ---- the company bar ---- */
 
 /* NAVIGATION, NOT A FILTER. Every employer stays listed whatever the carousel is showing — hiding fifteen
-   products to look at two is the opposite of a catalogue. The one under the playhead lights, so the bar is a
+   products to look at two is the opposite of a catalog. The one under the playhead lights, so the bar is a
    readout as well as a control, which is the same double duty the nav's chapter meter does upstairs. */
-/* CENTRED OVER THE RACK, like the act line under it. The bar names what is in the crate, so it belongs over the
-   crate — and the crate is left-aligned and narrower than the column it sits in, so centring in the column put
-   the chips off to the right of everything they label. --rack-w is measured by catalogue.js. */
+/* CENTERD OVER THE RACK, like the act line under it. The bar names what is in the crate, so it belongs over the
+   crate — and the crate is left-aligned and narrower than the column it sits in, so centering in the column put
+   the chips off to the right of everything they label. --rack-w is measured by catalog.js. */
 /* ON THE COLUMN'S RAIL, like the title, the degree and the key rows above it — and like the rack below, which
-   catalogue.js places by its own left edge. Centred, the bar and the act line floated free of a column whose
+   catalog.js places by its own left edge. Centerd, the bar and the act line floated free of a column whose
    every other row starts hard left, which read as two layouts in one place. */
 /* ONE ROW THAT SCROLLS, not two that wrap. Ten companies wrapped to a second line and that line cost the rack
    its own height twice over — the bar is a jump list, and a jump list is allowed to run off the edge.
@@ -1379,7 +1379,7 @@ html.booting { scroll-snap-type: none }
      overflowed itself, so there was nothing to scroll and the fades had nothing to fade. */
   margin-top: 18px; min-width: 0; display: flex; flex-wrap: nowrap; gap: 5px;
   overflow-x: auto; overflow-y: hidden; scrollbar-width: none;
-  /* Set by catalogue.js from the scroll position, so an end you have reached carries no fade. */
+  /* Set by catalog.js from the scroll position, so an end you have reached carries no fade. */
   -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 var(--fade-l, 0px),
                       #000 calc(100% - var(--fade-r, 34px)), transparent 100%);
   mask-image: linear-gradient(90deg, transparent 0, #000 var(--fade-l, 0px),
@@ -1401,9 +1401,9 @@ html.booting { scroll-snap-type: none }
    is what keeps it saying so at a glance across a bar of ten.
    800 IS THE CEILING, NOT A CHOICE: JetBrains Mono has no cut above it, so a 900 silently resolves back to the
    700 every inactive chip already sets.
-   THE STROKE IS HOW IT GETS HEAVIER FROM THERE. A quarter pixel of outline in the text's own colour thickens
+   THE STROKE IS HOW IT GETS HEAVIER FROM THERE. A quarter pixel of outline in the text's own color thickens
    every stem without touching the face's metrics, so the chip does not change width and the bar does not reflow
-   as the selection moves. currentColor, or the outline stops tracking the ink when either colour changes. */
+   as the selection moves. currentColor, or the outline stops tracking the ink when either color changes. */
 .firms button[aria-current="true"] {
   color: var(--on-accent); background: var(--accent); border-color: var(--accent);
   font-weight: 800;
@@ -1414,18 +1414,18 @@ html.booting { scroll-snap-type: none }
 
 /* ---- the carousel ---- */
 
-/* flex: 0 1 auto — it is as tall as the rack in it, so the column can centre the whole stack rather than this
-   growing to swallow the slack. catalogue.js takes its height budget from the column and the fixed blocks
+/* flex: 0 1 auto — it is as tall as the rack in it, so the column can center the whole stack rather than this
+   growing to swallow the slack. catalog.js takes its height budget from the column and the fixed blocks
    above, never from this. */
 .reel-wrap { flex: 0 1 auto; min-height: 0; margin-top: 20px; display: flex; flex-direction: column; gap: 10px }
 
-/* THE CRATE IS A 3D STAGE, not a row that scrolls. Every box is placed by catalogue.js from its distance to the
+/* THE CRATE IS A 3D STAGE, not a row that scrolls. Every box is placed by catalog.js from its distance to the
    playhead — nothing here positions anything — so the lean, the spacing and the recede live in one expression.
-   perspective-origin sits dead CENTRE because the fan is symmetric: anywhere else and the blades on one side are
+   perspective-origin sits dead CENTER because the fan is symmetric: anywhere else and the blades on one side are
    seen more edge-on than the ones on the other, which reads as a mistake rather than as depth.
    touch-action: pan-y hands vertical touch straight back to the page. Sideways belongs to the crate; down always
    belongs to the document. */
-/* flex: 0 0 auto, and catalogue.js sets the height from the rack in it. Left to grow, the reel took the
+/* flex: 0 0 auto, and catalog.js sets the height from the rack in it. Left to grow, the reel took the
    column's whole remainder and the carousel floated in a band of nothing — measured at 1600x1000, 361px
    of box around 299px of cards. */
 .reel {
@@ -1440,7 +1440,7 @@ html.booting { scroll-snap-type: none }
 }
 .reel:active { cursor: grabbing }
 
-/* The act of whatever is centred, changing as the reel crosses into the next one. It is the narrative the four
+/* The act of whatever is centerd, changing as the reel crosses into the next one. It is the narrative the four
    shelves used to carry, kept without paying four rows for it — and it sits ABOVE the crate, where it names what
    you are looking at rather than captioning what you have finished with. */
 /* THE ACT, ON THE RAIL AND IN --amber. It names what the rack is showing and changes as you cross into the
@@ -1459,11 +1459,11 @@ html.booting { scroll-snap-type: none }
    and a library is a place you already know what you are looking for.
    EVERY BOX IS THE SAME SIZE and the crate does the rest: the one at the front faces you and the others lean
    away. Making the picked one bigger as well would be saying it twice. */
-/* TURNED ABOUT ITS OWN CENTRE. A blade fan is symmetric and a hinge on one edge is not — hinged left, the
-   covers to the left of centre swing away from the reader and the ones to the right swing toward them, and the
-   fan comes out lopsided. The centre is the only origin both sides can share. */
+/* TURNED ABOUT ITS OWN CENTER. A blade fan is symmetric and a hinge on one edge is not — hinged left, the
+   covers to the left of center swing away from the reader and the ones to the right swing toward them, and the
+   fan comes out lopsided. The center is the only origin both sides can share. */
 /* NO TRANSITION ON THE TRANSFORM. Each blade carries a drawn wireframe beside its print, and a CSS transition
-   would ease one while the other snapped to its final angle. catalogue.js tweens the rack's position as a single
+   would ease one while the other snapped to its final angle. catalog.js tweens the rack's position as a single
    number and both read it.
    perspective here, on the blade itself, because .box-print is its direct child and CSS perspective reaches one
    level only. It is the same value case3d.js divides by, so the drawing and the print agree by construction. */
@@ -1478,16 +1478,16 @@ html.booting { scroll-snap-type: none }
   transition: opacity .3s linear;
   /* THE BUTTON ITSELF TAKES NO POINTER. Its box is the cover's full unrotated rectangle, while the blade you can
      actually see is the thin rim its print is turned to — so left hittable, every blade's target overlaps a dozen
-     neighbours and the hover lands nowhere near what the reader is pointing at. The print is the rotated thing,
+     neighbors and the hover lands nowhere near what the reader is pointing at. The print is the rotated thing,
      so it is the thing that answers. Clicks still reach the button by bubbling. */
   pointer-events: none;
 }
 .box-print { position: absolute; inset: 0; transform-style: preserve-3d; pointer-events: auto }
 
 /* THE BLADE'S SPINES, one on each rim, standing in the side walls the drawing paints. Same construction as the
-   case on the stage: centred first, then pushed out to half the WIDTH, because a rim's push is along the axis
-   it faces. Centred by position rather than by alignment — the name is wider than the rim, and an overflowing
-   flex or grid item falls back to start-alignment in Chrome, which parks the type off-centre. */
+   case on the stage: centerd first, then pushed out to half the WIDTH, because a rim's push is along the axis
+   it faces. Centerd by position rather than by alignment — the name is wider than the rim, and an overflowing
+   flex or grid item falls back to start-alignment in Chrome, which parks the type off-center. */
 .box-spine {
   position: absolute; top: 0; bottom: 0;
   width: var(--blade-d, 12px); left: calc(50% - var(--blade-d, 12px) / 2);
@@ -1495,7 +1495,7 @@ html.booting { scroll-snap-type: none }
 }
 .box-spine-l { transform: rotateY(-90deg) translateZ(calc(var(--blade-w, 200px) / 2)) }
 .box-spine-r { transform: rotateY(90deg) translateZ(calc(var(--blade-w, 200px) / 2)) }
-/* THE TWO RIMS LEAN TOWARD EACH OTHER. A blade left of centre shows its LEFT rim and one right of centre its
+/* THE TWO RIMS LEAN TOWARD EACH OTHER. A blade left of center shows its LEFT rim and one right of center its
    RIGHT rim, so setting both the same way points every letter's top the same direction and the left half of the
    fan reads as pasted on backwards. Turned opposite ways the rack is symmetric: whichever side you are looking
    at, the type leans into the middle, where the cover is.
@@ -1508,7 +1508,7 @@ html.booting { scroll-snap-type: none }
   white-space: nowrap;
   font-family: var(--font-display); font-weight: 800; letter-spacing: -.01em;
   /* SIZED TO THE EXPOSED RIM, not to the whole depth. The blades pack STEP apart and each covers all but that much
-     of its neighbour, so a name set to the full rim runs straight under the next blade. --blade-step is what the
+     of its neighbor, so a name set to the full rim runs straight under the next blade. --blade-step is what the
      reader actually gets.
      The fraction is well under 1 because caps running to within a pixel of both rim edges read as crammed into
      the rim rather than printed on it. */
@@ -1517,13 +1517,13 @@ html.booting { scroll-snap-type: none }
 }
 /* After the base rule, or it loses on source order at equal specificity. */
 .box-spine-l span { transform: translate(-50%, -50%) rotate(-90deg) }
-/* The drawing runs outside its own box once the blade turns, so it is given room and centred rather than
+/* The drawing runs outside its own box once the blade turns, so it is given room and centerd rather than
    clipped to the print's rectangle. */
 .box-wire { position: absolute; left: -50%; top: -50%; width: 200%; height: 200%; overflow: visible }
 /* THE LINE SCALES WITH THE OBJECT. 1.4px is the stage case's weight on a 494px case — the same absolute stroke
    on a 189px blade is two and a half times too heavy for it, which is what stopped the rack reading as the same
    object seen smaller. Same fraction of the width, floored at .8 so a blade at the far end of the fan is still
-   a line and not a rumour. */
+   a line and not a rumor. */
 .box-wire .c3-edge { stroke: var(--wire-line); stroke-width: max(.8px, calc(var(--blade-w, 200px) * .00283)) }
 /* THE BLADE DRAWS EVERYTHING THE STAGE CASE DRAWS. The seam and the thumb notch were switched off here as a
    simplification, which made a blade a different object from the one it stands for — and the seam runs down the
@@ -1540,7 +1540,7 @@ html.booting { scroll-snap-type: none }
    never follow the corner it was drawn on. */
 .box-face {
   position: absolute; inset: 0;
-  /* ON THE FRONT PLANE, NOT THE CENTRE ONE. case3d.js draws a PRISM: its front face stands half the depth toward
+  /* ON THE FRONT PLANE, NOT THE CENTER ONE. case3d.js draws a PRISM: its front face stands half the depth toward
      the reader and the two rims span from there back. At z=0 the print sits half a rim behind its own outline,
      which at this fan angle is the whole gap between a blade and the one in front — it reads as the cover having
      come unstuck from the case at every angle but square on.
@@ -1556,8 +1556,8 @@ html.booting { scroll-snap-type: none }
 }
 /* Hovering a leaning box lifts it toward the reader, which is the affordance a crate has always had: you tilt
    one up to look at it before you pull it out. */
-/* HOVER IS ONE COLOUR. A hovered box lights three things — the outline, the name on its rim and the accent ramp
-   in its artwork — and splitting them across two colours reads as two states on one object rather than as one box
+/* HOVER IS ONE COLOR. A hovered box lights three things — the outline, the name on its rim and the accent ramp
+   in its artwork — and splitting them across two colors reads as two states on one object rather than as one box
    answering the pointer. All three are --amber.
    The picked cover sits at --accent and needs its own hover rule, or its later declaration wins on source order
    and the one box under the pointer is the one that does not respond. */
@@ -1576,24 +1576,24 @@ html.booting { scroll-snap-type: none }
 
 /* ---- the cover art ----
  * THE ARTWORK IS THE WHOLE FACE, not a picture in the upper field. Each of the seventeen is composed on a 300x400
- * box with its subject centred on y=237 — the midpoint between the tagline's ink and the foot text — so they only
+ * box with its subject centerd on y=237 — the midpoint between the tagline's ink and the foot text — so they only
  * line up as a SET if every one is drawn into the same box at the same scale.
  *
  * preserveAspectRatio stays at its default for the same reason: letterboxing one cover to fit a differently
- * proportioned face would move its centre and break the row.
+ * proportioned face would move its center and break the row.
  */
 .box-face, .c3-front { container-type: inline-size }
 .cover-art { position: absolute; inset: 0; display: block; width: 100%; height: 100% }
 
 /* THREE INKS, AND FILL AND STROKE PICK THEM INDEPENDENTLY. Every shape in every cover names a role rather than a
-   colour, so retinting the whole back catalogue is these eight rules. Fill and stroke are separate families
+   color, so retinting the whole back catalog is these eight rules. Fill and stroke are separate families
    because a shell is a deep fill with a line edge and a screen is a deep fill with a LIT edge; enumerating the
    pairs would be sixteen classes that all have to move together.
-   An element with NO f-* or s-* class inherits, which is how a shared part placed by <use> takes its colour from
+   An element with NO f-* or s-* class inherits, which is how a shared part placed by <use> takes its color from
    the placement: the same drawing is FieldView's steel frame in accent and the photo of it in amber. */
 /* SCOPED TO THE DEFS AS WELL AS THE ART, and that is not tidiness. A shared part lives in the defs block and is
    drawn by <use>, and the shadow content's style resolves against the part's OWN place in the tree — not the
-   place it is used. Scoped to .cover-art alone, every shape in a shared part that carries its own colour gets
+   place it is used. Scoped to .cover-art alone, every shape in a shared part that carries its own color gets
    none; only the shapes that inherit from the <use> work at all. */
 :is(.cover-art, .cover-defs) .f-line { fill: var(--accent) }
 :is(.cover-art, .cover-defs) .f-lit { fill: var(--amber) }
@@ -1619,9 +1619,9 @@ html.booting { scroll-snap-type: none }
  * drawing at one size. Every measurement below is a fraction of the FACE'S OWN WIDTH, because the same cover has
  * to be a 200px blade in the rack and a 500px case on the stage and read as the same layout seen smaller.
  *
- * The band is FIXED: kicker at the top, title optically centred in 5.5%–24% of the height, tagline at 26%.
+ * The band is FIXED: kicker at the top, title optically centerd in 5.5%–24% of the height, tagline at 26%.
  * Nothing up there moves between covers except the words, which is the only reason seventeen of them read as one
- * series. Only the title's SIZE changes, and catalogue.js sets it from the name's own measure.
+ * series. Only the title's SIZE changes, and catalog.js sets it from the name's own measure.
  */
 /* EVERY MEASUREMENT IS A FRACTION OF THE FACE, IN THE FACE'S OWN UNITS. The same cover is a 320px blade in the
    rack and a 200px face on the stage case, and it has to read as the same layout seen smaller rather than as a
@@ -1630,7 +1630,7 @@ html.booting { scroll-snap-type: none }
 .cover-lock {
   position: absolute; inset: 0; display: block; pointer-events: none;
   text-align: center; text-transform: uppercase;
-  /* Quieter than the artwork when this face is the one seen THROUGH the case — see apply() in catalogue.js.
+  /* Quieter than the artwork when this face is the one seen THROUGH the case — see apply() in catalog.js.
      Unset everywhere else, including on every blade, because a blade never turns past edge-on. */
   opacity: var(--through, 1);
 }
@@ -1658,7 +1658,7 @@ html.booting { scroll-snap-type: none }
   font-size: 3cqw; line-height: 1; letter-spacing: .87cqw; color: var(--amber);
 }
 
-/* The title's band, not the title's box: a fixed slot the words are centred inside, so a one-line name set
+/* The title's band, not the title's box: a fixed slot the words are centerd inside, so a one-line name set
    large and a two-line name set small both finish in the same place on all seventeen. */
 .cover-title {
   top: 5.5%; height: 18.5%;
@@ -1668,7 +1668,7 @@ html.booting { scroll-snap-type: none }
   line-height: .88; letter-spacing: -.033em; color: var(--text-strong);
   text-wrap: balance;
 }
-/* The words are one block inside the band's flex box, so a two-line title centres as a pair. */
+/* The words are one block inside the band's flex box, so a two-line title centers as a pair. */
 .cover-title > span { display: block }
 
 .cover-tag {
@@ -1692,10 +1692,10 @@ html.booting { scroll-snap-type: none }
 
 /* ---- the right: the display case ---- */
 
-/* THE BUTTON SITS ON THE COLUMN'S FLOOR, and the case centres in what is left above it.
+/* THE BUTTON SITS ON THE COLUMN'S FLOOR, and the case centers in what is left above it.
    No justify-content here: the auto block margins on .case-box below take ALL the free space and split it
-   evenly, which centres the case and puts the foot flush to the bottom in one move. justify-content: center
-   would have centred the pair together and left the button floating in the middle of the column. */
+   evenly, which centers the case and puts the foot flush to the bottom in one move. justify-content: center
+   would have centerd the pair together and left the button floating in the middle of the column. */
 .case { display: flex; flex-direction: column; align-items: center; gap: 12px; min-width: 0; min-height: 0 }
 
 /* THE FLIP IS THE SECTION'S MECHANISM. Every other section on this page has one — the graph builds, the
@@ -1710,10 +1710,10 @@ html.booting { scroll-snap-type: none }
    case filling this box, the remaining eight per cent is the margin the case needs to not touch its own foot. */
 .case-box { flex: 0 1 auto; height: 92%; min-height: 0; margin-block: auto; display: grid; place-items: center; width: 100% }
 
-/* THE BOX IS THROWN IN AND OUT, and how hard depends on how far you jumped. Stepping to the neighbour is a
+/* THE BOX IS THROWN IN AND OUT, and how hard depends on how far you jumped. Stepping to the neighbor is a
    nudge; clicking a company nine products away sends the old one off the edge and the new one in behind it. The
    crate is a physical thing and a box coming off it should read as having been handled, not swapped.
-   catalogue.js writes the distance and the duration; this only says which properties move. */
+   catalog.js writes the distance and the duration; this only says which properties move. */
 .case-slide { width: 100%; height: 100%; display: grid; place-items: center; transform-style: preserve-3d }
 /* ---- the case: a drawing, and text over it ----
  * The wireframe is SVG because a CSS face is a quad and a quad cannot follow a rounded corner — fanned panels are
@@ -1727,7 +1727,7 @@ html.booting { scroll-snap-type: none }
    children only, and .c3-print sits two levels under .case-box — so it was being laid out with no perspective at
    all while the drawing beside it had one, which is why the two would not line up at any angle. */
 /* THE CASE STANDS WELL OFF ITS OWN EDGES. Filling the column crowds both ends of a section that is only one
-   screen tall; this centres it with real air over and under — the section has to hold a title, a credential,
+   screen tall; this centers it with real air over and under — the section has to hold a title, a credential,
    three key rows, ten company chips, an act line and seventeen covers on ONE screen, and the two objects are the
    only things in it that can give height back.
    max-width binds instead on a short, narrow window: at 3:4 the height decides the width, and without it the case
@@ -1739,7 +1739,7 @@ html.booting { scroll-snap-type: none }
 }
 .case-body.held { cursor: grabbing }
 
-/* The drawing overflows its own box when the case is turned, so it is given room and centred rather than being
+/* The drawing overflows its own box when the case is turned, so it is given room and centerd rather than being
    clipped to the print's rectangle. */
 .c3-wire {
   position: absolute; left: -50%; top: -50%; width: 200%; height: 200%;
@@ -1761,8 +1761,8 @@ html.booting { scroll-snap-type: none }
 /* THE SIDE WALLS, TRANSPARENT BLACK LIKE EVERY OTHER SURFACE ON THE CASE. Two paths, not one: the quads turned
  * toward the reader and the quads turned away, which is a distinction an even-odd band cannot make at all.
  *
- * Denser toward you than away, because that is more moulding along the line of sight, not because the two want
- * different colours. Nothing here is grey: grey makes the box read as a solid object, and it is glass.
+ * Denser toward you than away, because that is more molding along the line of sight, not because the two want
+ * different colors. Nothing here is gray: gray makes the box read as a solid object, and it is glass.
  *
  * On the page's ground these fills have very few levels to move in, so what makes them visible is not their tone
  * but what they take away — the far outline, the ghosted print and the box art all dim where a wall crosses them.
@@ -1771,11 +1771,11 @@ html.booting { scroll-snap-type: none }
 .c3-wall-toward { fill: rgba(158, 82, 34, .34) }
 .c3-wall-away { fill: rgba(158, 82, 34, .17) }
 
-/* The joint between the two halves: a line, dimmer than an outline, because it is where one moulding meets
+/* The joint between the two halves: a line, dimmer than an outline, because it is where one molding meets
    another rather than where the case meets the air. */
 .c3-seam { fill: none; stroke: var(--scenery); stroke-width: 1; stroke-linecap: round; opacity: .45 }
 
-/* The thumb notch, moulded into the opening edge. Drawn on the case rather than on a face, so it turns with the
+/* The thumb notch, molded into the opening edge. Drawn on the case rather than on a face, so it turns with the
    object and disappears round the back like everything else on it. */
 .c3-notch { fill: none; stroke: var(--scenery); stroke-width: 1; opacity: .7 }
 
@@ -1783,7 +1783,7 @@ html.booting { scroll-snap-type: none }
 
 /* NO TRANSITION HERE. The drawing beside this layer is redrawn by hand, and a CSS transition on the print means
    two clocks: the text eased into place over three quarters of a second while the wireframe snapped to the final
-   angle on the first frame, and the case came apart every time it moved. catalogue.js tweens the ANGLE and both
+   angle on the first frame, and the case came apart every time it moved. catalog.js tweens the ANGLE and both
    layers read it, which is the only arrangement where they cannot disagree. */
 .c3-print {
   position: absolute; inset: 0;
@@ -1797,7 +1797,7 @@ html.booting { scroll-snap-type: none }
    inside out with its blurb on top of its cover. */
 /* NO backface-visibility HERE. Hiding the far side is what made the case opaque: with the back panel switched
    off entirely there was nothing behind the front for the glass to be transparent TO, so every value of black
-   painted onto it came out as the same flat card. catalogue.js fades each face by how squarely it faces instead,
+   painted onto it came out as the same flat card. catalog.js fades each face by how squarely it faces instead,
    which leaves the far one faintly present — and preserve-3d already puts it at the right depth. */
 .c3-side { position: absolute; inset: 0; overflow: hidden; border-radius: calc(var(--case-w, 400px) * .05) }
 .c3-front {
@@ -1807,7 +1807,7 @@ html.booting { scroll-snap-type: none }
 .c3-back { transform: rotateY(180deg) translateZ(calc(var(--case-d, 40px) / 2)) }
 
 
-/* The spine, standing in the left edge's plane: centred first, then pushed out to half the WIDTH — a rim's push
+/* The spine, standing in the left edge's plane: centerd first, then pushed out to half the WIDTH — a rim's push
    is along the axis it faces, which for the left edge is x and not z. */
 .c3-spine {
   width: var(--case-d, 40px); left: calc(50% - var(--case-d, 40px) / 2);
@@ -1819,9 +1819,9 @@ html.booting { scroll-snap-type: none }
   overflow: hidden;
 }
 
-/* CENTRED BY POSITION, NOT BY ALIGNMENT. The name is wider than the rim it sits on, and Chrome falls back to
+/* CENTERD BY POSITION, NOT BY ALIGNMENT. The name is wider than the rim it sits on, and Chrome falls back to
    start-alignment for a grid or flex item that overflows its track — so `place-items: center` quietly parks the
-   text half its overflow off-centre and leaves it hugging the front lip. An absolutely positioned box translated
+   text half its overflow off-center and leaves it hugging the front lip. An absolutely positioned box translated
    by half itself cannot drift, whatever it overflows. */
 .c3-spine span {
   position: absolute; left: 50%; top: 50%;
@@ -1842,13 +1842,13 @@ html.booting { scroll-snap-type: none }
 }
 
 /* the back: what a box back carries — the blurb, then the spec panel */
-/* THE BACK'S RULES ARE DRAWN IN --scenery, dimmed, not in --hairline. --hairline is a blue grey, and it is the
-   right colour for the page's own furniture — the company chips, the section's own rules — but on an object outlined
+/* THE BACK'S RULES ARE DRAWN IN --scenery, dimmed, not in --hairline. --hairline is a blue gray, and it is the
+   right color for the page's own furniture — the company chips, the section's own rules — but on an object outlined
    entirely in amber it reads as a second material. This is the object's light, turned down. */
-/* SOLID GREYS ON THIS PANEL, not the page's transparent white tokens. --text-body/-muted/-faint are alpha-on-
+/* SOLID GRAYS ON THIS PANEL, not the page's transparent white tokens. --text-body/-muted/-faint are alpha-on-
    white, which is right for the page because the page has one fixed ground. This face does not: it sits on a
    plane whose opacity changes with every degree of turn, and it is read through the far panel's glass when the
-   case is the other way round, so an alpha colour composites against a different backdrop at every angle.
+   case is the other way round, so an alpha color composites against a different backdrop at every angle.
    These are the same three steps resolved once against the ink ground and then frozen: label, meta, copy. */
 /* EVERY SIZE ON THIS PANEL IS A FRACTION OF THE CASE, not a px written down. --case-w is what sizeCase measures
    and what the corner radius is drawn from, so the type and the margins ride the same number the object does and
@@ -1880,7 +1880,7 @@ html.booting { scroll-snap-type: none }
   scrollbar-color: var(--scenery) transparent;
 }
 /* WHAT IT IS, then WHAT IT DID. The lede is one paragraph and sets brighter than the list under it: it is the
-   sentence a reader who stops after one sentence gets, so it takes the panel's strongest copy colour. */
+   sentence a reader who stops after one sentence gets, so it takes the panel's strongest copy color. */
 /* A record can carry more than one: QAAI's second paragraph is how the platform was handed to other teams,
    which is a different fact from what the platform is. Both set the same, so they read as one voice. */
 .b-lede + .b-lede { margin-top: 10px }
@@ -1911,7 +1911,7 @@ html.booting { scroll-snap-type: none }
 }
 /* THE FIGURE, NOT THE SENTENCE AROUND IT. A box back is scanned before it is read, so what a reader picks up on
    the first pass should be the counts and the one term that carries the claim. Full white against the copy's
-   grey does that on its own; going amber as well would put a third colour in a paragraph and stop the figures
+   gray does that on its own; going amber as well would put a third color in a paragraph and stop the figures
    reading as part of the sentence they sit in. */
 .b-lede b, .b-wins b { font-weight: 700; color: var(--text-strong) }
 /* THE HEADLINE SLOT. It carried the product name and now carries the ROLE — same size, same weight, same place.
@@ -1919,7 +1919,7 @@ html.booting { scroll-snap-type: none }
    line-height comes up from 1.05, which is a display-headline value and too tight for two or three lines. */
 .c3-back .b-lead { font-family: var(--font-display); font-weight: 900; font-size: clamp(20px, calc(var(--case-w, 400px) * .0593), 40px); line-height: 1.12; letter-spacing: -.5px; color: var(--text-strong) }
 /* THE ROLE ON ITS OWN ROW, then the employer and the dates under it. All three used to run together on one
-   wrapped line in one size and one grey, so the job title — the thing a reader of a CV is actually looking for
+   wrapped line in one size and one gray, so the job title — the thing a reader of a CV is actually looking for
    — was a middle phrase between a company and a date range with nothing to separate them but a gap.
    flex-basis: 100% on the role is what breaks the row; the other two then share the second. */
 .c3-back .b-at { margin-top: 10px; display: flex; flex-wrap: wrap; align-items: baseline; gap: 5px 12px; font-family: var(--font-mono); font-size: var(--t-meta); letter-spacing: .1em; color: var(--ink-meta) }
@@ -1928,18 +1928,18 @@ html.booting { scroll-snap-type: none }
   font-size: calc(var(--t-meta) * 1.22); font-weight: 700; letter-spacing: .04em;
   color: var(--text-strong);
 }
-/* THREE STEPS, NOT TWO. The dates were the amber and the employer was the same grey as everything else, which
-   put the loudest colour on the least important of the three. Amber marks the employer; the dates drop to the
-   panel's quiet grey, which is what they were always worth. */
+/* THREE STEPS, NOT TWO. The dates were the amber and the employer was the same gray as everything else, which
+   put the loudest color on the least important of the three. Amber marks the employer; the dates drop to the
+   panel's quiet gray, which is what they were always worth. */
 .c3-back .b-at .firm { font-weight: 700; color: var(--amber) }
 /* THE EMPLOYER AS A LINK. Underlined on hover only — a rule under every company name would put a second
    horizontal line on a panel that already rules off its spec footer, and the amber already says it is not
-   body copy. pointer-events is explicit because the case is a drag surface: see the guard in catalogue.js. */
+   body copy. pointer-events is explicit because the case is a drag surface: see the guard in catalog.js. */
 .c3-back .b-at a.firm { color: var(--amber); text-decoration: none; pointer-events: auto }
 .c3-back .b-at a.firm:hover { text-decoration: underline; text-underline-offset: 3px }
 .c3-back .b-at a.firm:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--amber-focus); border-radius: 2px }
-/* THE AGENCY A CONTRACT RAN THROUGH, in the panel's quiet grey. It is a qualifier on the employer, not a second
-   employer, so it takes the meta grey and the normal weight while the client above it keeps the amber and the
+/* THE AGENCY A CONTRACT RAN THROUGH, in the panel's quiet gray. It is a qualifier on the employer, not a second
+   employer, so it takes the meta gray and the normal weight while the client above it keeps the amber and the
    700 — one glance separates who the work was for from who it was billed through. */
 .c3-back .b-at .via { font-weight: 400; color: var(--ink-meta) }
 .c3-back .b-at .via a { color: inherit; text-decoration: none }
@@ -1953,7 +1953,7 @@ html.booting { scroll-snap-type: none }
 /* ---- the stores' own badges ----
  *
  * UNEDITED, AND THAT IS NOT A STYLE CHOICE. Apple and Google both supply this artwork for linking and both forbid
- * altering it — no recolouring, no restyling, no rebuilding the lockup. Nothing here touches the badges' own
+ * altering it — no recoloring, no restyling, no rebuilding the lockup. Nothing here touches the badges' own
  * pixels; these rules decide only how big they are and where they sit.
  *
  * THE TWO ASSETS ARE NOT THE SAME SHAPE, and matching `height` alone renders them at visibly different sizes.
@@ -1985,7 +1985,7 @@ html.booting { scroll-snap-type: none }
 /* A RULE, NOT A SLAB. This was the only filled rectangle anywhere on the object, and a shaded panel is a
    different vocabulary from the ruled outlines the case and the whole page are drawn in — it read as a sticker
    applied to the back rather than as part of the box. The line alone does the same separating job. */
-/* The rule has to run the full width, so the panel's own padding is cancelled and re-applied here — off --pad,
+/* The rule has to run the full width, so the panel's own padding is canceled and re-applied here — off --pad,
    or the line stops short of the edge the moment the case changes size. */
 .b-spec { margin-top: 16px; margin-left: calc(var(--pad) * -1); margin-right: calc(var(--pad) * -1);
   /* OFF --pad LIKE EVERY OTHER EDGE. These were 16 and 18 flat, so once the sides grew to 40 the chips sat
@@ -2006,7 +2006,7 @@ html.booting { scroll-snap-type: none }
 .case-foot { display: flex; align-items: center; gap: 14px; flex: none }
 /* THE ICON ALONE. A bordered chip reading TURN IT OVER is a third rectangle under an object made of nothing but
    rectangles, and the case already invites the gesture — you can grab and turn it with the pointer.
-   THE LABEL STAYS IN THE DOM, off-screen: it is the button's accessible name, and catalogue.js rewrites it as the
+   THE LABEL STAYS IN THE DOM, off-screen: it is the button's accessible name, and catalog.js rewrites it as the
    case turns. A button that is only an icon still has to say what it does. */
 .flip {
   display: inline-flex; align-items: center; justify-content: center;
@@ -2101,9 +2101,9 @@ html.booting { scroll-snap-type: none }
 
 /* ---------------- contact ---------------- */
 
-/* THE LAST THING ON THE PAGE, and it ends the page. Centred, because a left-railed block with nothing under it
+/* THE LAST THING ON THE PAGE, and it ends the page. Centerd, because a left-railed block with nothing under it
    reads as unfinished. */
-/* A SCREEN OF ITS OWN, centred in it. Any shorter and contact is a footer stuck under the tail of labs, with the
+/* A SCREEN OF ITS OWN, centerd in it. Any shorter and contact is a footer stuck under the tail of labs, with the
    page's last screen showing both and neither getting to be the thing you are looking at.
    IT ALSO MAKES LABS A BEAT. The rail releases a reader past its last beat at last + RAIL_PAST screens, so a beat
    needs that much page beneath it or it becomes a trap — every scroll below labs gets dragged back. A full screen
@@ -2118,7 +2118,7 @@ html.booting { scroll-snap-type: none }
   display: flex; flex-direction: column; justify-content: center;
 }
 /* AN AUTO MARGIN BEATS STRETCH. .inner carries `margin: 0 auto`, and on a flex or grid item that shrinks it to
-   its content and centres THAT — which took the heading off the page's left rail and put it at 534 while every
+   its content and centers THAT — which took the heading off the page's left rail and put it at 534 while every
    other section started at 40. An explicit width is what makes the auto margins inert again, the way they were
    when this section was a plain block. */
 #contact .inner { width: 100% }
@@ -2126,7 +2126,7 @@ html.booting { scroll-snap-type: none }
 /* A WARM EDGE UNDER THE LAST SCREEN. Contact is one screen and ends where the document does, so its own bottom IS
    the bottom of the viewport once you are there — anchoring the glow to the section rather than fixing it to the
    screen is what makes it arrive with contact instead of sitting under every section above it.
-   --accent at .14, not the page's ink: a black fade on a black ground is invisible. The colour is the point. */
+   --accent at .14, not the page's ink: a black fade on a black ground is invisible. The color is the point. */
 #contact { position: relative }
 #contact::after {
   content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 360px;
@@ -2154,7 +2154,7 @@ html.booting { scroll-snap-type: none }
 .contact-links button {
   font: inherit; letter-spacing: inherit; cursor: pointer;
   background: none; border: 0; padding: 0;
-  /* The links' own colour, not the inherited body colour — `inherit` here picked up --text-strong and left the
+  /* The links' own color, not the inherited body color — `inherit` here picked up --text-strong and left the
      QR control the one white item in a row of orange links, which is the same "primary action" mistake the
      border was making, in a different paint. --accent is what a bare <a> takes on this page. */
   color: var(--accent);
@@ -2226,7 +2226,7 @@ html.booting { scroll-snap-type: none }
 /* Held only slightly off-axis. Enough that a rib running down the tunnel still projects to something, not so
    much that the throat stops rushing the viewer. The bend comes from the PATH, not from turning the camera. */
 /* THE PIVOT IS THE MOUTH, not the far end. transform-origin takes a z, so a positive value sets the rotation
-   centre inside the near rings: the mouth the viewer is sitting in barely moves and the far end is what swings.
+   center inside the near rings: the mouth the viewer is sitting in barely moves and the far end is what swings.
    Pivoting on the far end wheels the tunnel around the camera while the distance holds still, which is backwards
    from being inside it. Short of the path's near extreme, because no ring is ever AT the extreme and pivoting
    there still leaves the visible near rings swinging. */
@@ -2273,15 +2273,15 @@ html.booting { scroll-snap-type: none }
   animation-play-state: paused;
 }
 .wh.on .rg { animation-play-state: running }
-/* THE OFFSET GROWS WITH THE SQUARE OF THE DISTANCE FROM THE FAR END, so the vanishing point sits dead centre and
+/* THE OFFSET GROWS WITH THE SQUARE OF THE DISTANCE FROM THE FAR END, so the vanishing point sits dead center and
    the near mouth carries all the displacement. Spread linearly every ring is displaced by the same proportion and
    nothing curves — it reads as a straight tube skewed sideways. Squared, one end is pinned and the other swings,
    which is a bend. The tilts follow the same curve so each ring banks into it.
-   These five stops are the shared centreline function sampled at u = 1, .75, .5, .25, 0. Both ends fade to
+   These five stops are the shared centerline function sampled at u = 1, .75, .5, .25, 0. Both ends fade to
    nothing, so the object dissolves rather than ending, and can sit anywhere on a page. */
 /* TRAVEL RUNS FAR TO NEAR: rings rise out of the distance, swell, and sweep past the viewer. That is forward
    motion down the throat. Running it the other way, with the rings shrinking away, reads as reversing out.
-   The stops are the shared centreline sampled at u = 1, .75, .5, .25, 0, so reversing the direction is
+   The stops are the shared centerline sampled at u = 1, .75, .5, .25, 0, so reversing the direction is
    nothing more than reading that list the other way round. */
 @keyframes wh-fly {
   0% { transform: translate3d(170px, -74px, -1250px) rotateY(23deg) rotateX(-15deg); opacity: 0 }
@@ -2298,8 +2298,8 @@ html.booting { scroll-snap-type: none }
    geometry keeps every segment the length its own place on the wall calls for. */
 /* THE WALL IS A CHAIN OF STATIONS, and each one spins about the tube's axis at its own position. That is the
    difference between the lines rotating around the tube and the tube's BEND being swung around: a rotateZ on
-   the whole throat moves the centreline with it, because the bend lives in x and y. Rotating each station in
-   place leaves every centre exactly where it was and turns only the blades on the wall. */
+   the whole throat moves the centerline with it, because the bend lives in x and y. Rotating each station in
+   place leaves every center exactly where it was and turns only the blades on the wall. */
 .wh .wst { position: absolute; left: 50%; top: 50%; width: 0; height: 0; transform-style: preserve-3d }
 .wh .wsp { position: absolute; left: 0; top: 0; width: 0; height: 0; transform-style: preserve-3d; animation: wall-spin 30s linear infinite }
 @keyframes wall-spin { to { transform: rotateZ(360deg) } }
@@ -2309,10 +2309,10 @@ html.booting { scroll-snap-type: none }
 /* Each blade's own opacity is handed in as --o rather than set directly, so the wall can be faded up as a set
    on arrival without putting an opacity on any ancestor. That matters: an opacity above them would flatten the
    3D and collapse the tube, the same trap the rings hit. Only the leaves carry it, and leaves have no children
-   to flatten. Same accent as the hoops, so the tube is one object rather than two colours of wireframe. */
+   to flatten. Same accent as the hoops, so the tube is one object rather than two colors of wireframe. */
 .wh .wb {
   /* 1.4px, not 1px. A 1px bar is already sub-pixel once perspective shrinks it, and a sub-pixel line does not
-     render as a faint line, it renders as a dotted one: coverage varies along its length and the rasteriser
+     render as a faint line, it renders as a dotted one: coverage varies along its length and the rasterizer
      drops the thin parts. A little over a pixel survives the far end and still reads as a hairline near it. */
   position: absolute; left: 0; top: 0; height: 1.4px; margin-top: -.7px;
   transform-origin: 0 50%;
@@ -2323,10 +2323,10 @@ html.booting { scroll-snap-type: none }
   transition: opacity .9s var(--ease-settle) var(--d, 0s), background-color .35s var(--ease-settle);
 }
 .wh.on .wb { opacity: var(--o) }
-/* HOOPS AND BLADES BRIGHTEN IDENTICALLY: the same two colours, over the same duration, and nothing else. Giving
+/* HOOPS AND BLADES BRIGHTEN IDENTICALLY: the same two colors, over the same duration, and nothing else. Giving
    the blades an opacity multiplier as well lifts them further and on a different clock, so the wall and the rings
    arrive at their bright state at different times. A hoop's opacity is animation-driven and cannot be
-   transitioned, so colour is the one lever both can pull. */
+   transitioned, so color is the one lever both can pull. */
 .wh.on:hover .wb { background: var(--accent-hover) }
 .wh .rg { transition: border-color .35s var(--ease-settle), opacity .35s var(--ease-settle) }
 .wh:hover .rg { border-color: var(--accent-hover) }
@@ -2365,8 +2365,8 @@ html.booting { scroll-snap-type: none }
   0% { transform: scale(1.06, .93) rotate(-4deg) }
   100% { transform: scale(.94, 1.08) rotate(5deg) }
 }
-/* THE DARK CENTRE IS OFF-CENTRE, and that is why it moves. A radial gradient centred at 50% 50% is invariant
-   under rotation, so with a centred core the silhouette warps while the dark mass sits pinned to the middle
+/* THE DARK CENTER IS OFF-CENTER, and that is why it moves. A radial gradient centerd at 50% 50% is invariant
+   under rotation, so with a centerd core the silhouette warps while the dark mass sits pinned to the middle
    looking painted on. Offset it, make it an ellipse rather than a circle, and the rotations already running carry
    it: three cores orbiting at three rates, overlapping into one wandering void. No new animated property. */
 .rx .core b {
@@ -2442,7 +2442,7 @@ html.booting { scroll-snap-type: none }
    enough, the visible slivers overlap into one continuous wall and the stack turns into a cone. */
 /* Size, depth, radius and shade are all computed per plate in the script; only what every plate shares lives
    here. NO filter on these: a filter forces an element out of the preserve-3d context and flattens it, which
-   silently collapses the whole cone into the plane of the face. The shading is baked into the colour instead. */
+   silently collapses the whole cone into the plane of the face. The shading is baked into the color instead. */
 /* The lit top edge is doing more work here than the fill is. Stacked plates are perceived through the slivers
    of each one that the plate in front does not cover, so a bright edge per plate accumulates into a highlight
    running the length of the cone. Without it a dark form on a dark ground is just a hole. */
@@ -2481,7 +2481,7 @@ html.booting { scroll-snap-type: none }
 /* The degauss: two copies of the picture's GLOW, tinted red and blue and pulled apart sideways. Fringing the
    raster is the obvious move and is wrong twice over — the scanlines are horizontal, so a horizontal offset of
    them is invisible, and a vertical one drops the tinted lines into the gaps between the amber ones and turns the
-   whole screen into colour stripes. The glow is what a mis-converged gun actually displaces.
+   whole screen into color stripes. The glow is what a mis-converged gun actually displaces.
    Held while hovered rather than fired: a magnet held against the glass does not tick. */
 .crt .face u {
   position: absolute; inset: 0; opacity: 0; mix-blend-mode: screen;
@@ -2523,7 +2523,7 @@ html.booting { scroll-snap-type: none }
 /* All three guns, orbiting rather than parked. One keyframe and three negative delays a third of a cycle
    apart, so red, green and blue are always 120 degrees around the circle from each other and every one of them
    passes through view while the pointer is down. Screened together they return to neutral where they overlap,
-   which is what convergence actually looks like: white in the middle, colour at the edges. */
+   which is what convergence actually looks like: white in the middle, color at the edges. */
 @keyframes rgb-orbit {
   0% { transform: translate(7px, 0) }
   25% { transform: translate(0, 5px) }
@@ -2625,7 +2625,7 @@ html.booting { scroll-snap-type: none }
 @media (max-width: 920px) {
   .loop-grid { grid-template-columns: minmax(0, 1fr); gap: 34px }
   /* The graph goes under the copy, and stops being the widest thing on the page: at full column width its cards
-     outgrow the type they are labelled in. */
+     outgrow the type they are labeled in. */
   .flow { max-width: 460px; margin: 0 }
 }
 

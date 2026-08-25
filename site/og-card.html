@@ -58,13 +58,13 @@
     --rule-w:96px;
     --rule-h:3px;
 
-    /* THE ARCS ARE TWO CONCENTRIC RINGS whose centre sits off the right edge, so the frame shows only the
+    /* THE ARCS ARE TWO CONCENTRIC RINGS whose center sits off the right edge, so the frame shows only the
        sweep that falls inside it. Solved from three measured points on each rather than fitted: a least-squares
        circle through a short arc is ill-conditioned and gave a different answer every time it ran, including a
        pair that were not concentric. Three points and an exact solve reproduce every landmark the original has
        -- both crossings of the top edge, both leftmost points, and the exit through the right edge at y 450.
 
-       ONE CENTRE, TWO DIAMETERS, so moving the centre moves both and the pair cannot drift apart. */
+       ONE CENTER, TWO DIAMETERS, so moving the center moves both and the pair cannot drift apart. */
     --arc-cx:1282px;
     --arc-cy:80px;
     --arc1-d:762px;
@@ -80,7 +80,7 @@
     position:relative;
   }
 
-  /* THE ARCS, and they are the reason this is HTML rather than an SVG. They are two rings whose centre sits off
+  /* THE ARCS, and they are the reason this is HTML rather than an SVG. They are two rings whose center sits off
      the right edge, so the card shows only the arc that falls inside the frame. Sized from one radius so the
      pair stays concentric when either is moved. */
   .arcs{position:absolute;inset:0;overflow:hidden}

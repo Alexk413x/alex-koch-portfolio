@@ -80,7 +80,7 @@ export function defaultPreset(gpu) {
      * tube: with the field reaching almost to the axis there was already something at the far end, and a bright
      * throat over the top only washed it out. With the field pulled back to the wall the axis is clear, and a
      * tunnel with nothing at the end of it is a corridor to nowhere — the vanishing point is what every ring and
-     * every streak converges on. Kept dim, and taking its colour mostly from the layers, so it is the end of THIS
+     * every streak converges on. Kept dim, and taking its color mostly from the layers, so it is the end of THIS
      * tunnel rather than a lamp pasted over it. */
     coreOn: 1,
     glow: 0.18, throatTint: 1.0, throatRays: 0.55,
@@ -106,7 +106,7 @@ export function defaultPreset(gpu) {
     ribs: 0.72, ribScale: 4.4, ribFlow: 7.4,
 
     /* BEND IS OFF FULL. At 1.0 the axis leaned 0.75 of a world unit against a 1.25 radius and the throat spent
-     * most of its time off the side of the frame, which reads as drifting rather than as travelling. A third of
+     * most of its time off the side of the frame, which reads as drifting rather than as traveling. A third of
      * that keeps the corners and leaves the far end where an eye can find it. */
     bend: 0.34, bendFlow: 6.0, bendScale: 0.5,
     exposure: 1.94, chroma: 1.0, vignette: 1.0,

@@ -14,7 +14,7 @@
  * everything; sliding the fields is the same motion and the only version in which three layers travel at three
  * rates.
  *
- * Each layer returns `vec2(density, gradient)`; the gradient is what its colour ramp reads, and each defines it
+ * Each layer returns `vec2(density, gradient)`; the gradient is what its color ramp reads, and each defines it
  * differently so the three do not read as one field tinted three ways.
  */
 import { NOISE, PALETTE, TUNNEL } from './wormhole-glsl.js';
@@ -103,7 +103,7 @@ vec2 nebula(vec3 p, float sec, float inv){
 
   vec3 q = vec3(xy, z * uNebStreak) * (uNebScale * 0.34);
 
-  /* VARIANCE AND THE COLOUR BAND ARE TRIGONOMETRIC, NOT NOISE, and that is the single biggest saving in the
+  /* VARIANCE AND THE COLOR BAND ARE TRIGONOMETRIC, NOT NOISE, and that is the single biggest saving in the
    * shader. Both want a term that changes SLOWLY over the tunnel; a noise sample costs eight hashes to deliver
    * that, and three incommensurate sines deliver it for a few multiplies. Two of the nebula's five samples per
    * step were being spent on values that never needed to be random, only unrepeating. */
@@ -117,8 +117,8 @@ vec2 nebula(vec3 p, float sec, float inv){
   float w = fbm(q, int(uNebOct), uNebFluff, inv, lo / var, (lo + 0.26) / var);
   float dens = smoothstep(lo, lo + 0.26, w * var);
 
-  // Colour holds over a stretch of tunnel rather than cycling per sample, which is what stops the ramp averaging
-  // itself to grey across the march.
+  // Color holds over a stretch of tunnel rather than cycling per sample, which is what stops the ramp averaging
+  // itself to gray across the march.
   float g = 0.5 + 0.5 * sin(z * 0.11 + band * 1.6);
   return vec2(dens * uNebDensity, g);
 }
@@ -133,7 +133,7 @@ vec2 nebula(vec3 p, float sec, float inv){
  * the width asked for, at any step count and any resolution.
  *
  * WHY IT CLOSES: the camera sits ON the axis and the capsules run parallel to it, so a ray's xy direction never
- * changes — in cross-section it sweeps ONE radial line out from the centre. Only streaks near that angle can be
+ * changes — in cross-section it sweeps ONE radial line out from the center. Only streaks near that angle can be
  * hit, so bucketing by angle turns "which of two hundred streaks does this pixel see" into three candidates per
  * shell. No traversal, no marching, no step count.
  */
@@ -154,14 +154,14 @@ float capsuleDist(vec3 rd, vec2 c, float z1, float z2, out float tHit){
   return length(P - vec3(c, clamp(P.z, z1, z2)));
 }
 
-/* THE LAYER COMES BACK IN DEPTH BANDS, NOT AS ONE COLOUR, and that is what lets it weave. A solved layer has no
- * natural place in a marched one: it is finished before the march starts, so handing back a single colour and depth
+/* THE LAYER COMES BACK IN DEPTH BANDS, NOT AS ONE COLOR, and that is what lets it weave. A solved layer has no
+ * natural place in a marched one: it is finished before the march starts, so handing back a single color and depth
  * means the whole layer is occluded by whatever sits in front of its NEAREST streak, and the set moves as a sheet.
  * Splitting the emission by depth and dimming each band by the transmittance the march reaches IT at is what puts
  * some streaks behind a cloud and others in front of the same one.
  *
- * Four bands is a judgement, not a law: four compares per step and four accumulators, and the banding is invisible
- * because a streak is thin enough that neighbouring bands rarely both carry one.
+ * Four bands is a judgment, not a law: four compares per step and four accumulators, and the banding is invisible
+ * because a streak is thin enough that neighboring bands rarely both carry one.
  */
 struct Streaks { vec3 b0; vec3 b1; vec3 b2; vec3 b3; };
 
@@ -198,7 +198,7 @@ Streaks lightspeed(vec3 rd, float sec){
      * closed form, but a capsule only has to be in the right place where the ray meets it. */
     float zMeet = clamp(rr * rd.z / k, 0.0, FAR);
     /* THE BEND MOVES THE BUCKET, NOT ONLY THE CAPSULE. This layer finds a streak by the ray's ANGLE about
-     * the tunnel centre; offsetting capsules without offsetting the search looks for them where they are
+     * the tunnel center; offsetting capsules without offsetting the search looks for them where they are
      * no longer, and the layer goes black. Both use the bend at the depth this band is met at — the same
      * approximation TWIST already makes, and for the same reason: a capsule only has to be right where
      * the ray actually reaches it. */
@@ -325,12 +325,12 @@ PSite plasmaSite(vec3 p, float sec){
   float lo = mix(0.85, 0.30, clamp(uPlFill, 0.0, 1.0));
   float n = noise3(vec3(s.xy, s.z * uPlStreak) * uPlScale * 0.35 + vec3(47.3, 11.9, 23.7));
   s.region = smoothstep(lo, lo + 0.20, n);
-  /* THE COLOUR GRADIENT IS THE SPARSITY FIELD, NOT THE BOLT. See the note on ramp in wormhole-glsl:
+  /* THE COLOR GRADIENT IS THE SPARSITY FIELD, NOT THE BOLT. See the note on ramp in wormhole-glsl:
    * t has to vary SLOWLY along a ray or the march integrates a different walk through the palette for
    * every pixel, and since a ray is a radial line on screen that disagreement draws itself as streaks
-   * out of the centre. Driving it from bolt strength -- the fastest-varying thing in the layer -- broke
+   * out of the center. Driving it from bolt strength -- the fastest-varying thing in the layer -- broke
    * that outright, and RAIN mode showed it plainly. This value is already computed, is slow by
-   * construction, and gives each patch of bolts its own colour rather than each sample. */
+   * construction, and gives each patch of bolts its own color rather than each sample. */
   s.tint = n;
   return s;
 }
@@ -433,7 +433,7 @@ void main(){
   float trans = 1.0;
 
 #ifdef HAVE_NEB
-  // One value per frame, not per sample: fbm needs the FULL normaliser to stop early without renormalising.
+  // One value per frame, not per sample: fbm needs the FULL normalizer to stop early without renormalizing.
   float nebInv = fbmNorm(int(uNebOct), uNebFluff);
 #endif
 
@@ -457,7 +457,7 @@ void main(){
 
     /* RIBS ARE RINGS OF THICK AND THIN WALL, spaced along the axis and sliding toward the eye. They are the
      * cheapest strong cue in the lab: a ring lives at a fixed DEPTH, so it foreshortens toward the throat and
-     * arrives faster as it comes, and an eye reads that as travelling rather than as watching weather. The layers'
+     * arrives faster as it comes, and an eye reads that as traveling rather than as watching weather. The layers'
      * own flow rates are theirs; this one is the tunnel's.
      *
      * IT SCALES THE PROFILE, NOT THE COVERAGE, and that distinction is the whole effect. Fed through coverage it
@@ -552,22 +552,22 @@ void main(){
   col += ls.b0 * tb0 + ls.b1 * tb1 + ls.b2 * tb2 + ls.b3 * tb3;
 #endif
 
-  /* THE CORE CAN TAKE ITS COLOUR FROM WHATEVER IS LIT, so the far end of the tunnel belongs to the scene instead of
+  /* THE CORE CAN TAKE ITS COLOR FROM WHATEVER IS LIT, so the far end of the tunnel belongs to the scene instead of
    * being a white dot pasted over it. SOURCE blends between the swatch and the average of the enabled layers' ramps,
    * which is why it is one slider and not a mode: the useful settings are the ends AND between them. With no layer
    * lit there is nothing to average, so the swatch is the only answer.
    *
-   * The centre stays near-white and only the CORONA takes the tint, which is how an actual bright source reads: hot
-   * enough to clip in the middle, coloured at the edges.
+   * The center stays near-white and only the CORONA takes the tint, which is how an actual bright source reads: hot
+   * enough to clip in the middle, colored at the edges.
    *
    * Added AFTER the march and multiplied by the surviving transmittance, so cloud in front of it occludes it rather
    * than being washed out by a glow drawn on top. */
-  /* r IS THE SCREEN RADIUS and stays screen-centred, because CHROMA and VIGNETTE are lens effects that
+  /* r IS THE SCREEN RADIUS and stays screen-centerd, because CHROMA and VIGNETTE are lens effects that
    * belong to the frame rather than to the tunnel.
    *
    * THE CORE IS NOT, and must follow the bend. It is the far end of the TUNNEL, so it sits where the axis
    * has got to at FAR — project that world point the way the ray direction was built, rd = vec3(uv, uFov),
-   * and the offset is bend * uFov / FAR. Left at the screen centre it drifts off the mouth of its own
+   * and the offset is bend * uFov / FAR. Left at the screen center it drifts off the mouth of its own
    * tunnel: at full BEND the far end sits 15% of the way to the edge of the frame. */
   float r = length(uv);
   vec2 cuv = uv - bendAt(FAR, sec) * (uFov / FAR);
@@ -595,7 +595,7 @@ void main(){
   float rays = 0.5 + 0.5 * sin(a * 7.0 + sin(a * 3.0 - sec * 0.37) * 1.6);
   float corona = smoothstep(0.34, 0.0, rc) * mix(1.0, 0.30 + 0.70 * rays, uThroatRays);
 
-  /* THE HOT CENTRE HAS NO EDGE, and it used to have a hard one. A smoothstep over 0.045 of the frame is a DISC,
+  /* THE HOT CENTER HAS NO EDGE, and it used to have a hard one. A smoothstep over 0.045 of the frame is a DISC,
    * and a disc at this brightness reads as a ball pasted over the picture rather than as the far end of anything
    * — every shot of this scene showed it as exactly that. Cubed, the falloff peaks at the same value in the same
    * place and reaches zero over three times the radius, so it blooms into the corona instead of stopping against

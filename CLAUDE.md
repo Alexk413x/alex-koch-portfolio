@@ -46,13 +46,13 @@ and four of `labs/reactor/`'s modules to draw the reactor's core, alone and ring
 lab's scene, not a copy of it — the uniform block both pages upload lives in `labs/reactor/reactor-uniforms.js`
 for that reason. So `labs/` is no longer only a lab: renaming or deleting anything in it breaks `index.html`.
 
-**Start a new lab from `labs/shell/Shell.html`.** It is the base lab — a live catalogue of every control type and
+**Start a new lab from `labs/shell/Shell.html`.** It is the base lab — a live catalog of every control type and
 every formatter, annotated with why each is the kind it is, built on the same scaffold the real labs use. It is
 not linked from the index and is not meant for users.
 
 **Nothing here runs React, Babel or a CDN any more.** Five `.dc.html` pages sat at the repository root — the
 portfolio, the console, the intro and two notes — on a `support.js` runtime that pulled React and Babel from
-unpkg. They were deleted along with `support.js` and `experience.html`, whose role viewer the back catalogue
+unpkg. They were deleted along with `support.js` and `experience.html`, whose role viewer the back catalog
 replaced. Every page that ships is now plain HTML plus ES modules, and the only network dependency left on first
 load is fonts from Google.
 
@@ -67,7 +67,7 @@ python -m http.server 8000     # then http://localhost:8000/labs/crt/CRT%20Lab.h
 First load needs network for the fonts from Google, and nothing else.
 
 **Editing anything in `labs/crt/` needs a hard reload**, and a plain reload is not always enough — the browser will
-serve the modules from cache while the HTML is fresh, which looks exactly like a maths bug. Either hard-reload
+serve the modules from cache while the HTML is fresh, which looks exactly like a math bug. Either hard-reload
 with the cache disabled, or serve with `Cache-Control: no-store`.
 
 ## Measuring frame rate
@@ -107,7 +107,7 @@ session here read `18.0 ms` once and `35.7 ms` as the minimum of twelve repeats 
 ### The reason this page could not be measured: Chrome stops rendering occluded windows
 
 `document.visibilityState` reads **`hidden` while `document.hasFocus()` is `true`** whenever the Chrome window is
-occluded or minimised on Windows — and a hidden page gets **zero** animation frames. Not slow frames. None. Every
+occluded or minimized on Windows — and a hidden page gets **zero** animation frames. Not slow frames. None. Every
 frame number this project has ever been quoted from a tab that was not the front-most window was measuring nothing,
 and a CDP screenshot forces a single frame, which moves the readout just enough to look alive.
 
@@ -141,7 +141,7 @@ shader cache are both empty**, so the first run recompiles every shader. `bench.
 **A backgrounded tab reports nothing.** Chrome runs no animation frames in a tab that is not visible, so every
 wall-clock frame measurement reads 0–1 there — and a CDP screenshot forces one frame, which moves the number just
 enough to look alive. Each lab pauses its loop on `visibilitychange` deliberately, so a frozen clock in a hidden
-tab is correct behaviour and not a fault. **`renderNow()` is the way round it**: it draws synchronously and needs
+tab is correct behavior and not a fault. **`renderNow()` is the way round it**: it draws synchronously and needs
 no animation frame at all.
 
 Costs are reported in **ms per frame, not fps**. fps deltas are not additive and mislead near the target — a
@@ -154,7 +154,7 @@ These are the checks a small embedded preview cannot perform. They are the reaso
 1. **Geometry above 1024px.** There was a long-running "bottom-left corner is messed up" bug that only
    reproduces when the glass exceeds 1024px on both axes. Open the window wide — target ~1560x1100 — and
    inspect the corners at high FACE and high CURVE AREA.
-2. **Resize behaviour.** Drag the window across the 1024px boundary and watch the grid stay aligned to the
+2. **Resize behavior.** Drag the window across the 1024px boundary and watch the grid stay aligned to the
    rings. A grid line and its ring must coincide on every ray, by construction. Then hide the panel with the
    chevron: the stage grows without the window changing, and a buffer sized from `innerWidth` instead of the
    stage would stretch here.
@@ -172,7 +172,7 @@ Verify by **measuring, not looking.** Ring quadrant maxima must be equal in all 
 something is measuring the mirror rather than the shape.
 
 **Editing any module requires a full page reload before you measure.** A stale cached module looks exactly like a
-maths bug.
+math bug.
 
 ## Known, deliberate, not bugs
 

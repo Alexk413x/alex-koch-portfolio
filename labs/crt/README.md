@@ -35,7 +35,7 @@ because nothing else reached them — `crt-controls.js`, `crt-fixture.js`, `crt-
 The panel is [`../kit/panel.js`](../kit/README.md), shared with the other labs. CRT Lab uses **only** that much of
 the kit: it predates the rest and keeps its own persistence, sizing and frame loop, wound through a power
 sequence, a warp and a surge the generic helpers have no notion of. Stretching `lab.js` over both would produce an
-abstraction fitting neither — the same judgement `glquad.js` records about not wrapping this renderer.
+abstraction fitting neither — the same judgment `glquad.js` records about not wrapping this renderer.
 
 ## The curve is plotted, not resampled
 
@@ -54,7 +54,7 @@ calibrated against it, not because 2x still means something.
 
 ## The projection reads the face's SHAPE
 
-`faceF` is a function of normalised radius alone. `faceShaped` is the same profile with the amplitude scaled by
+`faceF` is a function of normalized radius alone. `faceShaped` is the same profile with the amplitude scaled by
 `rho(theta)^(2*SHAPE)`, where `rho` is `guideOutline`'s **shape ratio** — the aperture's radius over the raster box's
 radius on that ray, 1 on both axes at every setting and lowest at the box's diagonal. Physically: the glass ends earlier
 on a corner ray than the raster's box does, so the dome has less room to sag there.
@@ -103,12 +103,12 @@ this whole structure exists to prevent:
   `buildOutlineLUT` turn the same functions into textures the shader samples; deciding what stroke, ink and blend
   each gets is rendering. `curvedScanPath` places N lines and nothing more — the page supplies each axis's width,
   alpha and ink from six independent controls.
-- **Heat → colour.** `ringLadder` returns heat as a number; the ramp is presentation.
+- **Heat → color.** `ringLadder` returns heat as a number; the ramp is presentation.
 
 ## Verifying a change here
 
 **Measure, don't look.** `render-probe.js` is the instrument: `CRTPROBE.hash()` pins the clock, the full state and
-the render scale, then fingerprints seven fixed scenes. A refactor that claims to preserve behaviour is checked by
+the render scale, then fingerprints seven fixed scenes. A refactor that claims to preserve behavior is checked by
 hashing before and after and comparing. Run `CRTPROBE.selfTest()` first — it proves the harness is deterministic
 on this machine before you trust a comparison.
 

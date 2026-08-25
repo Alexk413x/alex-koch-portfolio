@@ -135,8 +135,8 @@
 
     for (let i = 8; i < size - 8; i++) { set(6, i, i % 2 ? 0 : 1); set(i, 6, i % 2 ? 0 : 1); }
 
-    const centres = ALIGN[version - 1];
-    for (const r of centres) for (const c of centres) {
+    const centers = ALIGN[version - 1];
+    for (const r of centers) for (const c of centers) {
       // The three corners already carry finders; an alignment pattern there would overwrite them.
       if ((r <= 8 && c <= 8) || (r <= 8 && c >= size - 9) || (r >= size - 9 && c <= 8)) continue;
       for (let dr = -2; dr <= 2; dr++) for (let dc = -2; dc <= 2; dc++)
@@ -190,7 +190,7 @@
   ];
 
   /* The four penalty rules from the spec. The mask that scores lowest is the one that ships — the goal is a
-     matrix with no long same-colour runs and nothing that resembles a finder pattern, both of which would make
+     matrix with no long same-color runs and nothing that resembles a finder pattern, both of which would make
      a scanner mis-locate the code. */
   function penalty(m, size) {
     let score = 0, dark = 0;

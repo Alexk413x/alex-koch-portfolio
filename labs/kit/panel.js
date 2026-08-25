@@ -1,7 +1,7 @@
 /* panel.js — THE CONTROL PANEL'S WIDGETS, FOR EVERY LAB.
  *
  * ONE COPY, for the reason panel.css gives: a slider existed three times in this repo and three implementations
- * drift. This file decides STRUCTURE and BEHAVIOUR, panel.css decides appearance, and neither should start doing
+ * drift. This file decides STRUCTURE and BEHAVIOR, panel.css decides appearance, and neither should start doing
  * the other's job. Plain DOM, no framework: everything here takes a host element and returns elements.
  *
  * A ROW READS STATE ONCE and owns its DOM afterwards, so a drag writes one number and one text node. The price is
@@ -16,7 +16,7 @@
  */
 
 /* A ROW'S KIND IS ITS SPEC'S SHAPE, so a section never has to say which control it wants.
- *   ['k','LABEL','#']            colour swatch
+ *   ['k','LABEL','#']            color swatch
  *   ['k','LABEL',['A','B']]      one-of-N
  *   ['k','LABEL',0,1,1]          toggle
  *   ['k','LABEL',lo,hi,step]     slider
@@ -27,7 +27,7 @@
  */
 export function rowKind(spec) {
   const [, , lo, hi, st] = spec;
-  if (lo === '#') return 'colour';
+  if (lo === '#') return 'color';
   if (Array.isArray(lo)) return 'choice';
   if (lo === 0 && hi === 1 && st === 1) return 'toggle';
   return 'slider';
@@ -43,8 +43,8 @@ function rowOpts(spec) {
 /* A ROW THAT ONLY APPLIES SOMETIMES SHOULD ONLY BE THERE SOMETIMES.
  *
  * A control that does nothing is worse than one that is absent: the wormhole's HUE row moved and changed
- * nothing in two of its three colour modes, while the two swatches did nothing in the third, and the panel gave
- * no sign which pair was live. Disabling rather than hiding was considered and dropped — a greyed row still
+ * nothing in two of its three color modes, while the two swatches did nothing in the third, and the panel gave
+ * no sign which pair was live. Disabling rather than hiding was considered and dropped — a grayed row still
  * occupies the place the eye searches, and the panel is already dense.
  */
 function rowWhen(spec) {
@@ -52,14 +52,14 @@ function rowWhen(spec) {
   return o && o.when ? o.when : null;
 }
 
-// A COLOUR: a full-bleed swatch. There is no meaningful min, max or step for one, and a hex string in a numeric
+// A COLOR: a full-bleed swatch. There is no meaningful min, max or step for one, and a hex string in a numeric
 // readout is not a control -- so it is marked by '#' where the range would be.
-function rowColour(ctx, k, label) {
+function rowColor(ctx, k, label) {
   const row = document.createElement('div'); row.className = 'row';
   row.innerHTML = '<label>' + label + '</label>';
   const sw = document.createElement('input');
   sw.type = 'color'; sw.className = 'csw'; sw.value = ctx.state[k];
-  sw.addEventListener('input', () => { ctx.state[k] = sw.value; ctx.onChange(k, 'colour'); });
+  sw.addEventListener('input', () => { ctx.state[k] = sw.value; ctx.onChange(k, 'color'); });
   row.appendChild(sw);
   return row;
 }
@@ -166,7 +166,7 @@ export function buildRow(ctx, spec) {
   const [k, label, lo, hi, st] = spec;
   let row;
   switch (rowKind(spec)) {
-    case 'colour': row = rowColour(ctx, k, label); break;
+    case 'color': row = rowColor(ctx, k, label); break;
     case 'choice': row = rowChoice(ctx, k, label, lo); break;
     case 'toggle': row = rowToggle(ctx, k, label); break;
     default:       row = rowSlider(ctx, k, label, lo, hi, st);
@@ -183,7 +183,7 @@ export function buildRow(ctx, spec) {
 
 /* A SECTION: a header that folds, and optionally a master that switches its effect off.
  *
- * THOSE ARE DIFFERENT THINGS. A master kills the effect -- no moulding, no instruments, guns converged. Folding
+ * THOSE ARE DIFFERENT THINGS. A master kills the effect -- no molding, no instruments, guns converged. Folding
  * just hides the rows while everything carries on exactly as it was. Conflating them would mean you could not
  * tidy the panel without changing the picture. Both can apply, so rows show only when open AND enabled, and the
  * master's button stops its click propagating or pressing it would fold the section as a side effect.
@@ -243,7 +243,7 @@ export function attachKeyNav(host) {
     else if (e.key === 'PageUp')    to = Math.max(0, i - 6);
     else if (e.key === 'Home')      to = 0;
     else if (e.key === 'End')       to = all.length - 1;
-    else return;                       // Left/Right and everything else keep their normal behaviour
+    else return;                       // Left/Right and everything else keep their normal behavior
     e.preventDefault();
     const el = all[to];
     el.focus();

@@ -6,14 +6,14 @@
 <title>Wormhole Lab &middot; Alex Koch</title>
 
 <!-- A lab is a page a crawler can only reach from the sitemap, so what it says about itself it has to say here.
-     The card image is the site's, not the scene's: one recognisable card across every page beats four near-misses. -->
-<meta name="description" content="A tunnel down the throat of a wormhole, drawn by one WebGL2 shader: a domain-warped fbm field swept along a seamless angular coordinate, in three flavours — nebula, lightspeed and plasma vortex. Every layer switches off from its own header.">
+     The card image is the site's, not the scene's: one recognizable card across every page beats four near-misses. -->
+<meta name="description" content="A tunnel down the throat of a wormhole, drawn by one WebGL2 shader: a domain-warped fbm field swept along a seamless angular coordinate, in three flavors — nebula, lightspeed and plasma vortex. Every layer switches off from its own header.">
 <link rel="canonical" href="https://alexk413x.github.io/alex-koch-portfolio/labs/wormhole/Wormhole.html">
 <meta property="og:type" content="article">
 <meta property="og:site_name" content="Alex Koch">
 <meta property="og:url" content="https://alexk413x.github.io/alex-koch-portfolio/labs/wormhole/Wormhole.html">
 <meta property="og:title" content="Wormhole Lab, a domain-warped fbm tunnel">
-<meta property="og:description" content="A domain-warped fbm field swept along a seamless angular coordinate, in three flavours: nebula, lightspeed and plasma vortex.">
+<meta property="og:description" content="A domain-warped fbm field swept along a seamless angular coordinate, in three flavors: nebula, lightspeed and plasma vortex.">
 <meta property="og:image" content="https://alexk413x.github.io/alex-koch-portfolio/site/og-card.png">
 <meta name="twitter:card" content="summary_large_image">
 <script type="application/ld+json">
@@ -23,7 +23,7 @@
   "@id": "https://alexk413x.github.io/alex-koch-portfolio/labs/wormhole/Wormhole.html#lab",
   "name": "Wormhole Lab",
   "url": "https://alexk413x.github.io/alex-koch-portfolio/labs/wormhole/Wormhole.html",
-  "abstract": "A tunnel down the throat of a wormhole: a domain-warped fbm field swept along a seamless angular coordinate, in three flavours — nebula, lightspeed and plasma vortex.",
+  "abstract": "A tunnel down the throat of a wormhole: a domain-warped fbm field swept along a seamless angular coordinate, in three flavors — nebula, lightspeed and plasma vortex.",
   "programmingLanguage": ["JavaScript", "GLSL"],
   "runtimePlatform": "WebGL2",
   "codeRepository": "https://github.com/Alexk413x/alex-koch-portfolio",
@@ -95,7 +95,7 @@ const R = createQuad(document.getElementById('field'), {
 });
 if (!R) { reportNoGL(); throw new Error('WebGL unavailable'); }
 
-/* Neither a colour swatch nor a section master is a slider row, so persist() cannot derive either from the panel
+/* Neither a color swatch nor a section master is a slider row, so persist() cannot derive either from the panel
  * layout. The masters are READ BACK OUT OF THE SECTION TABLE rather than listed again — a second list is a second
  * description of the same set, and the one that gets forgotten is the one that silently stops being saved. */
 const SWATCHES = ['nebCol', 'nebColB', 'lsCol', 'lsColB', 'plCol', 'plColB', 'coreCol'];
@@ -145,7 +145,7 @@ textOut(document.getElementById('gpu'),
 const fpsEl = document.getElementById('fps'), glEl = document.getElementById('glstate');
 
 // Hex to linear-ish rgb. Cached per string, because six swatches parsed every frame is six string scans for
-// values that change when someone opens a colour picker.
+// values that change when someone opens a color picker.
 const col3 = (name, hex) => R.f3hex(name, hex);
 
 // The layer set as a string, read from the same flags that drive uLsOn and friends below.

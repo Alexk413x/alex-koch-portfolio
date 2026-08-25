@@ -23,7 +23,7 @@ and a `renderNow` that draws one frame synchronously.
 
 ONCE THE PAGE HITS 60 THIS TOOL GOES BLIND, AND `--uncapped` IS THE ANSWER. rAF is delivered on the vsync, so a
 page comfortably inside budget and a page exactly at budget both report 16.67ms and nothing distinguishes them.
-The samples pin to the floor (`16.66, 16.67, 16.67, ...`) and every further optimisation prints the same number.
+The samples pin to the floor (`16.66, 16.67, 16.67, ...`) and every further optimization prints the same number.
 `--uncapped` adds `--disable-gpu-vsync --disable-frame-rate-limit`, which lets rAF run as fast as the renderer
 can retire frames and turns the reading back into a measurement of WORK. Use it to find headroom; use the default
 to answer "does it hold 60".
@@ -167,7 +167,7 @@ def chrome_binary():
 #
 # rAF is delivered on the vsync, so an individual frame interval can only ever BE a multiple of 16.67ms. Taking
 # the MEDIAN of those intervals therefore returns one of 16.7 / 33.3 / 50 / 66.7 exactly, and nothing in between:
-# the estimator quantises what the hardware already quantised. A change that moves a tenth of the frames from one
+# the estimator quantizes what the hardware already quantized. A change that moves a tenth of the frames from one
 # step to the next -- which is what a few ms of extra cost looks like -- does not move the median at all, and then
 # moves it a whole step at once. Attribution scored that way produced NEGATIVE layer costs here (switching the
 # screen flicker off "saved" -33.1ms), which is a staircase being read as a ruler.
@@ -179,7 +179,7 @@ def chrome_binary():
 # The minimum ACROSS windows stays exactly as it was: interference only ever makes a frame slower, so the smallest
 # window is still the honest estimate of what the renderer can do. See the note in main() on when even that fails.
 #
-# ALL OF THE ABOVE DESCRIBES THE CAPPED RUN. Under --uncapped there is no vsync to quantise against, so intervals
+# ALL OF THE ABOVE DESCRIBES THE CAPPED RUN. Under --uncapped there is no vsync to quantize against, so intervals
 # are continuous at the source and the mean is simply a mean. The staircase this comment exists to work around is
 # gone in that mode -- but so is the floor, which is the whole reason to use it: a capped run cannot distinguish a
 # page that costs 16.6ms from one that costs 4ms, and both are extremely common readings here.
@@ -254,11 +254,11 @@ def main():
     # With no forcing flag at all, Chrome has been recorded here picking the discrete `ANGLE (NVIDIA GeForce GTX
     # 1650 ... D3D11)`, and has since been measured from a fresh bench profile picking the Intel UHD 630 -- the part
     # the handoff's whole ms/megapixel table was taken on. Whichever it picks dominates the reading, so an
-    # unlabelled frame time on a hybrid box is how two adapters' numbers end up in one table: a run with a forcing
+    # unlabeled frame time on a hybrid box is how two adapters' numbers end up in one table: a run with a forcing
     # flag is measuring different HARDWARE, not a different build.
     #
     # So the adapter is printed on every run, and both directions are forceable. The INTEGRATED one is the honest
-    # target for a page anyone else will open; the discrete one is a separate, labelled comparison.
+    # target for a page anyone else will open; the discrete one is a separate, labeled comparison.
     if a.dpr:
         args.append('--force-device-scale-factor=%s' % a.dpr)
     if a.high_perf_gpu:
@@ -297,15 +297,15 @@ def _shut(proc):
 
 
 def gpu_report(dbg, c):
-    """Which adapter Chrome actually rendered on, and whether rasterisation was hardware-accelerated.
+    """Which adapter Chrome actually rendered on, and whether rasterization was hardware-accelerated.
 
-    THIS IS PRINTED WITH EVERY RUN BECAUSE THIS MACHINE HAS TWO GPUS. An unlabelled frame time on a hybrid box is
+    THIS IS PRINTED WITH EVERY RUN BECAUSE THIS MACHINE HAS TWO GPUS. An unlabeled frame time on a hybrid box is
     how two different adapters' numbers end up in the same table: Chrome picks the integrated one by default, and
     a run with --force-high-performance-gpu is measuring different hardware, not a different build.
 
     Two sources, because they answer different halves and either can be unavailable. WebGL's unmasked renderer
     NAMES the adapter, which is the part that matters here. SystemInfo.getInfo says whether compositing and
-    rasterisation are on hardware at all. A run that cannot answer says UNKNOWN rather than guessing.
+    rasterization are on hardware at all. A run that cannot answer says UNKNOWN rather than guessing.
     """
     name = None
     try:
@@ -437,7 +437,7 @@ def _run(a, c_args):
             print('  OVER BUDGET even uncapped: there is no headroom, this is real work to remove.')
     elif lo <= TARGET_MS * 1.05:
         # AT THE FLOOR THE TOOL HAS STOPPED MEASURING, and saying "60fps" without saying so invites the next
-        # optimisation to be judged by a number that physically cannot move. Point at the mode that can.
+        # optimization to be judged by a number that physically cannot move. Point at the mode that can.
         print('  LOCKED AT 60 — %.1f ms against a %.2f ms budget.' % (lo, TARGET_MS))
         print('  The samples are ON THE VSYNC FLOOR, so this is a ceiling on what can be READ, not a measurement')
         print('  of what a frame costs. Re-run with --uncapped to see the real cost and the headroom.')

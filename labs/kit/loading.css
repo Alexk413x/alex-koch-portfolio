@@ -9,7 +9,7 @@
  * reader has met it on the home page and meets it again while the instrument warms. Under it, the name of what
  * is loading and a plain word for the stage — COMPILING SHADERS is more reassuring than a percentage that lies.
  *
- * It takes --panel-accent, so it is already the colour of the lab it belongs to; Reactor's is green.
+ * It takes --panel-accent, so it is already the color of the lab it belongs to; Reactor's is green.
  */
 
 .kit-load {
@@ -34,7 +34,7 @@
 }
 
 /* ONE SVG PER MOVING RING, and the SVG is what rotates. This is the whole fix for the jumpiness: circles
-   animated INSIDE a single drawing are not layer-promoted, so every frame re-rasterises the entire SVG and the
+   animated INSIDE a single drawing are not layer-promoted, so every frame re-rasterizes the entire SVG and the
    rate wobbles the moment the main thread is busy — which, during a shader compile, it entirely is. Rotating
    the <svg> element is an ordinary HTML transform the compositor can promote, and it holds a constant rate
    whatever else the page is doing. A spinner is the one component where that matters most. */
@@ -58,7 +58,7 @@
 .kit-load-stage { font-size: 10.5px; letter-spacing: .16em; text-transform: uppercase; color: #6d7278 }
 
 /* The rings stop and the arc holds where it rests. A still ring with a label under it still says "working", and
-   this is the one component where honouring the preference matters most: it runs for the whole time the reader
+   this is the one component where honoring the preference matters most: it runs for the whole time the reader
    is waiting, not for eight hundred milliseconds. */
 @media (prefers-reduced-motion: reduce) {
   .kit-load .kr-dash, .kit-load .kr-hair, .kit-load .kr-arc { animation: none }

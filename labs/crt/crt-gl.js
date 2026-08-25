@@ -8,7 +8,7 @@
  * the single authority; buildFaceLUT samples and inverts it, and the shader looks the answer up. Geometry that
  * can re-derive the surface is geometry that can disagree with it. The GPU gets a table, never a formula.
  *
- * Pure in the same sense as its neighbours: no component state, no document beyond the canvas it is handed.
+ * Pure in the same sense as its neighbors: no component state, no document beyond the canvas it is handed.
  */
 
 import { FIXTURE_GLSL, FIXTURE_UNIFORMS } from './crt-fixture-gl.js';
@@ -31,9 +31,9 @@ export function buildFaceLUT(profile, N) {
    * that by sizing the content canvas by 1/F(1), so there is still at least one source texel per output pixel
    * after the magnification. Pin here, resolution there; neither alone is enough.
    *
-   * THE TABLE HOLDS THE RATIO F-inverse(s*F(1))/s, indexed by the glass-normalised screen radius s, which is what
+   * THE TABLE HOLDS THE RATIO F-inverse(s*F(1))/s, indexed by the glass-normalized screen radius s, which is what
    * aperture() returns and is 1 on the rim on every ray. The ratio and not the radius: the shader would otherwise
-   * divide by s, and near the centre that is a ratio of two small numbers where the table's own quantisation
+   * divide by s, and near the center that is a ratio of two small numbers where the table's own quantization
    * becomes a several-percent random scale — which reads as the middle of the tube shimmering.
    */
   if (!profile) {
@@ -60,7 +60,7 @@ export function buildFaceLUT(profile, N) {
 
 /* The outline, as a table crt-geometry generated — for the reason the face profile is one.
  *
- * guideOutline solves a normalised superellipse with a bend that cannot leave the glass, clamps it to the box and
+ * guideOutline solves a normalized superellipse with a bend that cannot leave the glass, clamps it to the box and
  * pins the corner vertex onto a sample, none of which survives being re-derived from the control value. So sample
  * rQ(theta) over the first quadrant and hand the GPU the answer; the outline is symmetric in both axes, so a
  * quadrant is the whole shape. Rebuilt on SQUIRCLE, BEND or aspect — all settle-time events.
@@ -112,7 +112,7 @@ const FIXTURE_FRAG = `#version 300 es
  * the LUTs, which is what lets the fixture be lifted into its own pass at all.
  *
  * ALPHA CARRIES COVERAGE. Blurring a small bright object against black spreads it and dims it toward nothing.
- * Writing coverage alongside colour lets the main pass divide it back out, so the blur changes the SHAPE of the
+ * Writing coverage alongside color lets the main pass divide it back out, so the blur changes the SHAPE of the
  * reflection without draining its brightness. */
 precision highp float;
 in vec2 v; out vec4 o;
@@ -205,7 +205,7 @@ uniform float uRipple, uMainsPh;
 // uRailW  thickness of the four mounting rails; their overhang and fade are 4x and 2x it (the lab's ratios)
 // uRecess  the housing's depth behind the aperture, in the fixture's own units
 uniform float uRecess;
-/* uSweepWhite  how far the beam's own light runs toward white, away from the phosphor's colour */
+/* uSweepWhite  how far the beam's own light runs toward white, away from the phosphor's color */
 uniform float uSweepWhite;
 /* uPwr  THE POWER COLLAPSE: what is left of the picture's width and height, 1,1 at rest.
  *
@@ -237,9 +237,9 @@ uniform float uFixSolo;
 uniform float uSpot;
 // uTubeDead  how much a SPENT section of a lamp still shows. 1 is the old fixed floor, 0 is truly black.
 uniform float uFrame, uFrameW, uFrameOn, uFrameFit;
-/* TWO LAMPS, TWO COLOURS. A pair of tubes in one fitting are rarely the same age and almost never the same
- * batch, and colour temperature is the first thing to drift as a phosphor blend ages -- one goes green,
- * one stays white, and that mismatch is one of the most recognisable things about real fluorescent light.
+/* TWO LAMPS, TWO COLORS. A pair of tubes in one fitting are rarely the same age and almost never the same
+ * batch, and color temperature is the first thing to drift as a phosphor blend ages -- one goes green,
+ * one stays white, and that mismatch is one of the most recognizable things about real fluorescent light.
  * uLamp survives as the pair's average, for the things that see the fitting as a single source. */
 uniform vec3  uInk, uHalo, uLamp;
 uniform vec3  uBzBase, uBzLo, uBzHi;
@@ -332,35 +332,35 @@ void main(){
   c.x *= uAspect;
   vec2 q  = vec2(c.x / uAspect, c.y);          // square space, for the aperture and the fixture
 
-  /* THE GLASS SHRINKS SO THE GLASS PLUS ITS MOULDING FILLS THE VIEWPORT, rather than the moulding growing off the
+  /* THE GLASS SHRINKS SO THE GLASS PLUS ITS MOLDING FILLS THE VIEWPORT, rather than the molding growing off the
    * edge of it. The outline spans the whole box, so a frame drawn from ap = 1 outward has nowhere to go.
    *
-   * Multiplying ap by 1 + WIDTH lands the rim at 1/(1 + WIDTH) of the outline, which puts the moulding's OUTER
+   * Multiplying ap by 1 + WIDTH lands the rim at 1/(1 + WIDTH) of the outline, which puts the molding's OUTER
    * edge where the glass rim used to be. The picture follows automatically, because the gather is indexed by ap.
    * Exactly 1 when the frame is off, so nothing moves. */
   float oR = outlineR(c);
   float ap = length(c) / oR * uFrameFit;
 
-  /* ---------------------------------------------------------------- THE MOULDING
+  /* ---------------------------------------------------------------- THE MOLDING
    * THE THREE TONES ARE crt-bezel's. base is the body, lo the shadowed outer edge, hi the sheen along the lit
    * edge, and tint the phosphor and the lamp mixed by FRAME LIGHT. The ramp interpolates between the tones it is
-   * HANDED rather than inventing one from the raw plastic colour.
+   * HANDED rather than inventing one from the raw plastic color.
    *
-   * hi -> base -> lo runs inward-to-outward because the lit edge faces the glass: the moulding is lit by the room
+   * hi -> base -> lo runs inward-to-outward because the lit edge faces the glass: the molding is lit by the room
    * AND by the tube's own face, which is why bezelCols takes the phosphor as an argument at all. */
   float aaB = max(fwidth(ap), 1e-5);
-  vec3 mouldCol = vec3(0.0);
-  float mouldCov = 0.0;
-  /* ENTERED A PIXEL EARLY, so the band straddling the rim computes BOTH the moulding and the picture and
-   * can blend them. Outside that band nothing changes: a pixel fully inside the moulding still returns
+  vec3 moldCol = vec3(0.0);
+  float moldCov = 0.0;
+  /* ENTERED A PIXEL EARLY, so the band straddling the rim computes BOTH the molding and the picture and
+   * can blend them. Outside that band nothing changes: a pixel fully inside the molding still returns
    * here without touching the gather, and a pixel fully on the glass never runs this at all. */
   if (ap > 1.0 - aaB) {
-    // FRAME OFF is no moulding at all, not a black one: past the glass is simply outside the tube.
-    /* THE MOULDING IS A CONSTANT WIDTH, NOT A CONSTANT FRACTION.
+    // FRAME OFF is no molding at all, not a black one: past the glass is simply outside the tube.
+    /* THE MOLDING IS A CONSTANT WIDTH, NOT A CONSTANT FRACTION.
      *
      * ap is length(c) over the outline's radius on that ray, so a flat 1 + uFrameW is a fraction of THAT radius —
      * and the radius is 1.29x longer on this tube's long axis, so the frame comes out thicker down the sides. A
-     * real moulding is a moulded part with one wall thickness.
+     * real molding is a molded part with one wall thickness.
      *
      * Dividing by the outline radius converts the distance into the ap units this test is in, which makes the
      * band a fixed number of units wide on every ray. Radially fixed rather than perpendicular-fixed: the two
@@ -370,10 +370,10 @@ void main(){
     float t = (ap - 1.0) / max(uFrameW, 1e-4);          // 0 at the glass, 1 at the outside edge
     vec3 col = mix(uBzHi, uBzBase, smoothstep(0.0, max(uBzInner, 0.02), t));
     col = mix(col, uBzLo, smoothstep(max(uBzInner, 0.02), 1.0, t));
-    /* A MOULDING IS NOT A LIGHT SOURCE, so the base is scaled by what is actually falling on it this frame.
+    /* A MOLDING IS NOT A LIGHT SOURCE, so the base is scaled by what is actually falling on it this frame.
      *
-     * crt-bezel models illumination as a MIX TOWARD A LIT COLOUR, so nothing it returns ever reaches black — it
-     * answers "what colour is this plastic", and a colour is a reflectance. What you see is reflectance times the
+     * crt-bezel models illumination as a MIX TOWARD A LIT COLOR, so nothing it returns ever reaches black — it
+     * answers "what color is this plastic", and a color is a reflectance. What you see is reflectance times the
      * light arriving, and with no light arriving you see nothing.
      *
      * The case that exposes it is the mains fault, where the switch says the fitting is on while its output is
@@ -392,19 +392,19 @@ void main(){
     float pwrArea = clamp(uPwr.x * uPwr.y, 0.0, 1.0);
     /* WHAT THE PAIR IS PUTTING OUT: flux AND condition together. The flicker multiplier alone is how hard each tube
      * is being DRIVEN, and says nothing about how much coating is left to answer — so a pair at 10% health would
-     * throw as much light on the moulding as a new pair. Everything else the fitting lights already reads both.
+     * throw as much light on the molding as a new pair. Everything else the fitting lights already reads both.
      *
      * MEAN, NOT MAX: a single pool of light cannot be two brightnesses, and the difference between the two lamps
      * belongs on the tube bodies and their halos. */
     float lampOut = (uFlkA * uHealthA + uFlkB * uHealthB) * 0.5;
     float roomLit = uFixture * lampOut;
     /* THE SCREEN'S SHARE. crt-bezel's own note says the tube's face "throws enough light on a surrounding
-     * moulding to keep its edge readable in a dark room", which is exactly this term; 3.0 puts a default tube
+     * molding to keep its edge readable in a dark room", which is exactly this term; 3.0 puts a default tube
      * with the room off at about a quarter lit, which is that sentence's "readable". */
     float tubeLit = uFlicker * uPhos * uBright * pwrArea * 3.0;
     col *= clamp(roomLit + tubeLit, 0.0, 1.0);
-    /* THE PHOSPHOR LIGHTS THE FRAME WHERE THE PICTURE IS ACTUALLY BRIGHT, not uniformly. uBzTint is one colour at
-     * one strength across the whole moulding, which is a statement about the tube's AVERAGE output — so a line of
+    /* THE PHOSPHOR LIGHTS THE FRAME WHERE THE PICTURE IS ACTUALLY BRIGHT, not uniformly. uBzTint is one color at
+     * one strength across the whole molding, which is a statement about the tube's AVERAGE output — so a line of
      * text hard against the left edge lights the right side of the frame just as much.
      *
      * A bezel is lit by whatever is next to it. Walking this ray back to the glass rim gives the content adjacent
@@ -418,7 +418,7 @@ void main(){
      * mean — one bright line should light the frame beside it, and averaging against the empty rows either side
      * is how it disappears. */
     /* THE PHOSPHOR'S OWN EMISSION, AVERAGED — not the bloom. uBloom is thresholded at BLOOM KNEE, so it carries only
-     * the brightest peaks and is text-SHAPED by construction; bleeding it onto the moulding puts a blurred copy of
+     * the brightest peaks and is text-SHAPED by construction; bleeding it onto the molding puts a blurred copy of
      * the glyphs on the plastic. What lights a bezel is the coating next to it glowing, dim parts included.
      *
      * Averaged, not max: max answers "is there a bright line here", not "how much light falls on this". Squared to
@@ -436,32 +436,32 @@ void main(){
     bleed *= exp(-t * 2.2);
     /* ADDED, NEVER SUBSTITUTED. Scaling the uniform tint down by the local weight so the two sum to one means
      * turning SCREEN BLEED up REMOVES the average lift faster than the local one replaces it, and the whole
-     * moulding goes darker. The uniform tint is the tube's ambient contribution and is still true; the local term
+     * molding goes darker. The uniform tint is the tube's ambient contribution and is still true; the local term
      * is what the picture is doing right here, on top of it. */
-    /* NOT TINTED TWICE. The sample already carries the phosphor's colour, so multiplying it by uBzTint again sends
-     * the product as R² > G² > B² and the moulding lights up a saturated red no phosphor emits. The light leaving
-     * the glass is the coating's own colour; the plastic only scales how much comes back. uHalo is that colour,
+    /* NOT TINTED TWICE. The sample already carries the phosphor's color, so multiplying it by uBzTint again sends
+     * the product as R² > G² > B² and the molding lights up a saturated red no phosphor emits. The light leaving
+     * the glass is the coating's own color; the plastic only scales how much comes back. uHalo is that color,
      * the same constant the wash and the bloom are tinted with, so all three agree about what amber is. */
-    /* NO FLAT TINT. One colour mixed across the whole moulding at one strength says the plastic is that colour
-     * everywhere, which is the one thing a lit surface never is. The moulding takes the phosphor's own light where
-     * the picture is near it, the fixture's where the lamp is, and its base colour where neither reaches; a
-     * uniform wash over the top could only flatten all three. COLOUR still sets the plastic itself. */
+    /* NO FLAT TINT. One color mixed across the whole molding at one strength says the plastic is that color
+     * everywhere, which is the one thing a lit surface never is. The molding takes the phosphor's own light where
+     * the picture is near it, the fixture's where the lamp is, and its base color where neither reaches; a
+     * uniform wash over the top could only flatten all three. COLOR still sets the plastic itself. */
     /* GAIN, because area-averaging dilutes. The disc covers a patch of coating the text only partly
      * fills, so the mean is a fraction of the glyphs' own brightness -- correct as a measure of the
      * light arriving, and invisible on the plastic without a scale. 28 puts SCREEN BLEED 1 at a clearly
      * readable pool while leaving room above the default 0.6. */
     col += uHalo * bleed * uBzLocal * 70.0 * uFlicker * pwrArea;
 
-    /* TWO MORE LIGHTS ON THE MOULDING, with different shapes.
+    /* TWO MORE LIGHTS ON THE MOLDING, with different shapes.
      *
      * SCREEN GLOW — the whole phosphor layer, on the lip facing the glass. SCREEN BLEED above answers "what is
      * bright right HERE"; this is the average output a lit tube throws at whatever surrounds it, reaching the
-     * inner edge everywhere at once. uPhos times uBright is what the layer puts out, uHalo is its colour.
+     * inner edge everywhere at once. uPhos times uBright is what the layer puts out, uHalo is its color.
      *
      * LAMP — the fixture, on the whole bezel, from wherever it actually is. Weighted by height relative to uFixY,
      * so moving the fixture moves the highlight instead of it being baked to "up". Deliberately weak per unit:
      * this is bounced room light, not a key light, and the slider carries the range. */
-    /* SCREEN GLOW — the tube's own output reflected across the whole bezel, in the SCREEN's colour. A bezel in front
+    /* SCREEN GLOW — the tube's own output reflected across the whole bezel, in the SCREEN's color. A bezel in front
      * of a lit tube picks the screen up across its whole face, brightest nearest the glass and falling off gently,
      * so this keeps a bias toward the inner edge and reaches the outer one.
      *
@@ -471,16 +471,16 @@ void main(){
     col += uHalo * uBzPhos * phosOut * 2.2 * mix(1.0, 0.30, t);
 
     /* THE LIGHT FIXTURE, across the whole bezel, from wherever it actually is. A room light is above the monitor,
-     * so the top of the moulding catches it and the bottom sits in its own shadow. Weighted by height RELATIVE TO
-     * uFixY, so moving POS Y moves the highlight rather than it being baked to "up"; uLamp is kelvinRgb's colour,
+     * so the top of the molding catches it and the bottom sits in its own shadow. Weighted by height RELATIVE TO
+     * uFixY, so moving POS Y moves the highlight rather than it being baked to "up"; uLamp is kelvinRgb's color,
      * so the tint follows TEMP. Scaled by the lamp's own flicker, not the screen's. */
     float lampW = smoothstep(-0.35, 0.95, q.y - uFixY);
     /* GATED ON uFixture. uFlkA and uFlkB are flicker MULTIPLIERS, and crt-flicker returns exactly 1.0 when a tube is
      * not flickering — including when it is not running at all. That is the right answer to "how much is this
      * lamp's output being modulated" and the wrong one to "how much light is there", so without the gate this
-     * term paints a lamp highlight across the top of the moulding with every lamp in the scene dead. */
+     * term paints a lamp highlight across the top of the molding with every lamp in the scene dead. */
     col += uLamp * uBzLamp * lampW * 0.55 * lampOut * uFixture;
-    col *= 0.90 + 0.20 * noise(q * 260.0);              // moulding grain
+    col *= 0.90 + 0.20 * noise(q * 260.0);              // molding grain
     /* FRAME FADES IN DISPLAY SPACE, NOT IN LINEAR LIGHT, so the number on the panel is the opacity it claims.
      * Scaling radiance ahead of the tone map is physically honest and a useless control, because both curves
      * after it compress what you just did into the bottom half of the travel. Fading the FINISHED tone is exact,
@@ -489,18 +489,18 @@ void main(){
     // NOT CLAMPED AT 1: the control runs to 1.5 and always has, so past full it over-drives the finished tone
     // toward white rather than being a fade. Only the 0..1 half is an opacity, which is the half that was wrong.
     m = pow(max(m, 0.0), vec3(1.0/2.2)) * max(uFrame, 0.0);
-    mouldCol = m;
+    moldCol = m;
     /* COVERAGE AT BOTH EDGES. The inner one is new: this block used to return unconditionally for ap > 1, so the
-     * moulding REPLACED the picture along a hard threshold and the join stair-stepped exactly as its outer edge
-     * did. There was no glass colour to blend toward because the gather had not run yet -- so the fix is to let
+     * molding REPLACED the picture along a hard threshold and the join stair-stepped exactly as its outer edge
+     * did. There was no glass color to blend toward because the gather had not run yet -- so the fix is to let
      * the boundary band fall through and composite at the end instead. */
-    mouldCov = smoothstep(1.0 - aaB, 1.0 + aaB, ap);
+    moldCov = smoothstep(1.0 - aaB, 1.0 + aaB, ap);
     /* THE OUTER SILHOUETTE IS ANTIALIASED. The band test is binary, so the outside edge would be a hard threshold
      * against near-black — a stair-step, worst at the corners. fwidth(ap) is how much ap changes across one pixel,
      * which is the width the transition needs, so one smoothstep resolves it at any frame width or zoom.
      *
-     * ONLY THE OUTER EDGE: this branch returns before the picture is gathered, so there is no glass colour to
-     * blend the inner one toward. Fixing that means compositing the moulding OVER the picture — a restructure of
+     * ONLY THE OUTER EDGE: this branch returns before the picture is gathered, so there is no glass color to
+     * blend the inner one toward. Fixing that means compositing the molding OVER the picture — a restructure of
      * main(), recorded rather than half-done. */
     if (ap > 1.0 + aaB) {
       o = vec4(mix(m, vec3(0.006, 0.006, 0.007), smoothstep(outer - aaB, outer + aaB, ap)), 1.0);
@@ -514,7 +514,7 @@ void main(){
 
   /* THE WARP IS MEASURED AGAINST THE GLASS, NOT AGAINST A CIRCLE.
    *
-   * Normalising by the box diagonal makes the field's level sets circles, so u = 1 — where the whole bend lives —
+   * Normalizing by the box diagonal makes the field's level sets circles, so u = 1 — where the whole bend lives —
    * is only ever reached at the four corners: the corners take all the bend and the flat runs get almost none.
    *
    * faceShaped's answer is G(u,th) = rho * F(u/rho), with rho the aperture radius over the box radius on that ray.
@@ -530,7 +530,7 @@ void main(){
    * applies the face twice — and once FACE gained its IN half the weight went negative, where mix() extrapolates
    * rather than blends. k carries the entire projection on its own.
    */
-  /* AND faceShaped's BOW ON THE FLAT RUNS, which rho cannot supply: the outline normalises its own bulge by its
+  /* AND faceShaped's BOW ON THE FLAT RUNS, which rho cannot supply: the outline normalizes its own bulge by its
    * peak, so rho is exactly 1 on both axes at every BEND and everything BEND does happens at the diagonal.
    * Without the separate term the picture and the plotted grid disagree on the axes.
    *
@@ -650,8 +650,8 @@ void main(){
    * hard dark rectangle inside the glass. Only the glyph sample stops here. */
   float inRaster = (suv.x >= 0.0 && suv.x <= 1.0 && suv.y >= 0.0 && suv.y <= 1.0) ? 1.0 : 0.0;
 
-  /* GLASS DEPTH IS GONE, and this note exists so the parallax is not reinvented as an improvement. It modelled the
-   * phosphor sitting a few millimetres behind the faceplate — real, and defensible on paper, but it displaced the
+  /* GLASS DEPTH IS GONE, and this note exists so the parallax is not reinvented as an improvement. It modeled the
+   * phosphor sitting a few millimeters behind the faceplate — real, and defensible on paper, but it displaced the
    * coordinate the content, the bloom and the glow are all sampled through, and nothing in the picture could be
    * pointed at and attributed to it.
    *
@@ -737,7 +737,7 @@ void main(){
    * orders of magnitude -- it put the taps ~15px apart, which is not a beam spot, it is a ghost. A real
    * spot is on the order of one pixel across, wider along the scan than across it. */
   /* THE BEAM DISTURBS CONVERGENCE ON THE LINE IT IS WRITING, which is why the sweep passing over text smears its
-   * colour rather than merely displacing it. Static convergence is the error with the yoke at rest; the line being
+   * color rather than merely displacing it. Static convergence is the error with the yoke at rest; the line being
    * scanned now is the one the yoke is working on, so the guns land further apart there than anywhere else — an
    * error that arrives with the beam and leaves with it.
    *
@@ -752,7 +752,7 @@ void main(){
    * same energy through slightly different paths, so the split follows the FIELD and points along it.
    *
    * Red out, blue back, green the reference — the same geometry the panel's CONVERGENCE rows describe, which is
-   * what makes it read as that defect getting worse under the magnet rather than as a coloured ghost on top. */
+   * what makes it read as that defect getting worse under the magnet rather than as a colored ghost on top. */
   /* THREE DIRECTIONS, NOT ONE AXIS — because that is where the guns actually are. One shared axis is right for
    * STATIC convergence, whose error is one axis, and wrong for a stray field: a delta-gun tube carries its three
    * cathodes in a triangle 120° apart, so each enters the field at a different place. One axis can only produce a
@@ -791,11 +791,11 @@ void main(){
                  + 0.55 * (texture(uContent, puv + cB + vec2(0.0, spot.y)).rgb +
                            texture(uContent, puv + cB - vec2(0.0, spot.y)).rgb) * 0.5 * vec3(0.0, 0.0, 1.0));
 
-  /* THE CONTENT CARRIES ITS OWN COLOUR. crt-terminal.bootLines decides which glyphs are bright — labels take
+  /* THE CONTENT CARRIES ITS OWN COLOR. crt-terminal.bootLines decides which glyphs are bright — labels take
    * ph.fg, values ph.hi, with a targeted rule for WHITE phosphor where hi cannot be brighter than fg. A luminance
    * threshold in a shader cannot express that, and would flatten exactly the case that module went to trouble over.
    *
-   * So the texture arrives already coloured and this only linearises it. 2.2 rather than the piecewise curve: the
+   * So the texture arrives already colored and this only linearises it. 2.2 rather than the piecewise curve: the
    * difference is under a code value in the near-black where the text sits, and this is a per-pixel path. */
   vec3 lin = pow(max(emis, 0.0), vec3(2.2));
   float lum = dot(lin, vec3(0.299, 0.587, 0.114));
@@ -807,7 +807,7 @@ void main(){
    * beam's luminance and nothing else, so what decays is what the phosphor emitted. */
   float prevBeam = texture(uPrev, uv).a;
   float beamLum  = dot(emis, vec3(0.299, 0.587, 0.114));
-  // uInk, not the sampled colour: a decaying phosphor glows in ITS OWN emission colour whatever was
+  // uInk, not the sampled color: a decaying phosphor glows in ITS OWN emission color whatever was
   // written to it, which is why persistence reads amber on a white glyph rather than white.
   emis = max(emis, uInk * prevBeam * uPersist);
   beamLum = max(beamLum, prevBeam * uPersist);
@@ -856,7 +856,7 @@ void main(){
   float sp = spLine;                               // the STEPPED line: see where spLine is built
   /* SPLIT BY WHAT THE LIGHT IS, NOT BY WHERE IT IS. The tight part of both the band and the tip is the BEAM --
    * electrons arriving, which is why it runs toward white. Everything spread around it is COATING answering
-   * that beam, which is the phosphor's own colour by definition. Colouring them alike put a white halo around
+   * that beam, which is the phosphor's own color by definition. Coloring them alike put a white halo around
    * a white core and made the whole sweep glow like a torch rather than like a screen. */
   vec3 sweepCore = vec3(0.0), sweepSpread = vec3(0.0);
   vec3 dotCoreC = vec3(0.0), dotHaloC = vec3(0.0);   // per gun: the tip splits like everything else does
@@ -877,7 +877,7 @@ void main(){
     /* A SHORT WAKE, NOT A HALO. This trailed at 2.6 widths and 0.55 amplitude, which put a big soft glow above
      * the line and buried the line in it -- the thing that made the sweep read as a moving gradient rather than
      * as a beam. Cut to roughly a width and a third of the brightness, the line is the brightest thing in its
-     * own neighbourhood, which is what it should have been all along. SOLIDITY at 0 still returns the haze. */
+     * own neighborhood, which is what it should have been all along. SOLIDITY at 0 still returns the haze. */
     float wake = d > 0.0 ? exp(-d / (w * 1.1)) * 0.35 : 0.0;
     float hard = core + wake;
 
@@ -986,16 +986,16 @@ void main(){
   }
   // THE DEFICIT FIRST, THEN THE LINE. The beam's own light is not subject to the fade it is curing.
   emis *= 1.0 - clamp(dip * uSweepOn, 0.0, 0.95);
-  /* THE BEAM IS NOT THE SAME COLOUR AS WHAT IT WRITES. uHalo is the PHOSPHOR's colour — what the coating gives
+  /* THE BEAM IS NOT THE SAME COLOR AS WHAT IT WRITES. uHalo is the PHOSPHOR's color — what the coating gives
    * back once excited. The sweep is the excitation itself arriving: electrons hitting the coating at full current,
-   * before any of the colour-shifting the phosphor does on the way out.
+   * before any of the color-shifting the phosphor does on the way out.
    *
-   * So it gets its own colour, and SWEEP TINT says how far toward white it runs — 0 is the beam wearing the
-   * coating's colour, 1 is bare excitation. The tip stays whiter still than its own band, because the tip IS the
+   * So it gets its own color, and SWEEP TINT says how far toward white it runs — 0 is the beam wearing the
+   * coating's color, 1 is bare excitation. The tip stays whiter still than its own band, because the tip IS the
    * instant of maximum current. */
   vec3 beamCol = mix(uHalo, vec3(1.0), clamp(uSweepWhite, 0.0, 1.0));
   /* THE BEAM WHITE, WHAT IT EXCITES AMBER. The spread terms take uHalo straight, so no amount of SWEEP TINT can
-   * put a white halo on the screen -- the tint moves the BEAM's colour and leaves the coating's alone, which is
+   * put a white halo on the screen -- the tint moves the BEAM's color and leaves the coating's alone, which is
    * the only way round that stays true when the phosphor is switched to green or white. */
   emis += beamCol * sweepCore   * uSweepOn * 0.06;
   emis += uHalo   * sweepSpread * uSweepOn * 0.06;
@@ -1004,13 +1004,13 @@ void main(){
    *
    * A real spot is on the order of a pixel. Everything wider than that is coating glowing, not electrons arriving,
    * so body and halo both belong to the phosphor and only the tight core stays hot. */
-  /* THE TIP IS THE PHOSPHOR'S COLOUR, ALL OF IT. The core used to run 45% toward white on the argument that the
+  /* THE TIP IS THE PHOSPHOR'S COLOR, ALL OF IT. The core used to run 45% toward white on the argument that the
    * beam is hotter than what it excites -- true of the electrons, but what LEAVES the screen at that point is
    * still the same coating giving back the same spectrum, just harder. Only the amount differs, and TIP GLOW is
    * the amount. So it is uHalo throughout and the level carries the difference. */
-  /* NORMALISED SO THE LEVEL MEANS WHAT IT SAYS. The dot peaks at 1.0 + 0.10, so without dividing by that the tip
+  /* NORMALIZED SO THE LEVEL MEANS WHAT IT SAYS. The dot peaks at 1.0 + 0.10, so without dividing by that the tip
    * emits nearly twice its stated level. The tone map is x/(1+x) per channel, so anything that bright drives red,
-   * green and blue all to the top and the tip renders pure white whatever colour it was given.
+   * green and blue all to the top and the tip renders pure white whatever color it was given.
    *
    * Divided here, once, so TIP GLOW in nits sits on the same scale as BRIGHTNESS: 90 nt of tip beside 62 nt of
    * beam is a spot driving the coating about half again as hard, which is a sentence worth reading. */
@@ -1033,7 +1033,7 @@ void main(){
 
   /* THE PHOSPHOR GLOW — a WIDE lift wherever the coating has content near it, with no structure of its own.
    *
-   * Distinct from both neighbours: the bloom is thresholded and follows the glyphs, so it draws a halo ON the
+   * Distinct from both neighbors: the bloom is thresholded and follows the glyphs, so it draws a halo ON the
    * text. Neither that nor the beam spot says "this part of the screen is busy and the whole area around it sits
    * brighter", which is what an excited coating does. Rendered at 1/16 so it cannot have structure in principle. */
   /* ON THE SAME SCALE AS BRIGHTNESS, so the two can be compared. uBright is nits/100 and the beam contributes
@@ -1041,7 +1041,7 @@ void main(){
    * beside 62 nt of beam says the coating's ambient excitation is about 5% of what the beam drives. */
   emis += uHalo * glowField(puv) * uGlowAmt;
 
-  /* HALATION IS GONE, and this note exists so it is not reinvented. It modelled light scattering sideways inside
+  /* HALATION IS GONE, and this note exists so it is not reinvented. It modeled light scattering sideways inside
    * the faceplate and re-exciting the coating around a bright spot — real, and it cost four taps of the bloom
    * buffer plus a tint for something that could not be pointed at.
    *
@@ -1062,7 +1062,7 @@ void main(){
    * less structure is the signature of light bypassing the mask. */
   float ny = suv.y * uScanN;
   float fy = max(fwidth(ny), 1e-6);
-  float dyPx = abs(fract(ny) - 0.5) / fy;                      // distance to the nearest line centre, in px
+  float dyPx = abs(fract(ny) - 0.5) / fy;                      // distance to the nearest line center, in px
   float covH = 1.0 - smoothstep(uScanW*0.5 - 0.5, uScanW*0.5 + 0.5, dyPx);
   emis *= 1.0 - uScanA * covH;                                                            // the SCANLINES cross the whole face
 
@@ -1088,7 +1088,7 @@ void main(){
    *
    * The normal comes from the sag profile's own derivative — d/dr of uSagA * r^uSagP — so it is zero everywhere
    * when FACE is flat and grows with FACE by construction. The eye ray diverges from a viewpoint EYE half-heights
-   * in front of the glass. Head-on it still returns 0.04, so the centre of the picture does not change. */
+   * in front of the glass. Head-on it still returns 0.04, so the center of the picture does not change. */
   const float EYE = 2.4;                                        // viewing distance, in glass half-heights
   float slopeF = uSagA * uSagP * pow(max(ap, 1e-3), max(uSagP - 1.0, 0.0));
   vec2  radial = length(c) > 1e-5 ? normalize(c) : vec2(0.0);
@@ -1101,12 +1101,12 @@ void main(){
   // through the same warp as the picture, so it cannot drift from it the way three implementations of one
   // projection did in the DOM build.
   /* INTO THE FIXTURE'S OWN SPACE, AS A RAY. The glass is a flat mirror, so the fixture is placed as a virtual image
-   * behind it and the ray travels into the screen — no reflection maths, and the parallax comes out right for
+   * behind it and the ray travels into the screen — no reflection math, and the parallax comes out right for
    * free. Built in ISOTROPIC screen units (x scaled back up by the aspect), because a direction measured in
-   * per-axis-normalised coordinates is not a direction. */
+   * per-axis-normalized coordinates is not a direction. */
   /* BOTH AXES. The two are directly comparable once the aspect is folded in: q.y is 1 at the glass's half-height
-   * and q.x * uAspect is that same unit measured along x, so a centimetre sideways is the same distance as a
-   * centimetre up and one conversion serves both. */
+   * and q.x * uAspect is that same unit measured along x, so a centimeter sideways is the same distance as a
+   * centimeter up and one conversion serves both. */
   /* CURVE IS THE PICTURE'S OWN WARP, APPLIED TO THE REFLECTION — one shared transformation, not a second
    * description of the same surface.
    *
@@ -1125,7 +1125,7 @@ void main(){
   vec2 sp2  = vec2(cFix.x - uFixX, cFix.y - uFixY);
   vec3 ro  = vec3(0.0, 0.0, 0.0);
   /* A FIXED FIELD OF VIEW, AND THE FIXTURE MOVES. Pinning the fitting one unit away and varying the ray's z makes
-   * the control a FOCAL LENGTH, so the fitting's size on the glass goes UP with the number labelled DISTANCE.
+   * the control a FOCAL LENGTH, so the fitting's size on the glass goes UP with the number labeled DISTANCE.
    *
    * The eye's cone is a property of the eye, so it is a constant; the fitting is what has a position. Apparent
    * size then goes as 1/L for free, along with the right foreshortening: far away is small AND flat, near is
@@ -1152,7 +1152,7 @@ void main(){
   float halfLen = uFixW * uAspect;
   float tubeR   = uFixH;
   // A FROSTED SLEEVE MAKES THE SOURCE BIGGER, which is the whole reason it softens the shadows it casts.
-  /* FROST WIDENS THE SOURCE; MATTE WIDENS IT AGAIN, and the second one is a modelling shortcut worth naming.
+  /* FROST WIDENS THE SOURCE; MATTE WIDENS IT AGAIN, and the second one is a modeling shortcut worth naming.
    * A matte face does not change the lamp -- it scatters the lamp's IMAGE, which is the same integral seen from
    * the other end. Treating the source as larger is the cheap equivalent and needs no second pass. */
   /* MATTE'S ONE JOB: how far the reflected IMAGE is smeared. Inflating the source is the cheap equivalent
@@ -1162,7 +1162,7 @@ void main(){
   /* THE LAMPS SIT INSIDE THE HOUSING, at a proportion of the way into their reflector.
    *
    * Deriving their axis from the aperture's HEIGHT only works while the box's depth is derived from it too. With
-   * a real depth in millimetres the pairing breaks: a 600mm-tall aperture puts the lamps 380mm back inside a box
+   * a real depth in millimeters the pairing breaks: a 600mm-tall aperture puts the lamps 380mm back inside a box
    * 90mm deep, behind the rear wall and occluded by it. Nothing in the fixture may derive a depth from the
    * aperture's height again. */
   float tubeZ = -uRecess * 0.6;
@@ -1179,7 +1179,7 @@ void main(){
    * the time. Applied to both bulbs together because they share a supply. */
   /* THE PHASE ARRIVES ALREADY WRAPPED, and it has to. cos(uTime * 628.318) is 100Hz written the obvious way and it
    * does not survive contact with a real clock: uTime is wall-seconds, and float32 carries about seven digits, so
-   * after a while every frame lands on the same quantised value and the ripple stands still. JS doubles wrap it
+   * after a while every frame lands on the same quantized value and the ripple stands still. JS doubles wrap it
    * exactly; the shader only ever sees 0..1. */
   float ripple = 1.0 - uRipple * 0.5 * (0.5 - 0.5 * cos(uMainsPh * 6.2831853));
   float flkA = uFlkA * ripple, flkB = uFlkB * ripple;
@@ -1206,12 +1206,12 @@ void main(){
   vec2  vb     = vec2(cFix.x / uAspect, cFix.y) * 0.5 + 0.5;
   vec2  vfade  = smoothstep(vec2(0.0), vec2(0.015), vb) * (1.0 - smoothstep(vec2(0.985), vec2(1.0), vb));
   vec4  fixS   = textureLod(uFix, clamp(vb, 0.0, 1.0), lod) * (vfade.x * vfade.y);
-  /* NO COVERAGE DIVISION HERE. At a silhouette it renormalises every partially-covered pixel back to FULL strength,
+  /* NO COVERAGE DIVISION HERE. At a silhouette it renormalizes every partially-covered pixel back to FULL strength,
    * so the outline stays razor sharp while the interior softens, with a hard step where alpha crosses the floor —
    * blurred inside, stamped outside, with blocky notches on the seam.
    *
    * The vanishing it looks like the fix for has a simpler cause: the chain runs to a 1x1 top level, and MATTE at 1
-   * asks for it — one colour averaged over the whole screen, which IS nothing. Capping how far up the chain
+   * asks for it — one color averaged over the whole screen, which IS nothing. Capping how far up the chain
    * roughness may reach solves that without touching what the blur does to the edges. */
   vec3  room   = fixS.rgb;
 
@@ -1221,7 +1221,7 @@ void main(){
    *
    * A halo is light that has spread AWAY from a source, arriving where the source is not. Inside the aperture you
    * are looking straight at the fitting, which has already been rendered there, so adding its glow again on top
-   * counts the same photons twice — and it buries everything underneath: a burnt-out section of a lamp cannot go
+   * counts the same photons twice — and it buries everything underneath: a burned-out section of a lamp cannot go
    * black, and BOX cannot fade a housing wall that sits under a uniform sheet of light.
    *
    * So it fades out across the aperture edge rather than stopping at it: a hard cut would draw the silhouette this
@@ -1229,7 +1229,7 @@ void main(){
   float dIn    = facing ? -max(max(outAp.x, outAp.y), -1e3) : 0.0;
   float inFade = 1.0 - exp(-max(dIn, 0.0) / max(uSheenR * 0.65, 1e-4));
   float scatter = exp(-dOut / max(uSheenR, 1e-3)) * (1.0 - inFade);
-  // WEIGHTED BY EACH LAMP'S OWN OUTPUT, so the halo takes the colour of whichever tube is actually lit.
+  // WEIGHTED BY EACH LAMP'S OWN OUTPUT, so the halo takes the color of whichever tube is actually lit.
   vec3  lampAvg = (uLampA * flkA * uHealthA + uLampB * flkB * uHealthB) * 0.5;
 
 
@@ -1246,12 +1246,12 @@ void main(){
    * tubes is something tubeLight() already answers. */
 
   /* NO PAINTED SPILL, for the same reason. The tubes are two ray-traced cylinders lighting the inside of the box
-   * through tubeLight(), so an elliptical blob of lamp colour laid over the reflection is the same light modelled
+   * through tubeLight(), so an elliptical blob of lamp color laid over the reflection is the same light modeled
    * twice, and the second model is the worse one. */
 
   /* NO LONGER SQUARED. The squaring existed to stop the lamp sitting visibly across the middle of the picture --
    * but that was the ramp's fault, not the lamp's: at ap = 0 the old fres was 0.03, so squaring it drove the
-   * centre to 0.0009 and crushed the fixture into invisibility while leaving the rim at full strength. With a flat
+   * center to 0.0009 and crushed the fixture into invisibility while leaving the rim at full strength. With a flat
    * reflectance there is nothing to shape and squaring would just be a second, invented attenuation. */
   /* GLARE IS HOW MIRRORED THE FACE IS, which is a better control than a haze added beside the reflection.
    *
@@ -1266,14 +1266,14 @@ void main(){
    * 1 leaves the physical 4% at zero, so the fitting dims but is plainly still there; zero should mean a face
    * that reflects nothing.
    *
-   * fres contributes the ANGLE dependence, normalised to 1 head-on so the number on the panel means what it says
+   * fres contributes the ANGLE dependence, normalized to 1 head-on so the number on the panel means what it says
    * in the middle of the picture. The physical value of glass is 4%, so GLARE at 4% is a real anti-glare face. */
   /* THE TUBE'S OWN MODULATION IS SPENT HERE, BEFORE THE ROOM IS ADDED — which is why a dark set still shows the
    * ceiling in it.
    *
    * uFlicker is state.power multiplied by the screen's flicker envelope: what the PHOSPHOR is putting out this
    * frame. Applied at the very end instead, POWER off multiplies the reflection by zero along with everything
-   * else. A switched-off CRT is not a black hole; it is a dark grey mirror, and the fitting overhead is the most
+   * else. A switched-off CRT is not a black hole; it is a dark gray mirror, and the fitting overhead is the most
    * visible thing in it.
    *
    * The reflection is the room's light bouncing off the front of the glass, and it does not care whether the set
@@ -1296,8 +1296,8 @@ void main(){
    * Half means half as visible, by construction rather than by a fitted curve. The ends are untouched: at 0 and 1
    * the mix is a no-op.
    *
-   * fres keeps the job it is responsible for — the ANGLE. Normalised to 1 head-on, so the rim still takes more
-   * than the middle and the number on the panel still means what it says in the centre. */
+   * fres keeps the job it is responsible for — the ANGLE. Normalized to 1 head-on, so the rim still takes more
+   * than the middle and the number on the panel still means what it says in the center. */
   float reflA = clamp(fres / 0.04, 0.0, 1.0);
   vec3  emisBare = emis;                 // the tube with nothing of the room reflected in it
   emis += room * uFixture * reflA;
@@ -1309,7 +1309,7 @@ void main(){
    * SHEEN is the room's light RAKING across the face — a directional streak, the reflection of a window or an open
    * door. GLARE is the same light arriving from everywhere at once: the veil that lifts the blacks and is why you
    * cannot read a CRT in a bright room. MATTE spreads them, exactly as it spreads the fixture. */
-  /* NO FLAT GLARE TERM. A colourless, positionless lift over the entire face reflects nothing — not the room, not
+  /* NO FLAT GLARE TERM. A colorless, positionless lift over the entire face reflects nothing — not the room, not
    * the fixture, not anything that moves when you move it. The reflection is ray-traced and comes off the same
    * Fresnel two lines above; a constant added on top could only wash it out. */
 
@@ -1368,7 +1368,7 @@ void main(){
 
   /* DITHER GOES HERE, IN OUTPUT SPACE, AT HALF AN 8-BIT STEP.
    *
-   * Dither has to be sized against the quantisation it is hiding, and the quantisation is in the 8-bit output,
+   * Dither has to be sized against the quantization it is hiding, and the quantization is in the 8-bit output,
    * not in the linear signal. Added to emis in linear light at a fixed amplitude it is a large FRACTION of the
    * signal on empty glass, and the 1/2.2 encode stretches the dark end further — that is not dither, it is noise,
    * and it is what the large diagonal bands on the faceplate actually were.
@@ -1380,14 +1380,14 @@ void main(){
    * meant to be smooth. At half a step, temporal averaging removes the banding without anything visibly moving. */
   col += (hash(gl_FragCoord.xy + uTime) - 0.5) / 255.0;
 
-  // ALPHA CARRIES THE BEAM, LINEAR AND UNTONEMAPPED, for next frame's persistence to decay. The colour channels
+  // ALPHA CARRIES THE BEAM, LINEAR AND UNTONEMAPPED, for next frame's persistence to decay. The color channels
   // are gamma-encoded for display and would be wrong to feed back.
-  // THE MOULDING, COMPOSITED OVER THE PICTURE rather than replacing it -- zero except in the one-pixel band
+  // THE MOLDING, COMPOSITED OVER THE PICTURE rather than replacing it -- zero except in the one-pixel band
   // that straddles the glass rim, which is the whole point of computing it this late.
-  if (mouldCov > 0.0) col = mix(col, mouldCol, mouldCov);
+  if (moldCov > 0.0) col = mix(col, moldCol, moldCov);
   /* THE FIXTURE ON ITS OWN. Everything above composites the fitting as a REFLECTION — attenuated by GLARE, folded
    * into the phosphor's light, behind whatever the tube is doing. That is the right way to see it and the wrong
-   * way to BUILD it: at four percent reflectance, behind text, a millimetre of cap or a flute of prism is
+   * way to BUILD it: at four percent reflectance, behind text, a millimeter of cap or a flute of prism is
    * invisible, so it cannot be judged and therefore cannot be got right.
    *
    * This shows the model itself, at full strength, with nothing in front of it — the instrument equivalent of
@@ -1412,7 +1412,7 @@ void main(){
   /* SEPARABLE, AT QUARTER RESOLUTION, AND THRESHOLDED. The DOM equivalent is blur(40px) on a full-stage layer --
      a real gaussian over every device pixel, every time anything invalidates it. Thirteen taps on a quarter-size
      buffer is around thirty times less work, and because the input is linear and unclamped there is something
-     above white to bloom FROM rather than a grey haze. */
+     above white to bloom FROM rather than a gray haze. */
   vec3 s = vec3(0.0); float wsum = 0.0;
   for (int i = -6; i <= 6; i++){
     float w = exp(-float(i*i) / 18.0);
@@ -1509,7 +1509,7 @@ export function createRenderer(canvas) {
   const contentTex = mkTex(), faceTex = mkTex(), outlineTex = mkTex();
   /* THE LUT MUST BE NEAREST, and getting this wrong fails spectacularly rather than subtly. R32F is not filterable
    * in WebGL2 without OES_texture_float_linear, and with LINEAR set `texture()` returns 0 for every sample — so
-   * unwarp() reads 0, k collapses to 0, and the shader samples a pinprick at the centre of the content and
+   * unwarp() reads 0, k collapses to 0, and the shader samples a pinprick at the center of the content and
    * stretches it over the whole tube.
    *
    * 512 entries across a monotone curve is far more resolution than a screen radius needs, so point sampling costs
@@ -1676,7 +1676,7 @@ export function createRenderer(canvas) {
       f('uSpot',s.spot); f('uTubeDead', s.tubeDead == null ? 1 : s.tubeDead);
       f('uFrame',s.frame); f('uFrameW',s.frameW);
       f('uFrameOn', s.frameOn ? 1 : 0);
-      // 1 + WIDTH when the frame is shown, so glass + moulding exactly fills the box; 1 when it is not.
+      // 1 + WIDTH when the frame is shown, so glass + molding exactly fills the box; 1 when it is not.
       /* THE FIT IS SET BY THE TIGHTEST RAY. With a constant-width frame the outer edge cannot land on
        * the box on every ray at once -- the outline's radius varies and the frame's width does not --
        * so it is solved on the SHORTEST radius (the short axis, where the outline is 1 in these units)

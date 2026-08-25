@@ -1,12 +1,12 @@
 # Wormhole Lab
 
 A tunnel down the throat of a wormhole: a domain-warped fbm field swept along a seamless angular coordinate, in
-three flavours — nebula, lightspeed, plasma vortex.
+three flavors — nebula, lightspeed, plasma vortex.
 
 `Wormhole.html` is the view: the canvas, the readouts, the panel, the frame loop. Everything else is logic.
 
 ```
-wormhole-shader.js    the GLSL. Pure source: uniforms in, one colour out
+wormhole-shader.js    the GLSL. Pure source: uniforms in, one color out
 wormhole-sidebar.js   SECTIONS (panel layout) + FMT (how each value reads) + EFFECTS (the layers, for the mast)
 wormhole-presets.js   defaultPreset — the shipped configuration, and nothing else
 ```
@@ -63,7 +63,7 @@ Two ways of writing RIBS were tried first and neither is visible on screen. Do n
   on its way out, and thinning some of them only changes a sum that was already smooth. A ring has to OCCLUDE to
   read as a ring, so the near one stands in front of the far one. It is now dense rings with a thin tube between.
 
-**The core's hot centre was a hard-edged disc** (`smoothstep(0.045, 0.0, rc)`) and read as a ball pasted over the
+**The core's hot center was a hard-edged disc** (`smoothstep(0.045, 0.0, rc)`) and read as a ball pasted over the
 picture in every shot. Cubed over three times the radius it peaks at the same value and blooms into the corona
 instead of stopping against it.
 
@@ -81,8 +81,8 @@ finished one: the octaves left can add at most `rem` and at least nothing. A sum
 zero however it finishes, and one already past `lo + 0.26` is a one. Both exits return a value on the same side of
 the same threshold, so it is EXACT rather than an approximation.
 
-Two details are load-bearing. The normaliser is passed IN (`fbmNorm`, resolved once per frame) — accumulating it
-inside would renormalise against the octaves that happened to run, which is a different field rather than the same
+Two details are load-bearing. The normalizer is passed IN (`fbmNorm`, resolved once per frame) — accumulating it
+inside would renormalize against the octaves that happened to run, which is a different field rather than the same
 one cut short. And the threshold is divided by VARIANCE rather than the field multiplied by it, so the sum knows
 what it has to beat before it starts; both sides are positive, so it is the same comparison either way round.
 
@@ -155,7 +155,7 @@ half the cost. Do not collapse them back.
 ## `uPanelPx` is gone, and that was the point
 
 The canvas used to span the viewport with the sidebar painted over its right-hand 340px, so the shader was handed
-the panel's width and shifted the tunnel's centre to compensate — while still evaluating every covered fragment,
+the panel's width and shifted the tunnel's center to compensate — while still evaluating every covered fragment,
 three noise octaves deep, in order to hide it. The canvas is now a child of the stage, which the panel insets by
 being its flex sibling. Measured: **872×634 where the DC build rendered 1111×635**, at the same render scale.
 

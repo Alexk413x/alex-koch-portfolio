@@ -9,7 +9,7 @@ NAME = 'morph'
 # Measured with the phone's own 3D turn temporarily removed.
 #
 # Neither raw box works on its own. getBoundingClientRect returns the axis-aligned box of the projected quad,
-# so a 15-degree turn makes neighbouring keys appear to overlap when nothing is wrong. offsetLeft/offsetTop are
+# so a 15-degree turn makes neighboring keys appear to overlap when nothing is wrong. offsetLeft/offsetTop are
 # the LAYOUT box and ignore transforms entirely -- but every key is laid out once at a home rectangle and moved
 # by transform, so at the faceplate the shared keys report their app cells and the grid reads as a mix of both
 # keyboards. Dropping the phone's rotation for the measurement gives the true 2D rect of each key where it

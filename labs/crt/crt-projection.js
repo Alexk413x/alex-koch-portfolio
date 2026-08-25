@@ -1,9 +1,9 @@
 /* crt-projection.js — the face projection: the fold test, the amplitude ceiling it sets, and the projection itself.
  *
- * Pure math: no DOM, no component state. Callers plot through faceF; nothing here rasterises anything.
+ * Pure math: no DOM, no component state. Callers plot through faceF; nothing here rasterizes anything.
  *
  * Settled decisions — please don't relitigate:
- *  - SAG IS ONE AMPLITUDE IN NORMALISED RADIUS, not sag(lat) per ray. Per-ray sag gives the corner nearly twice the
+ *  - SAG IS ONE AMPLITUDE IN NORMALIZED RADIUS, not sag(lat) per ray. Per-ray sag gives the corner nearly twice the
  *    sides' sag, so it folds first and eats the whole budget. faceShaped is NOT a relitigation of this: the amplitude
  *    is still one number, and what it changes is what the radius is measured AGAINST.
  *  - THE RIM IS UNPINNED: F(1) < 1, so the picture's edge pulls inside the glass by the sag. Pinning it to the glass
@@ -60,7 +60,7 @@ const amaxCache = { key: null, val: 0 };
  *
  * The ceiling belongs to the AMPLITUDE, not to the angle. Clamping the ANGLE is the only way to bound the field while
  * the sag is per-ray, and it cuts the whole slider down to whatever the corner can survive. With the profile
- * normalised, -90..90 is always available and always renderable.
+ * normalized, -90..90 is always available and always renderable.
  */
 export function faceAmax(fadeSpan, sign, pow) {
   const ck = fadeSpan.toFixed(5) + '|' + sign + '|' + (pow == null ? 2 : pow);
@@ -71,7 +71,7 @@ export function faceAmax(fadeSpan, sign, pow) {
   return lo;
 }
 
-/* The projection as a plain function of normalised radius: u is the fraction of the way out to the rim ON THAT RAY,
+/* The projection as a plain function of normalized radius: u is the fraction of the way out to the rim ON THAT RAY,
  * F(u) is where the eye sees it. The picture, the grid and the ring ladder all go through this one function, which is
  * what makes the outermost grid line and the edge of the picture the same number by construction.
  *
@@ -89,7 +89,7 @@ export function faceAmax(fadeSpan, sign, pow) {
  * the band boundary rather than a softer curve.
  *
  * ZERO INSIDE THE INNERMOST GUIDE, not merely small: u^p tapers but never reaches 0, so the picture would keep a
- * residual bend all the way to the centre. The band remap makes the interior EXACTLY flat.
+ * residual bend all the way to the center. The band remap makes the interior EXACTLY flat.
  *
  * PAST u = 1 IT CONTINUES AT THE RIM'S SLOPE, because uB clamps at 1: F stays monotone and finite for any u, which is
  * what lets faceShaped ask for F(u/rho) with u/rho above 1 without folding.
@@ -139,14 +139,14 @@ export function faceF(deg, fadeSpan, pow, amp) {
   return p ? p.at : null;
 }
 
-/* THE SAME PROJECTION, NORMALISED AGAINST THE GLASS INSTEAD OF THE BOX. Returns (u, theta) -> F, in box fractions.
+/* THE SAME PROJECTION, NORMALIZED AGAINST THE GLASS INSTEAD OF THE BOX. Returns (u, theta) -> F, in box fractions.
  *
  * THIS IS THE FIX FOR THE PYRAMID. The radial map measures a point as u = r / boxRadius(theta), so the sag's level
  * sets are RECTANGLES — and a dome whose iso-contours are rectangles is not a dome, it is a tent, with creases
  * running out to the four corners. Nothing about the sag profile causes it and no amount of tuning FACE removes it;
- * it is the normaliser.
+ * it is the normalizer.
  *
- * So the normaliser becomes the GLASS. rho(theta) is the outline's shape ratio, and
+ * So the normalizer becomes the GLASS. rho(theta) is the outline's shape ratio, and
  *
  *     G(u, theta) = rho * F(u / rho)
  *
@@ -167,7 +167,7 @@ export function faceShaped(deg, fadeSpan, shape, pow, amp) {
   if (!f) return null;
   const rhoAt = shape && shape.rho, bowAt = shape && shape.bow;
   /* THE FLAT RUNS GET THEIR OWN BOW, and it needs its own term because rho cannot give them one: the outline
-   * normalises its bulge by its own peak, so on the axes rho is exactly 1 at every BEND and everything BEND does to
+   * normalizes its bulge by its own peak, so on the axes rho is exactly 1 at every BEND and everything BEND does to
    * the field is tuck the DIAGONAL in harder. The corners get all of it and the flats none, which is backwards from
    * what BEND looks like on the outline.
    *
@@ -186,7 +186,7 @@ export function faceShaped(deg, fadeSpan, shape, pow, amp) {
     return (bow > 0 && bowAt) ? r * (1 + bow * bowAt(t) * u * u) : r;
   };
   /* THE PIN IS THE UN-BOWED AXIS VALUE, published so the caller cannot pin on the bowed one. Dividing by g(1, 0) would
-   * normalise the bow away exactly where it is strongest -- the axes -- and leave it showing up as everything ELSE
+   * normalize the bow away exactly where it is strongest -- the axes -- and leave it showing up as everything ELSE
    * shrinking, which is the opposite of the intended effect and would look like a bug in rho.
    */
   g.pin = f(1);
