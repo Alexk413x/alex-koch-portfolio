@@ -17,21 +17,28 @@
 export function defaultPreset(gpu) {
   const weak = gpu && gpu.integrated;
   return {
-    /* MEASURED, NOT GUESSED, on the integrated side: this scene holds 60 at 26 steps on an Intel UHD 630 and
-     * reads 54 fps at 32. The discrete figures are extrapolated — there was no discrete adapter to measure on.
+    /* MEASURED, NOT GUESSED, on the integrated side: 28 steps holds 60 on an Intel UHD 630 and 32 does not.
+     * The discrete figures are extrapolated — there was no discrete adapter to measure on.
      *
-     * 26 RATHER THAN 32 IS THE LAST 1.8 ms, and it is a quality setting because there was nothing left in the
-     * shader to spend instead. Stubbing out the bend, both layers' spin and the whole rib branch — every
-     * remaining candidate — saves under 11% between them, and all three change the picture; see the README's
-     * attribution table. About a third of the frame is not the shader at all but the composite scaling a
-     * 561x408 canvas up to 2182x1587 device pixels, and only RENDER SCALE reaches that.
+     * READ THE CAPPED RUN, NOT THE UNCAPPED ONE, when the question is "does it hold 60". They disagree by about
+     * 4 ms and the gap is the composite: uncapped called this scene 13.1 ms at 32 steps, comfortably inside the
+     * 16.67 budget, and the capped run then measured 18.5 and 54 fps. Only one of those is the frame rate.
      *
-     * Enabling all three layers used to cost about three times one of them. It no longer does: the shader is
-     * built for the layer set that is on, so the three-layer build is the one this scene compiles to and pays
-     * for nothing it does not run.
+     * THE STEP COUNT IS THE GRAIN, and nothing else comes close. The march estimates each ray from a few point
+     * samples of a field whose detail is finer than a step is long, so where the samples land decides the answer
+     * and neighbouring pixels disagree. dither() spreads that disagreement per pixel, which turns banding into
+     * noise but cannot make it smaller — only more steps can. Mean local variation: 26 steps at five octaves
+     * 7.99, this scene 5.71, 64 steps 2.75.
+     *
+     * EVERY AXIS HERE IS A TRADE AND TWO THAT LOOKED FREE WERE NOT. Fewer octaves is cheaper per sample but a
+     * coarser field crosses the density threshold more often, so fbm's early-out fires less and gives most of it
+     * back. Thicker bolts are smoother but pass the filament kernel more often, so PLASMA got SLOWER: softening
+     * it cost 60 fps outright at 32 steps. Raising RENDER SCALE is slower AND grainier, because the upscale was
+     * blurring the noise. At about 0.34 ms per step over 2.5 ms of fixed cost, against a ~10.6 ms GPU budget,
+     * there is no setting of this march that is both smooth and fast. That is the technique, not the tuning.
      */
     renderScale: weak ? 0.45 : 0.75,
-    steps: weak ? 26 : 56,
+    steps: weak ? 28 : 56,
 
     /* STEP SPREAD 1 IS AN EVEN MARCH, and it ships that way because this scene is mostly thin structure. The
      * far half of the tunnel is sampled as finely as the near half; biasing samples toward the eye leaves the
@@ -46,7 +53,7 @@ export function defaultPreset(gpu) {
      * half, the same field draws out into lanes along the direction of travel, so it foreshortens down the tube
      * and streams outward from the throat. */
     nebDensity: 2.0, nebFill: 0.15, nebFluff: 0.5, nebStreak: 0.5, nebVar: 0.65,
-    nebScale: 3.0, nebOct: 5,
+    nebScale: 2.2, nebOct: 3,
     nebSpeed: 8.2, nebTwist: 0.0, nebSpin: 0.0,
 
     lsOn: 1,
@@ -63,12 +70,17 @@ export function defaultPreset(gpu) {
     /* FILL 0.45, FLASH RATE 1.8 and OCCLUSION 0.5 are the constants they replaced, to five figures: the sparsity
      * window was fixed at 0.60..0.80 and the gate ran at 0.9 + FLASH * 1.6. Exposing a constant should not move
      * the picture. */
-    plDensity: 1.0, plFill: 0.45, plOcclude: 0.5, plCrackle: 0.72,
+    plDensity: 1.0, plFill: 0.45, plOcclude: 0.5, plCrackle: 0.5,
     plFlash: 0.84, plFlashRate: 4.8, plLight: 0.55,
     /* SCALE and STREAK ship at the framing that keeps bolts lengthwise WITHOUT the ribbing: the same 4.2x depth
      * squash the layer always had, at roughly twice the frequency. The old constants were 1.9 and 0.24 — the
      * squash without the frequency, which is what strung visible beads along every bolt. */
-    plScale: 3.4, plStreak: 0.238,
+    /* SCALE AND CRACKLE ARE BOTH BACKED OFF, because after the nebula was coarsened PLASMA was what was left of
+     * the grain. CRACKLE is the reciprocal thickness of a bolt: at 0.72 the filaments were thinner than a march
+     * step over most of the tunnel, so the layer was point-sampled and read as speckle rather than as lightning.
+     * Thicker bolts on a bigger field are resolvable at 32 steps. Measured as mean local variation, with the rest
+     * of the scene fixed: 6.54 to 5.71, against 7.99 before any of this. */
+    plScale: 2.4, plStreak: 0.238,
     // SPEED is 5.9 rather than 4.0 because STRIKE was a SECOND rate along the same axis, worth 1.05 on top of
     // SPEED's 2.2. Folded in when that control went, so removing it did not slow the layer down.
     /* TWIST AND SPIN ARE BOTH DOWN. Together at 2.35 and 1.5 the layer turned fast enough to read as a pinwheel
