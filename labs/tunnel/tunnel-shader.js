@@ -659,7 +659,14 @@ void main(){
        *
        * DOPPLER SCALES THE EXPONENT rather than blending toward it: 0 is no beaming, 1 is the physical cube, and
        * above that it exaggerates without ever changing which limb is bright. */
-      vec3 vel = normalize(cross(nrm, rel3)) * (uDiscSpin < 0.0 ? -1.0 : 1.0);
+      /* SPIN CARRIES THE DIRECTION, AND STOPPING IT STOPS THE BEAMING. A hard sign test kept beaming at full
+       * strength with SPIN at 0 -- a disc going nowhere with one limb still lit, because beta comes from the
+       * orbital radius while only the sign came from SPIN. Easing through zero ties the two together: nothing
+       * orbiting, nothing beaming, and no jump as it crosses.
+       *
+       * DOPPLER HAS NO SIGN OF ITS OWN on purpose. Which limb approaches is a fact about the orbit and SPIN
+       * already owns it; a second signed control would let the two cancel and give two ways to say one thing. */
+      vec3 vel = normalize(cross(nrm, rel3)) * clamp(uDiscSpin / 0.4, -1.0, 1.0);
       float beta = clamp(sqrt(rs / max(2.0 * rr, 1e-4)), 0.0, 0.85);
       float gamma = 1.0 / sqrt(max(1.0 - beta * beta, 1e-4));
       float delta = 1.0 / max(gamma * (1.0 - beta * dot(vel, -srd)), 1e-3);
