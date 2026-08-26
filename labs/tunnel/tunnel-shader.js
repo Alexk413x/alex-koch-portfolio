@@ -562,35 +562,58 @@ void main(){
       float rgam = 1.0 / sqrt(max(1.0 - rbeta * rbeta, 1e-4));
       vec3 rview = normalize(vec3(uv, uFov));
       float rdelta = 1.0 / max(rgam * (1.0 - rbeta * dot(rvel, -rview)), 1e-3);
+      /* THE RING CARRIES THE DISC'S OWN TEXTURE, so it blends out of the disc instead of sitting on top of it.
+       *
+       * A clean band of even light is the thing that reads as drawn rather than lensed: the lanes and knots stop
+       * dead at its edge and start again on the other side. This samples the SAME noise the disc's surface uses,
+       * at the same inner radius, through the same in-plane basis and turning at the same Keplerian rate -- so a
+       * bright knot in the disc is a bright knot in the ring, and it drifts round with it. */
+      vec3 rref = abs(nrm.z) < 0.9 ? vec3(0.0, 0.0, 1.0) : vec3(1.0, 0.0, 0.0);
+      vec3 ru1 = normalize(cross(nrm, rref));
+      vec3 ru2 = cross(nrm, ru1);
+      float rpa = atan(dot(rIn, ru2), dot(rIn, ru1));
       float rturn = uTime * uDiscSpin;
-      float rang = atan(rdir.y, rdir.x);
-      float rgrain = 0.55 + 0.9 * fbm(vec3(cos(rang), sin(rang), 0.0) * 3.0
-                                    + vec3(0.0, 0.0, rturn * 0.4), 3);
+      float rrad = discIn * 1.15;
+      float rkep = pow(max(discIn / rrad, 0.03), 1.5);
+      float rpa2 = rpa + rturn * rkep * 0.5;
+      float rgrain = 0.35 + 1.0 * fbm(vec3(cos(rpa2), sin(rpa2), 0.0) * 3.0
+                                    + vec3(0.0, 0.0, rrad * 1.6 + rturn * 0.12), 3);
 
       /* IT HUGS THE SHADOW because that edge IS where light piles up: a ray a hair outside wraps right round,
-         one a few radii out barely bends at all. */
+         one a few radii out barely bends at all. The second, wider term is a deliberate bleed outward -- it is
+         what carries the ring into the disc rather than stopping at a hard edge. */
       float ringR = shadowR * 1.05;
-      float ringW = max(shadowR * 0.06, 0.0045);
+      float ringW = max(shadowR * 0.07, 0.005);
       float rt = (b - ringR) / ringW;
-      ringAdd = mix(uDiscA, uDiscB, 0.12) * exp(-rt * rt)
-              * pow(rdelta, 3.0 * uDoppler) * rgrain * uDisc * 2.0;
+      float rprof = exp(-rt * rt) + 0.30 * exp(-0.16 * rt * rt);
+      ringAdd = mix(uDiscA, uDiscB, 0.12) * rprof
+              * pow(rdelta, 3.0 * uDoppler) * rgrain * uDisc * 1.7;
     }
 
-    /* ONE IMAGE OF THE DISC, NOT TWO.
+    /* THE RAY CROSSES THE DISC'S PLANE TWICE, AND THAT IS THE WHOLE LOOK.
      *
-     * There was a second, lensed pass: a circle inversion about the photon ring standing in for light that went
-     * behind the hole and bent back. It cost a whole second solve per pixel and it drew a SECOND arc offset from
-     * the ring -- two bright curves around one hole, which is the double-circle look and is not what wrapping
-     * light does.
+     * A ray aimed just past the shadow does not travel straight: it bends round the hole. On the way it can meet
+     * the disc's plane once IN FRONT of the hole, unbent, and again BEHIND it after bending -- which is why the
+     * far side of a flat disc appears lifted above the shadow and hanging below it at the same time, while the
+     * disc itself stays flat. NASA's own visualisation puts it exactly that way: the disc behind the hole appears
+     * both above and below it.
      *
-     * It was there to close the wrap over the top of the shadow, and it could never do that: an inversion along
-     * the radial direction only finds the disc where the inverted sample lands on it, so edge-on it produced
-     * arcs near the horizontal and nothing above or below. The ring below closes it properly, at every tilt,
-     * for a fraction of the work.
+     * SO THE TWO PASSES ARE FRONT AND BACK, split by depth, not a direct image and an inverted copy. The
+     * inversion that used to be here drew a second arc OFFSET from the first -- two bright curves round one
+     * hole, which is not what bending light does -- and being radial it found nothing at all above or below an
+     * edge-on disc.
+     *
+     *   pass 0  the straight ray, keeping only the crossing NEARER than the hole. Its light never passed the
+     *           hole, so it is not bent, and it is not cut by the shadow: it is in front of it.
+     *   pass 1  the bent ray, keeping only the crossing BEYOND the hole. This is the arc over the top and under
+     *           the bottom, and the shadow cuts it, because it is behind.
+     *
+     * The blow-up in the middle that the lens used to cause cannot come back through pass 1: rays that near the
+     * axis are captured, and everything behind the hole is multiplied by that.
      */
-    {
-      vec2 suv = uv;
-      float dim = 1.0;
+    for (int im = 0; im < 2; im++){
+      vec2 suv = im == 0 ? uv : luv;
+      float dim = im == 0 ? 1.0 : 0.9;
       vec3 srd = normalize(vec3(suv, uFov));
       /* THE DISC IS A SLAB, NOT A PLANE, and that is what puts the band through the MIDDLE of the shadow.
        *
@@ -630,6 +653,20 @@ void main(){
       vec3 rel3 = P - O;
       float rr = length(rel3);
       if (rr > discIn && rr < discOut) {
+        /* THE TWO PASSES HAND OVER SMOOTHLY, and this has to be a blend rather than a test.
+         *
+         * The straight ray owns the crossing nearer than the hole, the bent ray the one beyond -- but switching
+         * between them at exactly the hole's depth cut a hard horizontal line clean across the frame, because
+         * the two passes reach that boundary from different geometry and do not meet at the same value. A real
+         * ray curves continuously; it does not stop being straight at a plane.
+         *
+         * Weighted across a band either side of the hole's depth, each pass fades in as the other fades out and
+         * the join disappears. Away from the band the weights are still 1 and 0, so neither pass draws the
+         * other's crossing and the disc does not double. */
+        bool front = P.z < uFar;
+        float hand = smoothstep(-0.22 * uFar, 0.22 * uFar, uFar - P.z);
+        float wPass = im == 0 ? hand : 1.0 - hand;
+        if (wPass < 0.003) continue;
 
       /* THE DISC BULGES IN THE MIDDLE, thickest at the inner edge and thinning outward -- a lens, or a UFO,
        * rather than a sheet of card. The inner region of a real disc is the puffy one: it is hottest, radiating
@@ -701,12 +738,12 @@ void main(){
       /* NOTHING COMES OUT OF THE MIDDLE. The disc is cut at its inner edge and the shadow cuts everything again
        * below -- light in this picture comes from the disc and from the photon ring, and from nowhere inside. */
       bright *= smoothstep(0.0, 0.10, band) * smoothstep(1.0, 0.86, band) * path;
-      vec3 add = mix(uDiscA, uDiscB, band) * max(bright, 0.0) * max(dop, 0.0) * uDisc * 1.1 * dim;
+      vec3 add = mix(uDiscA, uDiscB, band) * max(bright, 0.0) * max(dop, 0.0) * uDisc * 1.1 * dim * wPass;
       /* The secondary image is light that went BEHIND the hole by definition, so it is always the far half
          however near its apparent position lands. */
       /* NEARER THAN THE HOLE IS A DEPTH TEST, and it was comparing a distance ALONG THE RAY against a
          depth -- the same number only for a ray down the axis, and increasingly wrong toward the corners. */
-      if (P.z < uFar) discFront += add; else discBack += add;
+      if (front) discFront += add; else discBack += add;
       }}
     }
   }
