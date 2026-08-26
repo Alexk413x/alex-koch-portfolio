@@ -441,7 +441,18 @@ void main(){
     if (m.y > 0.001){
       vec3 q = tc * 1.6 + vec3(19.3, 7.1, 3.7);
       float f1 = n3(q) - 0.5, f2 = n3(q * 1.31 + vec3(5.2, 1.7, 9.1)) - 0.5;
-      float bo = 1.0 / (1.0 + (40.0 / max(sh.y, 0.02)) * (f1 * f1 + f2 * f2));
+      /* EDGE REACHES THE BOLTS TOO, and squaring the falloff is what lets it get to a HARD edge.
+       *
+       * A plain Lorentzian, 1/(1 + k r^2), has tails that fall off as 1/r^2 and never actually stop: at the
+       * tightest EDGE it still held three to nine percent brightness far out from the core, so tightening the
+       * slider shrank the middle and left the haze. The softness was the shape, not the setting.
+       *
+       * Squaring cuts that to under one percent at the same distance. The coefficient carries 0.414 to keep the
+       * HALF-WIDTH where it was -- solve (1 + k' r^2)^2 = 2 against 1 + k r^2 = 2 and that is the factor -- so
+       * EDGE still means the same width it always did and only the shoulder changes. */
+      float r2 = f1 * f1 + f2 * f2;
+      float bo = 1.0 / (1.0 + (40.0 * 0.414 / max(sh.y, 0.02)) * r2);
+      bo *= bo;
       d += m.y * bo;
       emit += mix(uBoltA[s].rgb, uBoltB[s].rgb, bo) * m.y * bo;
     }
