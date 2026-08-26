@@ -124,12 +124,6 @@ export function foldQuad(theta) {
   return a > QUAD ? Math.PI - a : a;
 }
 
-// Guide radius along any ray. Folded into the first quadrant -- the outline is symmetric in both axes by construction.
-export function radiusAt(prof, theta) {
-  if (!prof) return 0;
-  return prof.rQ(foldQuad(theta));
-}
-
 // The shape ratio along any ray, folded the same way. 1 on the axes, rhoMin at the diagonal. This is what the projection
 // normalizes its radius against, so the sag's contours are the OUTLINE's shape instead of the raster's box.
 export function shapeRatio(prof, theta) {

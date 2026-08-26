@@ -6,7 +6,7 @@ instrument is built on: there is one surface, described once, and geometry that 
 that can disagree with it.
 
 ```
-crt-geometry.js     guideOutline (the guide + its shape ratio), radiusAt / shapeRatio / axisWeight (lookups),
+crt-geometry.js     guideOutline (the guide + its shape ratio), shapeRatio / axisWeight (lookups),
                     foldQuad (a ray into the first quadrant, by arithmetic), fixed (the one coordinate formatter
                     every path emitter here and in crt-grid uses), ringLadder (rings + heat), edgeGather (the
                     corner band inside the rim)
@@ -14,9 +14,9 @@ crt-projection.js   fieldFolds (fold test), faceAmax (the amplitude ceiling), fa
                     (the projection, radial and shape-aware)
 crt-phosphor.js     PH palette, blackbody KELVIN table, hexRgb / mix / kelvinRgb / resolvePhosphor
 crt-flicker.js      createFlicker() -> { screenFlicker, bulbFlick, bulbState, frameVars }
-crt-grid.js         curvedScanPath (scanlines + grille), curvedGridPaths (grid lines + cell dots)
+crt-grid.js         curvedGridPaths (grid lines + cell dots)
 crt-bezel.js        bezelCols (the frame's plastic: base + a little phosphor and room light)
-crt-terminal.js     bootLines (the boot text), typeInto (the typewriter)
+crt-terminal.js     bootLines (the boot text)
 crt-sidebar.js      makeFmt (how each value reads), SECTIONS (panel layout)
 crt-presets.js      defaultPreset and the stored configurations
 crt-gl.js           createRenderer, buildFaceLUT, buildOutlineLUT, toLinear, detectGPU — four programs, the
@@ -101,8 +101,8 @@ this whole structure exists to prevent:
 
 - **Turning geometry into a path or a LUT.** `crt-grid` returns path strings and `crt-gl`'s `buildFaceLUT` /
   `buildOutlineLUT` turn the same functions into textures the shader samples; deciding what stroke, ink and blend
-  each gets is rendering. `curvedScanPath` places N lines and nothing more — the page supplies each axis's width,
-  alpha and ink from six independent controls.
+  each gets is rendering. `curvedGridPaths` places the lines and nothing more — the page supplies each axis's
+  width, alpha and ink from its own controls.
 - **Heat → color.** `ringLadder` returns heat as a number; the ramp is presentation.
 
 ## Verifying a change here
