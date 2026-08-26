@@ -175,7 +175,7 @@ function draw(dt, sec) {
   const narrowest = litRad.length ? Math.min(...litRad) : 1;
   R.f('uEndR', Math.min(H ? s.mass * 0.2 * 2.6 : narrowest * 0.30, narrowest * 0.85));
 
-  R.f('uDisc', s.disc * H); R.f('uDiscTilt', s.discTilt); R.f('uDiscLean', s.discLean); R.f('uDiscThick', s.discThick);
+  R.f('uDisc', s.disc * H); R.f('uDiscTilt', s.discTilt); R.f('uDiscLean', s.discLean);
   R.f('uDiscOut', s.discOut);
   R.f('uDiscSpin', s.discSpin); R.f('uDoppler', s.doppler);
   R.f3('uDiscA', ...hex(s.discA)); R.f3('uDiscB', ...hex(s.discB));
