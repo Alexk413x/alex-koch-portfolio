@@ -157,6 +157,15 @@ float fbm(vec3 p, int oct){
  * THE DIRECTION AND THE SWING ARE THE SAME FOR EVERY PIXEL, so they are worked out once at the top of main
  * rather than inside bendAt. They were recomputed on every call -- a tanh and two trig calls each -- and the
  * scan calls this up to a hundred times a pixel. Nothing about them varies across the frame or along a ray. */
+/* A CEILING THAT DOES NOT CREASE. min() against a limit is two different curves meeting at a corner, and the
+ * corner shows: the fold ran along the true deflection out to one radius and then went dead flat, which reads
+ * as the arc curving and then stopping for no reason anyone could point at.
+ *
+ * tanh approaches the same ceiling without ever reaching it, so there is no radius where the behaviour changes.
+ * The approach to the limit IS the compression -- the arc keeps bending and its bands crowd together toward the
+ * top, which is what the far side of a disc does as it wraps over the shadow. */
+float softCap(float x, float lim){ return lim * tanh(x / max(lim, 1e-6)); }
+
 vec2 gBendDir;
 float gSwing;
 
@@ -403,8 +412,8 @@ void main(){
      throwing the far crossing across the frame, but it also stopped the disc responding to the control at all.
      The tighter cap is what keeps the arc on the rim: bent past it, a ray just outside the shadow crosses the
      plane inside the inner edge, where there is nothing to draw. */
-  vec2 dluv = uv - bdir * min(deflLens, b * 0.45);
-  vec2 luv  = uv - bdir * min(deflLens, b * 0.82);
+  vec2 dluv = uv - bdir * softCap(deflLens, b * 0.45);
+  vec2 luv  = uv - bdir * softCap(deflLens, b * 0.82);
 
   vec3 rd = normalize(vec3(luv, uFov));
 
