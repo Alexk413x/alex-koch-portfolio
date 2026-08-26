@@ -38,11 +38,8 @@ export function defaultPreset(gpu) {
      */
     renderScale: weak ? 0.85 : 1.0,
 
-    fov: 74, exposure: 1.15, vignette: 1.0, chroma: 1.0, fog: 1.0,
+    fov: 74, exposure: 1.15, fog: 1.0,
 
-    /* FLOW POSITIVE IS TOWARD THE EYE. The first build of this had the sign the other way and nothing said so,
-     * which read as flying backwards with no control that could turn it round. */
-    flow: 1.0,
     far: 26, wind: 1.0,
     /* BEND IS LOW NOW THE FAR END IS A HOLE, and that is a real conflict rather than a taste. BEND swings the
      * vanishing point around the frame; the lens warps everything toward it. Both are "the far end distorts",
@@ -50,7 +47,11 @@ export function defaultPreset(gpu) {
      * neither reads. A black hole wants to ANCHOR: it sits still and the tunnel falls into it. TIGHTNESS and
      * BEND FLOW are not duplicates of the lens and are worth keeping, but they do nothing while BEND is near
      * zero, which is the honest reason they look redundant here. */
-    bend: 1.1, bendDir: 0.0, bendFlow: 4.0,
+    /* BEND LENGTH IS SET AGAINST DEPTH, not picked for its own sake. It is the distance between corners in world
+       units, so at 30 against a DEPTH of 26 you see about one whole wave down the tunnel -- a bend that arrives,
+       straightens and leaves. It shipped at 46, nearly twice the depth, which shows a third of one wave: that is
+       a permanent lean with no corner in it, and it is why the tube read as leaning rather than bending. */
+    bend: 3.0, bendDir: 0.0, bendFlow: 5.0,
     // The whole-tunnel ring pass is off: the shells carry their own, which foreshorten with the shell they are on.
     ringAmt: 0.0, ringN: 4.4, ringFlow: 7.4,
 
@@ -68,9 +69,9 @@ export function defaultPreset(gpu) {
      * middle as a band, its far side lenses over the top of the shadow, and the light sits on the EDGE where it
      * belongs. */
     holeOn: 1,
-    mass: 0.85, shadow: 3.2, ring: 0.9, ringCol: '#ffd9a0',
+    mass: 1.0, ring: 0.9, ringCol: '#ffd9a0',
     disc: 1.0, discA: '#fff0cf', discB: '#c23a05',
-    discTilt: 0.16, discLean: 0.0, discIn: 1.2, discOut: 9.0, discSpin: 2.4, doppler: 0.85,
+    discThick: 0.16, discTilt: 0.12, discLean: 0.0, discOut: 3.6, discSpin: 2.4, doppler: 0.85,
 
     /* THREE ARE LIT AND THREE ARE NOT, and three is the fewest that reads as depth: one to pass in front, one
      * to be passed, and one between them to prove the other two are at different distances. Two reads as a

@@ -150,29 +150,33 @@ function draw(dt, sec) {
   // FOV is stored as an angle and sent as the ray's z. Small is wide, so a slider on the raw value runs backwards
   // from the number printed beside it; the conversion lives here because a formatter is display only.
   R.f('uFov', 0.5 / Math.tan(s.fov * Math.PI / 360));
-  R.f('uFar', s.far); R.f('uWind', s.wind); R.f('uFlow', s.flow);
+  R.f('uFar', s.far); R.f('uWind', s.wind);
   R.f('uBend', s.bend); R.f('uBendFlow', s.bendFlow); R.f('uBendDir', s.bendDir);
   R.f('uRingAmt', s.ringAmt); R.f('uRingN', s.ringN); R.f('uRingFlow', s.ringFlow);
   // The hole's master rides on MASS, SHADOW, RING and DISC together: switching the section off must remove the
   // lensing too, not just stop drawing the disc, or the frame stays warped around nothing.
   const H = s.holeOn ? 1 : 0;
-  R.f('uMass', s.mass * H); R.f('uShadow', H ? s.shadow : 0); R.f('uRing', s.ring * H);
-  /* ONE SHARED END RADIUS, AND IT MUST BE NO WIDER THAN THE NARROWEST SHELL.
-     Every shell tapers to this, which is what gives them a single vanishing point instead of one each -- and it
-     is capped below the smallest radius so that no shell ever has to FLARE outward to reach it. Computed here
-     because only the host can see all six radii at once; the shader sees one shell at a time. */
-  const litRad = Array.from({ length: MAXL }, (_, i) => i)
-    .filter((i) => state['L' + i + 'On'])
-    .map((i) => state['L' + i + 'Rad']);
-  const narrowest = litRad.length ? Math.min(...litRad) : 1;
-  R.f('uEndR', Math.min(H ? s.shadow : 0.02, narrowest * 0.85));
+  R.f('uMass', s.mass * H); R.f('uRing', s.ring * H);
+  // Never uploaded once, so uRingCol sat at vec3(0) and PHOTON RING multiplied to black at every setting.
+  R.f3('uRingCol', ...hex(s.ringCol));
 
-  R.f('uDisc', s.disc * H); R.f('uDiscTilt', s.discTilt); R.f('uDiscLean', s.discLean);
-  R.f('uDiscIn', s.discIn); R.f('uDiscOut', s.discOut);
+  /* ONE SHARED END RADIUS FOR EVERY SHELL, worked out here because only the host sees all six radii at once.
+     It is the HOLE'S shadow when there is one, so the tunnel arrives exactly at it rather than near it, and it
+     is capped below the narrowest lit shell so no shell ever has to FLARE outward to reach it.
+
+     WITH THE HOLE OFF IT IS A FRACTION OF THE NARROWEST SHELL, not 0.02. A near-zero end shut the tube to a
+     pinhole at DEPTH, and a pinhole whose axis has swung sideways is a needle pointing off screen that almost
+     no ray hits -- which emptied the frame and looked exactly like the bend being broken. */
+  const litRad = Array.from({ length: MAXL }, (_, i) => i)
+    .filter((i) => state['L' + i + 'On']).map((i) => state['L' + i + 'Rad']);
+  const narrowest = litRad.length ? Math.min(...litRad) : 1;
+  R.f('uEndR', Math.min(H ? s.mass * 0.2 * 2.6 : narrowest * 0.30, narrowest * 0.85));
+
+  R.f('uDisc', s.disc * H); R.f('uDiscTilt', s.discTilt); R.f('uDiscLean', s.discLean); R.f('uDiscThick', s.discThick);
+  R.f('uDiscOut', s.discOut);
   R.f('uDiscSpin', s.discSpin); R.f('uDoppler', s.doppler);
   R.f3('uDiscA', ...hex(s.discA)); R.f3('uDiscB', ...hex(s.discB));
   R.f('uFog', s.fog); R.f('uExposure', s.exposure);
-  R.f('uVignette', s.vignette); R.f('uChroma', s.chroma);
 
   const p = packed();
   R.fv4('uGeom', p.geom); R.fv4('uMix', p.mix); R.fv4('uShade', p.shade); R.fv4('uExtra', p.extra);

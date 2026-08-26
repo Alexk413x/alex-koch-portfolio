@@ -31,12 +31,12 @@
 export const MAXL = 6;
 
 export const UNIFORMS = [
-  'uRes', 'uTime', 'uFov', 'uFar', 'uWind', 'uFlow',
+  'uRes', 'uTime', 'uFov', 'uFar', 'uWind',
   'uBend', 'uBendFlow', 'uBendDir',
   'uRingAmt', 'uRingN', 'uRingFlow',
-  'uMass', 'uShadow', 'uEndR', 'uRing', 'uRingCol',
-  'uDisc', 'uDiscTilt', 'uDiscLean', 'uDiscIn', 'uDiscOut', 'uDiscSpin', 'uDiscA', 'uDiscB', 'uDoppler',
-  'uFog', 'uExposure', 'uVignette', 'uChroma',
+  'uMass', 'uEndR', 'uRing', 'uRingCol',
+  'uDisc', 'uDiscTilt', 'uDiscLean', 'uDiscOut', 'uDiscThick', 'uDiscSpin', 'uDiscA', 'uDiscB', 'uDoppler',
+  'uFog', 'uExposure',
   'uGeom', 'uMix', 'uShade', 'uExtra',
   'uCloudA', 'uCloudB', 'uBoltA', 'uBoltB', 'uStrkA', 'uStrkB',
 ];
@@ -46,12 +46,12 @@ precision highp float;
 out vec4 fragColor;
 
 uniform vec2 uRes;
-uniform float uTime, uFov, uFar, uWind, uFlow;
+uniform float uTime, uFov, uFar, uWind;
 uniform float uBend, uBendFlow, uBendDir;
 uniform float uRingAmt, uRingN, uRingFlow;
-uniform float uMass, uShadow, uEndR, uRing;
-uniform float uDisc, uDiscTilt, uDiscLean, uDiscIn, uDiscOut, uDiscSpin, uDoppler;
-uniform float uFog, uExposure, uVignette, uChroma;
+uniform float uMass, uEndR, uRing;
+uniform float uDisc, uDiscTilt, uDiscLean, uDiscOut, uDiscThick, uDiscSpin, uDoppler;
+uniform float uFog, uExposure;
 uniform vec3  uRingCol, uDiscA, uDiscB;
 
 // geom: radius, amount, speed, stretch. mix: cloud, bolts, streaks, rings.
@@ -106,43 +106,66 @@ float fbm(vec3 p, int oct){
   return v / max(n, 1e-4);
 }
 
-/* ONE ARCH THROUGH THE TUNNEL, AND ITS DIRECTION TURNS.
+/* THE TUNNEL IS A FIXED CURVE IN SPACE AND THE CAMERA TRAVELS ALONG IT.
  *
- * It was a sine, and a sine is the wrong shape: every half cycle swings the axis back the other way, and each
- * swing gives the eye another place the tube appears to end. Several apparent vanishing points at once is what
- * reads as "multiple lenses" -- not lensing at all, just a tube that changes its mind repeatedly.
+ * WHAT THIS REPLACES, AND WHY IT WAS WRONG. The bend used to be an arch anchored at the eye, growing as the
+ * square of the distance and rotating in place. That displaces the far field and leaves the near field alone --
+ * which is exactly what a LENS does, and it read as one. Nothing ever travelled: no bend ever arrived, passed,
+ * or went behind you. It was a tube being deformed around a stationary viewer.
  *
- * An arch changes its mind once. The offset grows with the SQUARE of the distance, which is what constant
- * curvature gives, and it is zero at the eye -- so the mouth the viewer sits in stays put and the far end is what
- * swings away. One curve, one end.
+ * A path fixes that. The curve is fixed in the world; BEND FLOW moves the CAMERA along it. So the corners come
+ * out of the distance, straighten as you reach them, and sweep past -- which is what travelling down a bent
+ * tunnel is, and what the home page's lab card gets by flying its rings along a centerline.
  *
- * BEND FLOW ROTATES THE ARCH rather than sliding it. Sliding a fixed shape past the camera is what the sine was
- * doing; turning it sweeps the far end around the throat while the mouth does not move at all, which is exactly
- * what the home page's lab card does with its slow rotateZ. DIRECTION is where the arch points when time is zero.
+ * TWO TERMS ARE SUBTRACTED and both are load-bearing. Subtracting the path's value AT THE CAMERA puts the eye on
+ * the axis, so the tube never swings sideways around the viewer. Subtracting the TANGENT times the distance
+ * points the view down the tube, so the tunnel ahead is always centred and it is the CURVATURE you see rather
+ * than a tube sliding off to one side. Without the second term the tunnel leans permanently and the far end sits
+ * off the frame; with it, what remains is the bend itself.
+ *
+ * LENGTH is how far apart the corners are, in world units, so it means the same thing at any DEPTH.
  */
-vec2 arch(float z, out vec2 slope){
-  float f = z / max(uFar, 1.0);
-  float a = uBendDir + uTime * uBendFlow * uFlow * 0.12;
-  vec2 dir = vec2(cos(a), sin(a));
-
-  /* THE ARCH CARRIES THE FAR END OFF THE AXIS, AND THE HOLE RIDES WITH IT.
-   *
-   * The offset is NOT eased toward a limit. It was, and that was wrong: easing it capped the far end at about two
-   * units, which is a twentieth of the frame, so the hole sat in the middle however hard BEND was pushed. The
-   * whole point of bending is that the far end goes somewhere.
-   *
-   * IT IS MEASURED IN TUBE RADII: BEND 1 carries the far end one radius off the axis, 3 carries it three. Past
-   * about one radius the wall starts closing across the view -- which is correct and is what a bent pipe does,
-   * you cannot see down one -- and the hole is occluded by it rather than hidden by a clamp. Both things happen
-   * at once: it moves out, and it goes behind the wall.
-   */
-  float amp = uBend * TUBE_R * 2.0;
-  slope = dir * amp * 2.0 * f / max(uFar, 1.0);
-  return dir * amp * f * f;
+/* THE AMPLITUDE IS SET FROM THE FAR END'S SWING, NOT FROM THE SINE'S HEIGHT.
+ *
+ * Subtracting the tangent is a FIRST-ORDER rotation into the camera's frame, and it is only valid while the
+ * path's slope is small. Written with the sine's own amplitude it is not: the -k*z*cos term grows linearly with
+ * distance, so at BEND 2.4 over DEPTH 26 the axis ended up THIRTEEN world units sideways -- six times the widest
+ * shell. The tube's far end left the frame and closed its wall across the view, which is the black wall with the
+ * hole sitting off to one side of it.
+ *
+ * Dividing by k*uFar cancels exactly that term. What is left is a slope of uBend/uFar whatever the wavelength,
+ * so BEND means "how far the far end swings, in tube radii" and it means the same thing at every BEND LENGTH and
+ * every DEPTH -- and the first-order rotation stays inside its own assumption.
+ */
+/* ONE BEND ACROSS THE DISTANCE. The axis leaves the camera straight and swings a single arch by DEPTH.
+ *
+ * A QUADRATIC IS THE WHOLE REASON THIS IS STABLE. It is zero AND flat at z = 0, so the eye sits on the axis
+ * looking straight down the tube for free -- no frame to rotate into, no tangent to subtract, nothing that can
+ * run away with distance. The swing at DEPTH is exactly uBend tube radii, at every DEPTH.
+ *
+ * IT WAS A TRAVELLING SINE AND THAT IS SCRAPPED. A path the camera moves along needs the tangent subtracted to
+ * point the view down the tube, and that subtraction is only a first-order rotation: over most of a wavelength
+ * its error grows linearly, the far end left the frame, and the tube shut across the middle of the view. Running
+ * two sines at different frequencies to keep it from looking flat made it worse -- x turned its corner while y
+ * was still leaning, which reads as two curves at once rather than one bend.
+ *
+ * THE MOVEMENT IS THE ARCH TURNING. BEND FLOW rotates which way it swings, so the tunnel leans through a full
+ * circle over time; the sense of travel down it comes from the shells' own SPEED, which is where it belongs.
+ */
+vec2 bendAt(float z){
+  float f = clamp(z / max(uFar, 1.0), 0.0, 1.0);
+  float a = uBendDir + uTime * uBendFlow * 0.12;
+  /* THE ARCH IS WEIGHTED TOWARD THE CAMERA. A quadratic holds the axis straight through the near half and does
+   * all its swinging at DEPTH -- which is the half that is small on screen, so most of the bend was spent where
+   * it could not be seen. A quarter sine turns fastest at the eye and flattens out at DEPTH, so the curve reads
+   * in the near field where the tube is large. Same swing at DEPTH either way; it just gets there earlier. */
+  return vec2(cos(a), sin(a)) * (uBend * TUBE_R * sin(f * 1.5707963));
 }
-
-vec2 bendAt(float z){ vec2 sl; return arch(z, sl); }
-vec2 bendD(float z){ vec2 sl; arch(z, sl); return sl; }
+vec2 bendD(float z){
+  float f = clamp(z / max(uFar, 1.0), 0.0, 1.0);
+  float a = uBendDir + uTime * uBendFlow * 0.12;
+  return vec2(cos(a), sin(a)) * (uBend * TUBE_R * 1.5707963 * cos(f * 1.5707963) / max(uFar, 1.0));
+}
 
 /* WHERE THE RAY MEETS THE TUBE. |rd.xy * t - offset(t)| = R is a quadratic in t for a FIXED offset, and the
  * offset depends on the t being solved for -- so it is solved by repeating: guess the depth, read the offset
@@ -157,75 +180,106 @@ vec2 bendD(float z){ vec2 sl; arch(z, sl); return sl; }
  * section cut across the view is an ELLIPSE stretched by 1/cos of the angle the tube leans at; asking for a
  * circle of the plain radius there draws a tube that is too wide wherever it turns.
  */
+/* Signed gap from the ray at t to this shell's wall: negative inside the tube, positive outside.
+ * Split out because the scan below needs it at many t and the crossing is where it changes sign. */
+float wallGap(vec3 rd, float t, float R, vec2 b0, out float vl){
+  float z = rd.z * t;
+  vec2 bo = bendAt(z) - b0;
+  vec2 sl = bendD(z);
+  float k = sqrt(1.0 + dot(sl, sl));
+
+  /* THE SHELLS TAPER ONTO ONE SHARED END RADIUS, and that is what stops there being three tunnels.
+   *
+   * A shell of constant radius subtends R * fov / DEPTH at the far end -- a DIFFERENT angle for every radius --
+   * so the three lit shells drew three concentric mouths at DEPTH, 11, 19 and 29 pixels across, stacked at the
+   * middle of the frame. That reads as several tubes overlaid rather than one tunnel with depth in it.
+   *
+   * Tapering to one end radius gives them a single mouth. The taper is a smoothstep rather than a square so the
+   * shells hold their own radii through the near half -- where a shell's size is the thing you actually see --
+   * and are most of the way closed by three quarters out, while the tube is still lit.
+   *
+   * THE END RADIUS COMES FROM THE HOST, which is the only place that can see all six radii at once. Taking
+   * min(uEndR, R * 0.9) here instead was a bug: every shell's radius is under the hole's size, so the min always
+   * chose the shell's own radius and each one tapered to a different end again. */
+  float taper = clamp(z / max(uFar, 1.0), 0.0, 1.0);
+  float Rc = mix(R, uEndR, smoothstep(0.0, 1.0, taper));
+
+  /* THE SECTION IS AN ELLIPSE, AND ONLY ALONG THE LEAN. A swept tube's sections are round when cut
+   * perpendicular to its own tangent; seen from a camera that cuts across the VIEW instead, such a section is
+   * stretched by 1/cos of the lean along the direction the tube leans, and untouched at right angles to it.
+   * Stretching in every direction -- which one scalar radius does -- makes the tube FAT wherever it turns
+   * instead of tilting it, and a fat tube sliding across as it recedes is a warp rather than a curve. */
+  vec2 v = rd.xy * t - bo;
+  vl = length(v);
+  vec2 dir = vl > 1e-5 ? v / vl : vec2(1.0, 0.0);
+  vec2 lean = dot(sl, sl) > 1e-10 ? normalize(sl) : vec2(1.0, 0.0);
+  float Rz = Rc * mix(1.0, k, abs(dot(dir, lean)));
+  return vl - Rz;
+}
+
+/* WHERE THE RAY MEETS THE SHELL, FOUND BY WALKING THE TUBE RATHER THAN SOLVING FOR IT.
+ *
+ * A straight tube is a quadratic and this was one. A BENT tube is not: the axis offset depends on z, z depends
+ * on the hit, and the hit depends on the offset. That was closed by iterating the quadratic, and the iteration
+ * is what broke. Its first guess, R/sqrt(A), is unbounded -- A is |rd.xy|^2 and goes to zero down the axis, so
+ * near the middle of the frame the search STARTED around twenty-two thousand units out, far past the end of the
+ * tube, and five steps never came back. At BEND 6 with one shell lit and the fade off, almost nothing rendered:
+ * every shell returned a hit past DEPTH, every shell was skipped, and the frame went black. Every "the tunnel
+ * and the hole are not aligned" symptom was downstream of that.
+ *
+ * A scan cannot diverge. The gap changes sign exactly once between the eye and the wall, so N samples bracket
+ * the crossing and one interpolation lands on it. It is bounded by the tube's own length by construction, so
+ * BEND is a real control across its whole range instead of up to wherever the iteration happened to hold.
+ *
+ * STEPS ARE PACKED TOWARD THE EYE. Perspective compresses distance, so a step near the camera covers far more
+ * of the screen than the same step at DEPTH; even spacing spends its samples where they are least visible.
+ *
+ * NO CROSSING MEANS THE RAY LEFT THROUGH THE OPEN END, which is the mouth of the tunnel. graze 0 reports it,
+ * and the caller already treats that as nothing drawn.
+ */
 float solveShell(vec3 rd, float R, vec2 b0, out vec2 rel, out float zz, out float graze){
-  float A = dot(rd.xy, rd.xy);
-  float t = R / max(sqrt(A), 1e-4);
-  float Rc = R;
-  graze = 1.0;
-  for (int i = 0; i < 5; i++){
-    float z = rd.z * t;
-    vec2 bo = bendAt(z) - b0;
-    vec2 sl = bendD(z);
-    float k = sqrt(1.0 + dot(sl, sl));
+  float tMax = uFar / max(rd.z, 1e-4);
+  float tA = 0.0, dA = -1.0, hitT = -1.0, junk;
+  graze = 0.0;
 
-    /* THE SHELLS CONVERGE ON ONE POINT, and this is what stops there being six tunnels.
-     *
-     * A shell of constant radius subtends R * fov / DEPTH at the far end -- a DIFFERENT angle for every radius --
-     * so six shells drew six circles out there, six apparent vanishing points stacked in a line, each one looking
-     * like another warp. Real convergence only happens at infinity and DEPTH is finite.
-     *
-     * So the tube TAPERS: full radius at the eye, closing to one shared end radius at DEPTH. Every shell then
-     * meets at the same place and there is one throat. The taper is squared, so the shells hold their own radii
-     * through the near half where they pass the camera -- which is where a shell's size is the thing you actually
-     * see -- and only draw together in the far half where they would otherwise disagree.
-     *
-     * THE END RADIUS IS THE HOLE'S when there is one, so the tunnel arrives exactly at it rather than near it. */
-    float taper = clamp(z / max(uFar, 1.0), 0.0, 1.0);
-    /* A SHELL ONLY EVER NARROWS. The end radius is the hole's, and the hole can be set larger than a shell --
-     * mixing toward it then makes that shell FLARE OUTWARD toward the far end, so the tube gets wider as it
-     * recedes and the near shells swallow the far ones. Clamping the target below the shell's own radius keeps
-     * every taper a taper. */
-    /* ONE END RADIUS FOR EVERY SHELL, and it is the host that works it out -- see uEndR there. Taking
-     * min(uEndR, R * 0.9) HERE instead was the bug: every shell's radius is under the hole's size, so the min
-     * always chose that shell's own radius and each one tapered to a different end. Three different ends cannot
-     * line up with each other or with the hole, which is what put the shells out of alignment with it. */
-    Rc = mix(R, uEndR, taper * taper);
+  for (int i = 1; i <= 14; i++){
+    float f = float(i) / 14.0;
+    float tB = tMax * f * f;
+    float dB = wallGap(rd, tB, R, b0, junk);
+    if (dB >= 0.0 && dA < 0.0){
+      /* THE BRACKET IS REFINED, and without this the tunnel had dark rings in it.
+       *
+       * Interpolating once across a scan step lands near the wall but its ERROR is largest mid-step and smallest
+       * at the ends, so the error has the period of the scan -- and a scan stepped in t draws that period on
+       * screen as circles around the vanishing point. Three false-position steps drive the error far below what
+       * the shading can show, for three more gap evaluations. */
+      for (int k = 0; k < 3; k++){
+        float tM = mix(tA, tB, dA / (dA - dB));
+        float dM = wallGap(rd, tM, R, b0, junk);
+        if (dM < 0.0){ tA = tM; dA = dM; } else { tB = tM; dB = dM; }
+      }
+      hitT = mix(tA, tB, dA / (dA - dB));
 
-    /* THE SECTION IS AN ELLIPSE, AND ONLY ALONG THE LEAN. This is the difference between a tube that SWEEPS and
-     * one that merely slides sideways.
-     *
-     * A swept tube's sections are round when cut perpendicular to its own tangent. Seen from a camera that cuts
-     * across the VIEW instead, such a section is foreshortened: stretched by 1/cos of the lean along the
-     * direction the tube is leaning, and untouched at right angles to it. Stretching it in every direction --
-     * which is what a single scalar radius does -- makes the tube FAT wherever it turns instead of tilting it,
-     * and a fat tube that slides across as it recedes is exactly the warp rather than a curve.
-     *
-     * It is the same construction the home page's lab card uses for its rings: each is translated onto the path
-     * AND rotated to face along it. Placing without rotating is what this was doing. */
-    vec2 v = rd.xy * t - bo;
-    float vl = length(v);
-    vec2 dir = vl > 1e-5 ? v / vl : vec2(1.0, 0.0);
-    vec2 lean = dot(sl, sl) > 1e-10 ? normalize(sl) : vec2(1.0, 0.0);
-    float Rz = Rc * mix(1.0, k, abs(dot(dir, lean)));
-
-    float B = -2.0 * dot(rd.xy, bo), C = dot(bo, bo) - Rz * Rz;
-    float disc = B * B - 4.0 * A * C;
-    if (disc <= 0.0) { graze = 0.0; break; }
-    /* HOW SQUARELY THE RAY MET THE SURFACE. The discriminant of this quadratic goes to zero where the ray is
-     * TANGENT to the shell -- the silhouette. Since the shells taper they are cones, and a cone has a hard rim
-     * where it turns away; six shells drew six hard circles that swung about with the bend. Reported so the
-     * caller can fade each shell out as it turns edge-on, which is what a wall of gas would do anyway. */
-    graze = sqrt(disc) / max(2.0 * A * Rc, 1e-5);
-    t = (-B + sqrt(disc)) / (2.0 * A);
+      /* HOW SQUARELY THE RAY MET THE SURFACE, measured AT the hit rather than across the scan step. Taking it
+       * from the bracket made it a per-step constant, so it jumped from one step to the next and the fade below
+       * turned those jumps into the same dark rings. A centred difference about the hit knows nothing about
+       * where the steps happened to fall.
+       *
+       * The gap rises at |rd.xy| for a ray leaving straight through the wall and at nothing at all for one
+       * leaving along the silhouette, so the ratio of the two is the squareness. */
+      float h = max(tMax * 0.004, 1e-4);
+      float slope = (wallGap(rd, hitT + h, R, b0, junk) - wallGap(rd, hitT - h, R, b0, junk)) / (2.0 * h);
+      graze = clamp(slope / max(length(rd.xy), 1e-4), 0.0, 1.0);
+      break;
+    }
+    tA = tB; dA = dB;
   }
-  /* THE HIT IS NOT CLAMPED. min(t, DEPTH) does not shorten the tube, it PINS the surface flat at that depth --
-   * every ray that ran past the cutoff froze at the same place, and the far end became one hard disc of frozen,
-   * warped coordinates with all of the bend's effect collected in it. The tube simply continues and DEPTH fades
-   * it out instead: same cutoff, no cut edge. */
-  vec3 P = rd * t;
+
+  if (hitT < 0.0){ rel = vec2(0.0); zz = uFar; return -1.0; }
+  vec3 P = rd * hitT;
   rel = P.xy - (bendAt(P.z) - b0);
   zz = P.z;
-  return t;
+  return hitT;
 }
 
 /* STREAKS ARE A FUNCTION OF THE ANGLE, and that is the thing this technique gives away almost free. A streak is a
@@ -239,10 +293,20 @@ float solveShell(vec3 rd, float R, vec2 b0, out vec2 rel, out float zz, out floa
  * made them the one effect that was not a property of the surface it was drawn on.
  */
 float streakAt(float ang, float z, float count, float speed, out float lr){
-  float slot = (ang + TAU) / TAU * count;
-  float lane = floor(slot);
+  /* THE LANE INDEX WRAPS, AND WITHOUT THAT THERE IS A SEAM DOWN THE TUBE.
+   *
+   * atan returns (-PI, PI], so at the branch cut slot jumps by exactly count -- and the lane index used to be a
+   * bare floor(), so the hash on one side of the cut was h31(lane) and on the other h31(lane + count). Different
+   * colour, different head, different lane, meeting along one line running the length of the tunnel: it read as
+   * two tubes butted together and running side by side.
+   *
+   * mod() closes it, but only if count is a whole number of lanes -- a fractional count cannot tile a circle,
+   * and the seam comes back as a partial lane. So the count is rounded here rather than trusted from a slider. */
+  float lanes = max(floor(count + 0.5), 4.0);
+  float slot = (ang + TAU) / TAU * lanes;
+  float lane = mod(floor(slot), lanes);
   lr = h31(vec3(lane, 3.7, 1.9));
-  float head = fract(lr * 7.3 - uTime * speed * uFlow * (0.06 + lr * 0.11));
+  float head = fract(lr * 7.3 - uTime * speed * (0.06 + lr * 0.11));
   float along = fract(z * 0.045 - head);
   float across = fract(slot) - 0.5;
   return step(0.55, lr) * exp(-along * 16.0) * exp(-across * across * 70.0);
@@ -271,50 +335,48 @@ void main(){
    * The whole lens scales with it for the same reason -- a deflection fixed in screen terms would grow relative
    * to a shrinking hole and swallow the frame at long range. */
   vec2 hc = (bendAt(uFar) - b0) * (uFov / uFar);
+
+  /* MASS IS THE ONLY NUMBER A HOLE HAS. Everything else about one is a fixed multiple of its Schwarzschild
+   * radius, so a separate SIZE was a second control describing the same thing -- free to disagree with the first,
+   * and it did: the disc's inner edge and the tunnel's end radius were each derived from one of them and drifted
+   * apart whenever the other moved.
+   *
+   *   shadow      2.6 Rs   what the eye sees as the dark disc, wider than the horizon because of lensing
+   *   photon ring 1.5 Rs   where light orbits, and where the rim of light sits
+   *   inner orbit 3.0 Rs   nothing is stable inside it, so no disc ever starts closer
+   *
+   * Derived from one number they cannot contradict each other, and the disc stays welded to the hole at every
+   * setting rather than needing two sliders kept in step by hand. */
+  /* 0.5 WORLD UNITS PER UNIT OF MASS, and the scale is small on purpose. The visible dark disc is not 2.6 Rs
+   * but roughly twice that again, because ray capture widens it -- so a radius that looks modest on paper fills a
+   * fifth of the frame by the time it is drawn. 0.2 keeps MASS 1 a hole at the END of a tunnel rather than a
+   * hole with a tunnel around it; 0.5 was tried and still filled a third of the frame. */
+  float rs = uMass * 0.2;
   float persp = uFov / max(uFar, 1e-3);
-  float shadowR = uShadow * persp;
+  float shadowR = rs * 2.6 * persp;
   vec2 dv = uv - hc;
   float b = length(dv);
 
-  /* GRAVITATIONAL LENSING, AND IT IS ONE LINE BECAUSE NOTHING IS MARCHED. Light passing a mass at impact
-   * parameter b is deflected by roughly 2Rs/b -- it falls off as 1/b, which is all that is needed for the look.
-   * Pulling the SAMPLING POINT toward the hole is the same thing seen from the other end: the image behind is
-   * dragged inward and wraps around the shadow.
+  /* THE DEFLECTION IS AN AREA OVER A DISTANCE, AND GETTING THAT WRONG IS WHAT MADE THE WARP LOOK DETACHED.
    *
-   * IT IS APPLIED TO uv BEFORE THE RAY EXISTS, so every shell, every streak and the disc below are all warped by
-   * it together rather than each needing to know. A marched build would have to bend the ray at every step. */
-  /* THE DEFLECTION IS ZERO AT THE CENTRE, PEAKS AT THE PHOTON RING, AND FALLS OFF BEYOND.
+   * A ray passing a mass at impact parameter b is bent by 2Rs/b. Carried into screen units both radii scale
+   * together, so the screen displacement goes as shadowR^2 / b -- shadowR SQUARED on top. It was written with a
+   * single shadowR, which is not a length at all: at b = shadowR that expression is 1.2, or 2.4x the frame's own
+   * half-height, and it stayed near a third of the frame right out to the corners.
    *
-   * It used to be k/max(b, r/2), and that max() is the bug you can see on screen: inside half a radius every
-   * pixel got the SAME push, so the whole middle of the frame was displaced bodily instead of converging. The
-   * shadow is drawn at the hole's true position while the warp around it sat offset by that constant, and as the
-   * arch rotated the two swung apart. The warp did not follow the hole.
+   * That is why the warp read as the whole image being dragged rather than as light wrapping something. It was
+   * not attached to the hole because it was not attached to any size -- every pixel in the frame was inside it.
    *
-   * It was backwards physically too. Light aimed straight at the centre is not deflected sideways -- it falls
-   * straight in. What bends hardest is light that GRAZES, at about the photon ring. b / (b^2 + r^2) is zero at
-   * the centre, peaks at b = r, and decays as 1/b outside, which is the real 2Rs/b at range.
-   *
-   * Zero at the centre is also what keeps the shadow and the throat together: the point the hole sits on maps to
-   * itself, so nothing can slide out from under it. */
-  /* THE LENS IS LOCAL. Deflection falls off as 1/b, which is right, but 1/b still shifts the frame edge by a
-   * fifth of the picture at high MASS -- so the whole image was being dragged rather than the region near the
-   * hole being wrapped, which reads as the light bending instead of the tube. The extra term cuts it off a few
-   * shadow radii out and leaves the tunnel beyond alone. */
-  float reach = 1.0 / (1.0 + pow(b / (shadowR * 5.0), 2.0));
-  float defl = uMass * 2.6 * shadowR * b / (b * b + shadowR * shadowR) * reach;
-
-  /* A RAY BENT BY MORE THAN ITS OWN IMPACT PARAMETER HAS NOT BEEN DEFLECTED -- IT HAS BEEN CAPTURED.
-   *
-   * Nothing stopped the deflection exceeding b, so at high MASS the sample point was thrown clean past the centre
-   * and out the far side: the image folded through itself and light appeared to bend in directions nothing
-   * physical would send it. That is the strange core in the middle at the extreme end of the slider.
-   *
-   * Those rays are exactly the ones that fall in. So they are not sampled at all -- they are shadow. The captured
-   * region grows with MASS, which is right: a heavier hole swallows a wider cone, and the dark disc you see is
-   * bigger than the hole itself for that reason. The rest are held short of the centre so the deflection can
-   * never fold the image back through itself.
+   * With the square restored the 1/b tail is local by construction: a few shadow radii out the deflection is
+   * already a fraction of a shadow radius. The cutoff that used to be multiplied in here existed only to hide
+   * the missing factor, and it is gone -- it was clamping the tail of a curve that was wrong at the head.
    */
-  float captured = smoothstep(0.80, 1.05, defl / max(b, 1e-5));
+  float S2 = shadowR * shadowR;
+  float defl = 2.4 * S2 * b / (b * b + S2);
+
+  /* Capture is now a RATIO of two things that scale together, so the dark disc is a fixed multiple of the
+     hole at every MASS: defl/b crosses these thresholds near 1.4 and 1.1 shadow radii whatever the mass is. */
+  float captured = smoothstep(1.20, 2.20, defl / max(b, 1e-5));
   defl = min(defl, b * 0.82);
   vec2 luv = uv - (b > 1e-5 ? dv / b : vec2(0.0)) * defl;
 
@@ -331,15 +393,27 @@ void main(){
     vec2 rel; float z, graze;
     float t = solveShell(rd, max(g.x, 0.02), b0, rel, z, graze);
     // Fades out with distance rather than being cut off at one. Nothing past the fade is worth reading a field for.
-    float depth = mix(1.0, 1.0 - smoothstep(2.0, uFar, t), uFog);
-    if (t <= 0.0 || depth <= 0.002) continue;
-    float ang = atan(rel.y, rel.x) + sh.w * uTime * uFlow;
+    /* THE FADE KEEPS A FLOOR, and that floor is what makes the tunnel and the hole agree.
+   *
+   * It used to reach 0 at DEPTH, which blacks out the last stretch of tube -- and the last stretch is the only
+   * one where an arch has swung anywhere. So the tube appeared to converge back near the frame centre, where it
+   * has not bent yet, while the hole drew at the true far end: two vanishing points, and the whole reason they
+   * looked unaligned. Dim but present, and the convergence is visible where the hole actually is. */
+  float depth = mix(1.0, 0.16 + 0.84 * (1.0 - smoothstep(2.0, uFar, t)), uFog);
+    /* THE TUBE STOPS AT DEPTH, and that is what welds its end to the hole.
+       Nothing rejected hits past uFar, so a near-axis ray struck the wall extrapolated well beyond the tube's
+       end -- out where the arch keeps swinging and the taper is already clamped. The middle of the frame was
+       filled by tube that does not exist, and the opening you read as the throat was that fill running out
+       rather than the tube ending. Cut at DEPTH, the opening IS the tube's end, centred on the axis at DEPTH,
+       which is exactly where the hole draws. */
+    if (t <= 0.0 || z > uFar || depth <= 0.002) continue;
+    float ang = atan(rel.y, rel.x) + sh.w * uTime;
     if (s == 0) tRef = min(t, uFar);
 
     /* THE TUNNEL'S OWN COORDINATES: where round the tube, and how far along it. WIND scales the distance the
      * pattern is read at, which is what tightens or unwinds the whorl at the vanishing point — see below. */
     vec3 tc = vec3(cos(ang), sin(ang), 0.0) * 1.9
-            + vec3(0.0, 0.0, z * g.w * uWind + uTime * g.z * uFlow * g.w);
+            + vec3(0.0, 0.0, z * g.w * uWind + uTime * g.z * g.w);
 
     float d = 0.0;
     vec3 emit = vec3(0.0);
@@ -372,7 +446,7 @@ void main(){
 
     // RINGS — bands across the tube. Read from the shell's own hit depth, so they foreshorten for free.
     if (m.w > 0.001){
-      float r0 = 0.5 + 0.5 * cos((z + uTime * uRingFlow * uFlow) * uRingN);
+      float r0 = 0.5 + 0.5 * cos((z + uTime * uRingFlow) * uRingN);
       r0 *= r0; r0 *= r0;
       float k = 1.0 + m.w * 2.2 * r0;
       d *= k; emit *= k;
@@ -390,7 +464,7 @@ void main(){
 
   // A WHOLE-TUNNEL RING PASS, for the shells that do not carry one of their own.
   if (uRingAmt > 0.001){
-    float r0 = 0.5 + 0.5 * cos((rd.z * tRef + uTime * uRingFlow * uFlow) * uRingN);
+    float r0 = 0.5 + 0.5 * cos((rd.z * tRef + uTime * uRingFlow) * uRingN);
     r0 *= r0; r0 *= r0;
     col *= 1.0 + uRingAmt * 2.2 * r0;
   }
@@ -404,7 +478,28 @@ void main(){
    * relativistic beaming term in the real thing and a dot product here, and without it a disc reads as a flat
    * ring rather than as something spinning.
    */
-  vec3 discCol = vec3(0.0);
+  /* THE DISC'S INNER EDGE IS THE HOLE, not a number of its own.
+   *
+   * Nothing can orbit inside the innermost stable orbit -- material there has already fallen in -- so a disc
+   * always starts at the hole and never anywhere else. As two independent controls they could disagree, and
+   * every way they could disagree was wrong: a gap of empty space between hole and disc, or a disc drawn over
+   * the shadow it should be cut by. Derived, they cannot.
+   *
+   * 3x the shadow is where the real inner edge sits for a non-spinning hole, which is why every picture of one
+   * has a clear gap between the dark disc and the first light. */
+  float discIn = rs * 3.0;
+  /* AND THE OUTER EDGE IS A MULTIPLE OF THE INNER, for the same reason the inner is a multiple of the hole. As an
+   * absolute distance it could fall INSIDE the inner edge -- which it did the moment SIZE was raised, leaving an
+   * annulus with negative width and a disc that vanished entirely. A ratio cannot invert. */
+  float discOut = discIn * max(uDiscOut, 1.05);
+  /* THE DISC IS IN TWO HALVES AND THEY ARE NOT OCCLUDED THE SAME WAY.
+   *
+   * Half the disc is NEARER than the hole and passes in FRONT of it, so it cuts a band of light straight across
+   * the shadow -- that band is the single most recognisable thing about a picture of one, and it was missing
+   * because the whole disc was being multiplied by the shadow mask. The far half is behind and IS occluded.
+   *
+   * Which half a sample belongs to is just its hit depth against the hole's, so it costs one compare. */
+  vec3 discFront = vec3(0.0), discBack = vec3(0.0);
   if (uDisc > 0.001){
     vec3 O = vec3(bendAt(uFar) - b0, uFar);
     /* A PLANE HAS TWO ANGLES AND ONLY TWO. Its orientation is its normal, and a direction on a sphere takes two
@@ -439,15 +534,36 @@ void main(){
         dim = 0.55;
       }
       vec3 srd = normalize(vec3(suv, uFov));
+      /* THE DISC IS A SLAB, NOT A PLANE, and that is what puts the band through the MIDDLE of the shadow.
+       *
+       * A plane has no thickness, so seen exactly edge-on it disappears -- which is why TILT 0 came back black,
+       * and why the only way to see the disc at all was from a little above or below, which throws the crossing
+       * band off centre. A real disc has depth: look along it and you see a bar straight across the hole, cutting
+       * it into a top half and a bottom half.
+       *
+       * HOW FAR THE RAY TRAVELS INSIDE IT is 2h / |dn|, which is also why an edge-on disc is BRIGHT across the
+       * middle -- the line of sight stays in the glowing gas for a long way. Clamped, because that path length
+       * runs to infinity exactly edge-on and would blow the frame out. */
       float dn = dot(srd, nrm);
-      if (abs(dn) < 1e-3) continue;
-      float td = dot(O, nrm) / dn;
+      float adn = max(abs(dn), 1e-3);
+      float hthick = uDiscThick * discIn;
+      float path = min(2.0 * hthick / adn, hthick * 4.0) / max(hthick * 2.0, 1e-4);
+      /* TILT CANNOT REACH 0, AND THAT IS GEOMETRY RATHER THAN A MISSING FEATURE.
+       *
+       * Exactly edge-on means the disc's plane contains the eye -- any plane through the hole that you see
+       * edge-on necessarily runs through where you are standing. dot(O,nrm) and dn both go to zero together,
+       * every hit distance comes out 0, and there is no crossing to solve because you are IN the surface.
+       *
+       * Sampling the ray's nearest approach instead was tried and is worse: away from the degenerate band it
+       * disagrees with the plane it is standing in for, and the disc lands off the hole. The slider is fenced
+       * just above 0, which is close enough to edge-on to give the bar across the shadow. */
+      float td = dot(O, nrm) / (dn >= 0.0 ? adn : -adn);
       if (td <= 0.0) continue;
 
       vec3 P = srd * td;
       vec3 rel3 = P - O;
       float rr = length(rel3);
-      if (rr <= uDiscIn || rr >= uDiscOut) continue;
+      if (rr <= discIn || rr >= discOut) continue;
 
       /* THE IN-PLANE AXES NEED A REFERENCE THE NORMAL IS NOT PARALLEL TO. Crossing with z alone returns a zero
        * vector the moment the disc is exactly face-on -- normalize(0) is a NaN, and a NaN here blackens every
@@ -456,7 +572,7 @@ void main(){
       vec3 u1 = normalize(cross(nrm, ref));
       vec3 u2 = cross(nrm, u1);
       float pa = atan(dot(rel3, u2), dot(rel3, u1));
-      float band = (rr - uDiscIn) / max(uDiscOut - uDiscIn, 1e-3);
+      float band = (rr - discIn) / max(discOut - discIn, 1e-3);
 
       /* KEPLERIAN, NOT RIGID, and it is the difference between a disc and a painted ring. Orbital speed goes as
        * r^-1/2, so angular rate goes as r^-3/2 and the inner edge laps the outer one many times over. Turning
@@ -464,8 +580,8 @@ void main(){
        *
        * IT ALSO DRIFTS INWARD. Material in a disc is falling in, not circling forever -- shifting the pattern
        * toward the inner edge is what makes it read as being consumed rather than parked. */
-      float kep = pow(max(uDiscIn / max(rr, 1e-3), 0.03), 1.5);
-      float turn = uTime * uDiscSpin * uFlow;
+      float kep = pow(max(discIn / max(rr, 1e-3), 0.03), 1.5);
+      float turn = uTime * uDiscSpin;
       float pa2 = pa + turn * kep * 0.5;
       float grain = fbm(vec3(cos(pa2), sin(pa2), 0.0) * 3.0
                       + vec3(0.0, 0.0, rr * 1.6 + turn * 0.12), 3);
@@ -483,8 +599,11 @@ void main(){
 
       /* NOTHING COMES OUT OF THE MIDDLE. The disc is cut at its inner edge and the shadow cuts everything again
        * below -- light in this picture comes from the disc and from the photon ring, and from nowhere inside. */
-      bright *= smoothstep(0.0, 0.10, band) * smoothstep(1.0, 0.86, band);
-      discCol += mix(uDiscA, uDiscB, band) * max(bright, 0.0) * max(dop, 0.0) * uDisc * 2.2 * dim;
+      bright *= smoothstep(0.0, 0.10, band) * smoothstep(1.0, 0.86, band) * path;
+      vec3 add = mix(uDiscA, uDiscB, band) * max(bright, 0.0) * max(dop, 0.0) * uDisc * 1.1 * dim;
+      /* The secondary image is light that went BEHIND the hole by definition, so it is always the far half
+         however near its apparent position lands. */
+      if (td < uFar && im == 0) discFront += add; else discBack += add;
     }
   }
 
@@ -502,9 +621,13 @@ void main(){
    * THE SHADOW IS WEIGHTED THE SAME WAY. Cutting unconditionally would carve a black disc out of a wall standing
    * in front of it; cutting by trans removes only the light that was coming from behind. */
   // The dark disc is the geometric shadow AND everything the lens captured, which at high MASS is wider.
-  float inside = smoothstep(shadowR * 0.92, shadowR * 1.10, b) * (1.0 - captured);
+  // The dark disc is the geometric shadow AND everything the lens captured, which at high MASS is wider.
+  // The edge is deliberately a few percent wide: the photon ring is found from it, and at 0.92-1.10 that
+  // band was about two pixels, too thin to read as light.
+  float inside = smoothstep(shadowR * 0.84, shadowR * 1.22, b) * (1.0 - captured);
   col *= mix(1.0, inside, trans);
-  col += discCol * inside * trans;
+  // Behind the hole: cut by the shadow, and seen through whatever tunnel wall is in the way.
+  col += discBack * inside * trans;
 
   /* THE PHOTON RING HUGS THE SHADOW'S EDGE, WHEREVER THAT EDGE HAS ENDED UP.
    *
@@ -519,12 +642,18 @@ void main(){
   float rim = inside * (1.0 - inside);
   col += uRingCol * rim * rim * 16.0 * uRing * 2.4 * trans;
 
+  // In FRONT of the hole, so nothing occludes it -- this is the band that cuts the shadow in half.
+  col += discFront * trans;
+
   // The screen radius, for the lens effects that belong to the FRAME rather than to the tunnel.
   float r = length(uv);
-  float ca = uChroma * 0.18 * r;
+  /* CHROMA AND VIGNETTE ARE FIXED AT THE STRENGTH THEY SHIPPED AT. They were sliders that nothing ever moved
+   * off 1.0, and a control that only has one useful value is a number two places can disagree about. Inlined,
+   * so the picture is unchanged and there is one description of it. */
+  float ca = 0.18 * r;
   col.r *= 1.0 + ca;
   col.b *= 1.0 - 0.6 * ca;
-  col *= mix(1.0, smoothstep(1.45, 0.1, r), uVignette);
+  col *= smoothstep(1.45, 0.1, r);
   col *= uExposure;
   col = col / (col + 1.0);
   fragColor = vec4(pow(col, vec3(0.85)), 1.0);
