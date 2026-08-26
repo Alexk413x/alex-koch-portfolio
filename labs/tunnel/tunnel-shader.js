@@ -33,7 +33,7 @@ export const MAXL = 6;
 export const UNIFORMS = [
   'uRes', 'uTime', 'uFov', 'uFar',
   'uBend', 'uBendFlow', 'uBendDir',
-    'uMass', 'uLens', 'uEndR', 'uRing', 'uRingCol',
+    'uMass', 'uLens', 'uEndR',
   'uDisc', 'uDiscTilt', 'uDiscLean', 'uDiscOut', 'uDiscThick', 'uDiscSpin', 'uDiscA', 'uDiscB', 'uDoppler',
   'uFog', 'uExposure',
   'uGeom', 'uMix', 'uShade', 'uExtra', 'uRingP',
@@ -47,10 +47,10 @@ out vec4 fragColor;
 uniform vec2 uRes;
 uniform float uTime, uFov, uFar;
 uniform float uBend, uBendFlow, uBendDir;
-uniform float uMass, uLens, uEndR, uRing;
+uniform float uMass, uLens, uEndR;
 uniform float uDisc, uDiscTilt, uDiscLean, uDiscOut, uDiscThick, uDiscSpin, uDoppler;
 uniform float uFog, uExposure;
-uniform vec3  uRingCol, uDiscA, uDiscB;
+uniform vec3  uDiscA, uDiscB;
 
 // geom: radius, amount, speed, stretch. mix: cloud, bolts, streaks, rings.
 // shade: cloud fill, cloud edge, cloud detail, spin. extra: lanes, ON, bolt fill, bolt edge.
@@ -643,16 +643,27 @@ void main(){
        * is uniform, or brightest at its rim, is the wrong way round. */
       float bright = (1.0 - band) * (0.55 + 0.9 * grain);
 
-      /* DOPPLER BEAMING: the side turning toward the eye is brighter. In the real thing it is a relativistic
-       * beaming term and it is why one side of every image of a disc is far brighter than the other; here it is
-       * a dot product. Without it a disc reads as a flat ring rather than as something spinning. */
-      // Beaming follows the ORBITAL direction, and it is stronger where the orbit is faster -- inside.
-      /* THE ORBIT'S DIRECTION IS DISC SPIN'S, and taking it from the normal alone was why DOPPLER only ever
-       * brightened one side. cross(nrm, rel3) fixes a sense of rotation from the plane's orientation, so
-       * reversing SPIN turned the pattern the other way while the bright limb stayed exactly where it was.
-       * Material orbiting the other way beams the other way. */
+      /* DOPPLER BEAMING, AS THE DOPPLER FACTOR CUBED. This is the single most recognisable thing about a
+       * picture of an accretion disc and it was modelled as a linear tint, which is why it read as a mild
+       * shading rather than one limb being violently brighter than the other.
+       *
+       * Observed brightness goes as delta^3 for a specific luminosity (delta^4 bolometric), with
+       *   delta = 1 / (gamma * (1 - beta cos(theta)))
+       * where beta is the orbital speed and theta the angle between it and the line of sight. Cubed, a beta of
+       * about a third already makes the approaching limb several times the receding one -- and the receding side
+       * genuinely goes dark rather than merely dimmer.
+       *
+       * BETA COMES FROM THE ORBIT, not a slider: circular orbital speed is sqrt(Rs / 2r), so the inner edge runs
+       * near half light speed and the outer one crawls. That is the same r^-1/2 the pattern's rotation uses, so
+       * the beaming and the turning cannot disagree about how fast the material is going.
+       *
+       * DOPPLER SCALES THE EXPONENT rather than blending toward it: 0 is no beaming, 1 is the physical cube, and
+       * above that it exaggerates without ever changing which limb is bright. */
       vec3 vel = normalize(cross(nrm, rel3)) * (uDiscSpin < 0.0 ? -1.0 : 1.0);
-      float dop = 1.0 + uDoppler * dot(vel, -srd) * 1.3 * sqrt(kep);
+      float beta = clamp(sqrt(rs / max(2.0 * rr, 1e-4)), 0.0, 0.85);
+      float gamma = 1.0 / sqrt(max(1.0 - beta * beta, 1e-4));
+      float delta = 1.0 / max(gamma * (1.0 - beta * dot(vel, -srd)), 1e-3);
+      float dop = pow(delta, 3.0 * uDoppler);
 
       /* NOTHING COMES OUT OF THE MIDDLE. The disc is cut at its inner edge and the shadow cuts everything again
        * below -- light in this picture comes from the disc and from the photon ring, and from nowhere inside. */
@@ -689,19 +700,10 @@ void main(){
   // Behind the hole: cut by the shadow, and seen through whatever tunnel wall is in the way.
   col += discBack * inside * trans;
 
-  /* THE PHOTON RING HUGS THE SHADOW'S EDGE, WHEREVER THAT EDGE HAS ENDED UP.
-   *
-   * It was drawn at a fixed 1.5 shadow radii, which was a guess about where the edge is -- and wrong as soon as
-   * MASS started widening the dark disc by capturing rays, because then the ring sat at some arbitrary radius
-   * inside or outside the thing it is meant to outline.
-   *
-   * inside * (1 - inside) peaks exactly where inside crosses a half, which IS the boundary by definition. So the
-   * ring finds the edge instead of being told where it is, and it follows the shadow as MASS grows it. It is the
-   * light that grazed the hole and came back round, so the edge is the only place it can be.
-   */
-  float rim = inside * (1.0 - inside);
-  col += uRingCol * rim * rim * 16.0 * uRing * 2.4 * trans;
-
+  /* THERE IS NO PAINTED RING. The bright edge around the shadow is not a circle drawn on top of one -- it is
+     the disc's own light bent round the hole, arriving just outside the shadow, which the secondary image
+     already draws. A ring as well lit the same edge twice from two descriptions, and the painted one won: a
+     fixed band of white sitting over the wrapping it was meant to stand for. */
   // In FRONT of the hole, so nothing occludes it -- this is the band that cuts the shadow in half.
   col += discFront * trans;
 

@@ -58,7 +58,7 @@ if (!R) { reportNoGL(); throw new Error('WebGL unavailable'); }
  * currently on screen -- otherwise dropping SHELLS to 2 would stop saving shells 3 and 4 and lose them on the
  * next reload. The swatches and the masters have no range to be derived from, so they are named. */
 // Swatches have no range for persist() to derive, so every one is named. Six per shell now, plus the throat.
-const SWATCHES = ['ringCol', 'discA', 'discB'].concat(
+const SWATCHES = ['discA', 'discB'].concat(
   Array.from({ length: MAXL }, (_, i) =>
     ['CloudA', 'CloudB', 'BoltA', 'BoltB', 'StrkA', 'StrkB'].map((n) => 'L' + i + n)).flat());
 const MASTERS = ALL_SECTIONS.map(([, , m]) => m).filter(Boolean);
@@ -161,9 +161,7 @@ function draw(dt, sec) {
   // The hole's master rides on MASS, SHADOW, RING and DISC together: switching the section off must remove the
   // lensing too, not just stop drawing the disc, or the frame stays warped around nothing.
   const H = s.holeOn ? 1 : 0;
-  R.f('uMass', s.mass * H); R.f('uLens', s.lens); R.f('uRing', s.ring * H);
-  // Never uploaded once, so uRingCol sat at vec3(0) and PHOTON RING multiplied to black at every setting.
-  R.f3('uRingCol', ...hex(s.ringCol));
+  R.f('uMass', s.mass * H); R.f('uLens', s.lens);
 
   /* ONE SHARED END RADIUS FOR EVERY SHELL, worked out here because only the host sees all six radii at once.
      It is the HOLE'S shadow when there is one, so the tunnel arrives exactly at it rather than near it, and it
