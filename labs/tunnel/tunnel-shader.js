@@ -417,7 +417,17 @@ void main(){
      toward its edge the far half hides behind the shadow, and the bend is the only thing that can lift it out.
      sin(TILT) is 0 flat and 1 edge-on, which is that statement written down. */
   float wrapGain = mix(0.45, 1.35, sin(uDiscTilt));
-  float deflDisc = softCap(deflLens * wrapGain, b * 0.45);
+/* THE CEILING RISES WITH LENS, so more of the disc keeps coming round instead of the effect saturating.
+     *
+     * It was pinned at 0.45 of the impact parameter whatever LENS said, which meant the control ran out: past a
+     * point, turning it up dragged nothing further. The cap exists because a bend of a whole impact parameter
+     * lands the sample on the axis and the image folds through itself, so it cannot reach 1 -- but between the
+     * two there is room, and that room is what LENS should be spending.
+     *
+     * Low, the bend only lifts the far edge clear of the shadow. High, it drags the disc round until the far
+     * half meets itself over the top, which is what a heavy lens does to a disc. */
+  float discCap = b * mix(0.42, 0.88, clamp(uLens / 6.0, 0.0, 1.0));
+  float deflDisc = softCap(deflLens * wrapGain, discCap);
   vec2 dluv = uv - bdir * deflDisc;
   vec2 luv  = uv - bdir * softCap(deflLens, b * 0.82);
 
