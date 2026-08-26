@@ -144,42 +144,34 @@ float fbm(vec3 p, int oct){
  */
 /* ONE BEND ACROSS THE DISTANCE. The axis leaves the camera straight and swings a single arch by DEPTH.
  *
- * A QUADRATIC IS THE WHOLE REASON THIS IS STABLE. It is zero AND flat at z = 0, so the eye sits on the axis
- * looking straight down the tube for free -- no frame to rotate into, no tangent to subtract, nothing that can
- * run away with distance. The swing at DEPTH is exactly uBend tube radii, at every DEPTH.
+ * A QUADRATIC IS WHY THIS IS STABLE -- zero AND flat at z = 0, so the eye sits on the axis looking straight down
+ * the tube for free: no frame to rotate into, no tangent to subtract, nothing that can run away with distance.
+ * A quarter sine moves the swing into the near half, where the tube is large on screen; the swing at DEPTH is
+ * the same either way, it just arrives earlier.
  *
- * IT WAS A TRAVELLING SINE AND THAT IS SCRAPPED. A path the camera moves along needs the tangent subtracted to
- * point the view down the tube, and that subtraction is only a first-order rotation: over most of a wavelength
- * its error grows linearly, the far end left the frame, and the tube shut across the middle of the view. Running
- * two sines at different frequencies to keep it from looking flat made it worse -- x turned its corner while y
- * was still leaning, which reads as two curves at once rather than one bend.
+ * THE SWING SATURATES. BEND is in TUBE_R units and the lit shells are 0.5 to 1.35 wide, so at BEND 10 the mouth
+ * sat seven times its own radius off axis: the wall closed across it and the hole showed beside it rather than
+ * through it, two overlapping discs instead of one throat. tanh keeps the whole slider usable, linear where
+ * BEND already behaved and easing into a ceiling above it.
  *
- * THE MOVEMENT IS THE ARCH TURNING. BEND FLOW rotates which way it swings, so the tunnel leans through a full
- * circle over time; the sense of travel down it comes from the shells' own SPEED, which is where it belongs.
- */
+ * THE DIRECTION AND THE SWING ARE THE SAME FOR EVERY PIXEL, so they are worked out once at the top of main
+ * rather than inside bendAt. They were recomputed on every call -- a tanh and two trig calls each -- and the
+ * scan calls this up to a hundred times a pixel. Nothing about them varies across the frame or along a ray. */
+vec2 gBendDir;
+float gSwing;
+
+void setupBend(){
+  float a = uBendDir + uTime * uBendFlow * 0.12;
+  gBendDir = vec2(cos(a), sin(a));
+  gSwing = MAX_SWING * tanh(uBend / MAX_SWING) * TUBE_R;
+}
 vec2 bendAt(float z){
   float f = clamp(z / max(uFar, 1.0), 0.0, 1.0);
-  float a = uBendDir + uTime * uBendFlow * 0.12;
-  /* THE ARCH IS WEIGHTED TOWARD THE CAMERA. A quadratic holds the axis straight through the near half and does
-   * all its swinging at DEPTH -- which is the half that is small on screen, so most of the bend was spent where
-   * it could not be seen. A quarter sine turns fastest at the eye and flattens out at DEPTH, so the curve reads
-   * in the near field where the tube is large. Same swing at DEPTH either way; it just gets there earlier. */
-  /* THE SWING SATURATES, because past a few tube radii the mouth leaves its own tube.
-   *
-   * BEND is in TUBE_R units and the lit shells are 0.5 to 1.35 wide, so at BEND 10 the opening was some seven
-   * times its own radius off axis: the wall closed across most of it and the hole showed beside it rather than
-   * through it -- two overlapping discs instead of one throat. Six holds, ten does not.
-   *
-   * tanh keeps the whole slider usable instead of cutting it back. It is linear where BEND already behaved and
-   * eases into a ceiling above it, so the top of the range means "as far as it goes" rather than "broken". */
-  float swing = MAX_SWING * tanh(uBend / MAX_SWING);
-  return vec2(cos(a), sin(a)) * (swing * TUBE_R * sin(f * 1.5707963));
+  return gBendDir * (gSwing * sin(f * 1.5707963));
 }
 vec2 bendD(float z){
   float f = clamp(z / max(uFar, 1.0), 0.0, 1.0);
-  float a = uBendDir + uTime * uBendFlow * 0.12;
-  float swing = MAX_SWING * tanh(uBend / MAX_SWING);
-  return vec2(cos(a), sin(a)) * (swing * TUBE_R * 1.5707963 * cos(f * 1.5707963) / max(uFar, 1.0));
+  return gBendDir * (gSwing * 1.5707963 * cos(f * 1.5707963) / max(uFar, 1.0));
 }
 
 /* WHERE THE RAY MEETS THE TUBE. |rd.xy * t - offset(t)| = R is a quadratic in t for a FIXED offset, and the
@@ -275,16 +267,15 @@ float solveShell(vec3 rd, float R, vec2 b0, out vec2 rel, out float zz, out floa
       }
       hitT = mix(tA, tB, dA / (dA - dB));
 
-      /* HOW SQUARELY THE RAY MET THE SURFACE, measured AT the hit rather than across the scan step. Taking it
-       * from the bracket made it a per-step constant, so it jumped from one step to the next and the fade below
-       * turned those jumps into the same dark rings. A centred difference about the hit knows nothing about
-       * where the steps happened to fall.
+      /* HOW SQUARELY THE RAY MET THE SURFACE, taken from the refined bracket rather than from two more probes
+       * either side of the hit. Three false-position steps leave tA and tB straddling the root closely, so their
+       * secant IS the slope there. Measuring it across the raw SCAN step was the thing that drew dark rings --
+       * that made it a per-step constant which jumped between steps; this does not, because the bracket has
+       * converged onto the crossing.
        *
        * The gap rises at |rd.xy| for a ray leaving straight through the wall and at nothing at all for one
        * leaving along the silhouette, so the ratio of the two is the squareness. */
-      float h = max(tMax * 0.004, 1e-4);
-      float slope = (wallGap(rd, hitT + h, R, b0) - wallGap(rd, hitT - h, R, b0)) / (2.0 * h);
-      graze = clamp(slope / max(length(rd.xy), 1e-4), 0.0, 1.0);
+      graze = clamp(((dB - dA) / max(tB - tA, 1e-6)) / max(length(rd.xy), 1e-4), 0.0, 1.0);
       break;
     }
     tA = tB; dA = dB;
@@ -328,6 +319,7 @@ float streakAt(float ang, float z, float count, float speed, out float lr){
 }
 
 void main(){
+  setupBend();
   vec2 uv = (gl_FragCoord.xy - 0.5 * uRes) / uRes.y;
   /* THE LENS. uFov is the ray's z, so SMALL IS WIDE — the host sends it from an angle in degrees, which is the
    * number a person means. A narrow angle keeps the wall away from the frame edge and the whole thing reads as
@@ -555,7 +547,15 @@ void main(){
      */
     float ringR0 = shadowR * 1.5;
     for (int im = 0; im < 2; im++){
-      vec2 suv = luv;
+      /* THE DIRECT IMAGE IS NOT LENSED. Its light has not passed the hole -- the near half of the disc is
+       * between the eye and the hole, and the far half sits at the hole's own distance, where a lens has no
+       * lever arm to work with. Sampling it through luv magnified the region right at the axis enormously,
+       * because the deflection is capped at 0.82 of the impact parameter and a wide area collapses into a
+       * narrow one there. That is the keyhole shape that appeared in the middle of the shadow.
+       *
+       * The SECOND image is the lensed one, and it is the only one that should be: it exists precisely because
+       * that light went behind the hole and bent back. */
+      vec2 suv = uv;
       float dim = 1.0;
       if (im == 1){
         float bi = ringR0 * ringR0 / max(b, 1e-4);
@@ -582,33 +582,24 @@ void main(){
        * runs to infinity exactly edge-on and would blow the frame out. */
       float dn = dot(srd, nrm);
       float adn = max(abs(dn), 1e-3);
+      /* THICKNESS IS THE SLAB'S HALF-HEIGHT AT ITS INNER EDGE, and it scales with discIn, which is 3 Rs -- so a
+       * heavier hole carries a proportionally deeper disc without a second control saying so. */
       float hthick = uDiscThick * discIn;
-      float path = min(2.0 * hthick / adn, hthick * 4.0) / max(hthick * 2.0, 1e-4);
-      /* TILT CANNOT REACH 0, AND THAT IS GEOMETRY RATHER THAN A MISSING FEATURE.
+      /* TILT REACHES 0 NOW, AND THE SLAB IS WHY.
        *
-       * Exactly edge-on means the disc's plane contains the eye -- any plane through the hole that you see
-       * edge-on necessarily runs through where you are standing. dot(O,nrm) and dn both go to zero together,
-       * every hit distance comes out 0, and there is no crossing to solve because you are IN the surface.
+       * At exactly edge-on the disc's plane contains the eye -- any plane through the hole you see edge-on runs
+       * through where you are standing -- so dot(O,nrm) and dn both go to zero, every mid-plane crossing comes
+       * out at 0, and the whole disc was skipped. The slider was fenced above it.
        *
-       * Sampling the ray's nearest approach instead was tried and is worse: away from the degenerate band it
-       * disagrees with the plane it is standing in for, and the disc lands off the hole. The slider is fenced
-       * just above 0, which is close enough to edge-on to give the bar across the shadow. */
+       * But a slab has somewhere to sample even then. The stay inside it is hthick/adn either side of the
+       * crossing, and as the disc turns edge-on that window opens without bound, so the clamp below stops being
+       * a clamp and becomes the ray's nearest approach to the hole -- which is exactly where a ray running along
+       * the disc is deepest inside it. All that blocked TILT 0 was testing td before the clamp had run: the test
+       * belongs on the sample actually used.
+       *
+       * The window still rejects properly when it should. If the eye is further off the plane than the slab is
+       * thick, the window sits far down the ray, the sample lands well outside the annulus, and nothing draws. */
       float td = dot(O, nrm) / (dn >= 0.0 ? adn : -adn);
-      if (td <= 0.0) continue;
-
-      /* SAMPLE WHERE THE RAY IS NEAREST THE HOLE, NOT WHERE IT CROSSES THE MID-PLANE. This is what puts the bar
-       * back across the middle and stops the disc reading as two lobes.
-       *
-       * A ray that runs ALONG a near edge-on disc crosses its mid-plane a very long way out -- past discOut, so
-       * it was rejected. That threw away every ray near the plane, which is exactly the band through the middle
-       * of the shadow, and what survived was the two regions either side of the rejected band: two lobes above
-       * and below with nothing between them.
-       *
-       * The ray is inside the slab for hthick/adn either side of the crossing, and the honest sample is the point
-       * in that stay which comes closest to the hole. Clamping the nearest approach into the slab window says
-       * exactly that, and it degenerates correctly at both ends: face-on, adn is 1, the window is a hair wide and
-       * this IS the mid-plane crossing; edge-on, adn goes to zero, the window opens and it becomes the nearest
-       * approach. Nothing to threshold and nothing to blend. */
       float hspan = hthick / adn;
       float ts = clamp(dot(O, srd), td - hspan, td + hspan);
       if (ts <= 0.0) continue;
@@ -617,6 +608,19 @@ void main(){
       vec3 rel3 = P - O;
       float rr = length(rel3);
       if (rr <= discIn || rr >= discOut) continue;
+
+      /* THE DISC BULGES IN THE MIDDLE, thickest at the inner edge and thinning outward -- a lens, or a UFO,
+       * rather than a sheet of card. The inner region of a real disc is the puffy one: it is hottest, radiating
+       * hardest and held up against gravity by its own pressure, while the outer disc settles flat.
+       *
+       * THICKNESS NOW REACHES THE BRIGHTNESS, and before this it could not. The path term read
+       *   min(2h/adn, 4h) / 2h
+       * and h cancels straight out of that -- it collapses to min(1/adn, 2), so DISC THICKNESS only ever sized
+       * the sampling window and never changed a single pixel. Dividing by a FIXED reference instead of by the
+       * thickness itself is what lets a deeper slab actually glow more where the ray runs further through it. */
+      float bulge = mix(1.0, 0.12, smoothstep(discIn, discOut, rr));
+      float hth = hthick * bulge;
+      float path = min(2.0 * hth / adn, 4.0 * hth) / max(discIn * 0.30, 1e-4);
 
       /* THE IN-PLANE AXES NEED A REFERENCE THE NORMAL IS NOT PARALLEL TO. Crossing with z alone returns a zero
        * vector the moment the disc is exactly face-on -- normalize(0) is a NaN, and a NaN here blackens every
@@ -678,7 +682,9 @@ void main(){
       vec3 add = mix(uDiscA, uDiscB, band) * max(bright, 0.0) * max(dop, 0.0) * uDisc * 1.1 * dim;
       /* The secondary image is light that went BEHIND the hole by definition, so it is always the far half
          however near its apparent position lands. */
-      if (ts < uFar && im == 0) discFront += add; else discBack += add;
+      /* NEARER THAN THE HOLE IS A DEPTH TEST, and it was comparing a distance ALONG THE RAY against a
+         depth -- the same number only for a ray down the axis, and increasingly wrong toward the corners. */
+      if (P.z < uFar && im == 0) discFront += add; else discBack += add;
     }
   }
 

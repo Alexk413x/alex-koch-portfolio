@@ -126,7 +126,7 @@ export const HEAD = [
                   ['disc', 'DISC', 0, 2, 0.02],
                   [['discA', 'discB'], 'DISC COLOR', '#'],
                   ['discThick', 'DISC THICKNESS', 0.01, 0.6, 0.005],
-                  ['discTilt', 'DISC TILT', 0.08, 1.57, 0.01],
+                  ['discTilt', 'DISC TILT', 0.0, 1.5708, 0.01],
                   ['discLean', 'DISC LEAN', -3.14, 3.14, 0.02],
                   ['discOut', 'DISC REACH', 0.2, 30, 0.1],
                   ['discSpin', 'DISC SPIN', -20, 20, 0.1],
