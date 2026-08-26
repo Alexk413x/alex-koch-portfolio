@@ -4,10 +4,13 @@
  * to pass in front, a far one to be passed, and one between them to prove the other two are at different
  * distances. Two reads as a foreground and a backdrop; one is a wall.
  *
- * FILL IS HIGH ON PURPOSE, and this is the number to reach for first if the scene turns into a sheet of light.
- * fbm averages about 0.5, so a threshold near it passes half of everything -- and three shells each passing half
- * is solid. Sparse shells are what let the eye see PAST the near one to the far one, which is the entire reason
- * there is more than one.
+ * FILL IS COVERAGE: how much of the wall lights up, so higher is denser. It reads that way on the panel and is
+ * inverted into a threshold on the way to the shader, because raising a threshold passes less.
+ *
+ * IT SITS BELOW HALF ON PURPOSE, and this is the number to reach for first if the scene turns into a sheet of
+ * light. fbm averages about 0.5, so coverage near half passes half of everything -- and three shells each
+ * passing half is solid. Sparse shells are what let the eye see PAST the near one to the far one, which is the
+ * entire reason there is more than one.
  */
 import { MAXL } from './tunnel-shader.js';
 
@@ -22,8 +25,8 @@ function shell(i, v) {
     CloudA: '#ff7a1e', CloudB: '#7d2a05',
     BoltA: '#ffce85', BoltB: '#ff4d00',
     StrkA: '#ffb454', StrkB: '#ffffff',
-    Fill: 0.58, Edge: 0.20, Oct: 4, Lanes: 190,
-    BoltFill: 0.77, BoltEdge: 0.25,
+    Fill: 0.42, Edge: 0.20, Oct: 4, Lanes: 190,
+    BoltFill: 0.23, BoltEdge: 0.25,
     Speed: 6.0, Warp: 0.30, Spin: 0.0,
   };
   const out = {};
@@ -85,20 +88,20 @@ export function defaultPreset(gpu) {
     ...shell(1, { On: 1, Rad: 0.85, Amt: 0.95,
                   Cloud: 1.0, Ring: 0.45,
                   CloudA: '#ff7a1e', CloudB: '#8c3a08',
-                  Fill: 0.58, Edge: 0.20, Speed: 6.0, Warp: 0.30 }),
+                  Fill: 0.42, Edge: 0.20, Speed: 6.0, Warp: 0.30 }),
     ...shell(2, { On: 1, Rad: 1.35, Amt: 1.0,
                   Cloud: 1.0,
                   CloudA: '#7d2a05', CloudB: '#2a0d02',
-                  Fill: 0.55, Edge: 0.18, Speed: 3.6, Warp: 0.22 }),
+                  Fill: 0.45, Edge: 0.18, Speed: 3.6, Warp: 0.22 }),
     ...shell(3, { Rad: 1.9, Amt: 0.8, Cloud: 1.0,
                   CloudA: '#3d1403', CloudB: '#140600',
-                  Fill: 0.54, Edge: 0.18, Speed: 2.2, Warp: 0.18 }),
+                  Fill: 0.46, Edge: 0.18, Speed: 2.2, Warp: 0.18 }),
     ...shell(4, { Rad: 0.30, Amt: 0.7, Bolts: 0.8,
                   BoltA: '#ffe6bd', BoltB: '#ffa03a',
                   Edge: 0.28, Speed: 13.0, Warp: 0.55 }),
     ...shell(5, { Rad: 2.2, Amt: 0.6, Cloud: 1.0, Streak: 0.4,
                   CloudA: '#1d0a02', CloudB: '#000000',
-                  Fill: 0.60, Edge: 0.16, Lanes: 90, Speed: 1.6, Warp: 0.14 }),
+                  Fill: 0.40, Edge: 0.16, Lanes: 90, Speed: 1.6, Warp: 0.14 }),
 
     secClosed: { RENDER: true, TUNNEL: false, 'BLACK HOLE': false },
   };

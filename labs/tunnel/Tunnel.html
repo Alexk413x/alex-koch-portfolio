@@ -72,7 +72,7 @@ function syncMode() {
   const lit = [];
   for (let i = 0; i < MAXL; i++) {
     if (!state['L' + i + 'On']) continue;
-    const on = [['Cloud', 'CLOUD'], ['Bolts', 'BOLTS'], ['Streak', 'STREAKS']]
+    const on = [['Cloud', 'NEBULA'], ['Bolts', 'PLASMA'], ['Streak', 'STREAKS']]
       .filter(([k]) => state['L' + i + k] > 0.001).map(([, n]) => n);
     if (on.length) lit.push(LAYER_NAMES[i] + ' ' + on.join('+'));
   }
@@ -130,10 +130,14 @@ function packed() {
     const g = (k) => state['L' + i + k];
     geom.push(g('Rad'), g('Amt'), g('Speed'), g('Warp'));
     mix.push(g('Cloud'), g('Bolts'), g('Streak'), g('Ring'));
-    shade.push(g('Fill'), g('Edge'), g('Oct'), g('Spin'));
+ /* FILL IS COVERAGE ON THE PANEL AND A THRESHOLD IN THE SHADER, inverted here where the two meet.
+       Raising a threshold passes LESS, so the slider used to count upward as the nebula got rarer -- backwards
+       from what the word says. One flip at the boundary, so the control reads the way it is named and the shader
+       keeps the form its smoothstep wants. */
+    shade.push(1 - g('Fill'), g('Edge'), g('Oct'), g('Spin'));
     // extra.y is the shell's ON flag: the shader skips a dark shell before it solves anything for it.
     // z and w were the spare slots; they carry the bolts' own FILL and EDGE, which used to borrow the cloud's.
-    extra.push(g('Lanes'), g('On') ? 1 : 0, g('BoltFill'), g('BoltEdge'));
+    extra.push(g('Lanes'), g('On') ? 1 : 0, 1 - g('BoltFill'), g('BoltEdge'));
     ringP.push(g('RingN'), g('RingFlow'), 0, 0);
     cA.push(...hex(g('CloudA')), 0); cB.push(...hex(g('CloudB')), 0);
     bA.push(...hex(g('BoltA')), 0);  bB.push(...hex(g('BoltB')), 0);
