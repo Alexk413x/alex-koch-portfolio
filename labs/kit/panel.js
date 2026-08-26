@@ -17,6 +17,7 @@
 
 /* A ROW'S KIND IS ITS SPEC'S SHAPE, so a section never has to say which control it wants.
  *   ['k','LABEL','#']            color swatch
+ *   [['k1','k2'],'LABEL','#']    a PAIR of swatches on one row
  *   ['k','LABEL',['A','B']]      one-of-N
  *   ['k','LABEL',0,1,1]          toggle
  *   ['k','LABEL',lo,hi,step]     slider
@@ -26,8 +27,8 @@
  *   { wide: true }                   drop the label and give the control the panel's full width, twice as tall
  */
 export function rowKind(spec) {
-  const [, , lo, hi, st] = spec;
-  if (lo === '#') return 'color';
+  const [k, , lo, hi, st] = spec;
+  if (lo === '#') return Array.isArray(k) ? 'colorPair' : 'color';
   if (Array.isArray(lo)) return 'choice';
   if (lo === 0 && hi === 1 && st === 1) return 'toggle';
   return 'slider';
@@ -61,6 +62,28 @@ function rowColor(ctx, k, label) {
   sw.type = 'color'; sw.className = 'csw'; sw.value = ctx.state[k];
   sw.addEventListener('input', () => { ctx.state[k] = sw.value; ctx.onChange(k, 'color'); });
   row.appendChild(sw);
+  return row;
+}
+
+/* TWO COLORS THAT DESCRIBE ONE THING, on one row.
+ *
+ * A gradient's two ends, or an effect's near and far tint, are ONE decision made twice -- and split across two
+ * rows they read as two unrelated settings and cost twice the panel height. The pair shares a label because the
+ * label names the thing, not either end of it.
+ *
+ * The key is an ARRAY, which is what tells rowKind this is a pair; everything else about a swatch is unchanged.
+ */
+function rowColorPair(ctx, keys, label) {
+  const row = document.createElement('div'); row.className = 'row';
+  row.innerHTML = '<label>' + label + '</label>';
+  const wrap = document.createElement('div'); wrap.className = 'cpair';
+  keys.forEach((k) => {
+    const sw = document.createElement('input');
+    sw.type = 'color'; sw.className = 'csw'; sw.value = ctx.state[k];
+    sw.addEventListener('input', () => { ctx.state[k] = sw.value; ctx.onChange(k, 'color'); });
+    wrap.appendChild(sw);
+  });
+  row.appendChild(wrap);
   return row;
 }
 
@@ -167,13 +190,14 @@ export function buildRow(ctx, spec) {
   let row;
   switch (rowKind(spec)) {
     case 'color': row = rowColor(ctx, k, label); break;
+    case 'colorPair': row = rowColorPair(ctx, k, label); break;
     case 'choice': row = rowChoice(ctx, k, label, lo); break;
     case 'toggle': row = rowToggle(ctx, k, label); break;
     default:       row = rowSlider(ctx, k, label, lo, hi, st);
   }
   // The state key on the element, because a LABEL DOES NOT IDENTIFY A ROW: SPEED, SPIN and BRIGHTNESS each occur
   // in several sections, and anything reaching in by label picks whichever came first.
-  row.dataset.k = k;
+  row.dataset.k = Array.isArray(k) ? k[0] : k;
   const opts = rowOpts(spec);
   if (opts && opts.wide) row.classList.add('wide');
   const when = rowWhen(spec);
