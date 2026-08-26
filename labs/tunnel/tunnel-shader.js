@@ -379,43 +379,32 @@ void main(){
    * the missing factor, and it is gone -- it was clamping the tail of a curve that was wrong at the head.
    */
   float S2 = shadowR * shadowR;
-  float defl = 2.4 * S2 * b / (b * b + S2);
+  float deflPhys = 2.4 * S2 * b / (b * b + S2);
 
-  /* LENS IS HOW HARD THE LIGHT IS DRAGGED; MASS IS HOW BIG THE HOLE IS. They were one number, and the true
-   * deflection for a hole this size is subtle -- correct, and far less than this reads best with. Pushing MASS
-   * to get more warp only grew the shadow instead.
-   *
-   * CAPTURE STAYS ON THE PHYSICAL DEFLECTION, deliberately. The dark disc's size is the hole's, so it must not
-   * move when LENS does; only the light OUTSIDE it gets dragged harder. The 0.82 cap still stops a ray being
-   * thrown past the centre and folding the image through itself, which is what a lens this strong would
-   * otherwise do. */
-  float captured = smoothstep(1.20, 2.20, defl / max(b, 1e-5));
+  /* CAPTURE STAYS ON THE PHYSICAL DEFLECTION so the dark disc's size belongs to MASS alone and does not move
+     when LENS does. Only the light OUTSIDE it is dragged harder. */
+  float captured = smoothstep(1.20, 2.20, deflPhys / max(b, 1e-5));
   vec2 bdir = b > 1e-5 ? dv / b : vec2(0.0);
 
-  /* THE DISC BENDS BY THE PHYSICAL DEFLECTION; THE TUNNEL BEHIND IT BENDS BY LENS.
+  /* LENS WIDENS THE LENSED REGION, NOT JUST ITS DEPTH.
    *
-   * LENS is an artistic control -- it has to be, because everything in this scene except the disc's far side is
-   * IN FRONT of the hole, where a real lens has no lever arm. Feeding it into the disc as well was wrong: at 2.6
-   * it threw the far crossing out to a huge radius, and instead of the far edge lifting just clear of the shadow
-   * there was one enormous smooth curve sweeping the frame with none of the disc's texture in it.
+   * It used to be a plain multiplier on the deflection, so the warp got stronger while the area it covered
+   * stayed exactly the same size -- the turnover radius of the profile is set by shadowR, and multiplying the
+   * whole curve does not move it. Nothing grew outward from the edge of the mass however far the slider went.
    *
-   * The disc's arc is geometry, not styling. It gets the deflection the hole actually produces, so the far side
-   * rises by about the shadow's own size and its lanes carry up and over with it. */
-/* THE ARC HAS TO BEGIN AT THE DISC'S INNER RIM, and the cap on the deflection is what decides where it does.
-   *
-   * Bent too hard, a ray just outside the ring crosses the disc's plane INSIDE the inner edge -- in the empty
-   * hole where nothing orbits -- so nothing drew there and the arc only appeared further out, detached from the
-   * disc it belongs to. Easing the cap leaves the ray more outward angle, so it meets the plane further from the
-   * axis, and the crossing lands on the rim instead of inside it.
-   *
-   * That is also what the geometry says: a ray turns around at about its own impact parameter, so one passing
-   * just outside the shadow (2.6 Rs) meets the disc near 3 Rs, which IS the inner edge. The arc should start
-   * essentially at the ring, and now it does. */
-  float deflDisc = min(defl, b * 0.45);
-  vec2 dluv = uv - bdir * deflDisc;
+   * Scaling the profile's RADIUS by sqrt(LENS) does both at once: the far field, which goes as S^2/b, scales by
+   * LENS, and the turnover moves out as sqrt(LENS), so the wrapped region visibly spreads from the shadow's
+   * edge as you push it. */
+  float Sl = shadowR * sqrt(max(uLens, 1e-4));
+  float S2l = Sl * Sl;
+  float deflLens = 2.4 * S2l * b / (b * b + S2l);
 
-  defl = min(defl * uLens, b * 0.82);
-  vec2 luv = uv - bdir * defl;
+  /* THE DISC IS PULLED ROUND BY IT TOO, on a shorter rein. Cutting LENS out of the disc entirely stopped it
+     throwing the far crossing across the frame, but it also stopped the disc responding to the control at all.
+     The tighter cap is what keeps the arc on the rim: bent past it, a ray just outside the shadow crosses the
+     plane inside the inner edge, where there is nothing to draw. */
+  vec2 dluv = uv - bdir * min(deflLens, b * 0.45);
+  vec2 luv  = uv - bdir * min(deflLens, b * 0.82);
 
   vec3 rd = normalize(vec3(luv, uFov));
 
