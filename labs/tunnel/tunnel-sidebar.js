@@ -75,25 +75,13 @@ export const HEAD = [
    * as render. */
   ['RENDER', [['renderScale', 'RENDER SCALE', 0.25, 2, 0.05],
               ['fov', 'FOV', 30, 110, 1],
-              ['exposure', 'EXPOSURE', 0.2, 3, 0.02],
-              ['vignette', 'VIGNETTE', 0, 1, 0.01],
-              ['chroma', 'CHROMA', 0, 3, 0.05],
-              ['fog', 'DEPTH FADE', 0, 1, 0.01]]],
+              ['exposure', 'EXPOSURE', 0.2, 3, 0.02]]],
 
-  /* FLOW IS ONE SIGNED CONTROL OVER EVERY RATE -- shells, rings, streaks and the bend. Each of those keeps its
-   * own rate for how fast it goes relative to the others; this decides which way the tunnel runs, and 0 stops it
-   * dead so a frame can be looked at. Positive comes TOWARD the eye.
-   *
-   * DEPTH is where the hit is cut off, and it is the throat: a ray near the centre meets the wall nearly edge-on,
-   * so its hit depth runs away and the pattern winds around the vanishing point without bound. DEPTH is what
-   * stops it, so it decides how much of that winding is on screen. WIND scales the distance the pattern is read
-   * at, tightening or unwinding the whorl without moving anything else.
-   */
-  ['TUNNEL', [['flow', 'FLOW', -3, 3, 0.05],
-              ['far', 'DEPTH', 6, 90, 0.5],
+  ['TUNNEL', [['far', 'DEPTH', 6, 90, 0.5],
+              ['fog', 'DEPTH FADE', 0, 1, 0.01],
               ['wind', 'WIND', 0.1, 4, 0.02],
-              ['bend', 'BEND', 0, 3, 0.02],
-              ['bendDir', 'ARCH TOWARD', -3.14, 3.14, 0.02],
+              ['bend', 'BEND', 0, 12, 0.05],
+              ['bendDir', 'BEND TOWARD', -3.14, 3.14, 0.02],
               ['bendFlow', 'BEND FLOW', -20, 20, 0.2],
               ['ringAmt', 'RINGS', 0, 1, 0.01],
               ['ringN', 'RING SPACING', 0.5, 14, 0.1],
@@ -104,24 +92,35 @@ export const HEAD = [
    * that instead: MASS bends every ray near the centre so the winding wraps around it, SHADOW cuts the middle
    * out of everything behind, and the PHOTON RING is the thin circle of light that grazed it and came back.
    *
+   * DISC REACH IS HOW FAR OUT THE DISC GOES, as a multiple of its inner edge -- and its range is long because
+   * the inner edge is welded to MASS. A small hole would otherwise drag the whole disc down with it and the
+   * shadow, the photon ring and the disc would collapse into one small feature. Welding the INNER edge is right;
+   * the outer one has to be free or the two cannot be told apart.
+   *
    * The DISC is a plane through the hole, solved the same way the shells are. Tilt it near edge-on and the far
    * side climbs over the top of the shadow. DOPPLER brightens the side turning toward the eye, which is what
    * makes it read as spinning rather than as a flat ring.
+   *
+   * TILT IS REALLY HOW FAR OFF THE DISC'S PLANE THE EYE SITS, which is why its bottom end is fenced off at
+   * 0.08 rather than 0. At exactly 0 the plane passes THROUGH the camera: every ray meets it at zero distance,
+   * the whole disc is skipped, and the frame comes back black. Just above 0 the eye is barely below the plane,
+   * so the near half sits under the hole and the far half arcs over the top -- which reads as the light going
+   * UP rather than across, and is the honest answer to why it does that. Around 0.3 to 0.6 the disc crosses the
+   * middle with the far side lifted over the shadow, which is the picture everyone means.
    *
    * TILT AND LEAN ARE THE ONLY TWO ANGLES A PLANE HAS. Its orientation is its normal and a direction takes two
    * numbers; the third rotation a solid would have does nothing to a plane. What that one would have done is
    * turn the pattern, and DISC SPIN already does.
    */
-  ['BLACK HOLE', [['mass', 'MASS', 0, 3, 0.02],
-                  ['shadow', 'SIZE', 0.2, 12, 0.05],
+  ['BLACK HOLE', [['mass', 'MASS', 0, 4, 0.02],
                   ['ring', 'PHOTON RING', 0, 3, 0.02],
                   ['ringCol', 'RING COLOR', '#'],
                   ['disc', 'DISC', 0, 2, 0.02],
                   [['discA', 'discB'], 'DISC COLOR', '#'],
-                  ['discTilt', 'DISC TILT', 0, 1.57, 0.01],
+                  ['discThick', 'DISC THICKNESS', 0.01, 0.6, 0.005],
+                  ['discTilt', 'DISC TILT', 0.08, 1.57, 0.01],
                   ['discLean', 'DISC LEAN', -3.14, 3.14, 0.02],
-                  ['discIn', 'DISC INNER', 0.2, 12, 0.1],
-                  ['discOut', 'DISC OUTER', 0.5, 40, 0.2],
+                  ['discOut', 'DISC REACH', 1.1, 40, 0.1],
                   ['discSpin', 'DISC SPIN', -20, 20, 0.1],
                   ['doppler', 'DOPPLER', 0, 2, 0.02]], 'holeOn'],
 ];
@@ -142,11 +141,8 @@ export const FMT = {
 
   fov:         as.deg(),
   exposure:    as.mult(2),
-  vignette:    as.pct(),
-  chroma:      as.ofRange(3),
   fog:         as.off(as.pct()),
 
-  flow:        (v) => (v > 0 ? 'FWD ' : v < 0 ? 'REV ' : 'STOP') + (v ? Math.abs(v).toFixed(2) + '×' : ''),
   far:         as.raw(0, ' deep'),
   wind:        as.mult(2),
   bend:        as.off(as.mult(2)),
@@ -158,12 +154,11 @@ export const FMT = {
   ringFlow:    SPEED,
 
   mass:        as.off(as.ofRange(3)),
-  shadow:      as.mult(1),
   ring:        as.off(as.ofRange(3)),
   disc:        as.off(as.ofRange(2)),
+  discThick:   as.pct(),
   discTilt:    as.rad(0),
   discLean:    as.rad(0),
-  discIn:      as.mult(1),
   discOut:     as.mult(1),
   discSpin:    as.raw(1, 'c'),
   doppler:     as.off(as.pct()),
