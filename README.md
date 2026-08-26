@@ -34,7 +34,8 @@ page, and pure modules for the shader, the control table and the values.
 - **[Reactor Lab](labs/reactor/Reactor.html)** — a containment core, sphere-traced. A goo core with sub-cores torn
   out of it by a pulse, nine alloy ring fragments, and a shield that fails on a schedule.
   See [`labs/reactor/README.md`](labs/reactor/README.md).
-- **[Wormhole Lab](labs/wormhole/Wormhole.html)** — a domain-warped noise tunnel, in three flavors.
+- **[Wormhole Lab](labs/wormhole/Wormhole.html)** — a tunnel SOLVED rather than marched: six cylindrical shells
+  met in closed form, ending at a Schwarzschild black hole whose light is traced along real null geodesics.
   See [`labs/wormhole/README.md`](labs/wormhole/README.md).
 - **Lab Shell** (`labs/shell/Shell.html`) — not a user-facing page. It is the **base lab**: a live catalog of
   every control type and every formatter the kit offers, annotated, built on the same scaffold the others use.

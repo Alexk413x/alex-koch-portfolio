@@ -158,9 +158,11 @@ These are the checks a small embedded preview cannot perform. They are the reaso
    rings. A grid line and its ring must coincide on every ray, by construction. Then hide the panel with the
    chevron: the stage grows without the window changing, and a buffer sized from `innerWidth` instead of the
    stage would stretch here.
-3. **Settings persistence.** Each lab stores under its own key — `crtgl`, `reactor`, `wormhole`, `labshell` —
-   and **`crtgl` deliberately no longer matches its lab's name**: a storage key is an address, not a label, and
-   moving it orphans every stored configuration silently. See the note above `SAVE_KEY` before touching it —
+3. **Settings persistence.** Each lab stores under its own key — `crtgl`, `reactor`, `tunnel`, `labshell` —
+   and **NEITHER `crtgl` NOR `tunnel` matches its lab's name**: a storage key is an address, not a label, and
+   moving it orphans every stored configuration silently. Wormhole Lab stores under `tunnel` because that is
+   what it was called while it was built; taking `wormhole` would also have handed it the *previous* occupant's
+   saved state, which describes a different set of controls entirely. See the note above `SAVE_KEY` before touching it —
    carrying a `v` that is checked on the way in. The shipped defaults are a real saved configuration, not a
    neutral baseline, so to see them you need an origin with no stored state; clearing localStorage and calling
    `location.reload()` does NOT give you one, because the flush on hide writes the in-memory state straight back.
@@ -185,10 +187,10 @@ math bug.
   surface swims across it rather than riding on it. Fixing it means returning the per-piece transform out of the
   SDF. The pieces are small on screen for most of a break, which is why it has not been worth that.
 - **The corners are cut, not warped.** Settled; the picture ends on the squircle by clip.
-- **Wormhole compiles a shader per layer set, and two of them do not agree to the last bit.** Separately
-  compiled programs schedule their arithmetic differently. Across 120 whole-frame comparisons, seven differed —
-  four subpixels out of 691,200, each off by one of 255. Compare permutations by how far apart they are, never
-  by a hash.
+- **The tunnel's grain rings are gone but the speckle is not.** The concentric banding was `graze`, differenced
+  over a bracket the refinement had already collapsed, and it is fixed. The remaining stipple along the nebula's
+  edges is the noise field genuinely outrunning the sample rate where the wall goes edge-on, which is a
+  filtering problem and not a bug.
 - **`fieldFolds`'s 2x threshold no longer bounds anything physical** (it predates the removal of the
   displacement lens) but it still sets how deep FACE bends, and every stored setting is calibrated against
   it. Change it knowingly or not at all.
