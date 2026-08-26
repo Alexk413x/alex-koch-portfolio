@@ -542,7 +542,7 @@ void main(){
    * because the whole disc was being multiplied by the shadow mask. The far half is behind and IS occluded.
    *
    * Which half a sample belongs to is just its hit depth against the hole's, so it costs one compare. */
-  vec3 discFront = vec3(0.0), discBack = vec3(0.0), ringAdd = vec3(0.0);
+  vec3 discFront = vec3(0.0), discBack = vec3(0.0);
   if (uDisc > 0.001){
     vec3 O = vec3(bendAt(uFar) - b0, uFar);
     /* A PLANE HAS TWO ANGLES AND ONLY TWO. Its orientation is its normal, and a direction on a sphere takes two
@@ -558,65 +558,6 @@ void main(){
      * at 90, where you see it edge-on. It was the other way round -- 0 gave the edge-on bar -- which is the
      * opposite of what the word says and made the bottom of the slider look broken rather than flat. */
     vec3 nrm = normalize(vec3(st * sl, st * cl, ct));
-
-    /* THE RING IS THE DISC'S LIGHT WRAPPED ROUND, SO IT IS BEAMED LIKE THE DISC IS.
-     *
-     * A uniform circle is the one thing a real photon ring is not: it inherits whatever the disc is doing behind
-     * it, so the approaching limb is several times the receding one, exactly as the disc's own is. Drawn evenly
-     * it read as a drafting stroke laid over the picture rather than as light.
-     *
-     * WHICH PART OF THE DISC a given point on the ring shows is the disc at that same azimuth, seen after going
-     * round -- so the in-plane direction is the screen direction projected into the disc's plane, and the
-     * orbital velocity there gives the same delta^3 the disc uses. One model of beaming, used twice.
-     *
-     * IT IS ALSO NOT SMOOTH. A little azimuthal grain, from the same noise the disc's own texture uses, keeps it
-     * from reading as a drawn circle -- real ones are lumpy because the gas feeding them is. */
-    vec2 rdir = b > 1e-5 ? dv / b : vec2(1.0, 0.0);
-    vec3 rscr = vec3(rdir, 0.0);
-    /* AT THE TOP AND BOTTOM OF THE RING the screen direction lies along the disc's normal and its projection
-     * into the plane collapses to nothing. Dropping those samples cut a dark line straight through the ring.
-     * They are not undefined, though: light arriving there went over the pole, so it came from the disc's FAR
-     * side, which is the view direction projected into the plane. Adding a fixed share of it removes the
-     * degeneracy smoothly and is what those points actually show. */
-    vec3 rview0 = normalize(vec3(uv, uFov));
-    vec3 rIn = (rscr - nrm * dot(rscr, nrm)) + (rview0 - nrm * dot(rview0, nrm)) * 0.25;
-    {
-      rIn = rIn / max(length(rIn), 1e-4);
-      vec3 rvel = normalize(cross(nrm, rIn)) * clamp(uDiscSpin / 0.4, -1.0, 1.0);
-      float rbeta = clamp(sqrt(rs / max(2.0 * discIn, 1e-4)), 0.0, 0.85);
-      float rgam = 1.0 / sqrt(max(1.0 - rbeta * rbeta, 1e-4));
-      vec3 rview = normalize(vec3(uv, uFov));
-      float rdelta = 1.0 / max(rgam * (1.0 - rbeta * dot(rvel, -rview)), 1e-3);
-      /* THE RING CARRIES THE DISC'S OWN TEXTURE, so it blends out of the disc instead of sitting on top of it.
-       *
-       * A clean band of even light is the thing that reads as drawn rather than lensed: the lanes and knots stop
-       * dead at its edge and start again on the other side. This samples the SAME noise the disc's surface uses,
-       * at the same inner radius, through the same in-plane basis and turning at the same Keplerian rate -- so a
-       * bright knot in the disc is a bright knot in the ring, and it drifts round with it. */
-      vec3 rref = abs(nrm.z) < 0.9 ? vec3(0.0, 0.0, 1.0) : vec3(1.0, 0.0, 0.0);
-      vec3 ru1 = normalize(cross(nrm, rref));
-      vec3 ru2 = cross(nrm, ru1);
-      float rpa = atan(dot(rIn, ru2), dot(rIn, ru1));
-      float rturn = uTime * uDiscSpin;
-      float rrad = discIn * 1.15;
-      float rkep = pow(max(discIn / rrad, 0.03), 1.5);
-      float rpa2 = rpa + rturn * rkep * 0.5;
-      float rgrain = 0.35 + 1.0 * fbm(vec3(cos(rpa2), sin(rpa2), 0.0) * 3.0
-                                    + vec3(0.0, 0.0, rrad * 1.6 + rturn * 0.12), 3);
-
-      /* IT HUGS THE SHADOW because that edge IS where light piles up: a ray a hair outside wraps right round,
-         one a few radii out barely bends at all.
-
-         NO HALO AROUND IT. A second, wider term used to bleed the ring outward on the theory that it would carry
-         into the disc; what it actually did was wash a soft glow over everything near the shadow, flattening the
-         very texture the ring had just been given. The disc reaches the shadow on its own. */
-      float ringR = shadowR * 1.05;
-      float ringW = max(shadowR * 0.07, 0.005);
-      float rt = (b - ringR) / ringW;
-      float rprof = exp(-rt * rt);
-      ringAdd = mix(uDiscA, uDiscB, 0.12) * rprof
-              * pow(rdelta, 3.0 * uDoppler) * rgrain * uDisc * 1.7;
-    }
 
     /* THE RAY CROSSES THE DISC'S PLANE TWICE, AND THAT IS THE WHOLE LOOK.
      *
@@ -801,11 +742,12 @@ void main(){
   // Behind the hole: cut by the shadow, and seen through whatever tunnel wall is in the way.
   col += discBack * inside * trans;
 
-  /* THE RING IS ALWAYS THERE WHEN THE DISC IS, at every tilt -- light leaves the disc and reaches the eye after
-     bending round the hole from any azimuth, so the circle closes even edge-on where the disc itself is a bar.
-     It carries no controls of its own: it is the disc's colour, the disc's beaming and the disc's amount, so no
-     disc means no ring and the two can never disagree about what the light is doing. */
-  col += ringAdd * trans;
+  /* NOTHING DRAWS THE BRIGHT EDGE BUT THE DISC ITSELF.
+     There were two attempts at a photon ring here and both were the same mistake in different clothes: a band
+     of light placed at the shadow's edge because a picture of a black hole has one. The first carried its own
+     colour and slider and lit with the disc switched off; the second took the disc's colour and texture, which
+     was better and still a second description of one edge -- a stroke laid over the wrap rather than the wrap.
+     The disc's own light bends round the hole and arrives there, which is where that brightness comes from. */
 
   // In FRONT of the hole, so nothing occludes it -- this is the band that cuts the shadow in half.
   col += discFront * trans;
