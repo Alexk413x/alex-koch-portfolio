@@ -412,7 +412,13 @@ void main(){
      throwing the far crossing across the frame, but it also stopped the disc responding to the control at all.
      The tighter cap is what keeps the arc on the rim: bent past it, a ray just outside the shadow crosses the
      plane inside the inner edge, where there is nothing to draw. */
-  vec2 dluv = uv - bdir * softCap(deflLens, b * 0.45);
+/* THE WRAP GETS STRONGER AS THE DISC TURNS EDGE-ON, which is where a disc has a back side to show. Seen flat
+     the far half is already in view beside the near half and there is nothing to bring over the top; turned
+     toward its edge the far half hides behind the shadow, and the bend is the only thing that can lift it out.
+     sin(TILT) is 0 flat and 1 edge-on, which is that statement written down. */
+  float wrapGain = mix(0.45, 1.35, sin(uDiscTilt));
+  float deflDisc = softCap(deflLens * wrapGain, b * 0.45);
+  vec2 dluv = uv - bdir * deflDisc;
   vec2 luv  = uv - bdir * softCap(deflLens, b * 0.82);
 
   vec3 rd = normalize(vec3(luv, uFov));
@@ -580,7 +586,13 @@ void main(){
      */
     for (int im = 0; im < 2; im++){
       vec2 suv = im == 0 ? uv : dluv;
-      float dim = im == 0 ? 1.0 : 0.9;
+      /* THE BENT PASS BRIGHTENS WHERE IT COMPRESSES, because light is conserved. The bend pulls a ring of
+       * radius b in to one of radius b - deflDisc, so the same light lands in a smaller area and the ratio of
+       * the two IS the gain. It rises toward the shadow, where the bend is hardest and the wrap is tightest,
+       * and it is why the folded edge glows rather than merely being displaced. Radial, so it goes all the way
+       * round rather than favouring the top. */
+      float squeeze = 1.0 / max(1.0 - deflDisc / max(b, 1e-5), 0.15);
+      float dim = im == 0 ? 1.0 : 0.9 * squeeze;
       vec3 srd = normalize(vec3(suv, uFov));
       /* THE DISC IS A SLAB, NOT A PLANE, and that is what puts the band through the MIDDLE of the shadow.
        *
