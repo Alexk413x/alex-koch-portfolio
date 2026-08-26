@@ -18,6 +18,7 @@ function shell(i, v) {
   const base = {
     On: 0, Rad: 0.8, Amt: 1.0,
     Cloud: 0.0, Bolts: 0.0, Streak: 0.0, Ring: 0.0,
+    RingN: 4.4, RingFlow: 7.4,
     CloudA: '#ff7a1e', CloudB: '#7d2a05',
     BoltA: '#ffce85', BoltB: '#ff4d00',
     StrkA: '#ffb454', StrkB: '#ffffff',
@@ -53,7 +54,6 @@ export function defaultPreset(gpu) {
        straightens and leaves. It shipped at 46, nearly twice the depth, which shows a third of one wave: that is
        a permanent lean with no corner in it, and it is why the tube read as leaning rather than bending. */
     bend: 3.0, bendDir: 0.0, bendFlow: 5.0,
-    ringN: 4.4, ringFlow: 7.4,
 
 
     /* THE FAR END IS A BLACK HOLE. It was a glow sprite, which sat on top of the winding at the vanishing point

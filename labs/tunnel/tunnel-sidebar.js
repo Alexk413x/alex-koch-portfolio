@@ -57,6 +57,8 @@ const shellRows = (i) => [
   ['L' + i + 'Lanes', 'LANES', 8, 400, 1],
 
   ['L' + i + 'Ring', 'RINGS', 0, 1, 0.01],
+  ['L' + i + 'RingN', 'RING SPACING', 0.5, 14, 0.1],
+  ['L' + i + 'RingFlow', 'RING FLOW', -20, 20, 0.2],
 ];
 
 /* Sections for the shells the state currently has. Called by the host on every rebuild, so LAYERS adds and
@@ -88,9 +90,7 @@ export const HEAD = [
               ['fog', 'DEPTH FADE', 0, 1, 0.01],
               ['bend', 'BEND', 0, 12, 0.05],
               ['bendDir', 'BEND TOWARD', -3.14, 3.14, 0.02],
-              ['bendFlow', 'BEND FLOW', -20, 20, 0.2],
-              ['ringN', 'RING SPACING', 0.5, 14, 0.1],
-              ['ringFlow', 'RING FLOW', -20, 20, 0.2]]],
+              ['bendFlow', 'BEND FLOW', -20, 20, 0.2]]],
 
   /* THE FAR END IS A BLACK HOLE, not a glow. It was a sprite painted over the vanishing point and it hid the one
    * thing this technique has that a march cannot -- the winding where the wall goes edge-on. A hole works WITH
@@ -152,9 +152,6 @@ export const FMT = {
   bend:        as.off(as.mult(2)),
   bendDir:     as.rad(0),
   bendFlow:    SPEED,
-  // Spacing reads as how many rings stand between the eye and the throat, which is the thing being set.
-  ringN:       as.scaled(26 / (2 * Math.PI), 1, ' rings'),
-  ringFlow:    SPEED,
 
   mass:        as.off(as.ofRange(3)),
   ring:        as.off(as.ofRange(3)),
@@ -178,9 +175,15 @@ for (let i = 0; i < MAXL; i++) {
     ['L' + i + 'Streak']: as.off(as.ofRange(2)),
     ['L' + i + 'Lanes']:  as.raw(0, ' lanes'),
     ['L' + i + 'Ring']:   as.off(as.pct()),
+    // Spacing reads as how many rings stand between the eye and the throat, which is the thing being set.
+    ['L' + i + 'RingN']:  as.raw(0, ' rings'),
+    ['L' + i + 'RingFlow']: SPEED,
     ['L' + i + 'Fill']:   as.ends(as.pct(), 'SOLID', 'RARE', 1),
     ['L' + i + 'Edge']:   as.ends(as.pct(), 'HARD', 'SOFT', 0.7),
     ['L' + i + 'Oct']:    as.raw(0, ' oct'),
+    // The bolts' pair reads the same way the cloud's does, because it means the same thing on its own surface.
+    ['L' + i + 'BoltFill']: as.ends(as.pct(), 'SOLID', 'RARE', 1),
+    ['L' + i + 'BoltEdge']: as.ends(as.pct(), 'HARD', 'SOFT', 0.7),
     ['L' + i + 'Speed']:  SPEED,
     ['L' + i + 'Warp']:   as.ends(as.mult(2), 'STREAKY', 'ROUND', 1.2),
     ['L' + i + 'Spin']:   DEG,
