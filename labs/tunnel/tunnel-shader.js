@@ -34,7 +34,7 @@ export const UNIFORMS = [
   'uRes', 'uTime', 'uFov', 'uFar',
   'uBend', 'uBendFlow', 'uBendDir',
     'uMass', 'uLens', 'uEndR',
-  'uDisc', 'uDiscTilt', 'uDiscLean', 'uDiscOut', 'uDiscThick', 'uDiscSpin', 'uDiscA', 'uDiscB', 'uDoppler',
+  'uDisc', 'uDiscTilt', 'uDiscLean', 'uDiscOut', 'uDiscSpin', 'uDiscA', 'uDiscB', 'uDoppler',
   'uFog', 'uExposure',
   'uGeom', 'uMix', 'uShade', 'uExtra', 'uRingP',
   'uCloudA', 'uCloudB', 'uBoltA', 'uBoltB', 'uStrkA', 'uStrkB',
@@ -48,7 +48,7 @@ uniform vec2 uRes;
 uniform float uTime, uFov, uFar;
 uniform float uBend, uBendFlow, uBendDir;
 uniform float uMass, uLens, uEndR;
-uniform float uDisc, uDiscTilt, uDiscLean, uDiscOut, uDiscThick, uDiscSpin, uDoppler;
+uniform float uDisc, uDiscTilt, uDiscLean, uDiscOut, uDiscSpin, uDoppler;
 uniform float uFog, uExposure;
 uniform vec3  uDiscA, uDiscB;
 
@@ -596,7 +596,18 @@ void main(){
       float adn = max(abs(dn), 1e-3);
       /* THICKNESS IS THE SLAB'S HALF-HEIGHT AT ITS INNER EDGE, and it scales with discIn, which is 3 Rs -- so a
        * heavier hole carries a proportionally deeper disc without a second control saying so. */
-      float hthick = uDiscThick * discIn;
+      /* THE SLAB HAS A FIXED HALF-HEIGHT, a share of the inner edge, so it still scales with MASS.
+       *
+       * IT WAS A SLIDER AND THE SLIDER WAS A LIE. Thickness could only ever reach the BRIGHTNESS -- the disc's
+       * extent is tested against length(rel3), the distance from the hole in any direction, which carves a
+       * spherical shell rather than a disc, so height above the plane counts as radius and a deeper slab has
+       * nowhere to stand taller. A control that only brightens is DISC with another name.
+       *
+       * The half-height is still load-bearing: the window it sets is what lets a ray running ALONG a near
+       * edge-on disc find a sample at all, which is what puts the band across the shadow and lets TILT reach
+       * the edge. Giving a real disc real depth means sampling the slab as a volume rather than at one point --
+       * a short march inside the disc only -- and that is a change worth making deliberately, not a slider. */
+      float hthick = discIn * 0.16;
       /* TILT REACHES 0 NOW, AND THE SLAB IS WHY.
        *
        * At exactly edge-on the disc's plane contains the eye -- any plane through the hole you see edge-on runs
@@ -613,7 +624,16 @@ void main(){
        * thick, the window sits far down the ray, the sample lands well outside the annulus, and nothing draws. */
       float td = dot(O, nrm) / (dn >= 0.0 ? adn : -adn);
       float hspan = hthick / adn;
-      float ts = clamp(dot(O, srd), td - hspan, td + hspan);
+      /* SATURATE INTO THE SLAB, DO NOT CLAMP INTO IT -- this is why the disc was not round.
+       *
+       * clamp() has two corners. Either side of them the sample sits at a different place along the ray, and it
+       * moves discontinuously as the corner is crossed, so the edge of the region that finds the disc is shaped
+       * by where the clamp bites rather than by the disc: straight runs and angles instead of an ellipse.
+       *
+       * clamp(x, td-h, td+h) is td + clamp(x-td, -h, h), so the same smooth ceiling used on the deflection
+       * applies to the offset. It approaches the slab's face without a corner, the sample slides instead of
+       * jumping, and the outline is the disc's own. */
+      float ts = td + softCap(dot(O, srd) - td, hspan);
       if (ts > 0.0) {
 
       vec3 P = srd * ts;
@@ -646,7 +666,14 @@ void main(){
        * thickness itself is what lets a deeper slab actually glow more where the ray runs further through it. */
       float bulge = mix(1.0, 0.12, smoothstep(discIn, discOut, rr));
       float hth = hthick * bulge;
-      float path = min(2.0 * hth / adn, 4.0 * hth) / max(discIn * 0.30, 1e-4);
+      /* SATURATED, NOT MIN()'d -- THIS IS WHY THE DISC WAS NOT ROUND.
+       *
+       * The path through the slab grows as 1/adn and has to be capped or a ray running along the disc integrates
+       * forever. min() puts a corner at the radius where the cap takes over, and adn is the ray's angle to the
+       * disc's NORMAL, which is constant along straight lines across the screen -- so that corner drew a straight
+       * brightness edge through the disc. Flat top, flat bottom, rounded sides: the outline of the cap, not of
+       * the disc. The third hard ceiling in this shader to do the same thing in a different place. */
+      float path = softCap(2.0 * hth / adn, 4.0 * hth) / max(discIn * 0.30, 1e-4);
 
       /* THE IN-PLANE AXES NEED A REFERENCE THE NORMAL IS NOT PARALLEL TO. Crossing with z alone returns a zero
        * vector the moment the disc is exactly face-on -- normalize(0) is a NaN, and a NaN here blackens every
