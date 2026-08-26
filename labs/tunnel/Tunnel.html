@@ -165,8 +165,10 @@ function draw(dt, sec) {
   R.f('uFov', 0.5 / Math.tan(s.fov * Math.PI / 360));
   R.f('uFar', s.far);
   R.f('uBend', s.bend); R.f('uBendFlow', s.bendFlow); R.f('uBendDir', s.bendDir);
-  // The hole's master rides on MASS, SHADOW, RING and DISC together: switching the section off must remove the
-  // lensing too, not just stop drawing the disc, or the frame stays warped around nothing.
+  /* THE SECTION'S MASTER RIDES ON MASS, and on MASS alone, because MASS is now the only thing the hole's
+     gravity comes from. Zero it and rs is zero, so lensShift returns zero, the tunnel un-bends and the march
+     never starts -- switching the section off removes the lensing rather than just stopping the disc being
+     drawn. It used to have to reach SHADOW and RING as well, and those controls no longer exist. */
   const H = s.holeOn ? 1 : 0;
   R.f('uMass', s.mass * H);
 

@@ -50,12 +50,12 @@ export function defaultPreset(gpu) {
     fov: 74, exposure: 1.15, fog: 1.0,
 
     far: 26,
-    /* BEND IS LOW NOW THE FAR END IS A HOLE, and that is a real conflict rather than a taste. BEND swings the
-     * vanishing point around the frame; the lens warps everything toward it. Both are "the far end distorts",
-     * and run together they fight -- the hole slides about while the image drags toward wherever it went, and
-     * neither reads. A black hole wants to ANCHOR: it sits still and the tunnel falls into it. TIGHTNESS and
-     * BEND FLOW are not duplicates of the lens and are worth keeping, but they do nothing while BEND is near
-     * zero, which is the honest reason they look redundant here. */
+    /* BEND AND THE HOLE NO LONGER FIGHT, and the note that used to sit here said they did. That was true of the
+     * screen-space lens: it dragged the WHOLE frame toward the hole, so swinging the vanishing point away with
+     * BEND left the image pulling one way and the tunnel going another, and neither read. A traced geodesic only
+     * bends light that passes near the hole, and the hole rides the tunnel's own axis at DEPTH -- so the tube can
+     * swing as far as it likes and the hole goes with it, wall and all. BEND 3 ships because one arch across the
+     * depth reads as travel, not because anything is being kept out of the lens's way. */
     /* BEND LENGTH IS SET AGAINST DEPTH, not picked for its own sake. It is the distance between corners in world
        units, so at 30 against a DEPTH of 26 you see about one whole wave down the tunnel -- a bend that arrives,
        straightens and leaves. It shipped at 46, nearly twice the depth, which shows a third of one wave: that is

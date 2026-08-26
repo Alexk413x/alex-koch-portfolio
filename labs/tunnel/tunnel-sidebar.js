@@ -77,9 +77,12 @@ export function shellSections(n) {
   return out;
 }
 
-/* RENDER first because both rows are cost rather than look. IMAGE second because it is the lens and the
- * whole-frame post -- the last things done to whatever was drawn -- so reading the panel top to bottom follows
- * the order the pixels are built in. TUNNEL third: the shape every shell is drawn in. Then the shells.
+/* RENDER first, because its rows are cost and framing rather than scene. TUNNEL next: the shape every shell is
+ * drawn in. Then BLACK HOLE, which is what the tunnel ends at. Then the shells themselves.
+ *
+ * There was an IMAGE section between the first two and it is gone -- it held the lens and the whole-frame post,
+ * and RENDER SCALE alone is not a section. Nobody looking for EXPOSURE knew whether that counted as image or as
+ * render, which is the test a section boundary has to pass.
  */
 export const HEAD = [
   /* RENDER IS EVERYTHING ABOUT THE PICTURE RATHER THAN THE SCENE: how much is drawn, the lens it is seen

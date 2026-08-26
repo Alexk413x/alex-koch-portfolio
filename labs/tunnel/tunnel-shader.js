@@ -164,10 +164,11 @@ float fbm(vec3 p, int oct){
  * tanh approaches the same ceiling without ever reaching it, so there is no radius where the behaviour changes.
  * The approach to the limit IS the compression -- the arc keeps bending and its bands crowd together toward the
  * top, which is what the far side of a disc does as it wraps over the shadow. */
-float softCap(float x, float lim){ return lim * tanh(x / max(lim, 1e-6)); }
-
 vec2 gBendDir;
 float gSwing;
+/* d(gap)/dt from the last wallGap call. A global rather than an out-parameter because every call in the scan
+   would otherwise have to name a variable it never reads. */
+float gSlope;
 
 void setupBend(){
   float a = uBendDir + uTime * uBendFlow * 0.12;
@@ -265,16 +266,21 @@ vec3 holeAccel(vec3 x, float h2, float rs){
  */
 /* Signed gap from the ray at t to this shell's wall: negative inside the tube, positive outside.
  * Split out because the scan below needs it at many t and the crossing is where it changes sign. */
-float wallGap(vec3 rd, float t, float R, vec2 b0){
+float wallGap(vec3 rd, float t, float R){
   /* THE RAY IS NOT STRAIGHT, and this one line is how the hole reaches the tunnel. rayAt carries the closed
      form above, so a sample near the eye sits exactly where an unbent ray would and one at the far mouth is
      pulled a Schwarzschild radius toward the axis -- which puts the mouth's IMAGE further out, magnified, and
      wrapped around the shadow. */
   vec3 Pw = rayAt(rd, t);
-  float z = Pw.z;
-  vec2 bo = bendAt(z) - b0;
-  vec2 sl = bendD(z);
-  float k = sqrt(1.0 + dot(sl, sl));
+
+  /* ONE f, ONE sin, ONE cos, FOR ALL THREE THINGS THAT NEED THEM. The axis's offset, its slope and the taper
+     are three readings of the same position along the tube, and this used to take two calls that each
+     recomputed f and one that computed it a third time. This function is the hot one in the whole shader --
+     seventeen calls per shell per pixel -- so what it does twice, it does twice everywhere. */
+  float f = clamp(Pw.z / max(uFar, 1.0), 0.0, 1.0);
+  float a = f * 1.5707963;
+  float off = gSwing * sin(a);
+  float S   = gSwing * 1.5707963 * cos(a) / max(uFar, 1.0);
 
   /* THE SHELLS TAPER ONTO ONE SHARED END RADIUS, and that is what stops there being three tunnels.
    *
@@ -288,21 +294,52 @@ float wallGap(vec3 rd, float t, float R, vec2 b0){
    *
    * THE END RADIUS COMES FROM THE HOST, which is the only place that can see all six radii at once. Taking
    * min(uEndR, R * 0.9) here instead was a bug: every shell's radius is under the hole's size, so the min always
-   * chose the shell's own radius and each one tapered to a different end again. */
-  float taper = clamp(z / max(uFar, 1.0), 0.0, 1.0);
-  float Rc = mix(R, uEndR, smoothstep(0.0, 1.0, taper));
+   * chose the shell's own radius and each one tapered to a different end again.
+   *
+   * Rc RISES WITH R AT EVERY z, and solveShell below depends on that: mix() is monotone in its first argument,
+   * so a wider shell's surface is never nearer the axis than a narrower one's. */
+  float Rc = mix(R, uEndR, f * f * (3.0 - 2.0 * f));
 
   /* THE SECTION IS AN ELLIPSE, AND ONLY ALONG THE LEAN. A swept tube's sections are round when cut
    * perpendicular to its own tangent; seen from a camera that cuts across the VIEW instead, such a section is
    * stretched by 1/cos of the lean along the direction the tube leans, and untouched at right angles to it.
    * Stretching in every direction -- which one scalar radius does -- makes the tube FAT wherever it turns
-   * instead of tilting it, and a fat tube sliding across as it recedes is a warp rather than a curve. */
-  vec2 v = Pw.xy - bo;
+   * instead of tilting it, and a fat tube sliding across as it recedes is a warp rather than a curve.
+   *
+   * THE LEAN DIRECTION IS gBendDir AND NOTHING HAS TO BE NORMALIZED TO FIND IT. The slope is gBendDir times a
+   * SCALAR, so its direction is gBendDir up to that scalar's sign -- and only the absolute value of the dot is
+   * ever read, so the sign cannot matter. That was a normalize() and a degenerate-case test per call, both for
+   * a vector already known. The same holds for k: |slope|^2 is that scalar squared, gBendDir being unit. */
+  vec2 v = Pw.xy - gBendDir * off;
   float vl = length(v);
-  vec2 dir = vl > 1e-5 ? v / vl : vec2(1.0, 0.0);
-  vec2 lean = dot(sl, sl) > 1e-10 ? normalize(sl) : vec2(1.0, 0.0);
-  float Rz = Rc * mix(1.0, k, abs(dot(dir, lean)));
-  return vl - Rz;
+  float lean = vl > 1e-5 ? abs(dot(v, gBendDir)) / vl : 0.0;
+  float ell = mix(1.0, sqrt(1.0 + S * S), lean);
+
+  /* HOW FAST THE GAP IS OPENING, DIFFERENTIATED HERE RATHER THAN DIFFERENCED LATER. This is what graze is made
+   * of, and taking it as a difference is what put the grainy concentric rings in this tunnel.
+   *
+   * It was ((dB - dA) / (tB - tA)) read off the bracket AFTER the refinement had closed it. Both of those
+   * differences are then a few millionths, so their ratio is mostly the float error left over from cancelling
+   * two nearly equal numbers -- and HOW nearly equal depends on where inside its scan step the root happened to
+   * fall, which is a quantity with the scan's period. Hence rings, one per scan step, made of grain: turn the
+   * scan down to 8 samples and 3 rings appear where 22 samples drew 8, and switching the fade off removes every
+   * one of them. It has been in this shader far longer than the black hole has.
+   *
+   * The derivative has no such problem. The ray's own direction here is rd turned toward the hole by the
+   * deflection it has picked up so far -- lensShift's integrand, which is theta(s) from the block above -- and
+   * the rest is the chain rule on the same three lines that built the gap.
+   *
+   * The ellipse factor's own derivative is left out: it is second order in the tube's slope and the fade it
+   * feeds saturates well before that matters. */
+  float sarc = t - gT0;
+  float th = (gRs / gB) * (1.0 + sarc * inversesqrt(sarc * sarc + gB * gB));
+  vec3  dP = rd - gHdir * th;
+  vec2  dv = dP.xy - gBendDir * (S * dP.z);
+  vec2  dir = vl > 1e-5 ? v / vl : vec2(1.0, 0.0);
+  float dRc = (uEndR - R) * (6.0 * f * (1.0 - f)) * (dP.z / max(uFar, 1.0));
+  gSlope = dot(dir, dv) - dRc * ell;
+
+  return vl - Rc * ell;
 }
 
 /* WHERE THE RAY MEETS THE SHELL, FOUND BY WALKING THE TUBE RATHER THAN SOLVING FOR IT.
@@ -325,15 +362,38 @@ float wallGap(vec3 rd, float t, float R, vec2 b0){
  * NO CROSSING MEANS THE RAY LEFT THROUGH THE OPEN END, which is the mouth of the tunnel. graze 0 reports it,
  * and the caller already treats that as nothing drawn.
  */
-float solveShell(vec3 rd, float R, vec2 b0, out vec2 rel, out float zz, out float graze){
+/* THE SCAN STARTS WHERE THE LAST SHELL WAS HIT, AND THAT IS MOST OF THIS SHADER'S COST.
+ *
+ * Every shell used to rescan the whole tube from the eye, so three lit shells swept the same stretch three
+ * times over -- and measured by GPU timer query the geometry solve is 2.0 to 2.7 ms PER SHELL against an 11 ms
+ * frame, about sixty per cent of it, before a single effect is drawn. Nothing else in the frame is close: the
+ * nebula at four octaves is 1.3 ms, the plasma 0.8, the black hole 0.6.
+ *
+ * IT IS SAFE BECAUSE THE HOST SORTS THE SHELLS INNER-FIRST, which it already must for front-to-back
+ * compositing. Rc is mix(R, uEndR, taper) and mix is monotone in R, so a wider shell's surface is at least as
+ * far from the axis as a narrower one's AT EVERY z -- taper and all. A ray therefore cannot reach the outer
+ * shell before the inner one, and the stretch before the last hit holds no crossing to find.
+ *
+ * The start is nudged back a fraction so the first sample is strictly INSIDE this shell even when two shells
+ * carry the same radius and their crossings coincide; the bracket needs somewhere negative to begin.
+ *
+ * THE FIRST GAP IS NOW MEASURED RATHER THAN ASSUMED. It was the constant -1.0, which is the true gap only for a
+ * shell of radius one; the refinement recovered from it, but it was a made-up number standing where a real one
+ * was one call away.
+ */
+float solveShell(vec3 rd, float R, float tStart, out vec2 rel, out float zz, out float graze){
   float tMax = uFar / max(rd.z, 1e-4);
-  float tA = 0.0, dA = -1.0, hitT = -1.0;
   graze = 0.0;
+  float t0 = min(tStart * 0.995, tMax);
+  float tA = t0;
+  float dA = wallGap(rd, t0, R), hitT = -1.0;
+  float span = tMax - t0;
+  if (span <= 0.0){ rel = vec2(0.0); zz = uFar; return -1.0; }
 
   for (int i = 1; i <= 14; i++){
     float f = float(i) / 14.0;
-    float tB = tMax * f * f;
-    float dB = wallGap(rd, tB, R, b0);
+    float tB = t0 + span * f * f;
+    float dB = wallGap(rd, tB, R);
     if (dB >= 0.0 && dA < 0.0){
       /* THE BRACKET IS REFINED, and without this the tunnel had dark rings in it.
        *
@@ -341,22 +401,33 @@ float solveShell(vec3 rd, float R, vec2 b0, out vec2 rel, out float zz, out floa
        * at the ends, so the error has the period of the scan -- and a scan stepped in t draws that period on
        * screen as circles around the vanishing point. Three false-position steps drive the error far below what
        * the shading can show, for three more gap evaluations. */
+      /* THE REFINEMENT IS ILLINOIS, NOT PLAIN FALSE POSITION. Plain regula falsi keeps ONE endpoint when the
+       * function is convex over the bracket -- which the gap is, because the wall curves away from the ray --
+       * so it creeps in from one side and converges only linearly. Illinois halves the retained endpoint's
+       * value whenever it is retained twice running, which breaks the stall and converges superlinearly for one
+       * multiply and no extra evaluation of the gap. Same three calls, a much tighter bracket. */
+      float side = 0.0;
       for (int k = 0; k < 3; k++){
         float tM = mix(tA, tB, dA / (dA - dB));
-        float dM = wallGap(rd, tM, R, b0);
-        if (dM < 0.0){ tA = tM; dA = dM; } else { tB = tM; dB = dM; }
+        float dM = wallGap(rd, tM, R);
+        if (dM < 0.0){
+          tA = tM; dA = dM;
+          if (side < 0.0) dB *= 0.5;
+          side = -1.0;
+        } else {
+          tB = tM; dB = dM;
+          if (side > 0.0) dA *= 0.5;
+          side = 1.0;
+        }
       }
       hitT = mix(tA, tB, dA / (dA - dB));
 
-      /* HOW SQUARELY THE RAY MET THE SURFACE, taken from the refined bracket rather than from two more probes
-       * either side of the hit. Three false-position steps leave tA and tB straddling the root closely, so their
-       * secant IS the slope there. Measuring it across the raw SCAN step was the thing that drew dark rings --
-       * that made it a per-step constant which jumped between steps; this does not, because the bracket has
-       * converged onto the crossing.
-       *
-       * The gap rises at |rd.xy| for a ray leaving straight through the wall and at nothing at all for one
-       * leaving along the silhouette, so the ratio of the two is the squareness. */
-      graze = clamp(((dB - dA) / max(tB - tA, 1e-6)) / max(length(rd.xy), 1e-4), 0.0, 1.0);
+      /* HOW SQUARELY THE RAY MET THE SURFACE. The gap opens at |rd.xy| for a ray leaving straight through the
+       * wall and at nothing at all for one leaving along the silhouette, so the ratio of the two is the
+       * squareness. One more evaluation, at the root this time, sets gSlope there -- see wallGap for why this
+       * is differentiated rather than differenced, and for the rings that came of differencing it. */
+      wallGap(rd, hitT, R);
+      graze = clamp(gSlope / max(length(rd.xy), 1e-4), 0.0, 1.0);
       break;
     }
     tA = tB; dA = dB;
@@ -364,7 +435,7 @@ float solveShell(vec3 rd, float R, vec2 b0, out vec2 rel, out float zz, out floa
 
   if (hitT < 0.0){ rel = vec2(0.0); zz = uFar; return -1.0; }
   vec3 P = rayAt(rd, hitT);
-  rel = P.xy - (bendAt(P.z) - b0);
+  rel = P.xy - bendAt(P.z);
   zz = P.z;
   return hitT;
 }
@@ -405,9 +476,10 @@ void main(){
   /* THE LENS. uFov is the ray's z, so SMALL IS WIDE — the host sends it from an angle in degrees, which is the
    * number a person means. A narrow angle keeps the wall away from the frame edge and the whole thing reads as
    * weather out in front; opened up, the wall sweeps the periphery and the picture closes around the viewer. */
-  // The curve's value at the eye, so the axis passes through the viewer and the offset grows with depth instead
-  // of sliding the whole tube sideways. It is what lets BEND go past a token lean.
-  vec2 b0 = bendAt(0.0);
+  /* THERE IS NO b0 ANY MORE, BECAUSE IT WAS PROVABLY ZERO. It was bendAt(0) -- the curve's value at the eye,
+     subtracted everywhere so the axis passes through the viewer -- and the curve is gSwing*sin(f*PI/2) with f
+     zero at the eye. sin(0) is 0, so it was a zero vector threaded through every wallGap call and subtracted
+     at every sample. The property it was there to guarantee is built into the curve instead. */
 
   /* THE HOLE SITS AT THE FAR END OF THE TUNNEL, so it follows the bend: the tunnel's axis at DEPTH is where
    * it is, and it rides round with BEND FLOW rather than sitting still while the tube swings away from it.
@@ -420,7 +492,7 @@ void main(){
    * shell was solved -- which is why the whole frame dragged. What bends it now is rayAt, evaluated at the
    * depth of each sample, so the bend a surface gets is the bend its own light actually took. */
   vec3 rd = normalize(vec3(uv, uFov));
-  vec3 holeO = vec3(bendAt(uFar) - b0, uFar);
+  vec3 holeO = vec3(bendAt(uFar), uFar);
 
   /* ONE SOLAR MASS IS 0.2 WORLD UNITS OF SCHWARZSCHILD RADIUS, and this line is the only place that says so.
    * The panel reads MASS in solar masses because that is the unit a hole's mass is quoted in; the scale from
@@ -432,13 +504,17 @@ void main(){
 
   vec3 col = vec3(0.0);
   float trans = 1.0;
+  // Where the last shell's wall was met. The next one cannot be nearer -- see solveShell.
+  float tPrev = 0.0;
 
   for (int s = 0; s < ${MAXL}; s++){
     if (uExtra[s].y < 0.5) continue;
 
     vec4 g = uGeom[s], m = uMix[s], sh = uShade[s];
     vec2 rel; float z, graze;
-    float t = solveShell(rd, max(g.x, 0.02), b0, rel, z, graze);
+    float t = solveShell(rd, max(g.x, 0.02), tPrev, rel, z, graze);
+    // Advance on ANY hit, including one past DEPTH: the next shell's is further still either way.
+    if (t > 0.0) tPrev = t;
     // Fades out with distance rather than being cut off at one. Nothing past the fade is worth reading a field for.
     /* THE FADE KEEPS A FLOOR, and that floor is what makes the tunnel and the hole agree.
    *
