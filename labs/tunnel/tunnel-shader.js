@@ -18,7 +18,7 @@
  * order and occlude something in front of it.
  *
  * EVERY SHELL CAN CARRY EVERY EFFECT. There is no such thing as "the cloud shell" — a shell is a surface at a
- * radius, and CLOUD, BOLTS and STREAKS are amounts on it, any mix, any shell. Tying one effect to one shell was
+ * radius, and NEBULA, PLASMA and STREAKS are amounts on it, any mix, any shell. Tying one effect to one shell was
  * the first shape this had and it made the interesting combinations unreachable.
  */
 
@@ -431,7 +431,7 @@ void main(){
     float d = 0.0;
     vec3 emit = vec3(0.0);
 
-    // CLOUD — the wall's own texture. FILL slides the threshold, EDGE decides how hard it arrives.
+    // NEBULA — the wall's own texture. FILL slides the threshold, EDGE decides how hard it arrives.
     if (m.x > 0.001){
       float v = fbm(tc, int(sh.z));
       float c = smoothstep(sh.x, sh.x + max(sh.y, 0.02), v);
@@ -439,24 +439,15 @@ void main(){
       emit += mix(uCloudA[s].rgb, uCloudB[s].rgb, c) * m.x * c;
     }
 
-    /* BOLTS — where two independent fields BOTH cross zero, which is a LINE rather than a surface. One field's
-     * mid-level is a surface and reads as froth; the crossing of two is a filament. EDGE is its thickness. */
+    /* PLASMA — where two independent fields BOTH cross zero, which is a LINE rather than a surface. One field's
+     * mid-level is a surface and reads as froth; the crossing of two is a filament. */
     if (m.y > 0.001){
       vec3 q = tc * 1.6 + vec3(19.3, 7.1, 3.7);
       float f1 = n3(q) - 0.5, f2 = n3(q * 1.31 + vec3(5.2, 1.7, 9.1)) - 0.5;
-      /* EDGE REACHES THE BOLTS TOO, and squaring the falloff is what lets it get to a HARD edge.
-       *
-       * A plain Lorentzian, 1/(1 + k r^2), has tails that fall off as 1/r^2 and never actually stop: at the
-       * tightest EDGE it still held three to nine percent brightness far out from the core, so tightening the
-       * slider shrank the middle and left the haze. The softness was the shape, not the setting.
-       *
-       * Squaring cuts that to under one percent at the same distance. The coefficient carries 0.414 to keep the
-       * HALF-WIDTH where it was -- solve (1 + k' r^2)^2 = 2 against 1 + k r^2 = 2 and that is the factor -- so
-       * EDGE still means the same width it always did and only the shoulder changes. */
-      /* BOLT FILL IS HOW THICK, BOLT EDGE IS HOW HARD -- the same two questions the cloud answers, asked of
+      /* PLASMA FILL IS HOW THICK, PLASMA EDGE IS HOW HARD -- the same two questions the nebula answers, asked of
        * its own surface. The field is the distance to where both noise fields cross zero, scaled so 1 is on the
        * line and 0 is as far from it as the field goes; thresholding that is exactly what FILL does to the
-       * cloud's fbm, and the smoothstep's width is exactly what EDGE does to it. Same shape, same meaning, one
+       * nebula's fbm, and the smoothstep's width is exactly what EDGE does to it. Same shape, same meaning, one
        * pair per effect. */
       float r = sqrt(f1 * f1 + f2 * f2) * 1.414;
       float v = 1.0 - min(r, 1.0);

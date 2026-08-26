@@ -6,7 +6,7 @@
  * shows, and the host rebuilds it when that changes.
  *
  * A SHELL IS A SURFACE, NOT AN EFFECT. Its rows split in two: where it is (RADIUS, SPEED, STRETCH, SPIN) and what
- * is drawn on it (CLOUD, BOLTS, STREAKS, RINGS, any mix). The first shape of this lab tied one effect to one
+ * is drawn on it (NEBULA, PLASMA, STREAKS, RINGS, any mix). The first shape of this lab tied one effect to one
  * shell -- a cloud shell, a bolt shell -- and that put every interesting combination out of reach: bolts on the
  * near shell AND the far one, a shell carrying both, streaks anywhere but the outside.
  *
@@ -20,8 +20,12 @@ import { MAXL } from './tunnel-shader.js';
 
 export const LAYER_NAMES = ['FIRST', 'SECOND', 'THIRD', 'FOURTH', 'FIFTH', 'SIXTH'];
 
-// The rows one shell owns. `i` only reaches the key; every label is the same, because the section header is
-// already saying which shell this is.
+/* The rows one shell owns. `i` only reaches the key; every label is the same, because the section header is
+ * already saying which shell this is.
+ *
+ * THE LABELS SAY NEBULA AND PLASMA; THE KEYS STILL SAY CLOUD AND BOLT. A key is an address, not a label -- every
+ * saved configuration is filed under the old words, and renaming them would orphan the lot in silence rather
+ * than fail loudly. Same reason CRT Lab stores under `crtgl`. Read the two as the same thing. */
 const shellRows = (i) => [
   ['L' + i + 'Rad', 'RADIUS', 0.12, 2.4, 0.01],
   ['L' + i + 'Amt', 'AMOUNT', 0, 2, 0.02],
@@ -36,21 +40,21 @@ const shellRows = (i) => [
    * a control that does nothing. */
   /* EACH EFFECT CARRIES ITS OWN SHAPE CONTROLS, directly under it.
    *
-   * FILL, EDGE and DETAIL used to sit at the bottom serving whichever of CLOUD and BOLTS was lit, and that was
-   * wrong twice over. DETAIL and FILL only ever reached the cloud -- the bolt field is a distance to where two
+   * FILL, EDGE and DETAIL used to sit at the bottom serving whichever of NEBULA and PLASMA was lit, and that was
+   * wrong twice over. DETAIL and FILL only ever reached the nebula -- the plasma field is a distance to where two
    * noise fields both cross zero, and there are no octaves in it and nothing to threshold. EDGE reached both,
-   * so tuning the cloud's softness moved the plasma's thickness. One slider, two surfaces, no way to set either
+   * so tuning the nebula's softness moved the plasma's thickness. One slider, two surfaces, no way to set either
    * without disturbing the other. */
-  ['L' + i + 'Cloud', 'CLOUD', 0, 2, 0.02],
-  [['L' + i + 'CloudA', 'L' + i + 'CloudB'], 'CLOUD COLOR', '#'],
-  ['L' + i + 'Fill', 'CLOUD FILL', 0, 1, 0.01],
-  ['L' + i + 'Edge', 'CLOUD EDGE', 0.02, 0.7, 0.01],
-  ['L' + i + 'Oct', 'CLOUD DETAIL', 1, 5, 1],
+  ['L' + i + 'Cloud', 'NEBULA', 0, 2, 0.02],
+  [['L' + i + 'CloudA', 'L' + i + 'CloudB'], 'NEBULA COLOR', '#'],
+  ['L' + i + 'Fill', 'NEBULA FILL', 0, 1, 0.01],
+  ['L' + i + 'Edge', 'NEBULA EDGE', 0.02, 0.7, 0.01],
+  ['L' + i + 'Oct', 'NEBULA DETAIL', 1, 5, 1],
 
-  ['L' + i + 'Bolts', 'BOLTS', 0, 2, 0.02],
-  [['L' + i + 'BoltA', 'L' + i + 'BoltB'], 'BOLT COLOR', '#'],
-  ['L' + i + 'BoltFill', 'BOLT FILL', 0, 1, 0.01],
-  ['L' + i + 'BoltEdge', 'BOLT EDGE', 0.01, 0.7, 0.01],
+  ['L' + i + 'Bolts', 'PLASMA', 0, 2, 0.02],
+  [['L' + i + 'BoltA', 'L' + i + 'BoltB'], 'PLASMA COLOR', '#'],
+  ['L' + i + 'BoltFill', 'PLASMA FILL', 0, 1, 0.01],
+  ['L' + i + 'BoltEdge', 'PLASMA EDGE', 0.01, 0.7, 0.01],
 
   ['L' + i + 'Streak', 'STREAKS', 0, 2, 0.02],
   [['L' + i + 'StrkA', 'L' + i + 'StrkB'], 'STREAK COLOR', '#'],
@@ -178,11 +182,11 @@ for (let i = 0; i < MAXL; i++) {
     // Spacing reads as how many rings stand between the eye and the throat, which is the thing being set.
     ['L' + i + 'RingN']:  as.raw(0, ' rings'),
     ['L' + i + 'RingFlow']: SPEED,
-    ['L' + i + 'Fill']:   as.ends(as.pct(), 'SOLID', 'RARE', 1),
+    ['L' + i + 'Fill']:   as.ends(as.pct(), 'RARE', 'SOLID', 1),
     ['L' + i + 'Edge']:   as.ends(as.pct(), 'HARD', 'SOFT', 0.7),
     ['L' + i + 'Oct']:    as.raw(0, ' oct'),
     // The bolts' pair reads the same way the cloud's does, because it means the same thing on its own surface.
-    ['L' + i + 'BoltFill']: as.ends(as.pct(), 'SOLID', 'RARE', 1),
+    ['L' + i + 'BoltFill']: as.ends(as.pct(), 'RARE', 'SOLID', 1),
     ['L' + i + 'BoltEdge']: as.ends(as.pct(), 'HARD', 'SOFT', 0.7),
     ['L' + i + 'Speed']:  SPEED,
     ['L' + i + 'Warp']:   as.ends(as.mult(2), 'STREAKY', 'ROUND', 1.2),
