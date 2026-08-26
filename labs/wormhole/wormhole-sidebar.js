@@ -1,227 +1,245 @@
 /* Which controls exist, and how each one reads. SECTIONS is pure data in panel.js's row grammar; FMT is display
- * text only. A slider's range is in the units the SHADER wants; the formatter is the only place the displayed
- * unit exists.
+ * text only.
  *
- * THERE IS NO GLOBAL FLOW. Every layer carries its own SPEED, TWIST and SPIN, so clouds can drift while streaks
- * tear past and bolts crawl the other way. The color rows repeat for the same reason: one thing meaning one
- * thing in three places beats a shared control that has to compromise.
+ * THE SHELL SECTIONS ARE GENERATED, not written out. There are up to MAXL of them and they are identical but for
+ * an index, so writing five copies is five places to forget the same edit. LAYERS decides how many the panel
+ * shows, and the host rebuilds it when that changes.
  *
- * COVERAGE IS THE EXCEPTION and lives in IMAGE. How far in from the wall the field reaches describes the tunnel
- * rather than any one layer, and the three copies of it were only ever set to the same value by hand.
+ * A SHELL IS A SURFACE, NOT AN EFFECT. Its rows split in two: where it is (RADIUS, SPEED, STRETCH, SPIN) and what
+ * is drawn on it (NEBULA, PLASMA, STREAKS, RINGS, any mix). The first shape of this lab tied one effect to one
+ * shell -- a cloud shell, a bolt shell -- and that put every interesting combination out of reach: bolts on the
+ * near shell AND the far one, a shell carrying both, streaks anywhere but the outside.
  *
- * Their on/off flags are SECTION MASTERS — the third entry in a section's tuple — not rows and not a strip above
- * the panel. A master sits in the header it governs, so "is NEBULA on" and "what is NEBULA set to" are answered in
- * the same place, and panel.js already hides a disabled section's rows. Any combination can still run at once:
- * masters are independent flags, not a radio group.
+ * WHICH MEANS EVERY PARAMETER OF AN EFFECT IS THE SHELL'S TOO. STREAKS briefly kept a global COUNT, SPEED and
+ * COLOR while its amount was per shell -- half a property of the surface and half not, which is the same mistake
+ * one step smaller. It now takes the shell's own SPEED and COLOR and carries only LANES, so streaks on the near
+ * shell tear past while streaks on the far one drift. That difference is depth, and depth is what shells are for.
  */
 import { as } from '../kit/units.js';
+import { MAXL } from './wormhole-shader.js';
 
-// Named here so the mast line and the sections read the same list. The keys are the masters used below.
-export const EFFECTS = [
-  { key: 'nebOn', label: 'NEBULA' },
-  { key: 'lsOn',  label: 'LIGHTSPEED' },
-  { key: 'plOn',  label: 'PLASMA' },
+export const LAYER_NAMES = ['FIRST', 'SECOND', 'THIRD', 'FOURTH', 'FIFTH', 'SIXTH'];
+
+/* The rows one shell owns. `i` only reaches the key; every label is the same, because the section header is
+ * already saying which shell this is.
+ *
+ * THE LABELS SAY NEBULA AND PLASMA; THE KEYS STILL SAY CLOUD AND BOLT. A key is an address, not a label -- every
+ * saved configuration is filed under the old words, and renaming them would orphan the lot in silence rather
+ * than fail loudly. Same reason CRT Lab stores under `crtgl`. Read the two as the same thing. */
+const shellRows = (i) => [
+  ['L' + i + 'Rad', 'RADIUS', 0.12, 2.4, 0.01],
+  ['L' + i + 'Amt', 'AMOUNT', 0, 2, 0.02],
+  ['L' + i + 'Speed', 'SPEED', -25, 25, 0.1],
+  ['L' + i + 'Warp', 'STRETCH', 0.03, 1.2, 0.01],
+  ['L' + i + 'Spin', 'SPIN', -2, 2, 0.01],
+
+  /* EACH EFFECT'S AMOUNT IS FOLLOWED BY ITS OWN COLORS, so a shell reads as a list of what is drawn on it rather
+   * than a block of amounts and a block of colors that have to be matched up by eye. The swatch pair is ONE row:
+   * two ends of one gradient is one decision made twice, and split across two rows it reads as two unrelated
+   * settings at twice the height. A row is hidden while its effect is off, because a color that tints nothing is
+   * a control that does nothing. */
+  /* EACH EFFECT CARRIES ITS OWN SHAPE CONTROLS, directly under it.
+   *
+   * FILL, EDGE and DETAIL used to sit at the bottom serving whichever of NEBULA and PLASMA was lit, and that was
+   * wrong twice over. DETAIL and FILL only ever reached the nebula -- the plasma field is a distance to where two
+   * noise fields both cross zero, and there are no octaves in it and nothing to threshold. EDGE reached both,
+   * so tuning the nebula's softness moved the plasma's thickness. One slider, two surfaces, no way to set either
+   * without disturbing the other. */
+  ['L' + i + 'Cloud', 'NEBULA', 0, 2, 0.02],
+  [['L' + i + 'CloudA', 'L' + i + 'CloudB'], 'NEBULA COLOR', '#'],
+  ['L' + i + 'Fill', 'NEBULA FILL', 0, 1, 0.01],
+  ['L' + i + 'Edge', 'NEBULA EDGE', 0.02, 0.7, 0.01],
+  ['L' + i + 'Oct', 'NEBULA DETAIL', 1, 5, 1],
+
+  ['L' + i + 'Bolts', 'PLASMA', 0, 2, 0.02],
+  [['L' + i + 'BoltA', 'L' + i + 'BoltB'], 'PLASMA COLOR', '#'],
+  ['L' + i + 'BoltFill', 'PLASMA FILL', 0, 1, 0.01],
+  ['L' + i + 'BoltEdge', 'PLASMA EDGE', 0.01, 0.7, 0.01],
+
+  ['L' + i + 'Streak', 'STREAKS', 0, 2, 0.02],
+  [['L' + i + 'StrkA', 'L' + i + 'StrkB'], 'STREAK COLOR', '#'],
+  ['L' + i + 'Lanes', 'LANES', 8, 400, 1],
+
+  ['L' + i + 'Ring', 'RINGS', 0, 1, 0.01],
+  ['L' + i + 'RingN', 'RING SPACING', 0.5, 14, 0.1],
+  ['L' + i + 'RingFlow', 'RING FLOW', -20, 20, 0.2],
 ];
 
-const COLOR_MODES = ['SOLID', 'BLEND', 'RAIN'];
+/* Sections for the shells the state currently has. Called by the host on every rebuild, so LAYERS adds and
+ * removes whole sections rather than leaving dead ones on screen.
+ *
+ * A shell's master is its own On key, so a shell can be silenced without losing what it was set to. */
+export function shellSections(n) {
+  const out = [];
+  for (let i = 0; i < Math.min(n, MAXL); i++) {
+    out.push([LAYER_NAMES[i] + ' SHELL', shellRows(i), 'L' + i + 'On']);
+  }
+  return out;
+}
 
-// The three every layer has, in the same order each time so the eye finds them in the same place. COVERAGE used
-// to be a fourth; it is now one value in IMAGE, shared by all three.
-const flow = (p) => [
-  [p + 'Speed', 'SPEED', -30, 30, 0.1],
-  [p + 'Twist', 'TWIST', -4, 4, 0.05],
-  [p + 'Spin', 'SPIN', -2, 2, 0.01],
-];
-
-/* ONLY THE ROWS THE CURRENT MODE USES ARE SHOWN, because the other ones do nothing at all: the ramp returns
- * COLOR A alone in SOLID, mixes A to B in BLEND, and ignores both in favor of a hue-shifted cosine palette in
- * RAIN. Three rows were on screen at all times and never more than two of them were live, with nothing saying
- * which — a control that does nothing is worse than one that is absent.
+/* RENDER first, because its rows are cost and framing rather than scene. TUNNEL next: the shape every shell is
+ * drawn in. Then BLACK HOLE, which is what the tunnel ends at. Then the shells themselves.
+ *
+ * There was an IMAGE section between the first two and it is gone -- it held the lens and the whole-frame post,
+ * and RENDER SCALE alone is not a section. Nobody looking for EXPOSURE knew whether that counted as image or as
+ * render, which is the test a section boundary has to pass.
  */
-const color = (p) => [
-  [p + 'Mode', 'COLOR', COLOR_MODES],
-  [p + 'Col', 'COLOR A', '#', { when: [p + 'Mode', [0, 1]] }],
-  [p + 'ColB', 'COLOR B', '#', { when: [p + 'Mode', [1]] }],
-  [p + 'Hue', 'HUE', 0, 1, 0.01, { when: [p + 'Mode', [2]] }],
-];
+export const HEAD = [
+  /* RENDER IS EVERYTHING ABOUT THE PICTURE RATHER THAN THE SCENE: how much is drawn, the lens it is seen
+   * through, and the post applied to the finished frame. It was two sections and the split never earned itself --
+   * RENDER SCALE alone is not a section, and nobody looking for EXPOSURE knows whether that counts as image or
+   * as render. */
+  ['RENDER', [['renderScale', 'RENDER SCALE', 0.25, 2, 0.05],
+              ['fov', 'FOV', 30, 110, 1],
+              ['exposure', 'EXPOSURE', 0.2, 3, 0.02]]],
 
-export const SECTIONS = [
-  /* RENDER FIRST: both rows are cost, not look. QUALITY is the march's step count and is the biggest single lever
-   * in this lab — every enabled layer is evaluated once per step. */
-  /* RENDER SCALE REACHES PAST 100%, and on a hi-dpi screen it has to. glquad sizes the buffer from the CSS box
-   * with dpr pinned to 1, so 100% is one buffer pixel per CSS pixel — 57% of native on a 1.75 display, and the
-   * browser stretches the rest. What that magnifies is the march's dither, which is tuned to be invisible at one
-   * sample per screen pixel and reads as coarse grain at one per three. Set this to the display's dpr for native.
+  ['TUNNEL', [['far', 'DEPTH', 6, 90, 0.5],
+              ['fog', 'DEPTH FADE', 0, 1, 0.01],
+              ['bend', 'BEND', 0, 12, 0.05],
+              ['bendDir', 'BEND TOWARD', -3.14, 3.14, 0.02],
+              ['bendFlow', 'BEND FLOW', -20, 20, 0.2]]],
+
+  /* THE FAR END IS A BLACK HOLE, not a glow, and the shader traces the real null geodesic through it. What
+   * that buys is that almost nothing here is a control: the shadow, the photon ring, the disc's inner edge and
+   * the second image of the disc arcing over the top of the shadow are all consequences of MASS and appear
+   * without a slider naming any of them.
+   *
+   * MASS IS THE ONLY NUMBER THE HOLE HAS. There was a LENS beside it and it was a second gravity -- it scaled
+   * how hard light bent while the shadow stayed on MASS, so the warp and the thing it warped around were free
+   * to disagree about the same hole. There is nothing left for it to mean.
+   *
+   * IT READS IN SOLAR MASSES AND STEPS BY ONE, because that is the unit a black hole's mass is quoted in and
+   * one is the increment somebody actually wants. It was a PERCENTAGE OF ITS OWN RANGE stepping by 0.05, which
+   * is two failures at once: a percentage of a range is not a measurement of anything, and a step that fine
+   * meant twenty presses of the arrow to move the hole a size you could see. One solar mass is 0.2 world units
+   * of Schwarzschild radius here -- stated once, in the shader, where rs is worked out.
+   *
+   * DISC REACH IS AN OUTRIGHT RADIUS, in the same world units as DEPTH, so it stays put when MASS moves. The
+   * INNER edge is not a control at all: it is the innermost stable orbit, 3 Rs, and nothing orbits inside it.
+   *
+   * DISC HEIGHT IS THE SLAB'S HALF-THICKNESS at the inner edge, IN SCHWARZSCHILD RADII. It is a real control
+   * now because the disc is integrated as a volume along the same march that bends the light -- a deeper slab
+   * holds more gas and glows more where the ray runs further through it. The earlier version of this slider only
+   * sized a sampling window and cancelled out of the brightness, so it moved nothing, and it was removed.
+   * It read as a PERCENTAGE of the inner edge, which is a ratio to something the panel never names; Rs is the
+   * length everything else about the hole is quoted in, so the slab is quoted in it too.
+   *
+   * TILT 0 IS FLAT: the disc's normal points at the eye and you look down on a ring. At 90 you see the plane
+   * along its own surface -- it crosses the middle as a bar and its far side bends over the top of the shadow
+   * and under the bottom at the same time, which is the picture everyone means. It reaches 0 and it reaches 90;
+   * the slab is what lets an exactly edge-on disc still be found.
+   *
+   * IT RUNS TO -90 AS WELL, which tips the disc the other way so the eye sits under its plane rather than over
+   * it. That is not a second control: -t is the same plane as +t with LEAN swung half a turn, and having it on
+   * TILT means you can cross the flat and come out the other side without also reaching for LEAN.
+   *
+   * BOTH ANGLES ARE STORED AND SHOWN IN DEGREES, and step by one. They were stored in RADIANS and printed with
+   * a degree sign, so a disc turned 69 degrees read as "1" on the panel -- a number in one unit wearing another
+   * unit's label. The shader wants radians and the host converts on the way out, which is exactly what FOV
+   * already does. A step of 0.01 radians was also 0.57 of a degree, so the arrow key moved the disc by an
+   * amount no one could see.
+   *
+   * TILT AND LEAN ARE THE ONLY TWO ANGLES A PLANE HAS. Its orientation is its normal and a direction takes two
+   * numbers; the third rotation a solid would have does nothing to a plane. What that one would have done is
+   * turn the pattern, and DISC SPIN already does.
+   *
+   * SPIN AND FLOW ARE THE DISC'S TWO MOTIONS AND THEY ARE INDEPENDENT. SPIN is how fast it turns and which way;
+   * FLOW is how fast its material travels along the radius and which way. FLOW is a RATE OF CHANGE OF RADIUS and
+   * reads with that sign: NEGATIVE falls toward the hole, positive streams away from it, so an accreting disc is
+   * a negative one and that is what ships. FLOW used to be taken from SPIN, rate and sign together, so turning
+   * the disc the other way made its material flow outward and there was no way to ask for an accreting disc that
+   * spins anticlockwise. Which way a disc orbits says nothing about which way its material goes.
+   *
+   * DOPPLER SCALES THE ORBITAL HALF OF ONE REDSHIFT FACTOR. The gravitational half is not a control, because
+   * it is a fact about where the light was emitted rather than a taste. Both drive brightness and colour from
+   * the same number.
    */
-  /* STEP SPREAD decides WHERE the samples go, where QUALITY decides how many. At 1 the march is even and the
-   * far end of the tunnel is sampled as finely as the near end; high concentrates them at the eye, which is
-   * cheaper to look at but leaves the background undersampled and streaking. */
-  ['RENDER', [['renderScale', 'RENDER SCALE', 0.35, 2, 0.01],
-              ['steps', 'QUALITY', 12, 88, 1],
-              ['stepSpread', 'STEP SPREAD', 1, 16, 0.1]]],
-
-  /* IMAGE SITS SECOND BECAUSE IT APPLIES TO EVERYTHING BELOW IT. FOV, EXPOSURE, CHROMA and VIGNETTE are the lens
-   * and the whole-frame post — the last things done to whatever the march produced — so reading the panel top to
-   * bottom matches the order the pixels are actually built in: how much is drawn, what the frame is seen through,
-   * then each thing that draws.
-   *
-   * FOV IS FIRST AND IT IS THE STRONGEST ROW ON THE PANEL. A narrow angle keeps the wall away from the edge of
-   * the frame and the whole field reads as weather out in front; a wide one sweeps it past the periphery and the
-   * picture closes around the viewer. It is stored in degrees and converted to the ray's z where it is sent. */
-  ['IMAGE', [['fov', 'FOV', 28, 104, 1],
-             ['exposure', 'EXPOSURE', 0.2, 3, 0.01],
-             ['chroma', 'CHROMA', 0, 3, 0.05],
-             ['vignette', 'VIGNETTE', 0, 1, 0.01]]],
-
-  /* TUNNEL IS THE SHAPE OF THE TUBE, and every row in it governs all three layers at once. They were scattered —
-   * COVERAGE and BEND sat in IMAGE among the post, and each layer used to carry its own copy of COVERAGE that was
-   * kept in step by hand. How far in from the wall the field reaches, how hard its edge is, and where its axis
-   * goes are properties of the tunnel, not of any one thing drawn in it.
-   *
-   * WALL is that edge. Soft, the density climbs over a third of the radius and there is no boundary anywhere,
-   * which is a cloud the camera happens to be inside; hard, it arrives over a few percent and there is a surface
-   * with a mouth in it.
-   *
-   * RINGS thickens the wall into bands spaced along the tunnel that slide toward the eye. A ring sits at a fixed
-   * DEPTH, so it foreshortens toward the throat and arrives faster as it comes — which is the cue an eye reads as
-   * traveling rather than as watching a sky. It is ONE row: how far apart they sit and how fast they arrive are
-   * fixed at the only setting worth having at this tube's proportions, and as sliders they said nothing a reader
-   * could act on.
-   *
-   * BEND makes the axis a curve instead of a line. FLOW slides the curve toward the eye so corners arrive rather
-   * than sit still; TIGHTNESS is how close together they come. */
-  ['TUNNEL', [['coverage', 'COVERAGE', 0, 1, 0.01],
-              ['wall', 'WALL', 0, 1, 0.01],
-              ['ribs', 'RINGS', 0, 1, 0.01],
-              ['bend', 'BEND', 0, 4, 0.02],
-              ['bendFlow', 'BEND FLOW', -20, 20, 0.1],
-              ['bendScale', 'TIGHTNESS', 0.1, 3, 0.01]]],
-
-  ['NEBULA', color('neb').concat([
-    ['nebDensity', 'DENSITY', 0, 3, 0.02],
-    ['nebFill', 'FILL', 0, 1, 0.01],
-    ['nebFluff', 'FLUFF', 0.15, 0.9, 0.01],
-    ['nebStreak', 'STREAK', 0.05, 2, 0.01],
-    ['nebVar', 'VARIANCE', 0, 1, 0.01],
-    ['nebScale', 'SCALE', 0.5, 8, 0.05],
-    ['nebOct', 'DETAIL', 1, 5, 1],
-  ], flow('neb')), 'nebOn'],
-
-  /* LIGHTSPEED is capsules solved per pixel, not density marched — so THICKNESS is the streak's real radius and
-   * LENGTH its real length, both in world units, rather than a kernel that had to widen with the sampling rate.
-   * Its streaks scatter through the whole wall at any distance, exactly as the other two layers fill it, and
-   * there is no shell count to set. */
-  ['LIGHTSPEED', color('ls').concat([
-    ['lsDensity', 'BRIGHTNESS', 0, 4, 0.02],
-    ['lsCount', 'STREAKS', 8, 260, 1],
-    ['lsLen', 'LENGTH', 0.02, 1, 0.01],
-    ['lsThick', 'THICKNESS', 0.04, 0.6, 0.005],
-    // VARIANCE is how much streaks differ FROM EACH OTHER: length, speed, thickness, brightness, and how far
-    // out from the axis each one sits. At 0 they are clones on a grid; at 1 no two are alike.
-    ['lsVar', 'VARIANCE', 0, 1, 0.01],
-    ['lsRadial', 'SPREAD', 0, 1, 0.01],
-  ], flow('ls')), 'lsOn'],
-
-  /* SCALE and STREAK mean here exactly what they mean in NEBULA, and they are a pair on purpose: STREAK squashes
-   * the depth axis so bolts run lengthwise down the tunnel, and SCALE decides how big the field is. Squashing
-   * alone strings the noise's own features along each bolt as visible beads, so the two have to be set together —
-   * a hard squash wants a small field, or the beads read as rungs. */
-  ['PLASMA', color('pl').concat([
-    ['plDensity', 'BRIGHTNESS', 0, 3, 0.02],
-    ['plFill', 'FILL', 0, 1, 0.01],
-    ['plOcclude', 'OCCLUSION', 0, 2, 0.01],
-    ['plCrackle', 'CRACKLE', 0, 1, 0.01],
-    ['plScale', 'SCALE', 0.5, 8, 0.05],
-    ['plStreak', 'STREAK', 0.05, 1.5, 0.01],
-    ['plFlash', 'FLASH', 0, 1, 0.01],
-    ['plFlashRate', 'FLASH RATE', 0.05, 6, 0.05],
-    ['plLight', 'LIGHTS CLOUD', 0, 1, 0.01],
-  ], flow('pl')), 'plOn'],
-
-  /* CORE is the far end of the tunnel — the bright center the layers are wrapped around. It is drawn after the
-   * march rather than inside it, so its rows are about one object and none of them cost a sample.
-   *
-   * COLOR FIRST within the section, as FRAME does in CRT Lab and every layer does here: it is what the far end
-   * of the tunnel is MADE of, and every row under it is a departure from that. SOURCE sits with it because the
-   * two answer one question — whether that color is the swatch or the average of whatever layers are lit.
-   *
-   * SPIN turns the rays and nothing else, so it reads as doing nothing while RAYS is 0. PULSE and FADE are both
-   * breaths and are separate controls because they are different ones: PULSE brightens and dims around full,
-   * FADE takes the whole core away and brings it back. Each carries its own rate for the same reason every layer
-   * carries its own flow — a shared rate forces the slow one to compromise. */
-  ['CORE', [['coreCol', 'COLOR', '#'],
-            ['coreAuto', 'SOURCE', 0, 1, 0.01],
-            ['glow', 'CORE', 0, 3, 0.02],
-            ['throatTint', 'TINT', 0, 1, 0.01],
-            ['throatRays', 'RAYS', 0, 1, 0.01],
-            ['coreSpin', 'SPIN', -2, 2, 0.01],
-            ['corePulse', 'PULSE', 0, 1, 0.01],
-            ['corePulseRate', 'PULSE RATE', 0.05, 4, 0.05],
-            ['coreFade', 'FADE', 0, 1, 0.01],
-            ['coreFadeRate', 'FADE RATE', 0.05, 4, 0.05]], 'coreOn'],
+  /* THE TOP OF THE MASS RANGE IS THE LAST SETTING THAT STILL SHOWS SOMETHING, and it was measured rather than
+     derived. The shadow's apparent radius is 2.598 Rs scaled by fov/DEPTH, so it grows straight through the
+     frame: at the shipped FOV and DEPTH it is 0.27 of the frame's half-height at 20 solar masses, most of the
+     picture by 30, and at 40 the render comes back COMPLETELY BLACK -- correct, and useless as a control. The
+     old top end was 40, so the last third of the slider did nothing anyone could see. 24 keeps the shadow
+     inside the frame with the disc clear of it. It also caps the worst case the march can be asked for, which
+     is the same edge from the other side. */
+  ['BLACK HOLE', [['mass', 'MASS', 0, 24, 1],
+                  ['disc', 'DISC', 0, 2, 0.02],
+                  [['discA', 'discB'], 'DISC COLOR', '#'],
+                  ['discTilt', 'DISC TILT', -90, 90, 1],
+                  ['discLean', 'DISC LEAN', -180, 180, 1],
+                  ['discOut', 'DISC REACH', 0.2, 30, 0.1],
+                  ['discH', 'DISC HEIGHT', 0.05, 2.0, 0.05],
+                  ['discSpin', 'DISC SPIN', -20, 20, 1],
+                  ['discFlow', 'DISC FLOW', -8, 8, 1],
+                  ['doppler', 'DOPPLER', -2, 2, 0.05]], 'holeOn'],
 ];
 
-const DEG = as.scaled(90, 0, '°');
-const SPIN = as.scaled(90, 0, '°/s');
+// Every key persist() must know about, whether or not its section is on screen at the moment.
+export const ALL_SECTIONS = HEAD.concat(shellSections(MAXL));
+
+// Every shell, always. Each is switched at its own header, so there is nothing for a count to decide.
+export function sectionsFor() {
+  return ALL_SECTIONS;
+}
+
+const DEG = as.scaled(90, 0, '°/s');
 const SPEED = as.raw(1, 'c');
 
-/* LENGTH reads as a percentage of the streak's repeat period rather than an absolute distance, because the
- * period is longer than the visible tunnel — the number that means something is how much of that a streak fills.
- */
 export const FMT = {
   renderScale: as.pct(),
-  steps:       as.raw(0, ' steps'),
-  stepSpread:  as.ends(as.mult(1), 'EVEN', '', 16),
-
-  nebHue:      as.scaled(360, 0, '°'),
-  nebDensity:  as.ofRange(3),
-  nebFill:     as.ends(as.pct(), 'MIST', 'THICK', 1),
-  nebFluff:    as.ends(as.pct(), 'BILLOW', 'WISPY', 0.9),
-  nebStreak:   as.ends(as.mult(2), 'STREAKY', 'ROUND', 2),
-  nebVar:      as.off(as.pct()),
-  nebScale:    as.mult(1),
-  nebOct:      as.raw(0, ' oct'),
-  nebSpeed: SPEED, nebTwist: DEG, nebSpin: SPIN,
-
-  lsHue:       as.scaled(360, 0, '°'),
-  lsDensity:   as.ofRange(4),
-  lsCount:     as.raw(0),
-  lsLen:       as.ends(as.pct(), 'DOTS', 'SOLID', 1),
-  lsThick:     as.pct(),
-  lsVar:       as.off(as.pct()),
-  lsRadial:    as.pct(),
-  lsSpeed: SPEED, lsTwist: DEG, lsSpin: SPIN,
-
-  plHue:       as.scaled(360, 0, '°'),
-  plDensity:   as.ofRange(3),
-  plFill:      as.ends(as.pct(), 'RARE', 'DENSE', 1),
-  plOcclude:   as.ends(as.mult(1), 'GLOW ONLY', 'SOLID', 2),
-  plFlashRate: as.mult(1),
-  plCrackle:   as.ends(as.pct(), 'VEINS', 'FORKED', 1),
-  plScale:     as.mult(1),
-  plStreak:    as.ends(as.mult(2), 'STREAKY', 'ROUND', 1.5),
-  plFlash:     as.ends(as.pct(), 'STEADY', 'STUTTER', 1),
-  plLight:     as.off(as.pct()),
-  plSpeed: SPEED, plTwist: DEG, plSpin: SPIN,
-
-  glow:          as.ofRange(3),
-  coreAuto:      as.ends(as.pct(), 'CUSTOM', 'LAYERS', 1),
-  throatTint:    as.ends(as.pct(), 'WHITE', 'COLOR', 1),
-  throatRays:    as.off(as.pct()),
-  coreSpin:      SPIN,
-  corePulse:     as.off(as.pct()),
-  corePulseRate: as.mult(1),
-  coreFade:      as.off(as.pct()),
-  coreFadeRate:  as.mult(1),
 
   fov:         as.deg(),
-  coverage:    as.pct(),
-  wall:        as.ends(as.pct(), 'FOG', 'SURFACE', 1),
-  ribs:        as.off(as.pct()),
-  bend:        as.off(as.ofRange(4)),
-  bendFlow:    as.raw(1, 'c'),
-  bendScale:   as.mult(2),
   exposure:    as.mult(2),
-  chroma:      as.ofRange(3),
-  vignette:    as.pct(),
+  fog:         as.off(as.pct()),
+
+  far:         as.raw(0, ' deep'),
+  bend:        as.off(as.mult(2)),
+  bendDir:     as.rad(0),
+  bendFlow:    SPEED,
+
+  mass:        as.off(as.raw(0, ' M\u2609')),
+  disc:        as.off(as.ofRange(2)),
+  discTilt:    as.deg(),
+  discLean:    as.deg(),
+  discOut:     as.raw(1, ' out'),
+  // The slab's half-thickness at the inner edge, as a length. Rs is the unit every other radius here is in.
+  discH:       as.raw(2, ' Rs'),
+  /* AN ANGULAR RATE, READ AS ONE. It was printed in fractions of c, borrowed from the shell SPEED rows -- and
+     the disc's pattern rate is not a speed of light and has no business wearing that unit. The number shown is
+     how fast the INNER EDGE turns, because a Keplerian disc has no single rate: everything further out goes as
+     r^-3/2 of it. 0.5 rad per unit per second is the shader's own factor, in degrees. */
+  discSpin:    as.scaled(28.6, 0, '°/s'),
+  /* How far a feature travels along the disc's RADIUS each second, in the same world units DISC REACH is in.
+     It is a rate of change of radius, so it carries that sign: NEGATIVE falls toward the hole, positive streams
+     away from it. An accreting disc is therefore a negative one. */
+  discFlow:    as.scaled(0.075, 2, ' r/s'),
+  /* NOT as.off(). It names the BOTTOM of a range, and DOPPLER's bottom is now -2 rather than 0 -- so every
+     negative setting would have read OFF while the beaming ran backwards in front of you. A signed control
+     cannot use a formatter that means "this end is nothing". */
+  doppler:     as.mult(2),
 };
+
+// The shell rows share one set of formatters; written once and applied to every index for the same reason the
+// sections are generated.
+for (let i = 0; i < MAXL; i++) {
+  Object.assign(FMT, {
+    ['L' + i + 'Rad']:    as.mult(2),
+    ['L' + i + 'Amt']:    as.ofRange(2),
+    ['L' + i + 'Cloud']:  as.off(as.ofRange(2)),
+    ['L' + i + 'Bolts']:  as.off(as.ofRange(2)),
+    ['L' + i + 'Streak']: as.off(as.ofRange(2)),
+    ['L' + i + 'Lanes']:  as.raw(0, ' lanes'),
+    ['L' + i + 'Ring']:   as.off(as.pct()),
+    // Spacing reads as how many rings stand between the eye and the throat, which is the thing being set.
+    ['L' + i + 'RingN']:  as.raw(0, ' rings'),
+    ['L' + i + 'RingFlow']: SPEED,
+    ['L' + i + 'Fill']:   as.ends(as.pct(), 'RARE', 'SOLID', 1),
+    ['L' + i + 'Edge']:   as.ends(as.pct(), 'HARD', 'SOFT', 0.7),
+    ['L' + i + 'Oct']:    as.raw(0, ' oct'),
+    // The bolts' pair reads the same way the cloud's does, because it means the same thing on its own surface.
+    ['L' + i + 'BoltFill']: as.ends(as.pct(), 'RARE', 'SOLID', 1),
+    ['L' + i + 'BoltEdge']: as.ends(as.pct(), 'HARD', 'SOFT', 0.7),
+    ['L' + i + 'Speed']:  SPEED,
+    ['L' + i + 'Warp']:   as.ends(as.mult(2), 'STREAKY', 'ROUND', 1.2),
+    ['L' + i + 'Spin']:   DEG,
+  });
+}

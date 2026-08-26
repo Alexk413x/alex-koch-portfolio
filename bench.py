@@ -66,8 +66,10 @@ PAGES = {
     'crt':      'labs/crt/CRT%20Lab.html',
     'crtgl':    'labs/crt/CRT%20Lab.html',
     'reactor':  'labs/reactor/Reactor.html',
-    'tunnel':   'labs/tunnel/Tunnel.html',
     'wormhole': 'labs/wormhole/Wormhole.html',
+    # `tunnel` was this lab's name while it was built beside the one it replaced. Kept as an alias so anything
+    # written against it still resolves, the same courtesy `crtgl` gets above.
+    'tunnel':   'labs/wormhole/Wormhole.html',
     'shell':    'labs/shell/Shell.html',
 }
 
