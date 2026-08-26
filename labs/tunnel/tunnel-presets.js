@@ -66,15 +66,18 @@ export function defaultPreset(gpu) {
      * MASS IS MODEST ON PURPOSE. The deflection goes as 1/b, so past about 1.5 the whole frame smears toward the
      * centre and the tunnel stops reading as a tunnel.
      *
+     * DISC REACH IS AN OUTRIGHT RADIUS, so it stays put when MASS moves. The inner edge is welded to MASS and
+     * will push past it at a large enough hole; the guard in the shader keeps the annulus valid when it does.
+     *
      * DISC TILT SHIPS NEAR EDGE-ON, and that is the whole look. At 90 degrees the plane faces the camera and
      * draws a ring AROUND the hole -- which is what this shipped as, and it is why the disc read as a circle in
      * the middle rather than as a horizon. Near zero the plane is seen along its own surface: it crosses the
      * middle as a band, its far side lenses over the top of the shadow, and the light sits on the EDGE where it
      * belongs. */
     holeOn: 1,
-    mass: 1.0, ring: 0.9, ringCol: '#ffd9a0',
+    mass: 1.0, lens: 2.6, ring: 0.9, ringCol: '#ffd9a0',
     disc: 1.0, discA: '#fff0cf', discB: '#c23a05',
-    discThick: 0.16, discTilt: 0.12, discLean: 0.0, discOut: 3.6, discSpin: 2.4, doppler: 0.85,
+    discThick: 0.16, discTilt: 0.12, discLean: 0.0, discOut: 1.3, discSpin: 2.4, doppler: 0.85,
 
     /* THREE ARE LIT AND THREE ARE NOT, and three is the fewest that reads as depth: one to pass in front, one
      * to be passed, and one between them to prove the other two are at different distances. Two reads as a

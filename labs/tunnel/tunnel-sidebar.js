@@ -121,7 +121,8 @@ export const HEAD = [
    * numbers; the third rotation a solid would have does nothing to a plane. What that one would have done is
    * turn the pattern, and DISC SPIN already does.
    */
-  ['BLACK HOLE', [['mass', 'MASS', 0, 4, 0.02],
+  ['BLACK HOLE', [['mass', 'MASS', 0, 20, 0.05],
+                  ['lens', 'LENS', 0, 6, 0.05],
                   ['ring', 'PHOTON RING', 0, 3, 0.02],
                   ['ringCol', 'RING COLOR', '#'],
                   ['disc', 'DISC', 0, 2, 0.02],
@@ -129,7 +130,7 @@ export const HEAD = [
                   ['discThick', 'DISC THICKNESS', 0.01, 0.6, 0.005],
                   ['discTilt', 'DISC TILT', 0.08, 1.57, 0.01],
                   ['discLean', 'DISC LEAN', -3.14, 3.14, 0.02],
-                  ['discOut', 'DISC REACH', 1.1, 40, 0.1],
+                  ['discOut', 'DISC REACH', 0.2, 30, 0.1],
                   ['discSpin', 'DISC SPIN', -20, 20, 0.1],
                   ['doppler', 'DOPPLER', 0, 2, 0.02]], 'holeOn'],
 ];
@@ -157,13 +158,14 @@ export const FMT = {
   bendDir:     as.rad(0),
   bendFlow:    SPEED,
 
-  mass:        as.off(as.ofRange(3)),
+  mass:        as.off(as.ofRange(20)),
+  lens:        as.off(as.mult(2)),
   ring:        as.off(as.ofRange(3)),
   disc:        as.off(as.ofRange(2)),
   discThick:   as.pct(),
   discTilt:    as.rad(0),
   discLean:    as.rad(0),
-  discOut:     as.mult(1),
+  discOut:     as.raw(1, ' out'),
   discSpin:    as.raw(1, 'c'),
   doppler:     as.off(as.pct()),
 };

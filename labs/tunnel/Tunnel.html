@@ -161,7 +161,7 @@ function draw(dt, sec) {
   // The hole's master rides on MASS, SHADOW, RING and DISC together: switching the section off must remove the
   // lensing too, not just stop drawing the disc, or the frame stays warped around nothing.
   const H = s.holeOn ? 1 : 0;
-  R.f('uMass', s.mass * H); R.f('uRing', s.ring * H);
+  R.f('uMass', s.mass * H); R.f('uLens', s.lens); R.f('uRing', s.ring * H);
   // Never uploaded once, so uRingCol sat at vec3(0) and PHOTON RING multiplied to black at every setting.
   R.f3('uRingCol', ...hex(s.ringCol));
 
