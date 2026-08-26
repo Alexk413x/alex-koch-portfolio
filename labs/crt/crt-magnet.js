@@ -42,7 +42,7 @@ export function createMagnet() {
       if (t < 0 || t >= 1) return REST;
 
       const env0 = Math.sin(Math.PI * t);
-      /* Centred on 1 so the ring MODULATES the pull rather than replacing it, and floored at 0.15 so a hard ring
+      /* Centerd on 1 so the ring MODULATES the pull rather than replacing it, and floored at 0.15 so a hard ring
          cannot invert the field — a magnet does not repel on the rebound; the picture does. */
       const ring = Math.exp(-t * 3.2) * Math.sin(t * TAU * (1.4 + s.wwig * 2.2));
       const spr  = Math.max(0.15, 1 + ring * s.warpSpring * 1.6);

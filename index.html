@@ -60,7 +60,7 @@
 </head>
 <body>
 
-<!-- Three zones on one row: the mark, the sections, the marks. The middle zone is centred against the viewport
+<!-- Three zones on one row: the mark, the sections, the marks. The middle zone is centerd against the viewport
      rather than against whatever the two sides weigh, so the links hold still when either side changes width. -->
 <nav id="nav">
   <div class="brand">
@@ -168,12 +168,12 @@
     <div class="inner">
       <div class="loop-grid">
 
-      <!-- THE TITLE IS IN THE COLUMN, not above the grid. Outside it, the grid centred the graph against the
+      <!-- THE TITLE IS IN THE COLUMN, not above the grid. Outside it, the grid centerd the graph against the
            prose alone and the title's height was never counted — which is why the phones hung a title's worth too
            low against everything on the left. -->
       <div class="loop-say">
       <h2 class="sec-title">QA<br><span style="color:var(--accent)">CARTOGRAPHER</span></h2>
-      <p class="tagline">AI only where judgement is needed.</p>
+      <p class="tagline">AI only where judgment is needed.</p>
       <p class="sec-lede">
         One recorded app flow covers the whole surface, and replays for free.
       </p>
@@ -228,7 +228,7 @@
       <svg class="flow" viewBox="0 0 660 662" role="img"
            aria-label="One recorded screen branches into three replayed paths, each running back through two more screens.">
         <defs>
-          <!-- Stop colours are set in the stylesheet, not here: var() does not substitute inside a presentation
+          <!-- Stop colors are set in the stylesheet, not here: var() does not substitute inside a presentation
                attribute, so a stop-color attribute would silently paint black. -->
           <radialGradient id="cartoPool">
             <stop class="p0" offset="0" stop-opacity=".3"/>
@@ -253,7 +253,7 @@
              scene; a plane seen from close to its own level is a long flat smear, and that is what says floor. -->
         <ellipse class="fg-floor" cx="300" cy="722" rx="485" ry="50" style="--d:0;--df:.42"/>
 
-        <!-- CENTRE TO CENTRE, and drawn UNDER the phones — which is what dims the stretch of a line that is
+        <!-- CENTER TO CENTER, and drawn UNDER the phones — which is what dims the stretch of a line that is
              genuinely behind one. The fan out of the near phone curves because it changes row; the run from the
              second rank to the third is straight, because it does not. -->
         <g class="fg-edges">
@@ -343,7 +343,7 @@
         <h2 class="sec-title">RPN DOMINATOR<br><span style="color:var(--accent)">CALCULATOR</span></h2>
         <p class="sec-lede">
           Most RPN calculators on the store replicate the HP 15c exactly, from the functions down to the look of
-          the buttons. This one takes full advantage of the touch screen and the hardware to better optimise the
+          the buttons. This one takes full advantage of the touch screen and the hardware to better optimize the
           user experience for modern devices.
         </p>
 
@@ -400,15 +400,15 @@
         Jetpack, Firebase, Azure, JUnit, Espresso, Xamarin, Git</div>
     </div>
 
-    <!-- THE BACK CATALOGUE. The product leads and the employer is withheld until one is picked — the shelf is
+    <!-- THE BACK CATALOG. The product leads and the employer is withheld until one is picked — the shelf is
          what was shipped, and who paid for it is the answer rather than the heading.
          NOT PINNED. Each rack is a plain horizontal scroller, so sideways belongs to the shelf and down always
          belongs to the page; scrolling past this section is never converted into driving it.
-         EVERY PROOF IS WRITTEN OUT HERE. catalogue.js reads them into the rack below and hides this block, so a
+         EVERY PROOF IS WRITTEN OUT HERE. catalog.js reads them into the rack below and hides this block, so a
          crawler running no JavaScript — which is most of the AI ones — reads all seventeen records in full, and
          so does a reader whose scripts failed. Nothing is built from an array. -->
     <div class="shelf-intro" data-reveal>
-      <div class="sec-label">THE BACK CATALOGUE</div>
+      <div class="sec-label">THE BACK CATALOG</div>
       <h3>SEVENTEEN SHIPPED PRODUCTS<br><span>ACROSS FOUR ACTS</span></h3>
       <p>Pick one and it proves itself before it says who paid for it. The dates and the employers are all
         still here. They are just no longer the first thing you have to read.</p>
@@ -570,7 +570,7 @@
         </div>
       </div>
 
-      <!-- ONE BAY for the whole shelf. Every proof is written out here and catalogue.js reads them, so a
+      <!-- ONE BAY for the whole shelf. Every proof is written out here and catalog.js reads them, so a
            crawler running no JavaScript reads all seventeen records in full. Nothing is built from an array. -->
       <div class="bay">
 
@@ -961,7 +961,7 @@
   </div>
 
 
-  <!-- THE CATALOGUE, built by catalogue.js from the records above and shown only once it has run. Everything a
+  <!-- THE CATALOG, built by catalog.js from the records above and shown only once it has run. Everything a
        reader without JavaScript needs is in .inner; this is the same seventeen products as an object you can
        turn over. -->
   <div class="cat" id="cat">
@@ -969,10 +969,10 @@
     <div class="cat-left">
       <!-- NO EYEBROW. The section names itself in the title, so a label above saying the same thing was two
            headings for one section and height the carousel was competing for. -->
-      <h2 class="sec-title">THE CATALOGUE<br><span>SEVENTEEN SHIPPED PRODUCTS</span></h2>
+      <h2 class="sec-title">THE CATALOG<br><span>SEVENTEEN SHIPPED PRODUCTS</span></h2>
       <p class="cat-degree">BS Computer Science <em>Northern Arizona University</em></p>
 
-      <!-- THE KEY WORDS AS TEXT, not chips. They are facts about the catalogue rather than items in it, and as
+      <!-- THE KEY WORDS AS TEXT, not chips. They are facts about the catalog rather than items in it, and as
            bordered chips they were twenty-five more rectangles in a column that already has seventeen. -->
       <div class="keys">
         <div class="key-row"><b>Languages</b><p>Kotlin, Java, Python, XML, HTML5, JavaScript, TypeScript, CSS</p></div>
@@ -982,9 +982,9 @@
       </div>
 
       <!-- THE COMPANY BAR IS NAVIGATION, NOT A FILTER. Every employer stays listed whatever is showing — hiding
-           fifteen products to look at two is the opposite of a catalogue — and the one the carousel is on lights
+           fifteen products to look at two is the opposite of a catalog — and the one the carousel is on lights
            up. Clicking jumps the carousel there, which is the fast way through seventeen boxes.
-           Built by catalogue.js from the record, so a company cannot be listed here and missing from the reel. -->
+           Built by catalog.js from the record, so a company cannot be listed here and missing from the reel. -->
       <nav class="firms" id="firms" aria-label="Jump to a company"></nav>
 
       <!-- ONE CAROUSEL, not four shelves. The company bar reaches any product in a click and the act reads out
@@ -1072,7 +1072,7 @@
         <div class="obj wh"><div class="obj-3d"><div class="roll"></div></div></div>
         <div class="tag">WEBGL2</div>
         <div class="name">Wormhole Lab</div>
-        <p>A domain-warped noise tunnel down the throat of a wormhole, in three flavours.</p>
+        <p>A tunnel solved rather than marched, ending at a black hole traced along real light paths.</p>
         <div class="go">INSPECT →</div>
       </a>
     </div>
@@ -1101,7 +1101,7 @@
   </div>
 </div>
 
-<!-- First: everything below reaches for AKKIT as it initialises. -->
+<!-- First: everything below reaches for AKKIT as it initializes. -->
 <script src="site/kit.js"></script>
 <script src="site/display-lockup.js"></script>
 <script src="site/scenes.js"></script>
@@ -1112,7 +1112,7 @@
 <script src="site/rpn-demo.js"></script>
 <script src="site/lab-objects.js"></script>
 <script src="site/case3d.js"></script>
-<script type="module" src="site/catalogue.js"></script>
+<script type="module" src="site/catalog.js"></script>
 <script src="site/timeline.js"></script>
 <script type="module" src="site/hero-core.js"></script>
 
@@ -1239,7 +1239,7 @@
       "applicationCategory": "DeveloperApplication",
       "applicationSubCategory": "QA and test automation",
       "operatingSystem": "Android, iOS, Windows, Web",
-      "abstract": "AI only where judgement is needed.",
+      "abstract": "AI only where judgment is needed.",
       "description": "A QA tool that records one app flow and replays it as end-to-end, accessibility, performance, WCAG 2.2 AA, screenshot and EAA test coverage. Platform-, app- and LLM-agnostic: it explores, guides and replays test cases, and creates and repairs them automatically as the app evolves.",
       "featureList": [
         "End-to-End test coverage",
@@ -1258,8 +1258,8 @@
     },
     {
       "@type": "ItemList",
-      "@id": "https://alexk413x.github.io/alex-koch-portfolio/#catalogue",
-      "name": "The catalogue: seventeen shipped products",
+      "@id": "https://alexk413x.github.io/alex-koch-portfolio/#catalog",
+      "name": "The catalog: seventeen shipped products",
       "numberOfItems": 17,
       "itemListOrder": "https://schema.org/ItemListOrderDescending",
       "itemListElement": [
@@ -1661,7 +1661,7 @@
           "name": "What is QACartographer?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "QACartographer is a QA tool that records one app flow and replays it as end-to-end, accessibility, performance, WCAG 2.2 AA, screenshot and EAA test coverage. It runs against any platform, any app and any LLM, using AI only where judgement is needed, and it creates and repairs its tests automatically as the app evolves."
+            "text": "QACartographer is a QA tool that records one app flow and replays it as end-to-end, accessibility, performance, WCAG 2.2 AA, screenshot and EAA test coverage. It runs against any platform, any app and any LLM, using AI only where judgment is needed, and it creates and repairs its tests automatically as the app evolves."
           }
         },
         {

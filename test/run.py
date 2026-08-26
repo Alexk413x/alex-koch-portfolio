@@ -15,7 +15,7 @@ import time
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import harness            # noqa: E402
-import suite_catalogue    # noqa: E402
+import suite_catalog    # noqa: E402
 import suite_hero         # noqa: E402
 import suite_labs         # noqa: E402
 import suite_layout       # noqa: E402
@@ -24,9 +24,9 @@ import suite_qr           # noqa: E402
 import suite_rpn          # noqa: E402
 import suite_seo          # noqa: E402
 
-# suite_catalogue LAST: it emulates prefers-reduced-motion, and a suite that crashed mid-emulation would hand
+# suite_catalog LAST: it emulates prefers-reduced-motion, and a suite that crashed mid-emulation would hand
 # the setting to whatever ran after it.
-SUITES = [suite_rpn, suite_morph, suite_qr, suite_hero, suite_layout, suite_seo, suite_labs, suite_catalogue]
+SUITES = [suite_rpn, suite_morph, suite_qr, suite_hero, suite_layout, suite_seo, suite_labs, suite_catalog]
 
 
 def main():

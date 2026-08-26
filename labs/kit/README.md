@@ -14,7 +14,7 @@ labs/kit/
   units.js     how a number reads — `as.pct()`, `as.rad()`, `as.off(...)`
 ```
 
-**Start from [`../shell/Shell.html`](../shell/Shell.html).** It is the base lab: a live catalogue of every control
+**Start from [`../shell/Shell.html`](../shell/Shell.html).** It is the base lab: a live catalog of every control
 type and every formatter, annotated with why each one is the kind it is. Copy it, replace the subject, and delete
 what you do not need.
 
@@ -35,7 +35,7 @@ A row's **kind is its shape**, so a section never says which widget it wants:
 | `['k','LABEL',0,10,0.5]` | slider, with steppers |
 | `['k','LABEL',0,1,1]` | toggle — one bit is not a range |
 | `['k','LABEL',['A','B']]` | one-of-N — exactly one lit |
-| `['k','LABEL','#']` | colour swatch |
+| `['k','LABEL','#']` | color swatch |
 
 A third element on a section is its **master key**: a switch that turns the section's *effect* off. That is not the
 same as folding, which only hides the rows — both can apply at once, and conflating them would mean you could not
@@ -71,7 +71,7 @@ Five things in there are not decoration:
   panel back in the flex flow and gave 340 of those 852px to controls on a screen 393px tall. The same pair is in
   `panel.css` and `lab.css` as `(max-width: 820px), (max-height: 500px)`; a stylesheet cannot be read from here, so
   the numbers must move together or the panel overlays the stage while the script believes it is in the flow.
-- **`extra` names the keys `persist` cannot see.** It derives ranges from the panel layout, so a colour row (no
+- **`extra` names the keys `persist` cannot see.** It derives ranges from the panel layout, so a color row (no
   range) and a section master (not a row) are invisible to it.
 - **Rebuild the panel when something outside it writes state.** Rows read state once and own their DOM afterwards —
   that is why a drag costs nothing measurable, and the price is that a preset leaves every row stale.
@@ -83,7 +83,7 @@ Five things in there are not decoration:
 
 ## Persistence
 
-**Each lab needs its own storage key** — `crtgl`, `reactor`, `wormhole`, `labshell`. `crtgl` no longer matches
+**Each lab needs its own storage key** — `crtgl`, `reactor`, `tunnel`, `labshell`. `crtgl` no longer matches
 the name of the lab that uses it, and that is deliberate: a key is an address, and moving one silently orphans
 every configuration stored under it. localStorage is the one thing
 labs genuinely share, so two on one key overwrite each other. It is the single thing you must change when copying.

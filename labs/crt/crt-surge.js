@@ -1,7 +1,7 @@
 /* crt-surge.js — a mains fault, as how hard each channel is spent.
  *
  * THE TIMELINE IS NOT REIMPLEMENTED. crt-flicker owns it — seven phases over 4.6s, deterministic — because it
- * already owns the two things a supply failure moves together: the bulbs' output and their colour temperature.
+ * already owns the two things a supply failure moves together: the bulbs' output and their color temperature.
  * This fires it and decides what each channel does with the sample.
  *
  * The fixture and the tube are handed the SAME sample. A fault is upstream of both, so the room dimming while
@@ -49,7 +49,7 @@ export function createSurge(flicker) {
 
       /* THE CHOP — hard-edged steps, not a dip. A smooth sin() dip is the right model for a phosphor wandering on
          a healthy supply and the wrong one for an arc losing its strike: that is a switch and it reads as one.
-         The lamps take a shallower share: a fluorescent has a metre of ionised gas with thermal inertia in it,
+         The lamps take a shallower share: a fluorescent has a meter of ionised gas with thermal inertia in it,
          and a phosphor dot has none. */
       let chop = 1;
       if (s.surgeChaos > 0.001 && s.surgeStr > 0.001) {

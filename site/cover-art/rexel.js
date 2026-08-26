@@ -1,6 +1,6 @@
 /* rexel.js — Rexel USA
  *
- * Nine drawers of bolts and screws, every one labelled, and a phone held up in front of them reading the
+ * Nine drawers of bolts and screws, every one labeled, and a phone held up in front of them reading the
  * middle one on the top row. The scanned drawer is the same drawing as the other eight with the light turned
  * up on its barcode, and the answer is already on the glass.
  */

@@ -118,7 +118,7 @@ class Page:
             % (scroll_id, stage_id))
 
     def click_at(self, selector, pause=0.15):
-        """A REAL mouse event at the element's centre, not element.click().
+        """A REAL mouse event at the element's center, not element.click().
 
         click() dispatches straight at the node and ignores hit-testing, so it passes through
         pointer-events:none and through anything a 3D transform has moved. Half the point of these tests is

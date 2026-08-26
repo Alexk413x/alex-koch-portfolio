@@ -13,9 +13,9 @@ def run(page, r):
     page.goto('index.html')
 
     # The nav must be ONE row at every desktop width. A two-word label without nowrap breaks inside its own box,
-    # grows taller than its neighbours, and reads as a two-line nav even though the row never wrapped.
+    # grows taller than its neighbors, and reads as a two-line nav even though the row never wrapped.
     # The clearance is measured off the LEFT ZONE's right edge, not the mark's: the zone holds the mark and
-    # whatever is parked beside it, and it is the zone that can collide with the centre links.
+    # whatever is parked beside it, and it is the zone that can collide with the center links.
     for w in WIDTHS:
         page.viewport(w, 950)
         d = page.json("(()=>{const l=[...document.querySelectorAll('#nav .links a')];"
@@ -31,7 +31,7 @@ def run(page, r):
     # Every section shares one left rail. The container rule lived only under #labs and #contact once, so every
     # section written later ran the full viewport width and started 60px further left: a kink on the way down.
     # THE SECTION'S VISIBLE HEADING, whichever element carries it. #experience authors its records under a
-    # .sec-title that catalogue.js hides once it has built the rack, and a hidden element measures 0 on every
+    # .sec-title that catalog.js hides once it has built the rack, and a hidden element measures 0 on every
     # axis -- which read as the rail breaking when it had not moved at all.
     page.viewport(1600, 950)
     rails = page.json('JSON.stringify(%s.map(id=>{'
@@ -100,7 +100,7 @@ def run(page, r):
     # The hero's ring. Two properties of the pair are worth holding, because both were wrong once and only
     # looking at it caught them: the band has to run TRUE VERTICAL where it leaves the top, which means each
     # curve's last control point shares its end point's x, and the two edges have to be exact mirrors about the
-    # centre line or the band is a wedge. Read off the path data, since that is where both live.
+    # center line or the band is a wedge. Read off the path data, since that is where both live.
     halo = page.json("""(()=>{const ps=[...document.querySelectorAll('#hero-halo path')].map(p=>
       p.getAttribute('d').replace(/[A-Za-z,]/g,' ').trim().split(/\\s+/).map(Number));
       const pair=(a,i)=>({x:a[i*2],y:a[i*2+1]});
@@ -113,7 +113,7 @@ def run(page, r):
     r.check('the ring is two curves', halo['n'], 2)
     r.ok('the ring leaves the top vertically', halo['vertical'])
     r.ok('the ring reaches the top of the stage', halo['topped'])
-    r.ok('the ring is an exact mirror about the centre', halo['mirrored'])
+    r.ok('the ring is an exact mirror about the center', halo['mirrored'])
 
     # And it has to stay off the name. The curve rises out of the corner the lockup occupies, so a control point
     # nudged for the look of the top can crowd KOCH without anything else changing. Measured as clear air, at the
@@ -494,15 +494,15 @@ def run(page, r):
         r.ok('the ring is gone once %s is running' % path.split('/')[1],
              page.js("document.querySelectorAll('.kit-load').length") == 0)
 
-    # And it wears its own lab's colour, because it reads --panel-accent rather than carrying one of its own.
+    # And it wears its own lab's color, because it reads --panel-accent rather than carrying one of its own.
     page.cdp.call('Page.navigate', {'url': 'http://127.0.0.1:%d/labs/reactor/Reactor.html' % page.port})
     lit = page.until("document.querySelector('.kit-load .kr-dash circle')", timeout=3)
     if lit:
-        r.check('and takes the lab it belongs to for its colour',
+        r.check('and takes the lab it belongs to for its color',
                 page.js("getComputedStyle(document.querySelector('.kit-load .kr-dash circle')).stroke"),
                 'rgb(143, 255, 106)')
     else:
-        r.skip('and takes the lab it belongs to for its colour', 'the lab came up before it could be sampled')
+        r.skip('and takes the lab it belongs to for its color', 'the lab came up before it could be sampled')
     page.goto('index.html')
 
     # Every internal link resolves to something actually on disk.

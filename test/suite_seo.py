@@ -1,7 +1,7 @@
 # The machine-readable layer, checked against the page it claims to describe.
 #
 # WHY THIS SUITE EXISTS. Structured data restates what the markup already says, which makes it a second copy of
-# the truth -- the one failure mode this repository is organised against. The answer is not to go without it, but
+# the truth -- the one failure mode this repository is organized against. The answer is not to go without it, but
 # to make the two disagree loudly: every product name, employer, skill and claim in the JSON-LD is asserted here
 # against the page's own text. A claim that survives in the graph after its visible counterpart is deleted is
 # hidden text, and Google's spam policies name that as grounds for removal from the index.
@@ -195,7 +195,7 @@ def run(page, r):
                       "?.querySelector('h4')?.textContent||'').trim()})))")
     lst = typed['ItemList'][0]
     items = [e['item'] for e in lst['itemListElement']]
-    r.check('the catalogue counts what the shelf holds', lst['numberOfItems'], len(shelf))
+    r.check('the catalog counts what the shelf holds', lst['numberOfItems'], len(shelf))
     r.check('the list is as long as it says', len(items), lst['numberOfItems'])
     for i, (rec, item) in enumerate(zip(shelf, items)):
         r.check('product %d is the shelf\'s' % (i + 1), item['name'], rec['name'])
@@ -266,6 +266,36 @@ def run(page, r):
         if d:
             r.check('%s credits its author' % path, d['author']['@id'], CANON + '#alex')
             r.check('%s is source code' % path, d['@type'], 'SoftwareSourceCode')
+
+    # --- the link preview card agrees with the site it advertises ---------------------------------------
+    # THE CARD IS A PNG AND A PNG CANNOT BE DIFFED, so what is checked is its SOURCE: og-card.html carries a copy
+    # of three site.css tokens because a template cannot import a stylesheet it does not share a page with, and a
+    # copy is exactly the thing this repository does not allow to drift quietly. If the site changes its ink or
+    # its accent, this fails and the card gets re-rendered with `python og-card.py`.
+    root = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    css = io.open(os.path.join(root, 'site', 'site.css'), encoding='utf-8').read()
+    card = io.open(os.path.join(root, 'site', 'og-card.html'), encoding='utf-8').read()
+    for token in ('ink', 'accent', 'text-strong'):
+        want = re.search(r'--%s:\s*(#[0-9a-fA-F]{3,8})' % token, css)
+        got = re.search(r'--%s:\s*(#[0-9a-fA-F]{3,8})' % token, card)
+        r.ok('the card copies --%s from site.css' % token,
+             bool(want and got) and want.group(1).lower() == got.group(1).lower(),
+             '%s vs %s' % (want and want.group(1), got and got.group(1)))
+
+    # The mark is drawn from favicon.svg's paths rather than redrawn. The card once lost a stroke this way and
+    # rendered 413-slash for months underneath alt text that said 413X.
+    fav = io.open(os.path.join(root, 'favicon.svg'), encoding='utf-8').read()
+    paths = re.findall(r'<path d="([^"]+)"', fav)
+    r.ok('the card carries every glyph of the mark',
+         bool(paths) and all(d in card for d in paths), '%d/%d in the card' % (
+             sum(1 for d in paths if d in card), len(paths)))
+
+    # 1.91:1 is what Open Graph and summary_large_image want, and the renderer's viewport is set to it.
+    png = os.path.join(root, 'site', 'og-card.png')
+    with open(png, 'rb') as fh:
+        head = fh.read(24)
+    w, h = int.from_bytes(head[16:20], 'big'), int.from_bytes(head[20:24], 'big')
+    r.check('the card is 1200x630', (w, h), (1200, 630))
 
     # The base lab is not for readers, and says so rather than relying on not being linked.
     page.goto('labs/shell/Shell.html')

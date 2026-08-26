@@ -2,14 +2,14 @@
  *
  * Twenty-five bays, nobody behind it. The rack is symmetric; what is in it is not — no two parcels the same
  * size, three bays already collected. One fixture, and you can see it: the ray comes off the lamp and lands
- * on the centre bay.
+ * on the center bay.
  */
 
 import { DEEP, LINE, LIT, STRONG, ellipse, group, path, pt, rect } from './kit.js';
 import { beam, pool } from './parts.js';
 
 /* THE WALL, AS A TABLE. Twenty-five bays, twenty-two of them holding a parcel, and every parcel is the same
-   four shapes: the box, a lighter lid across its top, a seam down its centre and — on five of them — a label
+   four shapes: the box, a lighter lid across its top, a seam down its center and — on five of them — a label
    in the bottom-right corner. Written out it was sixty-six lines carrying twenty-two hand-typed opacities,
    which is a ramp typed out, and a ramp typed out is a ramp that drifts.
    x, y, w, h, the box's own weight, then the lid's depth and weight. Two more numbers means a label. */

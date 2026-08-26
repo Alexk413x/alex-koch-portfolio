@@ -68,7 +68,7 @@ function fingerprint(defaults) {
    * every one of the seven scenes as MOVED, with the sums up a uniform 17%. Nothing had changed but the number
    * of pixels. A fingerprint is only comparable against another taken at the same resolution, so the scale is
    * forced here rather than inherited, and the size is printed in the output -- a reference from a different
-   * window can then be recognised at a glance instead of read as a regression. */
+   * window can then be recognized at a glance instead of read as a regression. */
   const wasScale = G.state.renderScale;
   if (wasScale !== 0.62) { G.state.renderScale = 0.62; G.resize(); }
   const W = gl.drawingBufferWidth, H = gl.drawingBufferHeight, px = new Uint8Array(W * H * 4);

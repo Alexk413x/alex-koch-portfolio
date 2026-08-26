@@ -15,7 +15,7 @@ export function detectGPU(gl) {
 }
 
 // Compiles one stage, naming the file and line on failure. A silent compile failure renders black, which is
-// indistinguishable from a maths bug that happens to output zero.
+// indistinguishable from a math bug that happens to output zero.
 function stage(gl, type, src) {
   const sh = gl.createShader(type);
   gl.shaderSource(sh, src);
@@ -68,13 +68,13 @@ export function valueNoiseTexture(size = 256, seed = 1) {
   return { data, w: size, h: size };
 }
 
-/* BLUE NOISE, BY ENERGY MINIMISATION. A raymarch jitters where each ray starts so a fixed step count does not band
+/* BLUE NOISE, BY ENERGY MINIMIZATION. A raymarch jitters where each ray starts so a fixed step count does not band
  * into rings, and the character of that jitter decides how the residual error looks: white noise spreads error
  * across all frequencies including the low ones the eye is most sensitive to, so it reads as clumpy grain. Blue
  * noise pushes the energy into high frequencies the eye averages away.
  *
  * Void-and-cluster is the textbook construction; this is the cheaper swap-based one — start from white noise and
- * exchange two samples whenever that lowers a Gaussian-weighted neighbourhood energy. The neighbourhood is clipped
+ * exchange two samples whenever that lowers a Gaussian-weighted neighborhood energy. The neighborhood is clipped
  * to 4 texels because the Gaussian is negligible beyond that, turning an O(n²) energy into a constant per swap.
  */
 function blueNoiseTile(size) {
@@ -88,18 +88,18 @@ function blueNoiseTile(size) {
     const t = v[i]; v[i] = v[j]; v[j] = t;
   }
 
-  /* THE SPATIAL WEIGHTS ARE CONSTANT, so they are computed once into a flat table rather than per neighbour per
+  /* THE SPATIAL WEIGHTS ARE CONSTANT, so they are computed once into a flat table rather than per neighbor per
    * swap, and the value term is a linear falloff rather than a second exp. Both exps in the inner loop made this
    * take 400ms at startup — half a second of blank page for a 64x64 tile. Same result, a fraction of the work.
    *
-   * Offsets are precomputed too: the wrap is a modulo that never changes for a given neighbour. */
+   * Offsets are precomputed too: the wrap is a modulo that never changes for a given neighbor. */
   const R = 4, SIG2 = 2.1 * 2.1;
   const wt = [], odx = [], ody = [];
   for (let dy = -R; dy <= R; dy++) {
     for (let dx = -R; dx <= R; dx++) {
       if (!dx && !dy) continue;
       const w = Math.exp(-(dx * dx + dy * dy) / SIG2);
-      if (w < 0.004) continue;                        // negligible, and the tail is most of the neighbourhood
+      if (w < 0.004) continue;                        // negligible, and the tail is most of the neighborhood
       wt.push(w); odx.push(dx); ody.push(dy);
     }
   }
@@ -110,7 +110,7 @@ function blueNoiseTile(size) {
     let e = 0;
     for (let k = 0; k < NW; k++) {
       const j = ((y0 + ody[k] + size) % size) * size + ((x0 + odx[k] + size) % size);
-      // Similar values close together is exactly the clumping to be penalised, so the term peaks at zero
+      // Similar values close together is exactly the clumping to be penalized, so the term peaks at zero
       // difference and falls away linearly.
       let dv = val - v[j];
       if (dv < 0) dv = -dv;
@@ -237,7 +237,7 @@ export function createQuad(canvas, { frag, uniforms = [], ext = [], textures = {
   const build = () => {
     ext.forEach((n) => gl.getExtension(n));
 
-    // One triangle, not two: (-1,-1) (3,-1) (-1,3) covers the clip box with three vertices and rasterises no
+    // One triangle, not two: (-1,-1) (3,-1) (-1,3) covers the clip box with three vertices and rasterizes no
     // shared diagonal.
     quad = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, quad);
@@ -267,7 +267,7 @@ export function createQuad(canvas, { frag, uniforms = [], ext = [], textures = {
        below is the whole cost — measured on an Intel UHD 630 with a cold shader cache, linking the reactor's
        superset took 13.3 seconds on the main thread, and the page could not paint past it. A caller that opts
        in polls ready() instead and draws nothing until it lands.
-       OFF BY DEFAULT, so every lab keeps the behaviour it was measured with: they own the whole viewport and
+       OFF BY DEFAULT, so every lab keeps the behavior it was measured with: they own the whole viewport and
        have nothing to show before the shader exists, where a page with a hero has a page around it. */
     if (deferLink) { basePending = prog; return true; }
     if (linkState(prog, true) !== 1) return false;
@@ -359,7 +359,7 @@ export function createQuad(canvas, { frag, uniforms = [], ext = [], textures = {
       cur.last.set(name, [a, b, c]);
       gl.uniform3f(cur.U[name], a, b, c);
     },
-    /* A '#rrggbb' colour as a vec3 in 0..1. The parse is memoised across every renderer on the page — a colour
+    /* A '#rrggbb' color as a vec3 in 0..1. The parse is memoized across every renderer on the page — a color
      * comes from a swatch or a preset, so the same handful of strings recur for the life of the lab — and the
      * upload itself is skipped by f3's own cache. */
     f3hex(name, hex) {

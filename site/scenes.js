@@ -96,7 +96,7 @@
   /* ---- the calculator morph ----
    *
    * ONE DOM tree and ONE written property. Each key carries the rectangle it occupies on the HP faceplate and
-   * the rectangle it occupies in the shipped app; site.css interpolates both, and every colour, from the single
+   * the rectangle it occupies in the shipped app; site.css interpolates both, and every color, from the single
    * --m scalar written here. That is the whole reason to do it this way: a scroll frame touches one attribute
    * on one element, and the transition has exactly one description rather than half in CSS and half in JS.
    */
@@ -235,7 +235,7 @@
      that was simply already there and then simply gone. */
   /* STARTS LATE AND ENDS ON THE SEAT. It waits until half the graph is above the fold, because a build beginning
      before that spends its first third where nobody can see it.
-     Ending the build where the section SEATS means every frame of it happens while the section is travelling, in
+     Ending the build where the section SEATS means every frame of it happens while the section is traveling, in
      both directions. Running past the seat puts that overhang inside the pin, so scrolling back up the graph
      un-builds while the section itself does not move. The cost is that the build plays faster against the same
      scroll, and that is the point. */
@@ -267,7 +267,7 @@
      the moment a --d, a --df or either rate in the --p expression moves without this following. */
   const STRUCK = .605;
   /* Viewport heights either side of the stopping point that still count as whole. The circuit needs a band to
-     run in, and that band has to be CENTRED on the position the rail parks the reader at. Gated on the graph's
+     run in, and that band has to be CENTERD on the position the rail parks the reader at. Gated on the graph's
      own scalars instead, it opened a few pixels before the resting point and closed most of a tenth of a screen
      after it, because those peak past the target rather than on it — so a nudge upward put the circuit out while
      the same nudge downward did nothing. Scroll distance, because that is what the reader is moving. */
@@ -425,7 +425,7 @@
 
   /* THE BEATS, in page order, and the ONE description of them. The rail below walks this list and every barrier
      is placed off the same number, so a stop and the position it guards cannot drift apart. They were two lists
-     for one turn of this work, which is exactly the failure this page is organised against.
+     for one turn of this work, which is exactly the failure this page is organized against.
      `at: null` is a beat that is NOT THERE — its scene has given its runway back, or the rig is disarmed — and
      placeSnap clears the target rather than leaving it arresting a gesture on a section nothing animates.
      The top of the page carries no element: a gesture cannot be carried past a position it is already stopped
@@ -444,7 +444,7 @@
          still or in flight — so the pin carries exactly two beats and the turn happens on the way between. */
       { el: appOldSnap, base: appTop, at: noApp ? null : appTop, sec: 'app', fill: .5 },
       { el: appAppSnap, base: appTop, at: noApp ? null : appTop + appRun, sec: 'app', fill: 1 },
-      /* THE CATALOGUE AND THE LABS, which are beats for the same reason the others are: each is exactly one
+      /* THE CATALOG AND THE LABS, which are beats for the same reason the others are: each is exactly one
          screen and has one right alignment, so arriving half in it is arriving wrong. They carry no scene, so
          there is nothing to scrub and their position never moves within the section — `at` and `base` are the
          same number and the barrier sits at offset 0 inside its own section.
@@ -504,7 +504,7 @@
    * RAIL: once the scrolling has stopped, whatever is left of the gap is closed by a glide.
    *
    * IT COMMITS, IT DOES NOT ROUND. A third of the way toward the next beat is a decision to go there, and the rest
-   * is travelled for the reader; under that it is a nudge, and they are put back. So one short scroll off the
+   * is traveled for the reader; under that it is a nudge, and they are put back. So one short scroll off the
    * reactor plays the strike and carries them the whole way to Cartographer, and one short scroll back does it in
    * reverse. Two lines rather than one, so a reader parked between two beats cannot flap the page back and forth.
    *
@@ -571,11 +571,11 @@
     if (atBeat(anchorY, lo)) return f < RAIL_COMMIT ? lo : hi;
     if (atBeat(anchorY, hi)) return f > 1 - RAIL_COMMIT ? hi : lo;
     /* No anchor to hold against: an anchor jump from the nav, or a reload part-way down. Nearest, because there
-       is no gesture here whose direction could be honoured. */
+       is no gesture here whose direction could be honored. */
     return f < .5 ? lo : hi;
   }
 
-  /* stopGlide restores scroll snapping as well as cancelling the frame. Cancelling without restoring is what
+  /* stopGlide restores scroll snapping as well as canceling the frame. Canceling without restoring is what
      left snapping switched off for the rest of the session when the rig stood itself down mid-glide. */
   function holdStop() {
     if (holdWait) { clearTimeout(holdWait); holdWait = 0; }

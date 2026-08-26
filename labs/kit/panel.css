@@ -1,8 +1,8 @@
-/* panel.css — the control panel, for every lab. Pairs with panel.js: that decides structure and behaviour, this
+/* panel.css — the control panel, for every lab. Pairs with panel.js: that decides structure and behavior, this
  * decides appearance.
  *
  * Only what is generic lives here: the panel shell, section headers, rows, the four controls a row can hold
- * (range, toggle, choice, colour) and the action strip. Anything that knows what a lab MEASURES belongs to that
+ * (range, toggle, choice, color) and the action strip. Anything that knows what a lab MEASURES belongs to that
  * lab's own stylesheet.
  *
  * Retint through the custom properties below rather than forking — Reactor overrides seven of them to go green.
@@ -101,6 +101,11 @@
 .row.wide.choice .tgl { flex: 1 1 0; margin-left: 0; height: 38px; font-size: 17px; line-height: 1 }
 .row.wide.choice .tgl:first-of-type { margin-left: 0 }
 
+/* A PAIR OF SWATCHES occupies exactly what one does, so a row carrying two colors is the same height as a row
+   carrying one and the panel's rhythm does not break. */
+.row .cpair { flex: 0 0 86px; margin-left: auto; display: flex; gap: 3px }
+.row .cpair .csw { flex: 1 1 0; margin-left: 0 }
+
 .row .csw { flex: 0 0 86px; height: 18px; margin-left: auto; padding: 0; border: none; border-radius: 3px;
             background: none; cursor: pointer }
 .row .csw::-webkit-color-swatch-wrapper { padding: 0 }
@@ -109,7 +114,7 @@
 /* ---------------------------------------------------------------- the panel's own switch
  *
  * A 340px panel is a sidebar on a desktop and most of the screen on a phone, so it needs to get out of the
- * way. Two behaviours, one state class (`panel-hidden` on <body>), because two independent states would be
+ * way. Two behaviors, one state class (`panel-hidden` on <body>), because two independent states would be
  * two things to get out of step:
  *
  *   WIDE   the panel is in the flex flow and hiding it REMOVES it, so the stage grows into the space. That

@@ -1,82 +1,122 @@
-/* What the field is set to. Pure data, kept apart from the panel layout.
+/* What the tunnel is set to. Pure data, kept apart from the panel layout.
  *
- * The four sections that can be switched off — the three layers and the core — are independent masters rather than
- * one-of-N: any combination can run, and the march mixes whichever layers are enabled by depth.
+ * THE SHIPPED SCENE IS THREE SHELLS, and it is three because that is the fewest that reads as depth: a near one
+ * to pass in front, a far one to be passed, and one between them to prove the other two are at different
+ * distances. Two reads as a foreground and a backdrop; one is a wall.
+ *
+ * FILL IS COVERAGE: how much of the wall lights up, so higher is denser. It reads that way on the panel and is
+ * inverted into a threshold on the way to the shader, because raising a threshold passes less.
+ *
+ * IT SITS BELOW HALF ON PURPOSE, and this is the number to reach for first if the scene turns into a sheet of
+ * light. fbm averages about 0.5, so coverage near half passes half of everything -- and three shells each
+ * passing half is solid. Sparse shells are what let the eye see PAST the near one to the far one, which is the
+ * entire reason there is more than one.
  */
+import { MAXL } from './wormhole-shader.js';
 
-/* THE SHIPPED SCENE IS A REAL SAVED CONFIGURATION, not a neutral baseline — these numbers were lifted out of a
- * session's stored settings rather than picked one at a time. That is what makes them worth keeping together:
- * they were tuned against each other, and a value moved on its own is likely to disagree with the rest.
- *
- * It is also the reference every measurement is taken against, so changing it invalidates any stored render
- * fingerprint. See CLAUDE.md on clearing localStorage from a page on the same origin that is NOT the app — the
- * flush on hide writes the in-memory state straight back otherwise, and you never see the defaults at all.
- *
- * All three layers run at once and the CORE is off: the far end of the tunnel is whatever the layers make of it.
+/* Every shell carries every key, whether or not its effects are lit, so a shell switched on later arrives tuned
+ * rather than raw. The three that ship are lit; the rest sit at sensible values with their masters off.
  */
+function shell(i, v) {
+  const base = {
+    On: 0, Rad: 0.8, Amt: 1.0,
+    Cloud: 0.0, Bolts: 0.0, Streak: 0.0, Ring: 0.0,
+    RingN: 4.4, RingFlow: 7.4,
+    CloudA: '#ff7a1e', CloudB: '#7d2a05',
+    BoltA: '#ffce85', BoltB: '#ff4d00',
+    StrkA: '#ffb454', StrkB: '#ffffff',
+    Fill: 0.42, Edge: 0.20, Oct: 4, Lanes: 190,
+    BoltFill: 0.23, BoltEdge: 0.25,
+    Speed: 6.0, Warp: 0.30, Spin: 0.0,
+  };
+  const out = {};
+  Object.entries(Object.assign(base, v)).forEach(([k, val]) => { out['L' + i + k] = val; });
+  return out;
+}
+
 export function defaultPreset(gpu) {
   const weak = gpu && gpu.integrated;
   return {
-    /* MEASURED, NOT GUESSED, on the integrated side: with the noise moved into a lookup texture, the default
-     * scene holds 60 at 32 steps on an Intel UHD 630 and drops to 45 fps at 44. The discrete figures are
-     * extrapolated — there was no discrete adapter to measure on.
-     *
-     * Enabling all three layers used to cost about three times one of them. It no longer does: the shader is
-     * built for the layer set that is on, so the three-layer build is the one this scene compiles to and pays
-     * for nothing it does not run.
+    /* MEASURED on an Intel UHD 630, uncapped, 1059x770 = 0.82 MP: 15.8 ms a frame, 19.3 ms per megapixel,
+     * inside the 16.67 ms vsync with about 6% to spare. Interleaved against the same scene before the hole was
+     * rebuilt -- a screen-space pinch instead of a traced geodesic -- that build read 14.0 ms and 17.2 ms/MP, so
+     * tracing the real null geodesic costs about 2 ms per megapixel here and MASS went from 1 to 3 in the same
+     * change. The march is bounded to the rays that pass near the hole, which is why a hole that fills a tenth of
+     * the frame does not cost like a hole that fills it. The marched lab next door needs 45% scale and 0.23 MP
+     * for the same 60, at 46 ms/MP.
      */
-    renderScale: weak ? 0.45 : 0.75,
-    steps: weak ? 32 : 56,
+    renderScale: weak ? 0.85 : 1.0,
 
-    /* STEP SPREAD 1 IS AN EVEN MARCH, and it ships that way because this scene is mostly thin structure. The
-     * far half of the tunnel is sampled as finely as the near half; biasing samples toward the eye leaves the
-     * background undersampled, which reads as streaking in the plasma and the clouds. It costs nothing to set —
-     * the sample count is QUALITY, and this only decides where they land. */
-    stepSpread: 1.0,
+    fov: 74, exposure: 1.15, fog: 1.0,
 
-    nebOn: 1,
-    nebMode: 1, nebCol: '#611d00', nebColB: '#421e00', nebHue: 0.02,
-    nebDensity: 3.0, nebFill: 0.15, nebFluff: 0.5, nebStreak: 1.0, nebVar: 0.65,
-    nebScale: 2.6, nebOct: 5,
-    nebSpeed: 6.3, nebTwist: 0.0, nebSpin: 0.0,
+    far: 26,
+    /* BEND AND THE HOLE NO LONGER FIGHT, and the note that used to sit here said they did. That was true of the
+     * screen-space lens: it dragged the WHOLE frame toward the hole, so swinging the vanishing point away with
+     * BEND left the image pulling one way and the tunnel going another, and neither read. A traced geodesic only
+     * bends light that passes near the hole, and the hole rides the tunnel's own axis at DEPTH -- so the tube can
+     * swing as far as it likes and the hole goes with it, wall and all. BEND 3 ships because one arch across the
+     * depth reads as travel, not because anything is being kept out of the lens's way. */
+    /* BEND LENGTH IS SET AGAINST DEPTH, not picked for its own sake. It is the distance between corners in world
+       units, so at 30 against a DEPTH of 26 you see about one whole wave down the tunnel -- a bend that arrives,
+       straightens and leaves. It shipped at 46, nearly twice the depth, which shows a third of one wave: that is
+       a permanent lean with no corner in it, and it is why the tube read as leaning rather than bending. */
+    bend: 3.0, bendDir: 0.0, bendFlow: 5.0,
 
-    lsOn: 1,
-    lsMode: 1, lsCol: '#ff6600', lsColB: '#b80000', lsHue: 1.0,
-    lsDensity: 2.34, lsCount: 150, lsLen: 1.0, lsThick: 0.17, lsVar: 0.21, lsRadial: 0.66,
-    lsSpeed: 30.0, lsTwist: 0.0, lsSpin: 0.0,
 
-    plOn: 1,
-    plMode: 1, plCol: '#ff0000', plColB: '#ff4d00', plHue: 0.55,
-    /* FILL 0.45, FLASH RATE 1.8 and OCCLUSION 0.5 are the constants they replaced, to five figures: the sparsity
-     * window was fixed at 0.60..0.80 and the gate ran at 0.9 + FLASH * 1.6. Exposing a constant should not move
-     * the picture. */
-    plDensity: 1.0, plFill: 0.45, plOcclude: 0.5, plCrackle: 0.72,
-    plFlash: 0.84, plFlashRate: 4.8, plLight: 0.55,
-    /* SCALE and STREAK ship at the framing that keeps bolts lengthwise WITHOUT the ribbing: the same 4.2x depth
-     * squash the layer always had, at roughly twice the frequency. The old constants were 1.9 and 0.24 — the
-     * squash without the frequency, which is what strung visible beads along every bolt. */
-    plScale: 3.4, plStreak: 0.238,
-    // SPEED is 5.9 rather than 4.0 because STRIKE was a SECOND rate along the same axis, worth 1.05 on top of
-    // SPEED's 2.2. Folded in when that control went, so removing it did not slow the layer down.
-    plSpeed: 5.9, plTwist: 2.35, plSpin: 1.5,
+    /* THE FAR END IS A BLACK HOLE, and the shader integrates the real null geodesic through it rather than
+     * pinching the screen toward it. What that means for these numbers is that MASS is the only one describing
+     * the gravity: the shadow's radius, the photon ring, the disc's inner edge and the disc's second image all
+     * follow from it and none of them has a setting.
+     *
+     * MASS IS MODEST ON PURPOSE. The march runs only for rays close enough to the hole to need it, and how much
+     * of the frame that is scales with MASS -- so a heavy hole costs more as well as filling more. 1.0 puts the
+     * shadow at the end of the tunnel rather than in front of it.
+     *
+     * DISC REACH IS AN OUTRIGHT RADIUS, so it stays put when MASS moves. The inner edge is the ISCO and will
+     * push past REACH at a large enough hole; the guard in the shader keeps the annulus valid when it does.
+     *
+     * DISC TILT SHIPS WELL ROUND TOWARD EDGE-ON, and that is the whole look. 0 is flat -- the plane faces the
+     * eye and draws a ring around the hole, which reads as a circle in the middle rather than as a horizon. Near
+     * 90 the plane is seen along its own surface: it crosses the middle as a bar, and the far side of it arcs
+     * over the top of the shadow AND under the bottom, which is the ray meeting the disc a second time after
+     * bending round.
+     *
+     * DISC HEIGHT IS THIN. A real disc is far thinner than this relative to its radius; 0.16 is enough slab to
+     * put a solid bar across the shadow when TILT is near edge-on without the disc reading as a doughnut. */
+    holeOn: 1,
+    mass: 3.0,
+    disc: 1.0, discA: '#fff0cf', discB: '#c23a05',
+    discTilt: 77, discLean: 0, discOut: 4.0, discH: 0.40, discSpin: 2, discFlow: -2, doppler: 1.0,
 
-    // The CORE is off: with all three layers lit there is already something at the far end, and a bright throat
-    // over the top of it washes out the thing it is supposed to be the end of. Its settings are kept so turning
-    // the section on gives something tuned rather than something raw.
-    coreOn: 0,
-    glow: 0.4, throatTint: 1.0, throatRays: 1.0,
-    coreCol: '#ff5900', coreAuto: 0.0,
-    coreSpin: -0.74, corePulse: 0.51, corePulseRate: 4.0, coreFade: 0.0, coreFadeRate: 3.95,
+    /* THREE ARE LIT AND THREE ARE NOT, and three is the fewest that reads as depth: one to pass in front, one
+     * to be passed, and one between them to prove the other two are at different distances. Two reads as a
+     * foreground and a backdrop; one is a wall. The other three carry real settings so switching one on at its
+     * header gives something to look at rather than a black surface. */
+    ...shell(0, { On: 1, Rad: 0.50, Amt: 0.85,
+                  Bolts: 1.0, Streak: 1.0, Ring: 0.25,
+                  BoltA: '#ffe6bd', BoltB: '#ff7a1e',
+                  StrkA: '#ffb454', StrkB: '#ffffff',
+                  Edge: 0.22, Oct: 3, Lanes: 190, Speed: 9.0, Warp: 0.45 }),
+    ...shell(1, { On: 1, Rad: 0.85, Amt: 0.95,
+                  Cloud: 1.0, Ring: 0.45,
+                  CloudA: '#ff7a1e', CloudB: '#8c3a08',
+                  Fill: 0.42, Edge: 0.20, Speed: 6.0, Warp: 0.30 }),
+    ...shell(2, { On: 1, Rad: 1.35, Amt: 1.0,
+                  Cloud: 1.0,
+                  CloudA: '#7d2a05', CloudB: '#2a0d02',
+                  Fill: 0.45, Edge: 0.18, Speed: 3.6, Warp: 0.22 }),
+    ...shell(3, { Rad: 1.9, Amt: 0.8, Cloud: 1.0,
+                  CloudA: '#3d1403', CloudB: '#140600',
+                  Fill: 0.46, Edge: 0.18, Speed: 2.2, Warp: 0.18 }),
+    ...shell(4, { Rad: 0.30, Amt: 0.7, Bolts: 0.8,
+                  BoltA: '#ffe6bd', BoltB: '#ffa03a',
+                  Edge: 0.28, Speed: 13.0, Warp: 0.55 }),
+    ...shell(5, { Rad: 2.2, Amt: 0.6, Cloud: 1.0, Streak: 0.4,
+                  CloudA: '#1d0a02', CloudB: '#000000',
+                  Fill: 0.40, Edge: 0.16, Lanes: 90, Speed: 1.6, Warp: 0.14 }),
 
-    // ONE COVERAGE FOR ALL THREE LAYERS — how far in from the wall the whole field reaches.
-    coverage: 0.8,
-    /* BEND SHIPS AT FULL. The axis leans 0.75 of a world unit against a tube radius of 1.25, which is as far as
-     * it goes without the wall reaching the eye. TIGHTNESS is low, so corners are long and sweeping rather than
-     * a slalom, and FLOW brings them on at a little above the clouds' own speed. */
-    bend: 1.0, bendFlow: 6.8, bendScale: 0.44,
-    exposure: 1.94, chroma: 1.0, vignette: 1.0,
-    // NEBULA and LIGHTSPEED open folded: the scene is tuned, and the two sections worth reaching first are the
-    // ones that change the whole frame.
-    secClosed: { NEBULA: true, LIGHTSPEED: true, PLASMA: false, IMAGE: false },
+    secClosed: { RENDER: true, TUNNEL: false, 'BLACK HOLE': false },
   };
 }
+
+export { MAXL };

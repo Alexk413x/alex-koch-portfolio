@@ -58,7 +58,7 @@
   const RINGS = 14, R = 79, DEG = 180 / Math.PI;
   const STATIONS = 18, BLADES = 8;
 
-  /* ONE description of the centreline, read by both the rings and the wall. u is depth: 0 at the camera, 1 at
+  /* ONE description of the centerline, read by both the rings and the wall. u is depth: 0 at the camera, 1 at
      the far end. THE OFFSET GOES WITH u SQUARED, and that exponent is the entire difference between a bend and
      a straight tube — spread linearly, every ring is displaced by the same proportion and the result is a
      straight bore skewed sideways. Squared, the mouth sits on the axis and the far end swings. */
@@ -69,8 +69,8 @@
 
   /* THE WALL IS A CHAIN OF STATIONS, each spinning in place about the tube's own axis. That is the difference
      between the wall turning and the BEND being swung around: a rotateZ on the whole throat moves the
-     centreline with it, because the bend lives in x and y. Rotating each station where it stands leaves every
-     centre exactly where it was and turns only what is drawn on the surface. */
+     centerline with it, because the bend lives in x and y. Rotating each station where it stands leaves every
+     center exactly where it was and turns only what is drawn on the surface. */
   for (let i = 0; i < STATIONS; i++) {
     const a = pose(i / STATIONS), b = pose((i + 1) / STATIONS);
     const dx = b.x - a.x, dy = b.y - a.y, dz = b.z - a.z;
@@ -160,7 +160,7 @@
     solids.forEach((el) => { el.classList.remove('go'); el.classList.add('off'); });
     wh.classList.remove('on');
 
-    /* A ring's opacity comes from its fly animation, and CANCELLING AN ANIMATION SNAPS THE ELEMENT TO ITS BASE
+    /* A ring's opacity comes from its fly animation, and CANCELING AN ANIMATION SNAPS THE ELEMENT TO ITS BASE
        STYLE — which is zero here, so they would vanish rather than fade, killing the effect while the wall was
        still gracefully receding behind them. Freeze each at what it is showing, then transition that to zero. */
     wh.querySelectorAll('.rg').forEach((r, i) => {

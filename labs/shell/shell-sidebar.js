@@ -1,4 +1,4 @@
-/* THE CATALOGUE: one of every control kit/panel.js can build, and one of every formatter units.js offers.
+/* THE CATALOG: one of every control kit/panel.js can build, and one of every formatter units.js offers.
  *
  * This is the file to read before writing a lab's own sidebar, and the file to copy from. Everything below is
  * annotated with WHY a control is the kind it is, because choosing the wrong widget is the commonest mistake in a
@@ -8,7 +8,7 @@
  *     ['k', 'LABEL', lo, hi, step]     slider
  *     ['k', 'LABEL', 0, 1, 1]          toggle      (0..1 step 1 is one bit, not a range)
  *     ['k', 'LABEL', ['A','B','C']]    one-of-N
- *     ['k', 'LABEL', '#']              colour swatch
+ *     ['k', 'LABEL', '#']              color swatch
  *
  *   ANY ROW may carry a trailing options object:
  *     { when: ['otherKey', [1, 2]] }   present only while that key holds one of those values
@@ -40,9 +40,9 @@ export const SECTIONS = [
   ]],
 
   ['INK', [
-    // A COLOUR HAS NO MEANINGFUL MIN, MAX OR STEP, and a hex string in a numeric readout is not a control -- which
+    // A COLOR HAS NO MEANINGFUL MIN, MAX OR STEP, and a hex string in a numeric readout is not a control -- which
     // is why '#' sits where the range would.
-    ['ink', 'COLOUR', '#'],
+    ['ink', 'COLOR', '#'],
     ['hue', 'HUE SHIFT', -3.1416, 3.1416, 0.01],
     ['glow', 'GLOW', 0, 80, 1],
     ['opacity', 'OPACITY', 0, 1, 0.01],

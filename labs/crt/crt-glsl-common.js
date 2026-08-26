@@ -9,7 +9,7 @@
  */
 export const GLSL_HASH = `/* THE SAME IDEA, BUT IT SURVIVES A BIG ARGUMENT. sin(dot(p,...)) * 43758 is fine while p is a screen coordinate
  * and useless once it is not: uTime is wall-clock seconds, so a grain keyed on it hands sin() an argument around
- * 1e8, and float32 carries about seven digits -- every frame lands on the same quantised value and the "noise"
+ * 1e8, and float32 carries about seven digits -- every frame lands on the same quantized value and the "noise"
  * sits perfectly still. Measured: frame-to-frame spread 0.005 with the grain supposedly at full strength.
  * This one folds into fract() FIRST, so it never evaluates a transcendental at a large argument at all. */
 float hash21(vec2 p){

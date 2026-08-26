@@ -4,7 +4,7 @@
  * defs block per cover would be seventeen copies of the same six gradients. Everything here is idempotent:
  * calling for a part that already exists returns its id and draws nothing.
  *
- * A shared part carries NO colour of its own on the shapes that vary. Fill, stroke, their opacities and the
+ * A shared part carries NO color of its own on the shapes that vary. Fill, stroke, their opacities and the
  * stroke width all inherit from the <use>, which is why one drawing of FieldView's steel frame can be the
  * building on no. 10, the photograph of it on no. 11's screen, and a thumbnail on either.
  */
@@ -67,7 +67,7 @@ export function brain() {
 
 /* ---- FieldView's steel frame ----
  *
- * Three bays by three storeys on four columns, x = 40, 109, 177, 246 (14 wide) and y = 187, 238, 289 (12 deep).
+ * Three bays by three stories on four columns, x = 40, 109, 177, 246 (14 wide) and y = 187, 238, 289 (12 deep).
  * The 187 beam skips the left bay and both left columns start at 187, so the left side falls away above the
  * first floor: the frame is still going up.
  *
@@ -87,13 +87,13 @@ const FV_MEMBERS = [
 ];
 
 const FV_BRACES = [
-  // X, left bay, bottom storey
+  // X, left bay, bottom story
   'M52.26 252.45L55.74 247.55L81.5 265.82L107.26 247.55L110.74 252.45L86.7 269.5L110.74 286.55L107.26 291.45L81.5 273.18L55.74 291.45L52.26 286.55L76.31 269.5Z',
-  // X, centre bay, middle storey
+  // X, center bay, middle story
   'M121.24 201.43L124.76 196.57L150 214.8L175.24 196.57L178.76 201.43L155.12 218.5L178.76 235.57L175.24 240.43L150 222.2L124.76 240.43L121.24 235.57L144.88 218.5Z',
   // the top-floor brace, which has no beam to frame into and so dies inside the x = 177 column
   'M248.04 184.8L186.44 127.68L182.36 132.08L243.96 189.2Z',
-  // single diagonal, right bay, middle storey
+  // single diagonal, right bay, middle story
   'M192.74 240.45L247.74 201.45L244.26 196.55L189.26 235.55Z'
 ];
 
@@ -108,7 +108,7 @@ export function fvFrame() {
 
 /* ---- Rexel's parts drawer ----
  *
- * 68 x 46, placed nine times. Body and handle are fixed; the label border and the barcode carry no colour, so
+ * 68 x 46, placed nine times. Body and handle are fixed; the label border and the barcode carry no color, so
  * the one drawer being scanned is the same drawing lit rather than a second copy of it.
  */
 const RX_BARS = [[15, 2], [18.5, 3], [23, 2], [26.5, 4], [32, 2], [35.5, 2.8], [39.5, 2], [43, 4], [48.5, 2], [52, 2.5]];

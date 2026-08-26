@@ -1,6 +1,6 @@
 # Lab Shell — the base lab
 
-The starting point for a new lab, and a live catalogue of every control the kit offers. Not a user-facing page:
+The starting point for a new lab, and a live catalog of every control the kit offers. Not a user-facing page:
 nothing links to it, and it carries `noindex`.
 
 ```
