@@ -123,7 +123,7 @@ const hex = (h) => [1, 3, 5].map((i) => parseInt((h || '#ffffff').slice(i, i + 2
 function packed() {
   const idx = Array.from({ length: MAXL }, (_, i) => i)
     .sort((a, b) => state['L' + a + 'Rad'] - state['L' + b + 'Rad']);
-  const geom = [], mix = [], shade = [], extra = [];
+  const geom = [], mix = [], shade = [], extra = [], ringP = [];
   const cA = [], cB = [], bA = [], bB = [], sA = [], sB = [];
   for (let s = 0; s < MAXL; s++) {
     const i = idx[s];
@@ -134,11 +134,12 @@ function packed() {
     // extra.y is the shell's ON flag: the shader skips a dark shell before it solves anything for it.
     // z and w were the spare slots; they carry the bolts' own FILL and EDGE, which used to borrow the cloud's.
     extra.push(g('Lanes'), g('On') ? 1 : 0, g('BoltFill'), g('BoltEdge'));
+    ringP.push(g('RingN'), g('RingFlow'), 0, 0);
     cA.push(...hex(g('CloudA')), 0); cB.push(...hex(g('CloudB')), 0);
     bA.push(...hex(g('BoltA')), 0);  bB.push(...hex(g('BoltB')), 0);
     sA.push(...hex(g('StrkA')), 0);  sB.push(...hex(g('StrkB')), 0);
   }
-  return { geom, mix, shade, extra, cA, cB, bA, bB, sA, sB };
+  return { geom, mix, shade, extra, ringP, cA, cB, bA, bB, sA, sB };
 }
 
 function draw(dt, sec) {
@@ -153,7 +154,6 @@ function draw(dt, sec) {
   R.f('uFov', 0.5 / Math.tan(s.fov * Math.PI / 360));
   R.f('uFar', s.far);
   R.f('uBend', s.bend); R.f('uBendFlow', s.bendFlow); R.f('uBendDir', s.bendDir);
-  R.f('uRingN', s.ringN); R.f('uRingFlow', s.ringFlow);
   // The hole's master rides on MASS, SHADOW, RING and DISC together: switching the section off must remove the
   // lensing too, not just stop drawing the disc, or the frame stays warped around nothing.
   const H = s.holeOn ? 1 : 0;
@@ -180,7 +180,7 @@ function draw(dt, sec) {
   R.f('uFog', s.fog); R.f('uExposure', s.exposure);
 
   const p = packed();
-  R.fv4('uGeom', p.geom); R.fv4('uMix', p.mix); R.fv4('uShade', p.shade); R.fv4('uExtra', p.extra);
+  R.fv4('uGeom', p.geom); R.fv4('uMix', p.mix); R.fv4('uShade', p.shade); R.fv4('uExtra', p.extra); R.fv4('uRingP', p.ringP);
   R.fv4('uCloudA', p.cA); R.fv4('uCloudB', p.cB);
   R.fv4('uBoltA', p.bA);  R.fv4('uBoltB', p.bB);
   R.fv4('uStrkA', p.sA);  R.fv4('uStrkB', p.sB);

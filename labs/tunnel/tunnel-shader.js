@@ -33,11 +33,10 @@ export const MAXL = 6;
 export const UNIFORMS = [
   'uRes', 'uTime', 'uFov', 'uFar',
   'uBend', 'uBendFlow', 'uBendDir',
-  'uRingN', 'uRingFlow',
-  'uMass', 'uEndR', 'uRing', 'uRingCol',
+    'uMass', 'uEndR', 'uRing', 'uRingCol',
   'uDisc', 'uDiscTilt', 'uDiscLean', 'uDiscOut', 'uDiscThick', 'uDiscSpin', 'uDiscA', 'uDiscB', 'uDoppler',
   'uFog', 'uExposure',
-  'uGeom', 'uMix', 'uShade', 'uExtra',
+  'uGeom', 'uMix', 'uShade', 'uExtra', 'uRingP',
   'uCloudA', 'uCloudB', 'uBoltA', 'uBoltB', 'uStrkA', 'uStrkB',
 ];
 
@@ -48,7 +47,6 @@ out vec4 fragColor;
 uniform vec2 uRes;
 uniform float uTime, uFov, uFar;
 uniform float uBend, uBendFlow, uBendDir;
-uniform float uRingN, uRingFlow;
 uniform float uMass, uEndR, uRing;
 uniform float uDisc, uDiscTilt, uDiscLean, uDiscOut, uDiscThick, uDiscSpin, uDoppler;
 uniform float uFog, uExposure;
@@ -60,6 +58,11 @@ uniform vec4 uGeom[${MAXL}];
 uniform vec4 uMix[${MAXL}];
 uniform vec4 uShade[${MAXL}];
 uniform vec4 uExtra[${MAXL}];
+/* RINGS ARE A PER-SHELL EFFECT, so their spacing and flow are per-shell too. They were one global pair shared by
+ * every shell -- the same shape as the FLOW and WIND masters that were removed: a rate that belongs to a surface,
+ * set somewhere that is not that surface. Rings on the near shell should be able to run at a different pitch from
+ * the far one; that IS the depth the shells exist to give. All four other vec4s are full, hence a fifth. */
+uniform vec4 uRingP[${MAXL}];
 
 /* TWO COLORS PER EFFECT, PER SHELL. One flat tint per shell made every effect on it the same color, which is the
  * same flattening as one effect per shell -- a shell is a place, and what is drawn there does not have to agree
@@ -473,7 +476,7 @@ void main(){
 
     // RINGS — bands across the tube. Read from the shell's own hit depth, so they foreshorten for free.
     if (m.w > 0.001){
-      float r0 = 0.5 + 0.5 * cos((z + uTime * uRingFlow) * uRingN);
+      float r0 = 0.5 + 0.5 * cos((z + uTime * uRingP[s].y) * uRingP[s].x);
       r0 *= r0; r0 *= r0;
       float k = 1.0 + m.w * 2.2 * r0;
       d *= k; emit *= k;
