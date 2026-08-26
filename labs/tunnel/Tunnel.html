@@ -150,9 +150,9 @@ function draw(dt, sec) {
   // FOV is stored as an angle and sent as the ray's z. Small is wide, so a slider on the raw value runs backwards
   // from the number printed beside it; the conversion lives here because a formatter is display only.
   R.f('uFov', 0.5 / Math.tan(s.fov * Math.PI / 360));
-  R.f('uFar', s.far); R.f('uWind', s.wind);
+  R.f('uFar', s.far);
   R.f('uBend', s.bend); R.f('uBendFlow', s.bendFlow); R.f('uBendDir', s.bendDir);
-  R.f('uRingAmt', s.ringAmt); R.f('uRingN', s.ringN); R.f('uRingFlow', s.ringFlow);
+  R.f('uRingN', s.ringN); R.f('uRingFlow', s.ringFlow);
   // The hole's master rides on MASS, SHADOW, RING and DISC together: switching the section off must remove the
   // lensing too, not just stop drawing the disc, or the frame stays warped around nothing.
   const H = s.holeOn ? 1 : 0;

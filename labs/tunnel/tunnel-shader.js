@@ -31,9 +31,9 @@
 export const MAXL = 6;
 
 export const UNIFORMS = [
-  'uRes', 'uTime', 'uFov', 'uFar', 'uWind',
+  'uRes', 'uTime', 'uFov', 'uFar',
   'uBend', 'uBendFlow', 'uBendDir',
-  'uRingAmt', 'uRingN', 'uRingFlow',
+  'uRingN', 'uRingFlow',
   'uMass', 'uEndR', 'uRing', 'uRingCol',
   'uDisc', 'uDiscTilt', 'uDiscLean', 'uDiscOut', 'uDiscThick', 'uDiscSpin', 'uDiscA', 'uDiscB', 'uDoppler',
   'uFog', 'uExposure',
@@ -46,9 +46,9 @@ precision highp float;
 out vec4 fragColor;
 
 uniform vec2 uRes;
-uniform float uTime, uFov, uFar, uWind;
+uniform float uTime, uFov, uFar;
 uniform float uBend, uBendFlow, uBendDir;
-uniform float uRingAmt, uRingN, uRingFlow;
+uniform float uRingN, uRingFlow;
 uniform float uMass, uEndR, uRing;
 uniform float uDisc, uDiscTilt, uDiscLean, uDiscOut, uDiscThick, uDiscSpin, uDoppler;
 uniform float uFog, uExposure;
@@ -194,7 +194,7 @@ vec2 bendD(float z){
  */
 /* Signed gap from the ray at t to this shell's wall: negative inside the tube, positive outside.
  * Split out because the scan below needs it at many t and the crossing is where it changes sign. */
-float wallGap(vec3 rd, float t, float R, vec2 b0, out float vl){
+float wallGap(vec3 rd, float t, float R, vec2 b0){
   float z = rd.z * t;
   vec2 bo = bendAt(z) - b0;
   vec2 sl = bendD(z);
@@ -222,7 +222,7 @@ float wallGap(vec3 rd, float t, float R, vec2 b0, out float vl){
    * Stretching in every direction -- which one scalar radius does -- makes the tube FAT wherever it turns
    * instead of tilting it, and a fat tube sliding across as it recedes is a warp rather than a curve. */
   vec2 v = rd.xy * t - bo;
-  vl = length(v);
+  float vl = length(v);
   vec2 dir = vl > 1e-5 ? v / vl : vec2(1.0, 0.0);
   vec2 lean = dot(sl, sl) > 1e-10 ? normalize(sl) : vec2(1.0, 0.0);
   float Rz = Rc * mix(1.0, k, abs(dot(dir, lean)));
@@ -251,13 +251,13 @@ float wallGap(vec3 rd, float t, float R, vec2 b0, out float vl){
  */
 float solveShell(vec3 rd, float R, vec2 b0, out vec2 rel, out float zz, out float graze){
   float tMax = uFar / max(rd.z, 1e-4);
-  float tA = 0.0, dA = -1.0, hitT = -1.0, junk;
+  float tA = 0.0, dA = -1.0, hitT = -1.0;
   graze = 0.0;
 
   for (int i = 1; i <= 14; i++){
     float f = float(i) / 14.0;
     float tB = tMax * f * f;
-    float dB = wallGap(rd, tB, R, b0, junk);
+    float dB = wallGap(rd, tB, R, b0);
     if (dB >= 0.0 && dA < 0.0){
       /* THE BRACKET IS REFINED, and without this the tunnel had dark rings in it.
        *
@@ -267,7 +267,7 @@ float solveShell(vec3 rd, float R, vec2 b0, out vec2 rel, out float zz, out floa
        * the shading can show, for three more gap evaluations. */
       for (int k = 0; k < 3; k++){
         float tM = mix(tA, tB, dA / (dA - dB));
-        float dM = wallGap(rd, tM, R, b0, junk);
+        float dM = wallGap(rd, tM, R, b0);
         if (dM < 0.0){ tA = tM; dA = dM; } else { tB = tM; dB = dM; }
       }
       hitT = mix(tA, tB, dA / (dA - dB));
@@ -280,7 +280,7 @@ float solveShell(vec3 rd, float R, vec2 b0, out vec2 rel, out float zz, out floa
        * The gap rises at |rd.xy| for a ray leaving straight through the wall and at nothing at all for one
        * leaving along the silhouette, so the ratio of the two is the squareness. */
       float h = max(tMax * 0.004, 1e-4);
-      float slope = (wallGap(rd, hitT + h, R, b0, junk) - wallGap(rd, hitT - h, R, b0, junk)) / (2.0 * h);
+      float slope = (wallGap(rd, hitT + h, R, b0) - wallGap(rd, hitT - h, R, b0)) / (2.0 * h);
       graze = clamp(slope / max(length(rd.xy), 1e-4), 0.0, 1.0);
       break;
     }
@@ -396,7 +396,6 @@ void main(){
 
   vec3 col = vec3(0.0);
   float trans = 1.0;
-  float tRef = uFar;
 
   for (int s = 0; s < ${MAXL}; s++){
     if (uExtra[s].y < 0.5) continue;
@@ -420,12 +419,11 @@ void main(){
        which is exactly where the hole draws. */
     if (t <= 0.0 || z > uFar || depth <= 0.002) continue;
     float ang = atan(rel.y, rel.x) + sh.w * uTime;
-    if (s == 0) tRef = min(t, uFar);
 
     /* THE TUNNEL'S OWN COORDINATES: where round the tube, and how far along it. WIND scales the distance the
      * pattern is read at, which is what tightens or unwinds the whorl at the vanishing point — see below. */
     vec3 tc = vec3(cos(ang), sin(ang), 0.0) * 1.9
-            + vec3(0.0, 0.0, z * g.w * uWind + uTime * g.z * g.w);
+            + vec3(0.0, 0.0, z * g.w + uTime * g.z * g.w);
 
     float d = 0.0;
     vec3 emit = vec3(0.0);
@@ -475,11 +473,6 @@ void main(){
   }
 
   // A WHOLE-TUNNEL RING PASS, for the shells that do not carry one of their own.
-  if (uRingAmt > 0.001){
-    float r0 = 0.5 + 0.5 * cos((rd.z * tRef + uTime * uRingFlow) * uRingN);
-    r0 *= r0; r0 *= r0;
-    col *= 1.0 + uRingAmt * 2.2 * r0;
-  }
 
   /* THE ACCRETION DISC: A PLANE THROUGH THE HOLE, solved rather than drawn. A ray meets a plane at
    * t = dot(O - eye, n) / dot(rd, n), which is one divide -- and because the ray was already bent by the lens
@@ -656,7 +649,6 @@ void main(){
    *
    * THE SHADOW IS WEIGHTED THE SAME WAY. Cutting unconditionally would carve a black disc out of a wall standing
    * in front of it; cutting by trans removes only the light that was coming from behind. */
-  // The dark disc is the geometric shadow AND everything the lens captured, which at high MASS is wider.
   // The dark disc is the geometric shadow AND everything the lens captured, which at high MASS is wider.
   // The edge is deliberately a few percent wide: the photon ring is found from it, and at 0.92-1.10 that
   // band was about two pixels, too thin to read as light.
