@@ -27,7 +27,7 @@
 
   let anim = 0, owner = null;
 
-  /* Restores snapping as well as cancelling the frame. Stopping the tween without restoring it is what left
+  /* Restores snapping as well as canceling the frame. Stopping the tween without restoring it is what left
      scroll snapping switched off for the rest of the session whenever a glide was interrupted by a stand-down
      rather than by the reader. */
   function stopGlide() {

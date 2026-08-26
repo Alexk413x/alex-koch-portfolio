@@ -23,7 +23,7 @@ export const UNIFORMS = [
   'uVentSwell', 'uVisc', 'uZoom'
 ];
 
-export const FRAG = `#version 300 es
+const SRC = `#version 300 es
 precision highp float;
 out vec4 fragColor;
 uniform vec2 uRes; uniform float uTime,uSize,uVisc,uTurb,uRate,uGlow,uZoom,uPulse,uVent,uVentBurst,uRingR,uRingLight,uRingGlow,uRingOn,uOct,uCamAngle,uCamEl,uAmp,uPulseBright,uVentSize,uVentBright,uShape,uPulseSize,uDropN,uPhCam,uPhRate;
@@ -31,7 +31,7 @@ uniform vec2 uRes; uniform float uTime,uSize,uVisc,uTurb,uRate,uGlow,uZoom,uPuls
 uniform vec4 uDropData[20];   // per-droplet center.xyz + radius.w, precomputed on CPU each frame
 uniform mat3 uRingM;          // world -> ring space, composed on CPU each frame (see ringSpace)
 uniform mat3 uCoreM;          // world -> core space, composed on CPU each frame (see coreSDF)
-uniform vec3 uCoreCol;        // CORE COLOUR picker — the scene's only light, and every surface is read through it
+uniform vec3 uCoreCol;        // CORE COLOR picker — the scene's only light, and every surface is read through it
 uniform float uVentSwell;    // VENT SWELL envelope: 0..1 animation ramp
 uniform float uSwellAmt;     // VENT SWELL target: signed fraction (+1 = ring, +2 = past, -1 = shrink to 0)
 uniform float uSwellRingBase; // original ring radius used as the SWELL target (so the ring can expand separately)
@@ -110,11 +110,13 @@ float coreSDF(vec3 p){
   }
   return d;
 }
+//@ring-only
 float boxTorus(vec3 p,float R,vec2 he,float rad){
   vec2 q=vec2(length(p.xz)-R, p.y);
   vec2 d=abs(q)-he;
   return length(max(d,0.0))+min(max(d.x,d.y),0.0)-rad;
 }
+//@end
 /* THE THREE AXES, AND THE SPIN IS INNERMOST. Composed the other way round it is not a spin at all: a rotation
  * about world Y swings a TILTED ring's axis around a cone, so SPIN would silently do a second job — precession —
  * whenever anything else had tipped the ring, and the two controls would stop being independent. Innermost, it
@@ -131,6 +133,7 @@ vec3 ringSpace(vec3 p){ return uRingM * p; }
 
 // Inverse of ringSpace. A composition of rotations is orthonormal, so the transpose IS the inverse.
 vec3 ringToWorld(vec3 q){ return transpose(uRingM) * q; }
+//@ring-only float ringSDF(vec3 p){ return 1e5; }
 float ringSDF(vec3 p){
   if(uRingOn<0.5) return 1e5;
   vec3 pr=ringSpace(p);
@@ -164,19 +167,24 @@ float ringSDF(vec3 p){
   }
   return best;
 }
+//@end
+//@ring-only float shieldSDF(vec3 p){ return 1e5; }
 float shieldSDF(vec3 p){                                // FULL continuous inner shield ring (the land/topo band) — never segmented
   if(uRingOn<0.5 || uRingGlow<0.01) return 1e5;         // fully gone (no occluding outline) when the shield is off/broken
   vec3 pr=ringSpace(p);
   return boxTorus(pr, uRingR+uShieldExpand, vec2(0.007,0.044), 0.005);   // nested just inside the alloy fragments; balloons out on a break
 }
+//@end
 vec3 nrmC(vec3 p){ vec2 k=vec2(1.0,-1.0)*0.0013;   // core-only normal (skips ring SDF)
   return normalize(k.xyy*coreSDF(p+k.xyy) + k.yyx*coreSDF(p+k.yyx) + k.yxy*coreSDF(p+k.yxy) + k.xxx*coreSDF(p+k.xxx)); }
+//@ring-only
 vec3 nrmR(vec3 p){ vec2 k=vec2(1.0,-1.0)*0.0013;   // ring-only normal (skips core SDF + metaballs)
   return normalize(k.xyy*ringSDF(p+k.xyy) + k.yyx*ringSDF(p+k.yyx) + k.yxy*ringSDF(p+k.yxy) + k.xxx*ringSDF(p+k.xxx)); }
 vec3 nrmSh(vec3 p){ vec2 k=vec2(1.0,-1.0)*0.0013;   // shield-ring normal
   return normalize(k.xyy*shieldSDF(p+k.xyy) + k.yyx*shieldSDF(p+k.yyx) + k.yxy*shieldSDF(p+k.yxy) + k.xxx*shieldSDF(p+k.xxx)); }
+//@end
 
-// The ring's machined dimensions, in metres: the band is 112mm tall and 18mm thick, so relief stays under 2mm.
+// The ring's machined dimensions, in meters: the band is 112mm tall and 18mm thick, so relief stays under 2mm.
 const float RIB_W=0.014, RAIL_Y=0.0425, CHAM=0.014, BAY_D=0.0017;
 const float BOSS_R=0.032, BOSS_H=0.0009, LENS_R=0.0075, TRACE_D=0.0007;
 /* TWO conductors per bay, one at each end, as FRACTIONS of the bay rather than a metric period — so it stays two
@@ -202,14 +210,14 @@ float dashes(float x, float duty){ return dashesW(x, duty, fwidth(x)); }
 float sphereDiff(vec3 n, vec3 L, float sinA){
   return sinA*sinA*clamp((dot(n,L)+sinA)/(1.0+sinA), 0.0, 1.0);
 }
-/* The direction to the point on the core a reflection ray actually strikes. The core is most of a metre wide seen
+/* The direction to the point on the core a reflection ray actually strikes. The core is most of a meter wide seen
  * from the ring, so its highlight has to have a size; a point light gives metal a dot. */
 vec3 sphereSpecL(vec3 Lv, vec3 Rr, float Rc){
   vec3 c=Rr*max(dot(Lv,Rr),0.0)-Lv;
   return normalize(Lv+c*clamp(Rc/max(length(c),1e-5), 0.0, 1.0));
 }
 /* Tilts a normal by a height field's true world-space gradient: the hit point's screen derivatives convert
- * dH/dpixel into dH/dmetre. Perturbing the normal's x and y components with screen derivatives directly tilts it
+ * dH/dpixel into dH/dmeter. Perturbing the normal's x and y components with screen derivatives directly tilts it
  * in a direction unrelated to the surface, which shades but never reads as relief. */
 vec3 bumpN(vec3 p, vec3 n, float H){
   vec3 dpx=dFdx(p), dpy=dFdy(p);
@@ -219,12 +227,13 @@ vec3 bumpN(vec3 p, vec3 n, float H){
   return normalize(abs(det)*n-g);
 }
 
+//@ring-only
 struct Surf { float h; float bay; float rim; float trace; float lens; float dash; float halo; };
-/* The ring's machined relief: height in metres, and every mask its albedo, its shading and its lamps read off.
+/* The ring's machined relief: height in meters, and every mask its albedo, its shading and its lamps read off.
  * One function because the bump, the cavity darkening and the paint must describe the SAME surface.
  *
- * bx is metres along the arc from the nearest bay's centre, y metres up the band, bayL one bay's arc length, aw
- * the arc footprint of one pixel. The bay centres are aligned to the SDF's nine fragment centres, so a boss sits
+ * bx is meters along the arc from the nearest bay's center, y meters up the band, bayL one bay's arc length, aw
+ * the arc footprint of one pixel. The bay centers are aligned to the SDF's nine fragment centers, so a boss sits
  * on a fragment and never on a joint. */
 Surf ringRelief(float bx, float y, float bayL, float aw){
   Surf s;
@@ -234,12 +243,12 @@ Surf ringRelief(float bx, float y, float bayL, float aw){
   s.h=-BAY_D*s.bay;
 
   float rN=length(vec2(bx,y));
-  float boss=smoothstep(0.0,0.0018,BOSS_R-rN)*s.bay;         // raised instrument boss at each bay's centre
+  float boss=smoothstep(0.0,0.0018,BOSS_R-rN)*s.bay;         // raised instrument boss at each bay's center
   s.h+=BOSS_H*boss;
   s.lens=smoothstep(LENS_R,LENS_R*0.5,rN)*s.bay;
   s.halo=smoothstep(BOSS_R*1.7,0.0,rN)*s.bay;
 
-  // Drawn as two separate spans rather than one mirrored distance: abs(abs(bx)-c) kinks at the dash centre, and
+  // Drawn as two separate spans rather than one mirrored distance: abs(abs(bx)-c) kinks at the dash center, and
   // fwidth reads that fold as an edge.
   float dHalf=DASH_LEN*bayL*0.5, dAt=DASH_POS*bayL;
   s.dash=max(coverW(bx-dAt,dHalf,aw), coverW(bx+dAt,dHalf,aw))*cover(y,0.0018)*s.bay;
@@ -254,7 +263,9 @@ Surf ringRelief(float bx, float y, float bayL, float aw){
   s.h-=TRACE_D*max(s.trace,s.dash);
   return s;
 }
+//@end
 
+//@ring-only
 vec3 shieldMaterial(vec3 hp, vec3 rd, vec3 cc){        // the full inner shield ring: land/water topo + shield film
   vec3 n=nrmSh(hp);
   vec3 pr=ringSpace(hp);
@@ -292,10 +303,11 @@ vec3 shieldMaterial(vec3 hp, vec3 rd, vec3 cc){        // the full inner shield 
   M += cc*cw*0.02*uGlow*(uRingGlow*6.0);
   return M;
 }
+//@end
 
 void main(){
-  vec2 uv=(gl_FragCoord.xy-0.5*uRes)/uRes.y;   // the stage's own centre -- the panel is a flex sibling now
-  vec3 cc=uCoreCol;   // CORE COLOUR, straight from the picker
+  vec2 uv=(gl_FragCoord.xy-0.5*uRes)/uRes.y;   // the stage's own center -- the panel is a flex sibling now
+  vec3 cc=uCoreCol;   // CORE COLOR, straight from the picker
 
   float ca=uCamAngle + uPhCam;         // ANGLE = static position, ORBIT = rotation speed
   float el=uCamEl;
@@ -334,6 +346,7 @@ void main(){
     vec3 hot=mix(cc, vec3(1.0), clamp(uVent*uVentBright*0.55,0.0,1.0));   // color heats toward white as the vent brightens
     col += hot*uVent*uVentBright*(1.4 + inner*1.2);   // VENT floods the WHOLE surface so it never reads as a dark object
     col += vec3(1.0)*uVent*uVentBright*uVent*(1.0 - inner)*1.1;   // dark spots heat to white-hot with brightness
+//@ring-only   }
   } else if(id==2){
     vec3 n=nrmR(hp);
     vec3 pr=ringSpace(hp);
@@ -345,10 +358,10 @@ void main(){
     float facing=dot(nl,rad);
     float outer=smoothstep(0.15,0.6,facing);
     float inner=smoothstep(0.15,0.6,-facing);
-    // --- the machined surface, measured in metres along the band so a feature keeps its size as the ring grows ---
+    // --- the machined surface, measured in meters along the band so a feature keeps its size as the ring grows ---
     float bayL=6.28318*uRingR/9.0;
     float arc=pat*uRingR;
-    float bx=(fract(arc/bayL+0.5)-0.5)*bayL;             // metres from the nearest bay centre
+    float bx=(fract(arc/bayL+0.5)-0.5)*bayL;             // meters from the nearest bay center
     /* Measured off the ring's circular position, not off bx or pat: bx wraps once a bay and atan once a
      * revolution, and with the ribs gone there is no longer a blanked-out band hiding either fold. */
     float aw=max(length(fwidth(vec2(cos(pat),sin(pat))))*uRingR, 1e-6);
@@ -395,7 +408,7 @@ void main(){
      * something to reflect. Radiance down the reflection ray is that haze floor plus the core itself where the ray
      * happens to point back at it. This is the whole of what lights the outward face — it has no diffuse. */
     float toCore=max(dot(Rr,L),0.0);
-    // Not pure core colour: bloom scattered through the chamber comes back desaturated, and it is the only thing
+    // Not pure core color: bloom scattered through the chamber comes back desaturated, and it is the only thing
     // that keeps the alloy reading as metal rather than as tinted glass.
     vec3 haze=mix(cc,vec3(1.0),0.16);
     /* ROUGHNESS acts HERE, not only on the core's highlight — the outward face never sees that highlight at all.
@@ -408,7 +421,7 @@ void main(){
     m+=spec*ao;
     m+=env*(F0+(1.0-F0)*fres)*ao;                        // the haze reflected in the metal; worn lips catch far more of it
     m+=alb*haze*uGlow*0.30*ao;                           // the same haze arriving diffusely
-    vec3 emitCol=mix(cc,vec3(1.0),0.10);                 // powered light stays close to the core colour (less white)
+    vec3 emitCol=mix(cc,vec3(1.0),0.10);                 // powered light stays close to the core color (less white)
     m+=emitCol*uRingLight*outer*(S.lens*4.2+S.dash*0.45);
     m+=alb*emitCol*uRingLight*outer*S.halo*4.0;          // and what the lamps throw onto the alloy around them
     /* --- inner face: topographic land / water camo map, lit by the core ---
@@ -428,7 +441,7 @@ void main(){
     vec3 waterC=vec3(0.03,0.12,0.17)+cw*vec3(0.03,0.09,0.11);          // teal water + caustic glints
     vec3 sandC =vec3(0.44,0.38,0.24);                                  // sandy beach
     vec3 grassC=mix(vec3(0.08,0.13,0.05),vec3(0.19,0.24,0.10),mott);   // mottled green lowland
-    vec3 rockC =mix(vec3(0.17,0.15,0.13),vec3(0.26,0.24,0.21),mott);   // grey-brown rock
+    vec3 rockC =mix(vec3(0.17,0.15,0.13),vec3(0.26,0.24,0.21),mott);   // gray-brown rock
     vec3 snowC =vec3(0.86,0.89,0.94);                                  // snow cap
     vec3 topo=waterC;
     topo=mix(topo,sandC, smoothstep(0.30,0.35,e));                     // beach at the shoreline
@@ -459,6 +472,7 @@ void main(){
     float sAlpha=clamp(uRingGlow*1.05, 0.0, 1.0);                    // SHIELD % = opacity: 0 removes it entirely, solid when high
     col = mix(bg, shieldMaterial(hp, rd, cc), sAlpha);   // full continuous inner shield ring, transparency driven by SHIELD
   }
+//@end
 
   float vig=smoothstep(1.5,0.2,length(uv));
   col*=vig;
@@ -492,3 +506,47 @@ void main(){
   col += (hash(vec3(gl_FragCoord.xy, fract(uTime)))-0.5)/160.0;   // dither: smooths the bloom gradient banding
   fragColor=vec4(col,1.0);
 }`;
+
+/* ONE SOURCE, AND A REGION OF IT THE RING OWNS.
+ *
+ * The ring, its shield and their machined relief are the largest thing in this shader and the hero on the home
+ * page turns all of it off -- yet it still had to LINK it, because a fragment program is compiled whole whether
+ * or not a branch runs. Measured on an Intel UHD 630 with a cold shader cache, the home page waited 39.3s for
+ * the full program before it could show the core at all, and 24.2s warm. Without the ring: 7.5s.
+ *
+ * The parts only the ring reaches are bracketed by `//@ring-only` and `//@end`. They are GLSL comments, so the
+ * full build is the file exactly as written and there is no second copy of anything to drift. Where removing a
+ * region would leave a dangling call, the replacement rides on the marker itself -- `//@ring-only float
+ * ringSDF(vec3 p){ return 1e5; }` -- so the stub sits against the thing it stands in for rather than in a
+ * separate table that could disagree with it.
+ *
+ * 1e5 IS WHAT THOSE TWO ALREADY RETURN when the ring is off, so the narrow build is not an approximation of the
+ * wide one: it is the same picture with the code that could not have run removed.
+ */
+const RING_ONLY = '//@ring-only';
+
+/* 'full' is every part; 'core' is the reactor without its ring assembly. Anything else is treated as 'full',
+   because a shader that draws too much is slow and a shader that draws too little is wrong.
+   Scanned line by line rather than matched with one regular expression: the pattern needs both slashes of a
+   comment and both kinds of line ending, and the escaping to write that as a literal is where this went wrong
+   once already. */
+export function fragFor(key) {
+  if (key !== 'core') return SRC;
+  const out = [];
+  let skip = false;
+  for (const line of SRC.split('\n')) {
+    const t = line.trim();
+    if (t.startsWith(RING_ONLY)) {
+      skip = true;
+      const stub = t.slice(RING_ONLY.length);
+      if (stub.trim()) out.push(stub);
+    } else if (t === '//@end') {
+      skip = false;
+    } else if (!skip) {
+      out.push(line);
+    }
+  }
+  return out.join('\n');
+}
+
+export const FRAG = fragFor('full');

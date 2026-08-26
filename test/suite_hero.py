@@ -1,7 +1,7 @@
-# The hero core: that it built, that it draws, that it is the right colour, and that the pointer reaches it.
+# The hero core: that it built, that it draws, that it is the right color, and that the pointer reaches it.
 #
 # Every check here is a failure this page can have SILENTLY. A shader that will not compile, a canvas that eats
-# the call to action, a spin that fights the cursor, a colour the tone map turned to butter -- none of them
+# the call to action, a spin that fights the cursor, a color the tone map turned to butter -- none of them
 # throw, and all of them ship a hero that is simply wrong.
 #
 # ONE KNOWN FLAKE, and it is the reason for the retry below. Under --headless=new this page's shader renders
@@ -9,7 +9,7 @@
 # all 23 core-path uniforms read back byte-identical to a good one, the Reactor lab never flakes in the same
 # browser process, and a headful Chrome has never reproduced it. So the pixel checks reload until they get a
 # frame to measure and assert on that; if no load renders, they SKIP with the reason rather than pass quietly.
-# A wrong colour or a vanished core still fails, which is what those checks are for.
+# A wrong color or a vanished core still fails, which is what those checks are for.
 import time
 
 NAME = 'hero'
@@ -128,7 +128,7 @@ DIRECTION = """(()=>{
 
 
 def _hue(r, g, b):
-    """Hue in degrees. The whole colour argument on this element is about hue, not brightness."""
+    """Hue in degrees. The whole color argument on this element is about hue, not brightness."""
     mx, mn = max(r, g, b), min(r, g, b)
     d = mx - mn
     if d == 0:
@@ -172,7 +172,7 @@ def run(page, r):
         want = _hue(int(accent[1:3], 16), int(accent[3:5], 16), int(accent[5:7], 16))
         got = _hue(f['r'], f['g'], f['b'])
         # The shader tone maps per channel, which walks a warm hue toward yellow as it brightens -- so the core is
-        # fed a PRE-INVERTED colour and the lit surface lands on the accent. Measured on the pixels, because the
+        # fed a PRE-INVERTED color and the lit surface lands on the accent. Measured on the pixels, because the
         # only way to know that worked is to read what came out. Butter-yellow measured 38 degrees here against
         # the accent's 23.5, so the tolerance separates the two failure it exists to catch.
         r.ok('the lit surface renders at the accent hue', abs(got - want) <= 9,
@@ -211,7 +211,7 @@ def run(page, r):
     split = page.json(SPLIT)
     r.ok('a pulse strains sub-cores out of the surface', split['reach'] > 1.25,
          'furthest reaches %.2f core radii' % split['reach'])
-    # Analytic -- droplet centres against the core radius, two ideal spheres. It pins the droplet TABLE against
+    # Analytic -- droplet centers against the core radius, two ideal spheres. It pins the droplet TABLE against
     # the settings and says nothing about the picture, where the displacement field and the blend decide.
     r.ok('the droplet table keeps them within the blend', split['free'] < 0.1,
          '%.0f%% of %d clear the blend' % (split['free'] * 100, split['n']))

@@ -192,7 +192,7 @@ def find_graph_rel(repo: Path, cfg: dict[str, str]) -> str | None:
 # Copied rather than imported: this file is vendored into repos that have no
 # plugin install. tests/test_hook_parity.py asserts the two stay identical.
 def glob_to_regex(pattern: str) -> str:
-    """One gitignore-flavoured glob as a regex source string."""
+    """One gitignore-flavored glob as a regex source string."""
     pattern = pattern.strip().replace("\\", "/")
     if not pattern:
         return "(?!)"

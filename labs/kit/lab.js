@@ -19,7 +19,7 @@ export function textOut(el, txt) {
  *   store.queueSave();          // from onChange
  *
  * Ranges are derived from the panel layout rather than declared again, so bounds cannot disagree with the
- * sliders. `extra` names keys the layout cannot describe: colour rows have no range, section masters are not rows.
+ * sliders. `extra` names keys the layout cannot describe: color rows have no range, section masters are not rows.
  */
 export function persist({ key, version = 1, state, sections = [], extra = [], delay = 400 }) {
   const ranges = {}, choices = {};
@@ -203,7 +203,7 @@ export function labReady() {
  * itself.
  *
  * defaultPrevented is the guard that matters: the panel's numeric fields already take Escape to cancel a typed
- * value, and cancelling an edit must not also leave the page.
+ * value, and canceling an edit must not also leave the page.
  */
 export function escapeLeaves(fallback = '../../index.html') {
   addEventListener('keydown', (e) => {

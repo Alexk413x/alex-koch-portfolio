@@ -37,7 +37,7 @@
   /* [label, hp, app, kind]
    *   hp  — [row, col, rowSpan] on the faceplate, or null if the key does not exist there
    *   app — [row, col] in the app, or null
-   * Shared keys travel from one rectangle to the other; the rest fade from or into the pad's centre.
+   * Shared keys travel from one rectangle to the other; the rest fade from or into the pad's center.
    * The faceplate is transcribed from a photograph of an HP-15C: 39 keys in ten columns and four rows, with
    * ENTER double-height at row 3 column 6. */
   const KEYS = [
@@ -129,9 +129,9 @@
   }
 
   /* Where a key comes from, or goes to, when it exists on only one keyboard. Every key used to collapse into
-     the pad's centre, which made the whole set converge on one point and read as a group being sucked in
+     the pad's center, which made the whole set converge on one point and read as a group being sucked in
      rather than as parts detaching. A golden-angle spread gives each key its own direction with no two
-     neighbours agreeing, and no randomness, so the motion is identical on every load. */
+     neighbors agreeing, and no randomness, so the motion is identical on every load. */
   function exitVector(i) {
     const a = ((i * 137.508) % 360) * Math.PI / 180;
     return { dx: Math.cos(a) * 46, dy: Math.sin(a) * 34 };
@@ -145,8 +145,8 @@
   function timing(hp, app) {
     let d, span;
     if (hp && !app) {
-      const fromCentre = Math.abs(hp[1] - 5.5) / 4.5;          // 1 at the outer columns, 0 in the middle
-      d = 0.20 * (1 - fromCentre) + 0.012 * (hp[0] - 1); span = 0.40;
+      const fromCenter = Math.abs(hp[1] - 5.5) / 4.5;          // 1 at the outer columns, 0 in the middle
+      d = 0.20 * (1 - fromCenter) + 0.012 * (hp[0] - 1); span = 0.40;
     } else if (!hp && app) {
       // Ranked, not raw row: the app-only keys sit in rows 1-3 and row 7, and using the row number directly
       // gave the row-7 pair a start of 0.73 — past the point where a 0.42 span can still finish.
@@ -180,7 +180,7 @@
     b.type = 'button';
     b.dataset.key = label;
     b.className = 'k k-' + kind;
-    /* The label lives in its own element so it can undo the plate's scale. A key travelling between a 10x25
+    /* The label lives in its own element so it can undo the plate's scale. A key traveling between a 10x25
        faceplate cell and a 25x14 app cell is scaled 0.4 across and 1.75 down, and a glyph riding that comes out
        squashed to a sliver — which reads as a missing button rather than a distorted one. */
     const cap = document.createElement('span');
@@ -196,7 +196,7 @@
     const home = apR || hpR;
     const gone = exitVector(i);
 
-    // Centre-relative, so a rotation pivots where a plate would and the scale lands the box on its target.
+    // Center-relative, so a rotation pivots where a plate would and the scale lands the box on its target.
     const toward = (target) => {
       const cx = home.x + home.w / 2, cy = home.y + home.h / 2;
       if (!target) return { tx: (gone.dx / home.w) * 100, ty: (gone.dy / home.h) * 100, sx: 0, sy: 0 };

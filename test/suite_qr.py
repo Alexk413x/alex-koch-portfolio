@@ -47,7 +47,7 @@ def run(page, r):
             for col in range(size):
                 if flat[row * size + col] == '1':
                     img[row + quiet, col + quiet] = 0
-        # Nearest-neighbour: a soft edge is exactly what a scanner's binarisation step gets wrong.
+        # Nearest-neighbor: a soft edge is exactly what a scanner's binarisation step gets wrong.
         big = cv2.resize(img, None, fx=8, fy=8, interpolation=cv2.INTER_NEAREST)
         got, _, _ = detector.detectAndDecode(cv2.cvtColor(big, cv2.COLOR_GRAY2BGR))
         label = 'v%d decodes: %s' % (d['v'], (text[:34] + '...') if len(text) > 34 else text)
@@ -64,10 +64,10 @@ def run(page, r):
     img = cv2.imdecode(np.frombuffer(base64.b64decode(data), np.uint8), cv2.IMREAD_COLOR)
     want = 'https://' + page.js("document.querySelector('.qr-url').textContent.trim()")
 
-    # POLARITY IS NORMALISED FIRST, and that is a cost, not a formality. The page draws light modules on a dark
+    # POLARITY IS NORMALIZED FIRST, and that is a cost, not a formality. The page draws light modules on a dark
     # ground; OpenCV's detector reads dark-on-light only and returns nothing from the canvas as drawn, measured
     # at both 246px and 180px. Phone cameras that invert for themselves still read it, and this cannot check
-    # that. Inverting here tests the modules and the centre stamp, which is what this file is for.
+    # that. Inverting here tests the modules and the center stamp, which is what this file is for.
     def flip(im):
         return cv2.cvtColor(255 - cv2.cvtColor(im, cv2.COLOR_BGR2GRAY), cv2.COLOR_GRAY2BGR)
 
@@ -81,7 +81,7 @@ def run(page, r):
     # the mark puts accent-red pixels in the middle of the code.
     mid = img.shape[0] // 2
     core = img[mid - 20:mid + 20, mid - 20:mid + 20, 2]
-    r.ok('the centre carries the mark', bool((core > 150).any()))
+    r.ok('the center carries the mark', bool((core > 150).any()))
 
     # The overlay IS the close control -- there is no button. Every part of it closes, panel included.
     page.js("document.getElementById('qr-dialog').click();1")

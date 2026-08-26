@@ -41,7 +41,7 @@ export function createSim() {
   // open with no shield at all and grow one, which reads as a bug on first load.
   let shieldT = 5;
 
-  const dropData = new Float32Array(80);          // 20 droplets x vec4(centre.xyz, radius)
+  const dropData = new Float32Array(80);          // 20 droplets x vec4(center.xyz, radius)
   const out = {
     inst: 0, pulse: 0, vent: 0, ventBurst: 0, ventSwell: 0,
     visc: 0, turb: 0,
@@ -72,7 +72,7 @@ export function createSim() {
     // phase would freeze them whenever that phase's rate was 0.
     step(s, dt, sec) {
       /* INSTABILITY IS A GAUGE, AND NOTHING ELSE READS IT. It is derived from the settings that would actually
-       * destabilise a core — how hard the surface is roiling, how fast the ring is being driven, how far it
+       * destabilize a core — how hard the surface is roiling, how fast the ring is being driven, how far it
        * breathes — and NOT from which preset is lit. A mode is only a set of slider positions.
        *
        * It lags rather than tracking and rises faster than it falls, and it reads the PREVIOUS frame's vent and
@@ -132,7 +132,7 @@ export function createSim() {
       } else { vent = 0; ventBurst = 0; ventSwell = 0; }
 
       // The surface roils harder during a pulse and much harder during a vent. Two multipliers so the sub-cores
-      // and the vent can be dialled independently of the base setting.
+      // and the vent can be dialed independently of the base setting.
       const subVT = s.subVT != null ? s.subVT : 1, ventVT = s.ventVT != null ? s.ventVT : 1;
       out.visc = s.visc + vent * 6.0 * ventVT + Math.abs(pulse) * 1.6 * subVT;
       out.turb = Math.max(0, Math.min(1.4, s.turb + Math.abs(pulse) * 0.2 * subVT + vent * 0.35 * ventVT));

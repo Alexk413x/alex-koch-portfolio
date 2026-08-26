@@ -3,10 +3,10 @@
  *
  * Shared because two pages draw this scene now, the lab and the home page's hero core. A value uploaded by one
  * and forgotten by the other is the same scene disagreeing with itself, which is the failure this repo is
- * organised against.
+ * organized against.
  */
 /* Row-major 3x3 product. Only used to compose the ring transform, so it stays local rather than becoming a
-   maths module nothing else imports. */
+   math module nothing else imports. */
 function mul3(a, b) {
   const o = new Array(9);
   for (let r = 0; r < 3; r++) {

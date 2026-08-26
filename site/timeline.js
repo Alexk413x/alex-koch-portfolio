@@ -42,7 +42,7 @@
     b.textContent = role.dataset.label || String(i + 1);
     /* Scrolls the PAGE to that role's beat, which is the only way to change what is showing: the deck has no
        state of its own, so setting a class here would be a second description that the next scroll frame
-       overwrites. Landing mid-beat rather than on its edge, so a pixel of rounding cannot show the neighbour. */
+       overwrites. Landing mid-beat rather than on its edge, so a pixel of rounding cannot show the neighbor. */
     b.addEventListener('click', () => {
       window.scrollTo({ top: pinTop + run * ((i + .5) / roles.length), behavior: 'smooth' });
     });

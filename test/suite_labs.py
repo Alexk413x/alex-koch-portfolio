@@ -9,7 +9,7 @@
 # SyntaxError. A module that throws for want of a DOM is fine; one that cannot be parsed is not.
 #
 # THE CACHE IS THE OTHER HALF. The browser will serve a stale module against fresh HTML, which looks exactly like
-# a maths bug and is how the broken file was verified as working. Every fetch here carries a cache-buster.
+# a math bug and is how the broken file was verified as working. Every fetch here carries a cache-buster.
 import json
 import os
 

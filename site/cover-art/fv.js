@@ -1,6 +1,6 @@
 /* fv.js — FieldView
  *
- * Three bays by three storeys on four columns. The second-floor beam skips the left bay and neither left
+ * Three bays by three stories on four columns. The second-floor beam skips the left bay and neither left
  * column carries on above it, so the whole left side falls away. Two bays are cross-braced and two take a
  * single diagonal, the top one landing on the side of a column because there is no beam up there to frame
  * into. The same frame again on the tablet held up in front of it, and the screen is the only lit thing on

@@ -17,7 +17,7 @@ export function defaultPreset(gpu) {
    * 2.2s); the four below them are what this build can express and the DOM one could not. There, the warp is a CSS
    * transform on the text element, so its shape is fixed at "rigid sheet" and its only knobs are how hard and how
    * long. Here it is a displacement field on the beam's coordinate, so the SHAPE is separable: how much is a pull
-   * toward the middle of the tube, how much is the travelling pole, how much is the twist, and how far in from the
+   * toward the middle of the tube, how much is the traveling pole, how much is the twist, and how far in from the
    * rim the raster stops being clamped. */
   wint: 2.7, wwig: 4, warpSec: 5.4,
   /* DRAG LEADS NOW. PULL and SWIRL are bounded by the pole's own gaussian, so on their own they can only ever
@@ -53,11 +53,11 @@ export function defaultPreset(gpu) {
   // The guttering the fault drives ON TOP of the timeline, at its worst where the level is furthest from normal.
   surgeHz: 14, surgeStr: 0.75, surgeLampHz: 18,
   // How much of the fault is not authored: where the chop lands, and how many times the supply fails to restrike
-  // in the dark. 0 is the reference's behaviour -- the identical fault every press.
+  // in the dark. 0 is the reference's behavior -- the identical fault every press.
   surgeChaos: 0.7,
   face: 1, overscan: 1, corner: 30, bend: 6,
   frameOn: 1,            // the reference ships frameOn: true; off shows the bare tube
-  frameCol: '#2d1b15',   // the moulding's own plastic -- crt-bezel's default, and the reference's
+  frameCol: '#2d1b15',   // the molding's own plastic -- crt-bezel's default, and the reference's
   famp: 2.1,          // DEPTH: scales the fold-bounded amplitude; 1 is the reference's own depth
   /* FIT IS GONE, AND THE PIN IS WHY. It held the picture's rim on the glass by overriding OVERSCAN with the face
    * LUT's last sample. buildFaceLUT now solves for the radius at s = 1 against target = r1 = F(1), which returns
@@ -118,19 +118,19 @@ export function defaultPreset(gpu) {
   beamOn: 1,        // the whole sweep assembly; off also skips its per-pixel work
   convOn: 1, convRX: 1, convRY: -1, convGX: 3, convGY: 1, convBX: 1, convBY: -3, persist: 0.4,
   /* MEASURED OFF THE REFERENCE, not chosen. Read out of the running lab: fw=60 fh=30 in --cm (0.45vw) units,
-   * centred at fposx/fposy = 0 on a 1245x933 glass -- so the opening is 432x216px, half-extents 0.347 x 0.232 of
+   * centerd at fposx/fposy = 0 on a 1245x933 glass -- so the opening is 432x216px, half-extents 0.347 x 0.232 of
    * the glass half-size. Inside it the tubes are ltwd=76% wide, at lt1=29% / lt2=71% down the opening, ltk=20
    * thick, and ftilt ships at 0. Every one of these was a guess before and every one of them was wrong -- the
-   * fixture was at the top of the glass when the real one is dead centre. */
-  /* THE FIXTURE IN MILLIMETRES, because a light fitting has a size. A bare fraction of the glass means nothing on its
+   * fixture was at the top of the glass when the real one is dead center. */
+  /* THE FIXTURE IN MILLIMETERS, because a light fitting has a size. A bare fraction of the glass means nothing on its
    * own and lets you build a fitting that could not exist: a 26mm tube in a housing 40mm deep, ends sticking through
    * the sides, two lamps closer together than their own diameter. Real numbers make those states unreachable and the
    * plausible ones obvious — a T8 tube IS 26mm, a 4-foot lamp IS 1200mm, an office troffer IS about 600x600x90.
    *
    * WHAT IS DERIVED STAYS DERIVED. Tube length is the housing minus an end allowance, because that is what decides it
-   * on a real fitting. Same for the caps: an end cap is a moulded part about 25mm long whatever tube it is on.
+   * on a real fitting. Same for the caps: an end cap is a molded part about 25mm long whatever tube it is on.
    *
-   * SCALE ties millimetres to the picture: how much of the room the glass half-height spans. */
+   * SCALE ties millimeters to the picture: how much of the room the glass half-height spans. */
   /* MM_PER_UNIT IS A CONSTANT, NOT A CONTROL. Apparent size is (real size / U) over (real distance / U), so the U
    * cancels and fixWmm/distMM is the entire answer — a global scale on top of a real size and a real distance can
    * only be a no-op or a bug. It appeared to work only while DISTANCE was secretly a focal length.
@@ -150,8 +150,8 @@ export function defaultPreset(gpu) {
   fixYmm: 680,
   frost: 0.1, diffuse: 0.1, prism: 0.5, prismN: 40,
   fixTilt: 1.276637,
-  // A LAMP AT A TIME: its own level, its own colour. Two tubes in one fitting are rarely the same age,
-  // and colour is the first thing to drift as a phosphor blend ages -- that mismatch is most of what makes
+  // A LAMP AT A TIME: its own level, its own color. Two tubes in one fitting are rarely the same age,
+  // and color is the first thing to drift as a phosphor blend ages -- that mismatch is most of what makes
   // real fluorescent light read as real.
   lightA: 0.8, tempA: 5000,
   lightB: 0.8, tempB: 4400,
@@ -196,7 +196,7 @@ export function defaultPreset(gpu) {
   boxVis: 0.4, railVis: 0.29,
   glowA: 0.15, glowB: 0.15, ripple: 0,
   /* ROOM LIGHT RECALIBRATED, because the reflectance underneath it changed meaning. It was 0.5 back when the
-   * glass's reflectance ramped from 0.03 at the centre to 1.0 at the rim -- so at the centre the room was being
+   * glass's reflectance ramped from 0.03 at the center to 1.0 at the rim -- so at the center the room was being
    * multiplied by 0.0009 and contributed essentially nothing, and 0.5 was a number chosen to make the RIM look
    * right. With a flat, physical 4% the same 0.5 lit the whole face: empty glass measured 35.6 against the
    * reference's 13.4. The reference ships lightOn:false, i.e. no room at all, so this is the level at which the
@@ -216,10 +216,10 @@ export function defaultPreset(gpu) {
   tcols: 0,            // CHAR WIDTH, in grille columns; 0 = AUTO, i.e. derived from the font's own advance
   /* 70 / 64 ARE THE REFERENCE'S OWN SHIPPED VALUES, and the height especially is not cosmetic: with ANCHOR
    * BOTTOM the text stands on the block's lower edge, so a block 64% of the picture tall puts the boot low on
-   * the tube where it belongs. AUTO height makes the block exactly as tall as the text, which then centres on
+   * the tube where it belongs. AUTO height makes the block exactly as tall as the text, which then centers on
    * TEXT Y and floats the whole thing into the middle of the screen. */
   tw: 74, tht: 67,     // the block's size as a % of the picture; 0 = AUTO (shrink to the text)
-  tjust: 0,            // ALIGN: 0 left, 1 centre, 2 right -- the ragged edge INSIDE the block
+  tjust: 0,            // ALIGN: 0 left, 1 center, 2 right -- the ragged edge INSIDE the block
   type: 1.2,             // TYPE SPEED, x350 = WPM
   tox: 0, toy: 0,
   tvert: 0,        // 0 = anchor bottom (grows up), 1 = anchor top (grows down)
@@ -239,16 +239,16 @@ export function defaultPreset(gpu) {
   // The phosphor is a setting like any other; it just lived in a module variable rather than here.
   phName: 'amber', phCustom: '#4c67f0',
   /* WIDTH IN CSS PIXELS. It was a fraction of the glass half-height, which meant the same setting drew a
-   * different moulding on a different window -- and crt-bezel wants px anyway, so the fraction had to be
+   * different molding on a different window -- and crt-bezel wants px anyway, so the fraction had to be
    * converted back at every call site. 13 is the reference's own fwid. */
-  /* THE NUMBER CHANGED BECAUSE THE UNIT DID — the same story as GLARE. FRAME scaled the moulding's radiance ahead of
+  /* THE NUMBER CHANGED BECAUSE THE UNIT DID — the same story as GLARE. FRAME scaled the molding's radiance ahead of
    * the tone map and the gamma, so most of its visible range sat in the bottom of the travel; it fades the finished
    * tone now, which is a true opacity, and a given fraction of a finished tone is dimmer than the same fraction of a
    * radiance. This is the same frame, said in the new unit.
    *
    * A STORED VALUE KEEPS ITS NUMBER AND LOSES ITS MEANING, exactly as GLARE's did. */
   frame: 0.19, frameW: 13, frameBleed: 0.8,
-  frameScreen: 1,     // the tube's output reflected across the bezel, in the screen's colour
+  frameScreen: 1,     // the tube's output reflected across the bezel, in the screen's color
   frameFixture: 1,    // the light fixture, across the whole bezel, from wherever POS Y puts it
   /* 0.62 ON INTEGRATED, AND THE NUMBER IS MEASURED RATHER THAN CHOSEN. At 0.72 this scene sits exactly on the
      * 16.67ms edge on a UHD 630: min 16.4ms every time, but the median alternates between 16.9 and 33.2 across

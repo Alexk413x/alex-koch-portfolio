@@ -126,7 +126,7 @@ vec3 tubeLight(vec3 pos, vec3 nrm, float y0, float z0, float halfLen, float r, v
  *
  * tc is already where along the tube the closest approach lands -- the function needs it to measure the distance
  * at all. Returning it as well is free, and it is the only way anything outside the tube's SURFACE can ask what
- * condition the lamp is in at that point. Normalised to 0..1 end to end. */
+ * condition the lamp is in at that point. Normalized to 0..1 end to end. */
 float axisDist(vec3 ro, vec3 rd, float ax, float az, float hl, out float ax01) {
   vec3  A  = vec3(-hl, ax, az);
   vec3  u  = vec3(1.0, 0.0, 0.0);
@@ -149,7 +149,7 @@ float axisDist(vec3 ro, vec3 rd, float ax, float az, float hl) {
  *
  * t01 runs 0..1 end to end; the answer is 0 for spent coating and 1 for fully lit. This existed already, inline
  * inside tubeSurface, which was fine while the tube's BODY was the only thing that cared. It is a function now
- * because the halo has to ask the same question: a burnt-out middle throws no light, so it can carry no glow,
+ * because the halo has to ask the same question: a burned-out middle throws no light, so it can carry no glow,
  * and the alternative was a second copy of the same five constants free to drift from the first. Same reason
  * crt/README gives for keeping the geometry in one place. */
 float tubeVit(float t01, float health) {
@@ -177,7 +177,7 @@ vec3 tubeSurface(vec3 pos, vec3 nrm, vec3 rd, float halfLen, float health, float
    * from the end over the half-length, against the cap over the half-length — so there are no units left to
    * disagree about.
    *
-   * It is still a fixed physical size: the caller divides the cap's millimetres by the tube's own, so a 25mm cap
+   * It is still a fixed physical size: the caller divides the cap's millimeters by the tube's own, so a 25mm cap
    * stays 25mm of real part however long the lamp is. */
   float fromEnd = 1.0 - axial;
   float face    = max(dot(nrm, -rd), 0.0);
@@ -185,19 +185,19 @@ vec3 tubeSurface(vec3 pos, vec3 nrm, vec3 rd, float halfLen, float health, float
   /* HEALTH IS crt-fixture's CURVE, PORTED — not a model of my own that happens to look similar. The states are meant
    * to MATCH the lab, so the arithmetic is transcribed from tubeHealth() and the breakpoints below are its numbers.
    *
-   * The lab paints the tube as a horizontal gradient with five stops per half, built from three colours whose mix
+   * The lab paints the tube as a horizontal gradient with five stops per half, built from three colors whose mix
    * ratios are functions of health. Everything here is linear-light emission rather than sRGB fill, so what is
    * transcribed is the VITALITY at each stop — how lit that part of the tube is — and the emission is mixed
    * between the dead coating and the live phosphor by it.
    *
-   *   endVital  the ENDS go charred -> lit across 18%..30%. Above 30% they are simply lamp-coloured, which is why
+   *   endVital  the ENDS go charred -> lit across 18%..30%. Above 30% they are simply lamp-colored, which is why
    *             a half-dead tube still has two bright tips.
    *   conn      the MIDDLE. Dead below 40%; climbs to only HALF-lit by 90%; completes over the last tenth. This
    *             single line is most of what makes a tube look tired well before it looks broken.
    *   reach     how far the end glow reaches inward, 8%..50% of the length, growing from about 20% health.
    *
    * The lab's midCol is the average of frontCol and centerCol and sits halfway between their two stops, so those
-   * three stops are a straight line from front to centre — collapsed here into one mix. */
+   * three stops are a straight line from front to center — collapsed here into one mix. */
   float h        = clamp(health, 0.0, 1.0);
   float endVital = clamp((h - 0.18) / 0.12, 0.0, 1.0);
   float conn     = h < 0.4 ? 0.0
@@ -216,7 +216,7 @@ vec3 tubeSurface(vec3 pos, vec3 nrm, vec3 rd, float halfLen, float health, float
   // function, so the tube's body and the glow it throws cannot disagree about which parts of it are dead.
   float vit      = tubeVit(t01, health);
   /* CHARRED AND SMOKY BELOW A QUARTER. The lab lays a #221b17 multiply over the whole tube at this opacity --
-   * the soot that makes a spent lamp look burnt rather than merely unlit. */
+   * the soot that makes a spent lamp look burned rather than merely unlit. */
   float tchar    = clamp((0.25 - h) / 0.25, 0.0, 1.0) * 0.92;
   float dead     = 1.0 - vit;
   /* THE SLEEVE IS METAL ALL THE WAY. Fading the material in across the whole cap makes sense while the cap is a
@@ -257,7 +257,7 @@ vec3 tubeSurface(vec3 pos, vec3 nrm, vec3 rd, float halfLen, float health, float
    * Over it sits the OUTLINE: fres is brightest exactly at the silhouette and nothing face-on, so a spent tube
    * reads as a dark body with its rim still catching the fitting's light. It does not depend on health, so at
    * zero the outline is the whole of what is left. */
-  /* THE TWO DEAD COLOURS ARE THE LAB'S OWN, converted. char is rgb(46,38,33) and gapDark is rgb(38,31,27) --
+  /* THE TWO DEAD COLORS ARE THE LAB'S OWN, converted. char is rgb(46,38,33) and gapDark is rgb(38,31,27) --
    * it calls them "charred solid" and "dead coating" and notes both must stay "visible under screen blend, not
    * vanishing", which is the same requirement here for the same reason: a tube that goes to nothing punches a
    * hole in the fitting. gapCol crossfades between them from 15% health, exactly as the lab does. */
@@ -270,11 +270,11 @@ vec3 tubeSurface(vec3 pos, vec3 nrm, vec3 rd, float halfLen, float health, float
    * thing in the fitting still lit by a light that does not exist.
    *
    * Scaled by the pair's own output rather than by this tube's, deliberately: a dead lamp beside a live one IS lit
-   * — by its neighbour, off the inside of the housing — so it keeps its body and only loses it when the whole
+   * — by its neighbor, off the inside of the housing — so it keeps its body and only loses it when the whole
    * fitting goes. That is the case the floor was written to protect. */
   float ambT = clamp(max(uFlkA * uHealthA, uFlkB * uHealthB), 0.0, 1.0);
-  /* DEAD COATING IS A CONTROL. At a fixed strength a spent section reads as mid grey, and a fluorescent whose
-   * centre has given up does not read as half lit — it reads as a dark bar with two glowing ends, and that
+  /* DEAD COATING IS A CONTROL. At a fixed strength a spent section reads as mid gray, and a fluorescent whose
+   * center has given up does not read as half lit — it reads as a dark bar with two glowing ends, and that
    * contrast IS the effect.
    *
    * So the floor stays available and stops being compulsory. At 1 this is exactly what it was; at 0 a dead section
@@ -295,16 +295,16 @@ vec3 tubeSurface(vec3 pos, vec3 nrm, vec3 rd, float halfLen, float health, float
    * it flattens a cylinder into a ring.
    *
    * A metal band lit from in front is the other way round: brightest where it faces you, falling away toward the
-   * edges. So the body term is the facing cosine, with a TIGHT specular on top rather than a wash — aluminium has
+   * edges. So the body term is the facing cosine, with a TIGHT specular on top rather than a wash — aluminum has
    * a hard highlight.
    *
-   * FAINTLY GREEN, because that is what the cap on a fluorescent tube looks like: anodised aluminium with a slight
-   * cast, against warm-white glass. Neutral grey beside 5000K glass just reads as more glass, dimmed.
+   * FAINTLY GREEN, because that is what the cap on a fluorescent tube looks like: anodised aluminum with a slight
+   * cast, against warm-white glass. Neutral gray beside 5000K glass just reads as more glass, dimmed.
    *
    * Scaled by flk so it goes dark with its own tube: a cap is lit BY the lamp it is fitted to. */
 /* NEARLY FLAT. The sleeve is a real cylinder standing proud of the glass, so its ROUNDNESS is carried by its
    * silhouette and does not need spelling out again in the shading. A strong facing gradient PLUS a hard specular
-   * on a part that is already visibly round reads as a bulging bead, and the colour swings so far across it that
+   * on a part that is already visibly round reads as a bulging bead, and the color swings so far across it that
    * it stops looking like one material.
    *
    * A painted end cap is close to matte anyway: a shallow lift toward the eye, enough that it is not a flat
@@ -326,7 +326,7 @@ vec3 traceFixture(vec2 sp2, float ct, float st, vec3 boxLo, vec3 boxHi,
                   float halfLen, float tubeR, float tubeRlit, float tubeZ,
                   float flkA, float flkB) {
   /* THE FITTING'S OWN AMBIENT, AND IT HAS TO COME FROM THE LAMPS. The constants on the housing's inner wall and its
-   * rails exist so the fitting reads as a moulded object with form rather than a silhouette. A bare number there
+   * rails exist so the fitting reads as a molded object with form rather than a silhouette. A bare number there
    * is a claim that there is some OTHER light in the room, and there is not — this fitting is the only source in
    * the scene, so with both lamps dead the housing and rails go on quietly showing themselves in the glass.
    *
@@ -350,11 +350,11 @@ vec3 traceFixture(vec2 sp2, float ct, float st, vec3 boxLo, vec3 boxHi,
      * from hit tests, and one sample per pixel of a step function is an aliased edge by construction — a one-pixel
      * step on a shallow diagonal is a staircase, and at a render scale below 1 each tread is wider still.
      *
-     * The fix is analytic coverage: rather than asking whether this pixel's CENTRE is inside, ask how much of the
+     * The fix is analytic coverage: rather than asking whether this pixel's CENTER is inside, ask how much of the
      * pixel is, using the edge function's own screen-space derivative as the pixel's width.
      *
      * THEY MUST BE COMPUTED BEFORE ANY BRANCH ON facing. fwidth() is undefined inside non-uniform control flow —
-     * neighbouring fragments in a quad have to be on the same instruction for a derivative to mean anything — so
+     * neighboring fragments in a quad have to be on the same instruction for a derivative to mean anything — so
      * they sit up here where every fragment reaches them, and the branches below only READ them. */
     /* ONE fwidth, ON A vec2, FOR ALL THREE EDGES, and that is not tidiness: because they have to be computed before
      * the branch, every fragment on the screen pays for each one whether or not it is anywhere near the fitting.
@@ -377,7 +377,7 @@ vec3 traceFixture(vec2 sp2, float ct, float st, vec3 boxLo, vec3 boxHi,
      * the real cylinders, so they move correctly when the fitting tilts or the lamps move.
      *
      * FLAT FACETS, NOT A LENS at this level: sign() gives each quadrant of a cell a constant slope pointing away
-     * from its centre — a four-sided pyramid, which is how the common panel is moulded. fract() keys it to the
+     * from its center — a four-sided pyramid, which is how the common panel is molded. fract() keys it to the
      * cell, so the facets stay with the fitting rather than sliding across it.
      *
      * Applied to rdl ONLY. atOpen keeps the true ray, so the panel refracts what is behind it without moving
@@ -386,7 +386,7 @@ vec3 traceFixture(vec2 sp2, float ct, float st, vec3 boxLo, vec3 boxHi,
      * offset copies. A binary deflection translates each half-cell sideways and does nothing else: no cell forms
      * an image, so there is nothing for the grid to be a grid OF.
      *
-     * A prismatic lens panel is a moulded array of little pyramids, and within one cell the facet's slope grows
+     * A prismatic lens panel is a molded array of little pyramids, and within one cell the facet's slope grows
      * steadily from the apex out to the wall, so a ray is bent in proportion to how far off that cell's axis it
      * enters. Each cell then forms its own small image of the lamps behind it. pf already runs -0.5..0.5 across
      * the cell, so it IS that proportion. */
@@ -394,15 +394,15 @@ vec3 traceFixture(vec2 sp2, float ct, float st, vec3 boxLo, vec3 boxHi,
       float pn = max(uPrismN, 2.0);
       vec2  pf = fract(atOpen.xy / max(boxHi.x, 1e-4) * pn * 0.5) - 0.5;
       /* THE ANGLE IS SMALL, AND THAT IS THE MEASURED ANSWER RATHER THAN THE OBVIOUS ONE. The lamps sit only a few
-       * centimetres behind the panel, so the intuition is that the bend has to be large. It does not: structure
+       * centimeters behind the panel, so the intuition is that the bend has to be large. It does not: structure
        * peaks at a small angle and falls off a cliff after it, because past that the refraction is not breaking
        * the lamp into cells, it is steering the samples off the lamp altogether — the cells look at dark housing,
        * and a grid of uniformly dark cells has no structure in it.
        *
-       * The GRID is the moulding, drawn by the seam term below; refraction's job is only to modulate what each
+       * The GRID is the molding, drawn by the seam term below; refraction's job is only to modulate what each
        * cell shows, and a little of it does far more than a lot. */
       /* AND IT SCALES WITH THE CELL, or the control below stops meaning anything. A fixed facet angle sounds right —
-       * moulded acrylic has the slope it has, whatever the pitch — but the displacement it produces over the gap
+       * molded acrylic has the slope it has, whatever the pitch — but the displacement it produces over the gap
        * is then fixed too, while the cells get smaller. Past a certain fineness every sample lands in some OTHER
        * cell's territory and the per-cell image is gone.
        *
@@ -478,7 +478,7 @@ vec3 traceFixture(vec2 sp2, float ct, float st, vec3 boxLo, vec3 boxHi,
          * scattering with it — which is what keeps a hard white cylinder from reading straight through the panel
          * at a raking angle. */
         /* ONE PER LAMP. A shared control could only ever say how much the FITTING glows, and the two tubes in a
-         * fitting are not interchangeable -- they are already allowed their own level, colour temperature,
+         * fitting are not interchangeable -- they are already allowed their own level, color temperature,
          * condition and flicker, so a pair where one is scattering hard and the other is not is exactly the kind
          * of mismatch this section exists to describe. The falloff WIDTH is per lamp too, not just the
          * brightness: a hazy tube spreads further as well as glowing harder, and sharing the width would have
@@ -494,9 +494,9 @@ vec3 traceFixture(vec2 sp2, float ct, float st, vec3 boxLo, vec3 boxHi,
           /* GATED ON hGlow, the lab's own: clamp((h - 0.2) / 0.55). The broad glow fades in as the tube heals,
            * so a lamp at 20% health throws no halo at all and one at 75% throws its full share. */
           /* AND ON THE COATING WHERE THE GLOW IS ACTUALLY COMING FROM. hGlow is one number for the whole lamp, so a tube
-           * whose middle has burnt out throws its full halo along its entire length — over its own dead section
+           * whose middle has burned out throws its full halo along its entire length — over its own dead section
            * and over the housing wall behind it. Two visible failures from one cause: a spent middle reads as
-           * TRANSPARENT rather than burnt, and BOX looks broken because the same saturation buries the wall it
+           * TRANSPARENT rather than burned, and BOX looks broken because the same saturation buries the wall it
            * fades.
            *
            * Light comes from coating that is still alight. tubeVit answers that at the point the halo is sampled
@@ -531,7 +531,7 @@ vec3 traceFixture(vec2 sp2, float ct, float st, vec3 boxLo, vec3 boxHi,
         if (uDiffuse > 0.001) {
   /* AN OPAL COVER GLOWS — it does not average. A flat constant is the total flux behind the panel spread evenly,
            * which is uniform and dead. A real cover is brightest where the lamps are behind it and dims toward the
-           * corners, because the panel is being LIT from a few centimetres away and the inverse square still
+           * corners, because the panel is being LIT from a few centimeters away and the inverse square still
            * applies over that distance.
            *
            * So it is the irradiance again, computed with the source blown up: as DIFFUSER rises the tubes are
@@ -542,7 +542,7 @@ vec3 traceFixture(vec2 sp2, float ct, float st, vec3 boxLo, vec3 boxHi,
            * The gain rises with it for that reason: a diffuser scatters light forward, it does not eat it. */
           /* THE INFLATION IS BOUNDED BY THE TUBE SPACING. Fattening the source until the tubes stop being objects is right,
            * but past the gap between the lamps the two pools do not merely merge, they swamp the whole aperture —
-           * a scan down the fitting's centre then varies by a handful of levels out of 255, which is the same grey
+           * a scan down the fitting's center then varies by a handful of levels out of 255, which is the same gray
            * card this is written to prevent, arrived at from the opposite direction.
            *
            * Kept narrower than the gap, the panel still carries two soft pools where the lamps are and dims
@@ -592,15 +592,15 @@ vec3 traceFixture(vec2 sp2, float ct, float st, vec3 boxLo, vec3 boxHi,
          * trace can only darken or lighten what is already there, which is a shadow printed on the fitting. The
          * refraction happens where it belongs, at the aperture, before anything is intersected.
          *
-         * What a bend cannot produce is the join between two mouldings, so that is what this is: a thin darker
+         * What a bend cannot produce is the join between two moldings, so that is what this is: a thin darker
          * line on the cell boundary. */
-        /* THE MOULDING BETWEEN THE CELLS, as a defined line rather than a wash. A soft gradient from centre to gutter
-         * reads as a dirty panel, not a moulded one. What a real lens panel shows is narrow: the wall where two
+        /* THE MOLDING BETWEEN THE CELLS, as a defined line rather than a wash. A soft gradient from center to gutter
+         * reads as a dirty panel, not a molded one. What a real lens panel shows is narrow: the wall where two
          * pyramids meet catches almost nothing and goes distinctly dark, while the apex of each facet points
          * straight at you and picks up a little extra. Everything between is flat.
          *
          * Weighted equally on both axes: stronger across than down is correct for a ridged panel and wrong for a
-         * square-celled one, where the two directions are the same moulding. */
+         * square-celled one, where the two directions are the same molding. */
         if (uPrism > 0.001) {
           float pn   = max(uPrismN, 2.0);
           vec2  g    = abs(fract(atOpen.xy / max(boxHi.x, 1e-4) * pn * 0.5) - 0.5) * 2.0;
@@ -615,7 +615,7 @@ vec3 traceFixture(vec2 sp2, float ct, float st, vec3 boxLo, vec3 boxHi,
     }
 
 
-  /* NO ROOM GRADIENT. A two-colour vertical wash standing in for an environment lights the glass everywhere at once
+  /* NO ROOM GRADIENT. A two-color vertical wash standing in for an environment lights the glass everywhere at once
      * regardless of what is actually in front of it, so it only lifts the blacks and flattens the very reflection
      * it is supposed to sit behind.
      *
@@ -665,9 +665,9 @@ vec3 traceFixture(vec2 sp2, float ct, float st, vec3 boxLo, vec3 boxHi,
         vec3 rn = vec3(0.0, 0.0, 1.0);
         vec3 rlit = tubeLight(rp, rn, -uFixGap, tubeZ, halfLen, tubeRlit, uLampA, flkA * uHealthA, litReach(uHealthA))
                   + tubeLight(rp, rn,  uFixGap, tubeZ, halfLen, tubeRlit, uLampB, flkB * uHealthB, litReach(uHealthB));
-        /* THE LAB'S OWN COLOUR, CONVERTED. Its rails are rgba(224,212,185) -- a warm bone white -- and that is an
+        /* THE LAB'S OWN COLOR, CONVERTED. Its rails are rgba(224,212,185) -- a warm bone white -- and that is an
          * sRGB value, while everything here is linear light. Dropping the triple in raw would have made them
-         * too bright and too yellow at once. This is that colour through the sRGB transfer function, used as an
+         * too bright and too yellow at once. This is that color through the sRGB transfer function, used as an
          * ALBEDO rather than as a result. */
         vec3 railCol = vec3(0.745, 0.658, 0.484);
         /* AND THE LAMPS LIGHT THEM FROM THE FRONT, WHICH tubeLight CANNOT SEE. A rail lies in the plane of the OPENING
@@ -676,12 +676,12 @@ vec3 traceFixture(vec2 sp2, float ct, float st, vec3 boxLo, vec3 boxHi,
          * That is not wrong lighting, it is the wrong LIGHT: what illuminates a ceiling rail is the fitting's own
          * output coming back off the ceiling around it, and no ray in this scene carries that.
          *
-         * So it is supplied directly, from the same lamp-output term the sheen uses. It keeps the lamp COLOUR, so
+         * So it is supplied directly, from the same lamp-output term the sheen uses. It keeps the lamp COLOR, so
          * TEMP A/B tints the rails and a mismatched pair shows on them, and the level, so they dim with LIGHT and
          * blink with FLICKER. rlit stays in at a lower weight for the grazing light that is genuinely there,
          * which is what makes the near corners read brighter than the far ones. */
-        /* MOSTLY THE LEVEL, ONLY A LITTLE OF THE COLOUR — because the albedo is ALREADY warm. Driving straight from the
-         * lamp's colour tints a bone-white rail with a warm light and warms it twice, which reads as tan rather
+        /* MOSTLY THE LEVEL, ONLY A LITTLE OF THE COLOR — because the albedo is ALREADY warm. Driving straight from the
+         * lamp's color tints a bone-white rail with a warm light and warms it twice, which reads as tan rather
          * than as painted metal. The rail's albedo is what a pale rail under these lamps already LOOKS like, so
          * most of what the lamps contribute here is intensity.
          *

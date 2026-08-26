@@ -1,6 +1,6 @@
 /* myday.js — myDay
  *
- * Dead centre, dead upright. The carton is a single face whose bottom edge is the only hard line on it;
+ * Dead center, dead upright. The carton is a single face whose bottom edge is the only hard line on it;
  * everything above falls away in an arc, so what you get is the surface being read and nothing else. The
  * beam leaves the scan window, the label lights, the tick comes back — that is the whole loop, a hundred
  * thousand times a day.

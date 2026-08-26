@@ -1,7 +1,7 @@
 /* hero-core.js — the reactor lab's core, alone, behind scene 01.
  *
  * It IS the lab's core, at the lab's own STABLE settings: the same shader, the same simulation, the same state.
- * Changed and no more: the ring assembly is off, the colour comes from --accent, the render scale is its own,
+ * Changed and no more: the ring assembly is off, the color comes from --accent, the render scale is its own,
  * and the pulse runs at FORCE 13 with SUB VIS/TRB 0.
  *
  * The pointer does exactly two things, and both are read off its POSITION. The face turns to where it is, and
@@ -10,7 +10,7 @@
  */
 import { createQuad } from '../labs/kit/glquad.js';
 import { runLoop, fitCanvas } from '../labs/kit/lab.js';
-import { FRAG, UNIFORMS } from '../labs/reactor/reactor-shader.js';
+import { fragFor, UNIFORMS } from '../labs/reactor/reactor-shader.js';
 import { defaultPreset } from '../labs/reactor/reactor-presets.js';
 import { createSim } from '../labs/reactor/reactor-sim.js';
 import { sendUniforms } from '../labs/reactor/reactor-uniforms.js';
@@ -59,14 +59,14 @@ const clamp11 = (v) => (v < -1 ? -1 : v > 1 ? 1 : v);
 const ease = (t) => { const x = clamp01(t); return x * x * (3 - 2 * x); };
 
 /* The linear red a lit surface on this core reaches, measured off the rendered frame: the brightest decile came
- * back at 154/255, which is this value through the tone map. It is the operating point the colour below is
+ * back at 154/255, which is this value through the tone map. It is the operating point the color below is
  * solved at, and it is a property of the lab's GLOW — re-measure if that setting ever moves. */
 const OPERATING = 1.05;
 
 const toneMap = (x) => Math.pow(x / (x + 0.85), 0.85);
 const unTone = (v) => { const y = Math.pow(clamp01(v), 1 / 0.85); return 0.85 * y / Math.max(1e-4, 1 - y); };
 
-/* The colour the SHADER must be given for the core to RENDER as `hex`.
+/* The color the SHADER must be given for the core to RENDER as `hex`.
  *
  * The last two lines of the shader are a tone map, (x/(x+0.85))^0.85 per channel, and that curve compresses a
  * warm hue's red long before its green — hand it the accent and every lit surface comes back yellow. So each
@@ -96,8 +96,21 @@ function init() {
      13.3 seconds on an Intel UHD 630 with a cold shader cache, measured, and DOMContentLoaded sat behind all of
      it. The labs still link the old way: they are the whole page and have nothing to show without it. Here the
      rest of the page is the point, so the core arrives when it arrives. */
+  /* THE BASE PROGRAM IS THE ONE WITHOUT THE RING, and that is what makes the core arrive at all.
+   *
+   * A fragment program links whole, so this page was paying to compile the ring, its shield and their machined
+   * relief in order to draw a scene that switches every one of them off. Measured on an Intel UHD 630: 39.3s
+   * cold and 24.2s warm before ready() came true, against 7.5s cold without them. For all of that time the
+   * halo arcs sit in the loading animation the stylesheet hangs on :not(.core-lit) and there is no core.
+   *
+   * `variant` KEEPS THE RING REACHABLE rather than compiling it away for good. Ask for it and glquad builds the
+   * full program in the background and swaps it in when it lands, holding this one on screen meanwhile -- so a
+   * later scene can switch the ring on at runtime and pay the compile once, instead of every load paying it for
+   * a ring nobody asked for. Note the usual `frag` must be the superset; here it deliberately is not, because
+   * the fallback only has to draw what THIS page asks for. */
   const R = createQuad(canvas, {
-    frag: FRAG, uniforms: UNIFORMS, onRestore: () => fit(true), deferLink: true,
+    frag: fragFor('core'), variant: fragFor, uniforms: UNIFORMS,
+    onRestore: () => fit(true), deferLink: true,
   });
   if (!R) return;
 
@@ -232,6 +245,9 @@ function init() {
        hovering and scrolling should not get a calmer core than one who is only hovering. */
     const stir = Math.min(1, near + churn * SCROLL_STIR);
     state.visc = VISC_REST + (VISC_LIVE - VISC_REST) * stir;
+    /* BEFORE THE UNIFORMS, because a switch lands on a program whose uniforms are all zero and it is the sends
+       below that fill it in. Asking for 'core' every frame is a map lookup once it is current. */
+    R.use(state.ringOn ? 'full' : 'core');
     sendUniforms(R, state, sim.step(state, dt, sec), sec);
     R.draw();
   }

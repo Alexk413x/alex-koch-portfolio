@@ -6,14 +6,18 @@
 <title>Wormhole Lab &middot; Alex Koch</title>
 
 <!-- A lab is a page a crawler can only reach from the sitemap, so what it says about itself it has to say here.
-     The card image is the site's, not the scene's: one recognisable card across every page beats four near-misses. -->
-<meta name="description" content="A tunnel down the throat of a wormhole, drawn by one WebGL2 shader: a domain-warped fbm field swept along a seamless angular coordinate, in three flavours — nebula, lightspeed and plasma vortex. Every layer switches off from its own header.">
+     The card image is the site's, not the scene's: one recognizable card across every page beats four near-misses.
+
+     THIS URL OUTLIVED THE LAB THAT FIRST HELD IT. What sat here was a volumetric march through a noise field;
+     what sits here now solves the same tunnel in closed form and ends it at a traced black hole. The address
+     stays because it is indexed and linked, and because a moved URL is a broken one. -->
+<meta name="description" content="A tunnel solved rather than marched, drawn by one WebGL2 shader: six cylindrical shells met in closed form, ending at a Schwarzschild black hole whose light is traced along real null geodesics. Every shell and every effect switches off from its own header.">
 <link rel="canonical" href="https://alexk413x.github.io/alex-koch-portfolio/labs/wormhole/Wormhole.html">
 <meta property="og:type" content="article">
 <meta property="og:site_name" content="Alex Koch">
 <meta property="og:url" content="https://alexk413x.github.io/alex-koch-portfolio/labs/wormhole/Wormhole.html">
-<meta property="og:title" content="Wormhole Lab, a domain-warped fbm tunnel">
-<meta property="og:description" content="A domain-warped fbm field swept along a seamless angular coordinate, in three flavours: nebula, lightspeed and plasma vortex.">
+<meta property="og:title" content="Wormhole Lab, a solved tunnel into a traced black hole">
+<meta property="og:description" content="Six cylindrical shells met in closed form, ending at a Schwarzschild black hole whose light is traced along real null geodesics.">
 <meta property="og:image" content="https://alexk413x.github.io/alex-koch-portfolio/site/og-card.png">
 <meta name="twitter:card" content="summary_large_image">
 <script type="application/ld+json">
@@ -23,7 +27,7 @@
   "@id": "https://alexk413x.github.io/alex-koch-portfolio/labs/wormhole/Wormhole.html#lab",
   "name": "Wormhole Lab",
   "url": "https://alexk413x.github.io/alex-koch-portfolio/labs/wormhole/Wormhole.html",
-  "abstract": "A tunnel down the throat of a wormhole: a domain-warped fbm field swept along a seamless angular coordinate, in three flavours — nebula, lightspeed and plasma vortex.",
+  "abstract": "A tunnel solved rather than marched: six cylindrical shells met in closed form, ending at a Schwarzschild black hole whose light is traced along real null geodesics.",
   "programmingLanguage": ["JavaScript", "GLSL"],
   "runtimePlatform": "WebGL2",
   "codeRepository": "https://github.com/Alexk413x/alex-koch-portfolio",
@@ -36,90 +40,103 @@
   }
 }
 </script>
-<!-- AN INLINE FAVICON, because a browser asks for /favicon.ico whether or not one exists and logs a 404 when it
-     does not. A data URI answers the question in the document rather than needing a file beside it. -->
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%23070707'/%3E%3Ccircle cx='8' cy='8' r='6' fill='none' stroke='%23ffb454' stroke-width='1'/%3E%3Ccircle cx='8' cy='8' r='3' fill='none' stroke='%23ffb454' stroke-width='1' opacity='.6'/%3E%3Ccircle cx='8' cy='8' r='1' fill='%23fff'/%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%23070707'/%3E%3Ccircle cx='8' cy='8' r='6.2' fill='none' stroke='%23ffb454' stroke-width='.9'/%3E%3Ccircle cx='8' cy='8' r='3.6' fill='none' stroke='%23ffb454' stroke-width='.9' opacity='.7'/%3E%3Ccircle cx='8' cy='8' r='1.4' fill='none' stroke='%23ffb454' stroke-width='.9' opacity='.5'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Archivo:wght@700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../kit/panel.css">
 <link rel="stylesheet" href="../kit/loading.css">
 <link rel="stylesheet" href="../kit/lab.css">
-<!-- Only what is true of this lab; the page shell is lab.css and the panel is panel.css. -->
 <style>
   #panel h1{font-size:12px}
 </style>
 </head>
 <body>
 
-<!-- Empty, and fixed black over the whole viewport from the first paint, so a cold load never flashes.
-     mountLoader() fills it in; see labs/kit/lab.js. -->
 <div class="kit-load" role="status" aria-live="polite"></div>
 
 <div id="stage">
   <canvas id="field"></canvas>
-  <div id="mast"><div class="t">WORMHOLE&nbsp;LAB</div><div class="s" id="modename">WebGL shader</div></div>
+  <div id="mast"><div class="t">WORMHOLE&nbsp;LAB</div><div class="s" id="modename">solved, not marched</div></div>
   <div id="hud"><b id="fps">-- FPS</b> <span id="scaleinfo"></span> <span id="glstate"></span><br><span class="dim" id="gpu"></span></div>
 </div>
 <div id="panel">
-  <h1>WORMHOLE FIELD</h1>
-  <!-- No button strips: each switchable section carries its own master in its header, which panel.js builds. -->
+  <h1>WORMHOLE</h1>
+  <div class="btns" id="actions"></div>
   <div id="controls"></div>
 </div>
 
 <script type="module">
-import { createQuad, valueNoiseTexture } from '../kit/glquad.js';
-import { createPanel, mountPanelToggle } from '../kit/panel.js';
+import { createQuad } from '../kit/glquad.js';
+import { createPanel, buildActions, mountPanelToggle } from '../kit/panel.js';
 import { persist, fitCanvas, runLoop, textOut, reportNoGL, escapeLeaves, mountLoader } from '../kit/lab.js';
 
-import { FRAG, UNIFORMS, fragFor } from './wormhole-shader.js';
-import { SECTIONS, FMT, EFFECTS } from './wormhole-sidebar.js';
+import { FRAG, UNIFORMS, MAXL } from './wormhole-shader.js';
+import { ALL_SECTIONS, sectionsFor, FMT, LAYER_NAMES } from './wormhole-sidebar.js';
 import { defaultPreset } from './wormhole-presets.js';
 mountLoader();
-// Escape leaves the instrument, the way the back button does.
 escapeLeaves();
 
 const stage = document.getElementById('stage');
-// The noise lattice lives in a texture rather than being hashed per sample — see valueNoiseTexture. Built once
-// here; glquad re-uploads it if the context is lost.
-/* THE SHADER IS REBUILT FOR WHICHEVER LAYERS ARE ON, because a layer costs even with its uniform at zero —
- * plasma alone measured 9.14 ms in the three-layer shader against 4.88 in a plasma-only one, for the same frame.
- * FRAG is the superset and draws correctly at any setting, so it covers the frames while a narrower build
- * compiles. The key is DERIVED from the same flags the uniforms are sent from, in layerKey below: a key that
- * disagrees with the uniforms would silently drop a layer. */
+/* ONE PROGRAM, NOT A VARIANT PER SETTING. The marched lab compiles a shader per layer set because a marched
+ * layer costs whether or not its uniform is zero -- the loop pays for code it does not run, once per step. Here
+ * a shell that is off is one `continue` per pixel, so the same trick would buy a compile for nothing. */
 const R = createQuad(document.getElementById('field'), {
-  frag: FRAG, uniforms: UNIFORMS,
-  textures: { uNoise: valueNoiseTexture(256) },
-  variant: (key) => fragFor(key.indexOf('N') >= 0, key.indexOf('L') >= 0, key.indexOf('P') >= 0),
-  onRestore: () => fit(true),
+  frag: FRAG, uniforms: UNIFORMS, onRestore: () => fit(true),
 });
 if (!R) { reportNoGL(); throw new Error('WebGL unavailable'); }
 
-/* Neither a colour swatch nor a section master is a slider row, so persist() cannot derive either from the panel
- * layout. The masters are READ BACK OUT OF THE SECTION TABLE rather than listed again — a second list is a second
- * description of the same set, and the one that gets forgotten is the one that silently stops being saved. */
-const SWATCHES = ['nebCol', 'nebColB', 'lsCol', 'lsColB', 'plCol', 'plColB', 'coreCol'];
-const MASTERS = SECTIONS.map(([, , master]) => master).filter(Boolean);
+/* persist() derives its key list from the panel layout, so it is handed ALL_SECTIONS rather than the sections
+ * currently on screen -- otherwise dropping SHELLS to 2 would stop saving shells 3 and 4 and lose them on the
+ * next reload. The swatches and the masters have no range to be derived from, so they are named. */
+// Swatches have no range for persist() to derive, so every one is named. Six per shell now, plus the throat.
+const SWATCHES = ['discA', 'discB'].concat(
+  Array.from({ length: MAXL }, (_, i) =>
+    ['CloudA', 'CloudB', 'BoltA', 'BoltB', 'StrkA', 'StrkB'].map((n) => 'L' + i + n)).flat());
+const MASTERS = ALL_SECTIONS.map(([, , m]) => m).filter(Boolean);
 const state = defaultPreset(R.gpu);
-const store = persist({ key: 'wormhole', version: 8, state, sections: SECTIONS,
+/* THE STORAGE KEY IS STILL `tunnel` AND IT MUST STAY THAT WAY, exactly as CRT Lab's is still `crtgl`. A key is
+   an ADDRESS, not a label: renaming it to match the lab would orphan every configuration anybody has saved
+   here, silently, and there is nothing a reader could do about it.
+
+   IT WOULD ALSO INHERIT SOMEBODY ELSE'S. The lab that used to live at this path stored under `wormhole`, and
+   its controls have nothing to do with these -- so a key of `wormhole` would hand this lab a blob describing a
+   volumetric march. persist() checks a version and would reject most of it, but the right answer is not to go
+   near it. Two labs, two addresses, and the address that belongs to this one is the one it was born with.
+
+   VERSION 2 BECAUSE DISC TILT AND DISC LEAN CHANGED UNIT, not because anything was renamed. They were stored
+   in radians and are now stored in degrees, and every value in range for one is in range for the other -- so a
+   version 1 blob would restore SILENTLY and mean something else: a disc at 1.35 radians would come back as a
+   disc at 1.35 degrees, nearly flat, with nothing to say it had moved. persist() rejects a blob whose v does
+   not match, which turns a silent misreading into a one-time reset to the shipped defaults. */
+const store = persist({ key: 'tunnel', version: 2, state, sections: ALL_SECTIONS,
                         extra: MASTERS.concat(SWATCHES) });
 store.restore();
 
-/* The mast names the LAYERS that are lit, and only those. CORE has a master too, but it is the far end of the
- * tunnel rather than something the march mixes — a frame with the core switched off is still whatever layers are
- * running, not a different scene. */
 const modeEl = document.getElementById('modename');
 function syncMode() {
-  const on = EFFECTS.filter((e) => state[e.key]).map((e) => e.label);
-  textOut(modeEl, on.length ? on.join(' + ') : 'ALL LAYERS OFF');
+  const lit = [];
+  for (let i = 0; i < MAXL; i++) {
+    if (!state['L' + i + 'On']) continue;
+    const on = [['Cloud', 'NEBULA'], ['Bolts', 'PLASMA'], ['Streak', 'STREAKS']]
+      .filter(([k]) => state['L' + i + k] > 0.001).map(([, n]) => n);
+    if (on.length) lit.push(LAYER_NAMES[i] + ' ' + on.join('+'));
+  }
+  textOut(modeEl, lit.length ? lit.join(' · ') : 'NOTHING LIT');
 }
 
-// Rebuilt, not updated: panel.js's rows read state once and own their DOM after, so a value written from outside
-// leaves its row stale. Folds survive because they live in state.
+buildActions(document.getElementById('actions'), [
+  ['↺ RESET', () => {
+    const folds = state.secClosed;
+    Object.assign(state, defaultPreset(R.gpu), { secClosed: folds });
+    rebuildPanel(); syncMode(); fit(true); store.queueSave();
+  }],
+]);
+
 const host = document.getElementById('controls');
 function rebuildPanel() {
   host.innerHTML = '';
-  createPanel({ host, state, sections: SECTIONS, fmt: FMT, onChange });
+  createPanel({ host, state, sections: sectionsFor(), fmt: FMT, onChange });
 }
 
 function onChange(key, kind) {
@@ -143,72 +160,101 @@ textOut(document.getElementById('gpu'),
         String(R.gpu.name || '?').replace(/^ANGLE \(|\)$/g, '').slice(0, 44));
 
 const fpsEl = document.getElementById('fps'), glEl = document.getElementById('glstate');
+const hex = (h) => [1, 3, 5].map((i) => parseInt((h || '#ffffff').slice(i, i + 2), 16) / 255);
 
-// Hex to linear-ish rgb. Cached per string, because six swatches parsed every frame is six string scans for
-// values that change when someone opens a colour picker.
-const col3 = (name, hex) => R.f3hex(name, hex);
-
-// The layer set as a string, read from the same flags that drive uLsOn and friends below.
-const layerKey = (s) => (s.nebOn ? 'N' : '') + (s.lsOn ? 'L' : '') + (s.plOn ? 'P' : '');
+/* SORTED BY RADIUS ON THE WAY TO THE GPU, and this is load-bearing rather than tidy. The shader composites
+ * front-to-back and a ray crosses the small radius first, so the shells must arrive inner-first. Drag one shell's
+ * RADIUS past another's and, unsorted, it would composite behind something it is now in front of -- which reads
+ * as the near shell being transparent to the far one for no reason a viewer could name. */
+function packed() {
+  const idx = Array.from({ length: MAXL }, (_, i) => i)
+    .sort((a, b) => state['L' + a + 'Rad'] - state['L' + b + 'Rad']);
+  const geom = [], mix = [], shade = [], extra = [], ringP = [];
+  const cA = [], cB = [], bA = [], bB = [], sA = [], sB = [];
+  for (let s = 0; s < MAXL; s++) {
+    const i = idx[s];
+    const g = (k) => state['L' + i + k];
+    geom.push(g('Rad'), g('Amt'), g('Speed'), g('Warp'));
+    mix.push(g('Cloud'), g('Bolts'), g('Streak'), g('Ring'));
+ /* FILL IS COVERAGE ON THE PANEL AND A THRESHOLD IN THE SHADER, inverted here where the two meet.
+       Raising a threshold passes LESS, so the slider used to count upward as the nebula got rarer -- backwards
+       from what the word says. One flip at the boundary, so the control reads the way it is named and the shader
+       keeps the form its smoothstep wants. */
+    shade.push(1 - g('Fill'), g('Edge'), g('Oct'), g('Spin'));
+    // extra.y is the shell's ON flag: the shader skips a dark shell before it solves anything for it.
+    // z and w were the spare slots; they carry the bolts' own FILL and EDGE, which used to borrow the cloud's.
+    extra.push(g('Lanes'), g('On') ? 1 : 0, 1 - g('BoltFill'), g('BoltEdge'));
+    ringP.push(g('RingN'), g('RingFlow'), 0, 0);
+    cA.push(...hex(g('CloudA')), 0); cB.push(...hex(g('CloudB')), 0);
+    bA.push(...hex(g('BoltA')), 0);  bB.push(...hex(g('BoltB')), 0);
+    sA.push(...hex(g('StrkA')), 0);  sB.push(...hex(g('StrkB')), 0);
+  }
+  return { geom, mix, shade, extra, ringP, cA, cB, bA, bB, sA, sB };
+}
 
 function draw(dt, sec) {
   if (R.lost) { textOut(glEl, 'GL CONTEXT LOST'); return; }
   textOut(glEl, '');
   const s = state;
 
-  // Before the uniforms, not after: a switch lands on a program whose uniforms are all zero, and these sends
-  // are what fill it in.
-  R.use(layerKey(s));
-
   R.f2('uRes', R.w, R.h);
   R.f('uTime', sec);
-  R.f('uSteps', s.steps); R.f('uSpread', s.stepSpread);
-  R.f('uBend', s.bend); R.f('uBendFlow', s.bendFlow); R.f('uBendScale', s.bendScale);
-  // ONE COVERAGE, SENT THREE TIMES. The shader keeps a uniform per layer because wallProfile is evaluated per
-  // layer inside the march; what changed is that one control stands behind all three.
-  R.f('uNebCov', s.coverage); R.f('uLsCov', s.coverage); R.f('uPlCov', s.coverage);
-  // CORE's master rides on uGlow rather than a uniform of its own: the core is added as throat * uGlow, so a glow
-  // of zero already IS off, and the shader needs nothing it does not already have.
-  R.f('uGlow', s.coreOn ? s.glow : 0);
-  R.f('uChroma', s.chroma); R.f('uVignette', s.vignette); R.f('uExposure', s.exposure);
-  R.f('uThroatTint', s.throatTint); R.f('uThroatRays', s.throatRays);
-  R.f('uCoreAuto', s.coreAuto); R.f('uCoreSpin', s.coreSpin);
-  R.f('uCorePulse', s.corePulse); R.f('uCorePulseRate', s.corePulseRate);
-  R.f('uCoreFade', s.coreFade); R.f('uCoreFadeRate', s.coreFadeRate);
-  col3('uCoreCol', s.coreCol);
+  // FOV is stored as an angle and sent as the ray's z. Small is wide, so a slider on the raw value runs backwards
+  // from the number printed beside it; the conversion lives here because a formatter is display only.
+  R.f('uFov', 0.5 / Math.tan(s.fov * Math.PI / 360));
+  R.f('uFar', s.far);
+  R.f('uBend', s.bend); R.f('uBendFlow', s.bendFlow); R.f('uBendDir', s.bendDir);
+  /* THE SECTION'S MASTER RIDES ON MASS, and on MASS alone, because MASS is now the only thing the hole's
+     gravity comes from. Zero it and rs is zero, so lensShift returns zero, the tunnel un-bends and the march
+     never starts -- switching the section off removes the lensing rather than just stopping the disc being
+     drawn. It used to have to reach SHADOW and RING as well, and those controls no longer exist. */
+  const H = s.holeOn ? 1 : 0;
+  R.f('uMass', s.mass * H);
 
-  R.f('uNebOn', s.nebOn ? 1 : 0);
-  R.f('uNebMode', s.nebMode); R.f('uNebHue', s.nebHue);
-  R.f('uNebDensity', s.nebDensity); R.f('uNebFill', s.nebFill); R.f('uNebFluff', s.nebFluff);
-  R.f('uNebStreak', s.nebStreak); R.f('uNebVar', s.nebVar); R.f('uNebScale', s.nebScale); R.f('uNebOct', s.nebOct);
-  R.f('uNebSpeed', s.nebSpeed); R.f('uNebTwist', s.nebTwist); R.f('uNebSpin', s.nebSpin);
-  col3('uNebCol', s.nebCol); col3('uNebColB', s.nebColB);
+  /* ONE SHARED END RADIUS FOR EVERY SHELL, worked out here because only the host sees all six radii at once.
+     It is the HOLE'S shadow when there is one, so the tunnel arrives exactly at it rather than near it, and it
+     is capped below the narrowest lit shell so no shell ever has to FLARE outward to reach it.
 
-  R.f('uLsOn', s.lsOn ? 1 : 0);
-  R.f('uLsMode', s.lsMode); R.f('uLsHue', s.lsHue);
-  R.f('uLsDensity', s.lsDensity); R.f('uLsCount', s.lsCount); R.f('uLsLen', s.lsLen);
-  R.f('uLsThick', s.lsThick); R.f('uLsVar', s.lsVar); R.f('uLsRadial', s.lsRadial);
-  R.f('uLsSpeed', s.lsSpeed); R.f('uLsTwist', s.lsTwist); R.f('uLsSpin', s.lsSpin);
-  col3('uLsCol', s.lsCol); col3('uLsColB', s.lsColB);
+     WITH THE HOLE OFF IT IS A FRACTION OF THE NARROWEST SHELL, not 0.02. A near-zero end shut the tube to a
+     pinhole at DEPTH, and a pinhole whose axis has swung sideways is a needle pointing off screen that almost
+     no ray hits -- which emptied the frame and looked exactly like the bend being broken. */
+  const litRad = Array.from({ length: MAXL }, (_, i) => i)
+    .filter((i) => state['L' + i + 'On']).map((i) => state['L' + i + 'Rad']);
+  const narrowest = litRad.length ? Math.min(...litRad) : 1;
+  /* THE TUBE ENDS AT THE SHADOW, AND IT IS NOT ALLOWED TO END INSIDE IT.
+     3*sqrt(3)/2 is the critical impact parameter -- the shadow's APPARENT radius -- and it is the same number
+     B_CRIT carries in the shader. The tube necks to exactly that, and the lens then magnifies the mouth back
+     outward by up to one Schwarzschild radius, which is what leaves a clean dark gap between wall and shadow.
 
-  R.f('uPlOn', s.plOn ? 1 : 0);
-  R.f('uPlMode', s.plMode); R.f('uPlHue', s.plHue);
-  R.f('uPlDensity', s.plDensity); R.f('uPlCrackle', s.plCrackle);
-  R.f('uPlScale', s.plScale); R.f('uPlStreak', s.plStreak);
-  R.f('uPlFill', s.plFill); R.f('uPlOcclude', s.plOcclude);
-  R.f('uPlFlash', s.plFlash); R.f('uPlFlashRate', s.plFlashRate); R.f('uPlLight', s.plLight);
-  R.f('uPlSpeed', s.plSpeed); R.f('uPlTwist', s.plTwist); R.f('uPlSpin', s.plSpin);
-  col3('uPlCol', s.plCol); col3('uPlColB', s.plColB);
+     IT USED TO BE CAPPED BELOW THE NARROWEST SHELL so that no shell ever had to FLARE outward to reach it, and
+     that cap is what filled the throat with wall: at any MASS whose shadow is wider than the narrowest shell,
+     the mouth closed INSIDE the shadow, so every ray aimed at the hole met tunnel first and the hole was
+     covered by the thing it is supposed to be at the end of. A shell narrower than the hole opening out into
+     it is not a fault -- it is what a tunnel ending at a black hole looks like. */
+  R.f('uEndR', H ? s.mass * 0.2 * 2.59807621 : narrowest * 0.30);
+
+  // The disc's two angles are stored in degrees, because that is the number a person means, and the shader
+  // wants radians. Same split as FOV above: a formatter is display only and cannot do this.
+  const RAD = Math.PI / 180;
+  R.f('uDisc', s.disc * H);
+  R.f('uDiscTilt', s.discTilt * RAD); R.f('uDiscLean', s.discLean * RAD);
+  R.f('uDiscOut', s.discOut); R.f('uDiscH', s.discH);
+  R.f('uDiscSpin', s.discSpin); R.f('uDiscFlow', s.discFlow); R.f('uDoppler', s.doppler);
+  R.f3('uDiscA', ...hex(s.discA)); R.f3('uDiscB', ...hex(s.discB));
+  R.f('uFog', s.fog); R.f('uExposure', s.exposure);
+
+  const p = packed();
+  R.fv4('uGeom', p.geom); R.fv4('uMix', p.mix); R.fv4('uShade', p.shade); R.fv4('uExtra', p.extra); R.fv4('uRingP', p.ringP);
+  R.fv4('uCloudA', p.cA); R.fv4('uCloudB', p.cB);
+  R.fv4('uBoltA', p.bA);  R.fv4('uBoltB', p.bB);
+  R.fv4('uStrkA', p.sA);  R.fv4('uStrkB', p.sB);
 
   R.draw();
 }
 
 const loop = runLoop({ draw, onTick: (fps) => textOut(fpsEl, fps + ' FPS') });
-
 syncMode();
 
-// The handle bench.py and the console reach for. Read pixels in the same task as renderNow — the context is
-// preserveDrawingBuffer:false, so a later readPixels returns a cleared buffer.
 window.WORMHOLE = { state, R, fit, saveState: store.save, rebuildPanel,
                     renderNow: (sec) => loop.renderNow(1 / 60, sec),
                     get time() { return loop.time; } };

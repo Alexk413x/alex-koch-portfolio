@@ -1,6 +1,6 @@
 # The stack machine and the keys wired to it.
 #
-# The arithmetic runs against a fresh machine built in the page, so a failure here is about the maths and not
+# The arithmetic runs against a fresh machine built in the page, so a failure here is about the math and not
 # about layout. The keypad cases go through the real buttons afterwards, because a correct machine nobody can
 # reach is still a broken section.
 import json

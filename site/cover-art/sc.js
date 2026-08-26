@@ -1,6 +1,6 @@
 /* sc.js — Store Companion
  *
- * A rugged handheld, not a phone — chamfered body, overmould, scan window, side triggers. A short question
+ * A rugged handheld, not a phone — chamfered body, overmold, scan window, side triggers. A short question
  * in, a long answer back — and the answer carries the agent mark, because the thing that mattered was that a
  * person did not have to go and read the document themselves.
  */

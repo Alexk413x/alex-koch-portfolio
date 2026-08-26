@@ -1,13 +1,13 @@
-# The back catalogue: that every record in the markup reaches the rack, and that the rack, the company bar and
+# The back catalog: that every record in the markup reaches the rack, and that the rack, the company bar and
 # the display case all agree about which product is showing.
 #
 # THE MARKUP IS THE SOURCE, so every check compares the built rack against the records written out in index.html
-# rather than against a list of its own. A list here would be an eighteenth copy of the catalogue, and it would
+# rather than against a list of its own. A list here would be an eighteenth copy of the catalog, and it would
 # pass while the page showed something else.
 #
-# Nothing reaches into catalogue.js's internals: the contract is the DOM it builds -- aria-selected on the picked
+# Nothing reaches into catalog.js's internals: the contract is the DOM it builds -- aria-selected on the picked
 # box, the flip button's own label, the cover art each box carries -- which is also what a screen reader gets.
-NAME = 'catalogue'
+NAME = 'catalog'
 
 PICKED = "document.querySelector('#reel .box[aria-selected=\"true\"]')"
 AT = ("[...document.querySelectorAll('#reel .box')]"
@@ -39,7 +39,7 @@ def _open_section(page):
     page.settle(0.6)
     # The rack builds from the markup on arrival; every check below assumes it is up.
     page.until('(%s) >= 0 && !!document.getElementById("case")' % AT, timeout=8.0)
-    # And catalogue.js only answers the arrow keys while its own section is the one on screen.
+    # And catalog.js only answers the arrow keys while its own section is the one on screen.
     page.until('!!(window.AKCAT && window.AKCAT.sideways && window.AKCAT.sideways())', timeout=4.0)
 
 
@@ -136,7 +136,7 @@ def run(page, r):
     # ---- reduced motion lands the tween rather than running it ----
     #
     # The rack's glide and the case's swing are hand-written, so the media query cannot reach them and
-    # catalogue.js has to ask. The check is that a step ARRIVES rather than travelling: the same press that needs
+    # catalog.js has to ask. The check is that a step ARRIVES rather than traveling: the same press that needs
     # a wait above must be complete within a frame or two here.
     page.cdp.call('Emulation.setEmulatedMedia',
                   {'features': [{'name': 'prefers-reduced-motion', 'value': 'reduce'}]})
@@ -157,7 +157,7 @@ def run(page, r):
         first = page.js("(%s).getBoundingClientRect().x" % box)
         page.settle(0.08)
         second = page.js("(%s).getBoundingClientRect().x" % box)
-        r.near('and the box is not still travelling a frame later', second, first, 0.5)
+        r.near('and the box is not still traveling a frame later', second, first, 0.5)
 
         # The cover turns itself over on a timer, so the case may be either way up by now: what is being checked
         # is that the press TOGGLES it within a frame, not which face it lands on.
