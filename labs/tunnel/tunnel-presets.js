@@ -37,9 +37,13 @@ function shell(i, v) {
 export function defaultPreset(gpu) {
   const weak = gpu && gpu.integrated;
   return {
-    /* MEASURED: this scene holds 60 at full render scale on an Intel UHD 630 -- 1584x905, 1.43 MP, about 5.8 ms
-     * per megapixel. The marched lab next door needs 45% scale and 0.23 MP for the same 60, at 46 ms/MP. The
-     * integrated path still starts a notch down because a shell is cheap but not free and the count is a slider.
+    /* MEASURED on an Intel UHD 630, uncapped, 1059x770 = 0.82 MP: 15.8 ms a frame, 19.3 ms per megapixel,
+     * inside the 16.67 ms vsync with about 6% to spare. Interleaved against the same scene before the hole was
+     * rebuilt -- a screen-space pinch instead of a traced geodesic -- that build read 14.0 ms and 17.2 ms/MP, so
+     * tracing the real null geodesic costs about 2 ms per megapixel here and MASS went from 1 to 3 in the same
+     * change. The march is bounded to the rays that pass near the hole, which is why a hole that fills a tenth of
+     * the frame does not cost like a hole that fills it. The marched lab next door needs 45% scale and 0.23 MP
+     * for the same 60, at 46 ms/MP.
      */
     renderScale: weak ? 0.85 : 1.0,
 
@@ -59,24 +63,30 @@ export function defaultPreset(gpu) {
     bend: 3.0, bendDir: 0.0, bendFlow: 5.0,
 
 
-    /* THE FAR END IS A BLACK HOLE. It was a glow sprite, which sat on top of the winding at the vanishing point
-     * and hid it -- and that winding is the one thing this technique has that a march cannot produce. A hole
-     * works with it: the lens drags the wrapped wall around the shadow instead of covering it.
+    /* THE FAR END IS A BLACK HOLE, and the shader integrates the real null geodesic through it rather than
+     * pinching the screen toward it. What that means for these numbers is that MASS is the only one describing
+     * the gravity: the shadow's radius, the photon ring, the disc's inner edge and the disc's second image all
+     * follow from it and none of them has a setting.
      *
-     * MASS IS MODEST ON PURPOSE. The deflection goes as 1/b, so past about 1.5 the whole frame smears toward the
-     * centre and the tunnel stops reading as a tunnel.
+     * MASS IS MODEST ON PURPOSE. The march runs only for rays close enough to the hole to need it, and how much
+     * of the frame that is scales with MASS -- so a heavy hole costs more as well as filling more. 1.0 puts the
+     * shadow at the end of the tunnel rather than in front of it.
      *
-     * DISC REACH IS AN OUTRIGHT RADIUS, so it stays put when MASS moves. The inner edge is welded to MASS and
-     * will push past it at a large enough hole; the guard in the shader keeps the annulus valid when it does.
+     * DISC REACH IS AN OUTRIGHT RADIUS, so it stays put when MASS moves. The inner edge is the ISCO and will
+     * push past REACH at a large enough hole; the guard in the shader keeps the annulus valid when it does.
      *
      * DISC TILT SHIPS WELL ROUND TOWARD EDGE-ON, and that is the whole look. 0 is flat -- the plane faces the
      * eye and draws a ring around the hole, which reads as a circle in the middle rather than as a horizon. Near
-     * 90 the plane is seen along its own surface: it crosses the middle as a band, its far side bends over the
-     * top of the shadow and under the bottom, and the light sits on the EDGE where it belongs. */
+     * 90 the plane is seen along its own surface: it crosses the middle as a bar, and the far side of it arcs
+     * over the top of the shadow AND under the bottom, which is the ray meeting the disc a second time after
+     * bending round.
+     *
+     * DISC HEIGHT IS THIN. A real disc is far thinner than this relative to its radius; 0.16 is enough slab to
+     * put a solid bar across the shadow when TILT is near edge-on without the disc reading as a doughnut. */
     holeOn: 1,
-    mass: 1.0, lens: 2.6,
+    mass: 3.0,
     disc: 1.0, discA: '#fff0cf', discB: '#c23a05',
-    discTilt: 1.20, discLean: 0.0, discOut: 1.3, discSpin: 2.4, doppler: 1.0,
+    discTilt: 77, discLean: 0, discOut: 4.0, discH: 0.40, discSpin: 2, doppler: 1.0,
 
     /* THREE ARE LIT AND THREE ARE NOT, and three is the fewest that reads as depth: one to pass in front, one
      * to be passed, and one between them to prove the other two are at different distances. Two reads as a

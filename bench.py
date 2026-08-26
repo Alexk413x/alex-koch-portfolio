@@ -66,6 +66,7 @@ PAGES = {
     'crt':      'labs/crt/CRT%20Lab.html',
     'crtgl':    'labs/crt/CRT%20Lab.html',
     'reactor':  'labs/reactor/Reactor.html',
+    'tunnel':   'labs/tunnel/Tunnel.html',
     'wormhole': 'labs/wormhole/Wormhole.html',
     'shell':    'labs/shell/Shell.html',
 }

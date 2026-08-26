@@ -63,7 +63,14 @@ const SWATCHES = ['discA', 'discB'].concat(
     ['CloudA', 'CloudB', 'BoltA', 'BoltB', 'StrkA', 'StrkB'].map((n) => 'L' + i + n)).flat());
 const MASTERS = ALL_SECTIONS.map(([, , m]) => m).filter(Boolean);
 const state = defaultPreset(R.gpu);
-const store = persist({ key: 'tunnel', version: 1, state, sections: ALL_SECTIONS,
+/* VERSION 2 BECAUSE DISC TILT AND DISC LEAN CHANGED UNIT, not because anything was renamed. They were stored
+   in radians and are now stored in degrees, and every value in range for one is in range for the other -- so a
+   version 1 blob would restore SILENTLY and mean something else: a disc at 1.35 radians would come back as a
+   disc at 1.35 degrees, nearly flat, with nothing to say it had moved. persist() rejects a blob whose v does
+   not match, which turns a silent misreading into a one-time reset to the shipped defaults. That is what the v
+   is for. Nothing else here needs it: MASS kept its stored meaning and only its range and step changed, and a
+   dropped key like the old LENS is simply ignored. */
+const store = persist({ key: 'tunnel', version: 2, state, sections: ALL_SECTIONS,
                         extra: MASTERS.concat(SWATCHES) });
 store.restore();
 
@@ -161,7 +168,7 @@ function draw(dt, sec) {
   // The hole's master rides on MASS, SHADOW, RING and DISC together: switching the section off must remove the
   // lensing too, not just stop drawing the disc, or the frame stays warped around nothing.
   const H = s.holeOn ? 1 : 0;
-  R.f('uMass', s.mass * H); R.f('uLens', s.lens);
+  R.f('uMass', s.mass * H);
 
   /* ONE SHARED END RADIUS FOR EVERY SHELL, worked out here because only the host sees all six radii at once.
      It is the HOLE'S shadow when there is one, so the tunnel arrives exactly at it rather than near it, and it
@@ -173,10 +180,24 @@ function draw(dt, sec) {
   const litRad = Array.from({ length: MAXL }, (_, i) => i)
     .filter((i) => state['L' + i + 'On']).map((i) => state['L' + i + 'Rad']);
   const narrowest = litRad.length ? Math.min(...litRad) : 1;
-  R.f('uEndR', Math.min(H ? s.mass * 0.2 * 2.6 : narrowest * 0.30, narrowest * 0.85));
+  /* THE TUBE ENDS AT THE SHADOW, AND IT IS NOT ALLOWED TO END INSIDE IT.
+     3*sqrt(3)/2 is the critical impact parameter -- the shadow's APPARENT radius -- and it is the same number
+     B_CRIT carries in the shader. The tube necks to exactly that, and the lens then magnifies the mouth back
+     outward by up to one Schwarzschild radius, which is what leaves a clean dark gap between wall and shadow.
 
-  R.f('uDisc', s.disc * H); R.f('uDiscTilt', s.discTilt); R.f('uDiscLean', s.discLean);
-  R.f('uDiscOut', s.discOut);
+     IT USED TO BE CAPPED BELOW THE NARROWEST SHELL so that no shell ever had to FLARE outward to reach it, and
+     that cap is what filled the throat with wall: at any MASS whose shadow is wider than the narrowest shell,
+     the mouth closed INSIDE the shadow, so every ray aimed at the hole met tunnel first and the hole was
+     covered by the thing it is supposed to be at the end of. A shell narrower than the hole opening out into
+     it is not a fault -- it is what a tunnel ending at a black hole looks like. */
+  R.f('uEndR', H ? s.mass * 0.2 * 2.59807621 : narrowest * 0.30);
+
+  // The disc's two angles are stored in degrees, because that is the number a person means, and the shader
+  // wants radians. Same split as FOV above: a formatter is display only and cannot do this.
+  const RAD = Math.PI / 180;
+  R.f('uDisc', s.disc * H);
+  R.f('uDiscTilt', s.discTilt * RAD); R.f('uDiscLean', s.discLean * RAD);
+  R.f('uDiscOut', s.discOut); R.f('uDiscH', s.discH);
   R.f('uDiscSpin', s.discSpin); R.f('uDoppler', s.doppler);
   R.f3('uDiscA', ...hex(s.discA)); R.f3('uDiscB', ...hex(s.discB));
   R.f('uFog', s.fog); R.f('uExposure', s.exposure);
