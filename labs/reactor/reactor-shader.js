@@ -23,7 +23,7 @@ export const UNIFORMS = [
   'uVentSwell', 'uVisc', 'uZoom'
 ];
 
-export const FRAG = `#version 300 es
+const SRC = `#version 300 es
 precision highp float;
 out vec4 fragColor;
 uniform vec2 uRes; uniform float uTime,uSize,uVisc,uTurb,uRate,uGlow,uZoom,uPulse,uVent,uVentBurst,uRingR,uRingLight,uRingGlow,uRingOn,uOct,uCamAngle,uCamEl,uAmp,uPulseBright,uVentSize,uVentBright,uShape,uPulseSize,uDropN,uPhCam,uPhRate;
@@ -110,11 +110,13 @@ float coreSDF(vec3 p){
   }
   return d;
 }
+//@ring-only
 float boxTorus(vec3 p,float R,vec2 he,float rad){
   vec2 q=vec2(length(p.xz)-R, p.y);
   vec2 d=abs(q)-he;
   return length(max(d,0.0))+min(max(d.x,d.y),0.0)-rad;
 }
+//@end
 /* THE THREE AXES, AND THE SPIN IS INNERMOST. Composed the other way round it is not a spin at all: a rotation
  * about world Y swings a TILTED ring's axis around a cone, so SPIN would silently do a second job — precession —
  * whenever anything else had tipped the ring, and the two controls would stop being independent. Innermost, it
@@ -131,6 +133,7 @@ vec3 ringSpace(vec3 p){ return uRingM * p; }
 
 // Inverse of ringSpace. A composition of rotations is orthonormal, so the transpose IS the inverse.
 vec3 ringToWorld(vec3 q){ return transpose(uRingM) * q; }
+//@ring-only float ringSDF(vec3 p){ return 1e5; }
 float ringSDF(vec3 p){
   if(uRingOn<0.5) return 1e5;
   vec3 pr=ringSpace(p);
@@ -164,17 +167,22 @@ float ringSDF(vec3 p){
   }
   return best;
 }
+//@end
+//@ring-only float shieldSDF(vec3 p){ return 1e5; }
 float shieldSDF(vec3 p){                                // FULL continuous inner shield ring (the land/topo band) — never segmented
   if(uRingOn<0.5 || uRingGlow<0.01) return 1e5;         // fully gone (no occluding outline) when the shield is off/broken
   vec3 pr=ringSpace(p);
   return boxTorus(pr, uRingR+uShieldExpand, vec2(0.007,0.044), 0.005);   // nested just inside the alloy fragments; balloons out on a break
 }
+//@end
 vec3 nrmC(vec3 p){ vec2 k=vec2(1.0,-1.0)*0.0013;   // core-only normal (skips ring SDF)
   return normalize(k.xyy*coreSDF(p+k.xyy) + k.yyx*coreSDF(p+k.yyx) + k.yxy*coreSDF(p+k.yxy) + k.xxx*coreSDF(p+k.xxx)); }
+//@ring-only
 vec3 nrmR(vec3 p){ vec2 k=vec2(1.0,-1.0)*0.0013;   // ring-only normal (skips core SDF + metaballs)
   return normalize(k.xyy*ringSDF(p+k.xyy) + k.yyx*ringSDF(p+k.yyx) + k.yxy*ringSDF(p+k.yxy) + k.xxx*ringSDF(p+k.xxx)); }
 vec3 nrmSh(vec3 p){ vec2 k=vec2(1.0,-1.0)*0.0013;   // shield-ring normal
   return normalize(k.xyy*shieldSDF(p+k.xyy) + k.yyx*shieldSDF(p+k.yyx) + k.yxy*shieldSDF(p+k.yxy) + k.xxx*shieldSDF(p+k.xxx)); }
+//@end
 
 // The ring's machined dimensions, in meters: the band is 112mm tall and 18mm thick, so relief stays under 2mm.
 const float RIB_W=0.014, RAIL_Y=0.0425, CHAM=0.014, BAY_D=0.0017;
@@ -219,6 +227,7 @@ vec3 bumpN(vec3 p, vec3 n, float H){
   return normalize(abs(det)*n-g);
 }
 
+//@ring-only
 struct Surf { float h; float bay; float rim; float trace; float lens; float dash; float halo; };
 /* The ring's machined relief: height in meters, and every mask its albedo, its shading and its lamps read off.
  * One function because the bump, the cavity darkening and the paint must describe the SAME surface.
@@ -254,7 +263,9 @@ Surf ringRelief(float bx, float y, float bayL, float aw){
   s.h-=TRACE_D*max(s.trace,s.dash);
   return s;
 }
+//@end
 
+//@ring-only
 vec3 shieldMaterial(vec3 hp, vec3 rd, vec3 cc){        // the full inner shield ring: land/water topo + shield film
   vec3 n=nrmSh(hp);
   vec3 pr=ringSpace(hp);
@@ -292,6 +303,7 @@ vec3 shieldMaterial(vec3 hp, vec3 rd, vec3 cc){        // the full inner shield 
   M += cc*cw*0.02*uGlow*(uRingGlow*6.0);
   return M;
 }
+//@end
 
 void main(){
   vec2 uv=(gl_FragCoord.xy-0.5*uRes)/uRes.y;   // the stage's own center -- the panel is a flex sibling now
@@ -334,6 +346,7 @@ void main(){
     vec3 hot=mix(cc, vec3(1.0), clamp(uVent*uVentBright*0.55,0.0,1.0));   // color heats toward white as the vent brightens
     col += hot*uVent*uVentBright*(1.4 + inner*1.2);   // VENT floods the WHOLE surface so it never reads as a dark object
     col += vec3(1.0)*uVent*uVentBright*uVent*(1.0 - inner)*1.1;   // dark spots heat to white-hot with brightness
+//@ring-only   }
   } else if(id==2){
     vec3 n=nrmR(hp);
     vec3 pr=ringSpace(hp);
@@ -459,6 +472,7 @@ void main(){
     float sAlpha=clamp(uRingGlow*1.05, 0.0, 1.0);                    // SHIELD % = opacity: 0 removes it entirely, solid when high
     col = mix(bg, shieldMaterial(hp, rd, cc), sAlpha);   // full continuous inner shield ring, transparency driven by SHIELD
   }
+//@end
 
   float vig=smoothstep(1.5,0.2,length(uv));
   col*=vig;
@@ -492,3 +506,47 @@ void main(){
   col += (hash(vec3(gl_FragCoord.xy, fract(uTime)))-0.5)/160.0;   // dither: smooths the bloom gradient banding
   fragColor=vec4(col,1.0);
 }`;
+
+/* ONE SOURCE, AND A REGION OF IT THE RING OWNS.
+ *
+ * The ring, its shield and their machined relief are the largest thing in this shader and the hero on the home
+ * page turns all of it off -- yet it still had to LINK it, because a fragment program is compiled whole whether
+ * or not a branch runs. Measured on an Intel UHD 630 with a cold shader cache, the home page waited 39.3s for
+ * the full program before it could show the core at all, and 24.2s warm. Without the ring: 7.5s.
+ *
+ * The parts only the ring reaches are bracketed by `//@ring-only` and `//@end`. They are GLSL comments, so the
+ * full build is the file exactly as written and there is no second copy of anything to drift. Where removing a
+ * region would leave a dangling call, the replacement rides on the marker itself -- `//@ring-only float
+ * ringSDF(vec3 p){ return 1e5; }` -- so the stub sits against the thing it stands in for rather than in a
+ * separate table that could disagree with it.
+ *
+ * 1e5 IS WHAT THOSE TWO ALREADY RETURN when the ring is off, so the narrow build is not an approximation of the
+ * wide one: it is the same picture with the code that could not have run removed.
+ */
+const RING_ONLY = '//@ring-only';
+
+/* 'full' is every part; 'core' is the reactor without its ring assembly. Anything else is treated as 'full',
+   because a shader that draws too much is slow and a shader that draws too little is wrong.
+   Scanned line by line rather than matched with one regular expression: the pattern needs both slashes of a
+   comment and both kinds of line ending, and the escaping to write that as a literal is where this went wrong
+   once already. */
+export function fragFor(key) {
+  if (key !== 'core') return SRC;
+  const out = [];
+  let skip = false;
+  for (const line of SRC.split('\n')) {
+    const t = line.trim();
+    if (t.startsWith(RING_ONLY)) {
+      skip = true;
+      const stub = t.slice(RING_ONLY.length);
+      if (stub.trim()) out.push(stub);
+    } else if (t === '//@end') {
+      skip = false;
+    } else if (!skip) {
+      out.push(line);
+    }
+  }
+  return out.join('\n');
+}
+
+export const FRAG = fragFor('full');
