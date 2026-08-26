@@ -25,13 +25,20 @@
     --ink:#0c0c0e;
     --accent:#dd6a20;
     --text-strong:#ffffff;
+    /* The halo is scenery, far below the accent on purpose: it sits behind a lockup that has to stay the
+       brightest thing in the frame. The same value site.css gives #hero-halo. */
+    --scenery:#6e3413;
 
     /* THE LAYOUT, AS NUMBERS. Every position on the card comes from these; nothing below hard-codes a pixel.
        They were measured off the card this replaced rather than guessed, so the rebuild lands on the original
        to within a pixel on every block. */
-    --pad-x:84px;          /* left margin, shared by the mark, the name, the role and the rule */
+    --frame-h:630px;       /* the card's height; every vertical centre is worked out from it */
+    --pad-x:84px;          /* the name's left margin */
 
-    --mark-top:80px;       /* the BOX top; favicon's 64-unit ink starts 23.8px below it */
+    /* CENTRED ON THE FRAME BOTH WAYS, so the mark sits on the same axis as the name and the role and the three
+       read as one row. Derived from the box, not measured: the ink is centred inside its own viewBox, so
+       centring the box centres the ink. */
+    --mark-top:calc((var(--frame-h) - var(--mark-size)) / 2);
     --mark-size:128px;     /* that viewBox at 2x, which lands the ink at x 112.7 y 103.8 */
 
     /* ARCHIVO IS A VARIABLE FONT AND THE CARD USES ITS WIDTH AXIS, which is the only way the two headings come
@@ -39,36 +46,28 @@
        closes the letters up until the words touch — the original has clear gaps between letters AND a wide word
        space at the same total width, which only a narrower cut can give. So: condense to 89%, track lightly, and
        put the word space back with word-spacing, since negative tracking eats it too. */
+    --name-line:96px;      /* ALEX over KOCH: the leading between the two */
+    --role-line:72px;      /* AGENTIC / MOBILE / ENGINEER */
+
     --name-size:96px;
     --name-width:89%;
     --name-track:-2.75px;
     --name-word:15px;
-    --name-top:272px;
+    /* THE WHOLE LOCKUP IS CENTRED ON THE FRAME, and every block works its own top out from this rather than
+       carrying a measured number. A number would be right until the first time a size or a leading moved. */
+    --name-top:calc((var(--frame-h) - 2 * var(--name-line)) / 2);
 
-    --role-size:35px;
+    --role-size:58px;
     --role-width:89%;
     --role-track:.2px;
     --role-word:4.5px;
-    --role-top:385px;
 
-    --meta-size:22.2px;
-    --meta-top:447px;
-
-    --rule-top:555px;
-    --rule-w:96px;
-    --rule-h:3px;
-
-    /* THE ARCS ARE TWO CONCENTRIC RINGS whose center sits off the right edge, so the frame shows only the
-       sweep that falls inside it. Solved from three measured points on each rather than fitted: a least-squares
-       circle through a short arc is ill-conditioned and gave a different answer every time it ran, including a
-       pair that were not concentric. Three points and an exact solve reproduce every landmark the original has
-       -- both crossings of the top edge, both leftmost points, and the exit through the right edge at y 450.
-
-       ONE CENTER, TWO DIAMETERS, so moving the center moves both and the pair cannot drift apart. */
-    --arc-cx:1282px;
-    --arc-cy:80px;
-    --arc1-d:762px;
-    --arc2-d:665px;
+    /* THE ROLE IS CENTRED ON THE NAME, and that is worked out rather than measured. The name's box is two lines
+       so its middle is one line down from its top; the role's is three, so it starts one and a half lines above
+       that middle. Written as the arithmetic, the pair stays centred when either block's size or leading moves
+       -- a number here would be right until the first time one of them did. */
+    --role-top:calc(var(--name-top) + var(--name-line) - 1.5 * var(--role-line));
+    --role-right:84px;     /* the role column's right margin, mirroring --pad-x on the left */
   }
 
   *{margin:0;padding:0;box-sizing:border-box}
@@ -80,21 +79,17 @@
     position:relative;
   }
 
-  /* THE ARCS, and they are the reason this is HTML rather than an SVG. They are two rings whose center sits off
-     the right edge, so the card shows only the arc that falls inside the frame. Sized from one radius so the
-     pair stays concentric when either is moved. */
-  .arcs{position:absolute;inset:0;overflow:hidden}
-  .arcs i{position:absolute;border:1px solid var(--accent);border-radius:50%;display:block}
-  .arcs i:nth-child(1){
-    width:var(--arc1-d);height:var(--arc1-d);
-    left:calc(var(--arc-cx) - var(--arc1-d) / 2);
-    top:calc(var(--arc-cy) - var(--arc1-d) / 2);
-  }
-  .arcs i:nth-child(2){
-    width:var(--arc2-d);height:var(--arc2-d);
-    left:calc(var(--arc-cx) - var(--arc2-d) / 2);
-    top:calc(var(--arc-cy) - var(--arc2-d) / 2);
-  }
+  /* THE HALO IS THE HOME PAGE'S, PATH FOR PATH. It used to be two CSS circles fitted to a picture of it, which
+     is the fault the mark below already avoids by drawing favicon.svg's own paths: an approximation of something
+     the repository states exactly, free to drift the moment the original moves. These two cubics are copied from
+     index.html's #hero-halo and nothing here reshapes them.
+
+     preserveAspectRatio="none" maps the 1000x1000 viewBox onto the 1200x630 frame, which is what puts the feet
+     in the bottom corners -- the same stretch the hero applies to whatever shape its stage is. non-scaling-stroke
+     stops that turning the line into a wedge, since the stroke would otherwise be scaled by the same non-uniform
+     factor as the geometry. */
+  .halo{position:absolute;inset:0;width:100%;height:100%}
+  .halo path{fill:none;stroke:var(--scenery);stroke-width:1.5;vector-effect:non-scaling-stroke}
 
   .plate{position:absolute;left:var(--pad-x);right:0;top:0;height:100%}
 
@@ -102,60 +97,82 @@
      mark, and the last time they were separate the card lost a stroke and rendered 413-slash for months while the
      alt text underneath it said 413X. Each glyph is on a 100x100 box with its ink spanning x 10-90 and y 4-96, so
      all four share one advance and one cap height. */
-  .mark{position:absolute;left:0;top:var(--mark-top);width:var(--mark-size);height:var(--mark-size)}
+  /* CENTRED ON THE FRAME, not on the plate, and that is why it sits outside it: the plate's left edge is the
+     name's, so centring in it would put the mark 42px right of the card's middle. It lands in the channel the
+     two arcs leave between them as they converge toward the top. */
+  .mark{
+    position:absolute;top:var(--mark-top);
+    left:50%;margin-left:calc(var(--mark-size) / -2);
+    width:var(--mark-size);height:var(--mark-size);
+  }
   .mark svg{display:block;width:100%;height:100%}
 
+  /* ALEX over KOCH. --name-word went with the single line it existed for: stacked, there is no word space left
+     to reopen after the tracking has closed it. */
   .name{
     position:absolute;top:var(--name-top);
     font-size:var(--name-size);font-weight:900;font-stretch:var(--name-width);
-    letter-spacing:var(--name-track);word-spacing:var(--name-word);line-height:1;white-space:nowrap;
+    letter-spacing:var(--name-track);line-height:var(--name-line);white-space:nowrap;
+    /* RANGED RIGHT. The box is shrink-to-fit, so its width is KOCH's -- the wider of the two -- and ALEX lands
+       on that same right edge instead of both starting from the margin. */
+    text-align:right;
     color:var(--text-strong);
   }
+  /* THE SAME TWO-TONE THE HERO'S LOCKUP USES: white with the accent on alternate lines. site.css does it with
+     `.lockup span { display: block }` and `.lockup .l2 { color: var(--accent) }`, and this is that pattern, not
+     a second idea about it. On the name it is ALEX over KOCH exactly as the home page sets them; on the role it
+     puts the two words that carry the meaning -- AGENTIC and ENGINEER -- in the accent and leaves MOBILE between
+     them white, so the column reads as a set rather than a block of orange. */
+  .name span, .role span{display:block}
+  .alt{color:var(--accent)}
+
+  /* THE ROLE IS ITS OWN COLUMN, hung off the FRAME's right margin rather than the plate's left edge. Its lines
+     range LEFT inside it: the box is shrink-to-fit, so its width is ENGINEER's -- the longest -- and the two
+     shorter words start against that same edge instead of stepping in from the right. */
   .role{
-    position:absolute;top:var(--role-top);
+    position:absolute;top:var(--role-top);right:var(--role-right);text-align:left;
     font-size:var(--role-size);font-weight:800;font-stretch:var(--role-width);
-    letter-spacing:var(--role-track);word-spacing:var(--role-word);line-height:1;white-space:nowrap;
-    color:var(--accent);
-  }
-  .meta{
-    position:absolute;top:var(--meta-top);
-    font-family:'JetBrains Mono',ui-monospace,monospace;
-    font-size:var(--meta-size);font-weight:400;letter-spacing:0;line-height:1.3;
+    letter-spacing:var(--role-track);line-height:var(--role-line);white-space:nowrap;
+    /* White, the same as the name: the two are one lockup read at thumbnail size, and the accent left the role
+       reading as a caption under a title rather than the other half of a pair. */
     color:var(--text-strong);
-    white-space:nowrap;
   }
-  .rule{position:absolute;top:var(--rule-top);width:var(--rule-w);height:var(--rule-h);background:var(--accent)}
 </style>
 </head>
 <body>
 
-<div class="arcs" aria-hidden="true"><i></i><i></i></div>
+<svg class="halo" viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-hidden="true">
+  <path d="M 0 1000 C 450 930 450 660 450 0"/>
+  <path d="M 1000 1000 C 550 930 550 660 550 0"/>
+</svg>
+
+<div class="mark">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="var(--accent)">
+    <g transform="translate(12.3 11.07) scale(.205)">
+      <path d="M64 4h26v92H64zM10 62h80v26H10zM40 4h26L36 62H10z"/>
+    </g>
+    <g transform="translate(31.2 11.07) scale(.205)">
+      <path d="M10 70h80v26H10zM37 4h26v70H37zM37 4v26L17 42V20z"/>
+    </g>
+    <g transform="translate(12.3 32.43) scale(.205)">
+      <path d="M64 4h26v92H64zM10 4h80v26H10zM32 37h58v26H32zM10 70h80v26H10z"/>
+    </g>
+    <g transform="translate(31.2 32.43) scale(.205)">
+      <path d="M10 4h26l54 92H64zM64 4h26L36 96H10z"/>
+    </g>
+  </svg>
+</div>
 
 <div class="plate">
-  <div class="mark">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="var(--accent)">
-      <g transform="translate(12.3 11.07) scale(.205)">
-        <path d="M64 4h26v92H64zM10 62h80v26H10zM40 4h26L36 62H10z"/>
-      </g>
-      <g transform="translate(31.2 11.07) scale(.205)">
-        <path d="M10 70h80v26H10zM37 4h26v70H37zM37 4v26L17 42V20z"/>
-      </g>
-      <g transform="translate(12.3 32.43) scale(.205)">
-        <path d="M64 4h26v92H64zM10 4h80v26H10zM32 37h58v26H32zM10 70h80v26H10z"/>
-      </g>
-      <g transform="translate(31.2 32.43) scale(.205)">
-        <path d="M10 4h26l54 92H64zM64 4h26L36 96H10z"/>
-      </g>
-    </svg>
-  </div>
 
-  <!-- THE COPY. These four lines are the whole content of the card. The career facts here must agree with the
-       live site, which is the source for them -- see the note in index.html. -->
-  <div class="name">ALEX KOCH</div>
-  <div class="role">AGENTIC MOBILE ENGINEER</div>
-  <div class="meta">14 years shipping mobile at scale &middot; Yahoo! &middot; Target &middot; Kohl's &middot; Vacasa</div>
-  <div class="rule"></div>
+  <!-- THE COPY, and it is now a name and a role and nothing else. The experience line and the rule under it
+       are gone: a link preview is read at thumbnail size in a feed, where a monospaced list of four employers
+       is a grey smear rather than a fact anybody reads. -->
+  <div class="name"><span>ALEX</span><span class="alt">KOCH</span></div>
 </div>
+
+<!-- Outside the plate, because it ranges right against the frame rather than left against the name. -->
+<div class="role"><span class="alt">AGENTIC</span><span>MOBILE</span><span class="alt">ENGINEER</span></div>
 
 </body>
 </html>
