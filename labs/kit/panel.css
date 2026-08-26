@@ -101,6 +101,11 @@
 .row.wide.choice .tgl { flex: 1 1 0; margin-left: 0; height: 38px; font-size: 17px; line-height: 1 }
 .row.wide.choice .tgl:first-of-type { margin-left: 0 }
 
+/* A PAIR OF SWATCHES occupies exactly what one does, so a row carrying two colors is the same height as a row
+   carrying one and the panel's rhythm does not break. */
+.row .cpair { flex: 0 0 86px; margin-left: auto; display: flex; gap: 3px }
+.row .cpair .csw { flex: 1 1 0; margin-left: 0 }
+
 .row .csw { flex: 0 0 86px; height: 18px; margin-left: auto; padding: 0; border: none; border-radius: 3px;
             background: none; cursor: pointer }
 .row .csw::-webkit-color-swatch-wrapper { padding: 0 }
