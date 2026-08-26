@@ -143,6 +143,13 @@ export const HEAD = [
    * numbers; the third rotation a solid would have does nothing to a plane. What that one would have done is
    * turn the pattern, and DISC SPIN already does.
    *
+   * SPIN AND FLOW ARE THE DISC'S TWO MOTIONS AND THEY ARE INDEPENDENT. SPIN is how fast it turns and which way;
+   * FLOW is how fast its material travels along the radius and which way. FLOW is a RATE OF CHANGE OF RADIUS and
+   * reads with that sign: NEGATIVE falls toward the hole, positive streams away from it, so an accreting disc is
+   * a negative one and that is what ships. FLOW used to be taken from SPIN, rate and sign together, so turning
+   * the disc the other way made its material flow outward and there was no way to ask for an accreting disc that
+   * spins anticlockwise. Which way a disc orbits says nothing about which way its material goes.
+   *
    * DOPPLER SCALES THE ORBITAL HALF OF ONE REDSHIFT FACTOR. The gravitational half is not a control, because
    * it is a fact about where the light was emitted rather than a taste. Both drive brightness and colour from
    * the same number.
@@ -162,6 +169,7 @@ export const HEAD = [
                   ['discOut', 'DISC REACH', 0.2, 30, 0.1],
                   ['discH', 'DISC HEIGHT', 0.05, 2.0, 0.05],
                   ['discSpin', 'DISC SPIN', -20, 20, 1],
+                  ['discFlow', 'DISC FLOW', -8, 8, 1],
                   ['doppler', 'DOPPLER', -2, 2, 0.05]], 'holeOn'],
 ];
 
@@ -200,6 +208,10 @@ export const FMT = {
      how fast the INNER EDGE turns, because a Keplerian disc has no single rate: everything further out goes as
      r^-3/2 of it. 0.5 rad per unit per second is the shader's own factor, in degrees. */
   discSpin:    as.scaled(28.6, 0, '°/s'),
+  /* How far a feature travels along the disc's RADIUS each second, in the same world units DISC REACH is in.
+     It is a rate of change of radius, so it carries that sign: NEGATIVE falls toward the hole, positive streams
+     away from it. An accreting disc is therefore a negative one. */
+  discFlow:    as.scaled(0.075, 2, ' r/s'),
   /* NOT as.off(). It names the BOTTOM of a range, and DOPPLER's bottom is now -2 rather than 0 -- so every
      negative setting would have read OFF while the beaming ran backwards in front of you. A signed control
      cannot use a formatter that means "this end is nothing". */

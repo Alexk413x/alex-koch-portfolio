@@ -34,7 +34,8 @@ export const UNIFORMS = [
   'uRes', 'uTime', 'uFov', 'uFar',
   'uBend', 'uBendFlow', 'uBendDir',
   'uMass', 'uEndR',
-  'uDisc', 'uDiscTilt', 'uDiscLean', 'uDiscOut', 'uDiscH', 'uDiscSpin', 'uDiscA', 'uDiscB', 'uDoppler',
+  'uDisc', 'uDiscTilt', 'uDiscLean', 'uDiscOut', 'uDiscH', 'uDiscSpin', 'uDiscFlow',
+  'uDiscA', 'uDiscB', 'uDoppler',
   'uFog', 'uExposure',
   'uGeom', 'uMix', 'uShade', 'uExtra', 'uRingP',
   'uCloudA', 'uCloudB', 'uBoltA', 'uBoltB', 'uStrkA', 'uStrkB',
@@ -48,7 +49,7 @@ uniform vec2 uRes;
 uniform float uTime, uFov, uFar;
 uniform float uBend, uBendFlow, uBendDir;
 uniform float uMass, uEndR;
-uniform float uDisc, uDiscTilt, uDiscLean, uDiscOut, uDiscH, uDiscSpin, uDoppler;
+uniform float uDisc, uDiscTilt, uDiscLean, uDiscOut, uDiscH, uDiscSpin, uDiscFlow, uDoppler;
 uniform float uFog, uExposure;
 uniform vec3  uDiscA, uDiscB;
 
@@ -788,12 +789,43 @@ void main(){
         float emis = (ix3 - ix3 * sqrt(ix)) * 17.7 * smoothstep(1.0, 0.88, band);
 
         /* KEPLERIAN, NOT RIGID, and it is the difference between a disc and a painted ring. Angular rate goes
-           as r^-3/2, so the inner edge laps the outer one many times over. It also drifts inward, because
-           material in a disc is being consumed rather than parked. */
+           as r^-3/2, so the inner edge laps the outer one many times over. */
         float kep = pow(max(ix, 0.03), 1.5);
-        float pa  = atan(dot(hp, u2), dot(hp, u1)) + turn * kep * 0.5;
+
+        /* THE SHEAR SATURATES, AND WITHOUT THAT THE DISC ALWAYS APPEARS TO SPRAY OUTWARD.
+         *
+         * Keplerian rotation twists the pattern by turn*kep*0.5, and kep falls outward, so the spiral winds
+         * tighter for as long as the page is open. A winding spiral's constant-phase curves TRAVEL: differentiate
+         * pa - w(r)t = const and dr/dt = -w / (w' t). w and w' always disagree in sign here -- the disc turns one
+         * way and its rate falls outward -- so that is POSITIVE for both signs of SPIN. The disc read as flowing
+         * outward however it was spun, it never read as spiralling in, and it buried DISC FLOW entirely.
+         *
+         * The bodily rotation is fine and stays: rigid rotation has no radial artifact at all. It is only the
+         * DIFFERENTIAL part, the extra twist a slower outer radius earns, that must not accumulate without
+         * bound. Saturated, the spiral still forms and still leans the way the disc turns -- it just stops
+         * winding once it has wound, and after that the pattern orbits rather than crawling outward.
+         *
+         * 8 radians is a little over one full turn of relative twist between the inner edge and the rim, which
+         * is about as far as a spiral reads as a spiral before it becomes a smear. */
+        float twist = turn * 0.5;
+        float shear = 8.0 * tanh((kep - 1.0) * twist / 8.0);
+        float pa  = atan(dot(hp, u2), dot(hp, u1)) + twist + shear;
+
+        /* THE RADIAL DRIFT IS ITS OWN CONTROL, AND TAKING IT FROM SPIN WAS A BUG.
+         *
+         * A disc has two motions and they are independent: it turns, and its material travels in or out. This
+         * term read turn * 0.12, so it borrowed BOTH the rate and the SIGN from DISC SPIN -- and the sign is
+         * the part that was wrong. Which way a disc orbits says nothing about which way its material travels;
+         * an accretion disc falls inward whichever way round it is going. With SPIN negative the pattern
+         * streamed OUTWARD, which is not a thing an accreting disc does, and there was no way to ask for
+         * inward while turning that way.
+         *
+         * NEGATIVE PULLS IN AND POSITIVE PUSHES OUT, which is the sign a RATE OF CHANGE OF RADIUS has: the
+         * radius a feature sits at is (C + uTime*FLOW*0.12) / 1.6 for a fixed noise coordinate C, so the number
+         * on the panel rises exactly when the radius does. Accretion is therefore the negative half, which is
+         * why the shipped disc runs at -2. */
         emis *= 0.55 + 0.9 * fbm(vec3(cos(pa), sin(pa), 0.0) * 3.0
-                               + vec3(0.0, 0.0, rr * 1.6 + turn * 0.12), 3);
+                               + vec3(0.0, 0.0, rr * 1.6 - uTime * uDiscFlow * 0.12), 3);
 
         /* ONE g-FACTOR, TWO EFFECTS, AND THAT IS WHY THERE IS NO REDSHIFT SLIDER.
          *
