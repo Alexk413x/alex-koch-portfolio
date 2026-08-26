@@ -520,7 +520,7 @@ void main(){
    * because the whole disc was being multiplied by the shadow mask. The far half is behind and IS occluded.
    *
    * Which half a sample belongs to is just its hit depth against the hole's, so it costs one compare. */
-  vec3 discFront = vec3(0.0), discBack = vec3(0.0);
+  vec3 discFront = vec3(0.0), discBack = vec3(0.0), ringAdd = vec3(0.0);
   if (uDisc > 0.001){
     vec3 O = vec3(bendAt(uFar) - b0, uFar);
     /* A PLANE HAS TWO ANGLES AND ONLY TWO. Its orientation is its normal, and a direction on a sphere takes two
@@ -534,41 +534,63 @@ void main(){
     float cl = cos(uDiscLean), sl = sin(uDiscLean);
     vec3 nrm = normalize(vec3(ct * sl, ct * cl, st));
 
-    /* TWO IMAGES OF THE SAME DISC, and the second one is the whole reason this reads as a black hole.
+    /* THE RING IS THE DISC'S LIGHT WRAPPED ROUND, SO IT IS BEAMED LIKE THE DISC IS.
      *
-     * The PRIMARY is the disc seen directly: the near half in front of the shadow, the far half behind it. The
-     * SECONDARY is light from the far side that passed BEHIND the hole, bent right round, and came back to the
-     * eye -- it arrives just outside the shadow as an arc over the top and under the bottom, which is why the
-     * disc in every picture of one appears to wrap over the hole rather than pass behind it.
+     * A uniform circle is the one thing a real photon ring is not: it inherits whatever the disc is doing behind
+     * it, so the approaching limb is several times the receding one, exactly as the disc's own is. Drawn evenly
+     * it read as a drafting stroke laid over the picture rather than as light.
      *
-     * A CIRCLE INVERSION STANDS IN FOR THE WRAP. The real thing is a null geodesic and there is no closed form;
-     * but inversion about the photon ring, b -> ringR^2 / b, maps the far field to just outside the shadow, which
-     * is exactly where the secondary image belongs and how it compresses. Two plane solves, no marching.
+     * WHICH PART OF THE DISC a given point on the ring shows is the disc at that same azimuth, seen after going
+     * round -- so the in-plane direction is the screen direction projected into the disc's plane, and the
+     * orbital velocity there gives the same delta^3 the disc uses. One model of beaming, used twice.
+     *
+     * IT IS ALSO NOT SMOOTH. A little azimuthal grain, from the same noise the disc's own texture uses, keeps it
+     * from reading as a drawn circle -- real ones are lumpy because the gas feeding them is. */
+    vec2 rdir = b > 1e-5 ? dv / b : vec2(1.0, 0.0);
+    vec3 rscr = vec3(rdir, 0.0);
+    /* AT THE TOP AND BOTTOM OF THE RING the screen direction lies along the disc's normal and its projection
+     * into the plane collapses to nothing. Dropping those samples cut a dark line straight through the ring.
+     * They are not undefined, though: light arriving there went over the pole, so it came from the disc's FAR
+     * side, which is the view direction projected into the plane. Adding a fixed share of it removes the
+     * degeneracy smoothly and is what those points actually show. */
+    vec3 rview0 = normalize(vec3(uv, uFov));
+    vec3 rIn = (rscr - nrm * dot(rscr, nrm)) + (rview0 - nrm * dot(rview0, nrm)) * 0.25;
+    {
+      rIn = rIn / max(length(rIn), 1e-4);
+      vec3 rvel = normalize(cross(nrm, rIn)) * clamp(uDiscSpin / 0.4, -1.0, 1.0);
+      float rbeta = clamp(sqrt(rs / max(2.0 * discIn, 1e-4)), 0.0, 0.85);
+      float rgam = 1.0 / sqrt(max(1.0 - rbeta * rbeta, 1e-4));
+      vec3 rview = normalize(vec3(uv, uFov));
+      float rdelta = 1.0 / max(rgam * (1.0 - rbeta * dot(rvel, -rview)), 1e-3);
+      float rturn = uTime * uDiscSpin;
+      float rang = atan(rdir.y, rdir.x);
+      float rgrain = 0.55 + 0.9 * fbm(vec3(cos(rang), sin(rang), 0.0) * 3.0
+                                    + vec3(0.0, 0.0, rturn * 0.4), 3);
+
+      /* IT HUGS THE SHADOW because that edge IS where light piles up: a ray a hair outside wraps right round,
+         one a few radii out barely bends at all. */
+      float ringR = shadowR * 1.05;
+      float ringW = max(shadowR * 0.06, 0.0045);
+      float rt = (b - ringR) / ringW;
+      ringAdd = mix(uDiscA, uDiscB, 0.12) * exp(-rt * rt)
+              * pow(rdelta, 3.0 * uDoppler) * rgrain * uDisc * 2.0;
+    }
+
+    /* ONE IMAGE OF THE DISC, NOT TWO.
+     *
+     * There was a second, lensed pass: a circle inversion about the photon ring standing in for light that went
+     * behind the hole and bent back. It cost a whole second solve per pixel and it drew a SECOND arc offset from
+     * the ring -- two bright curves around one hole, which is the double-circle look and is not what wrapping
+     * light does.
+     *
+     * It was there to close the wrap over the top of the shadow, and it could never do that: an inversion along
+     * the radial direction only finds the disc where the inverted sample lands on it, so edge-on it produced
+     * arcs near the horizontal and nothing above or below. The ring below closes it properly, at every tilt,
+     * for a fraction of the work.
      */
-    float ringR0 = shadowR * 1.5;
-    for (int im = 0; im < 2; im++){
-      /* THE DIRECT IMAGE IS NOT LENSED. Its light has not passed the hole -- the near half of the disc is
-       * between the eye and the hole, and the far half sits at the hole's own distance, where a lens has no
-       * lever arm to work with. Sampling it through luv magnified the region right at the axis enormously,
-       * because the deflection is capped at 0.82 of the impact parameter and a wide area collapses into a
-       * narrow one there. That is the keyhole shape that appeared in the middle of the shadow.
-       *
-       * The SECOND image is the lensed one, and it is the only one that should be: it exists precisely because
-       * that light went behind the hole and bent back. */
+    {
       vec2 suv = uv;
       float dim = 1.0;
-      if (im == 1){
-        float bi = ringR0 * ringR0 / max(b, 1e-4);
-        suv = hc + (b > 1e-5 ? dv / b : vec2(0.0)) * bi;
-        /* THE SECONDARY IMAGE HUGS THE SHADOW, and confining it is what stopped the disc reading as two lobes.
-         *
-         * Light that went behind the hole and bent back arrives compressed into a thin arc just outside the
-         * photon ring -- that is the whole reason a disc appears to wrap OVER a black hole. Unconfined it drew
-         * out to several shadow radii, and because the disc is near edge-on its apparent radius varies strongly
-         * with angle, so what spread out was two fat blobs above and below rather than an arc. */
-        dim = 0.55 * (1.0 - smoothstep(shadowR * 1.5, shadowR * 3.4, b));
-        if (dim < 0.002) continue;
-      }
       vec3 srd = normalize(vec3(suv, uFov));
       /* THE DISC IS A SLAB, NOT A PLANE, and that is what puts the band through the MIDDLE of the shadow.
        *
@@ -602,12 +624,12 @@ void main(){
       float td = dot(O, nrm) / (dn >= 0.0 ? adn : -adn);
       float hspan = hthick / adn;
       float ts = clamp(dot(O, srd), td - hspan, td + hspan);
-      if (ts <= 0.0) continue;
+      if (ts > 0.0) {
 
       vec3 P = srd * ts;
       vec3 rel3 = P - O;
       float rr = length(rel3);
-      if (rr <= discIn || rr >= discOut) continue;
+      if (rr > discIn && rr < discOut) {
 
       /* THE DISC BULGES IN THE MIDDLE, thickest at the inner edge and thinning outward -- a lens, or a UFO,
        * rather than a sheet of card. The inner region of a real disc is the puffy one: it is hottest, radiating
@@ -684,7 +706,8 @@ void main(){
          however near its apparent position lands. */
       /* NEARER THAN THE HOLE IS A DEPTH TEST, and it was comparing a distance ALONG THE RAY against a
          depth -- the same number only for a ray down the axis, and increasingly wrong toward the corners. */
-      if (P.z < uFar && im == 0) discFront += add; else discBack += add;
+      if (P.z < uFar) discFront += add; else discBack += add;
+      }}
     }
   }
 
@@ -713,10 +736,12 @@ void main(){
   // Behind the hole: cut by the shadow, and seen through whatever tunnel wall is in the way.
   col += discBack * inside * trans;
 
-  /* THERE IS NO PAINTED RING. The bright edge around the shadow is not a circle drawn on top of one -- it is
-     the disc's own light bent round the hole, arriving just outside the shadow, which the secondary image
-     already draws. A ring as well lit the same edge twice from two descriptions, and the painted one won: a
-     fixed band of white sitting over the wrapping it was meant to stand for. */
+  /* THE RING IS ALWAYS THERE WHEN THE DISC IS, at every tilt -- light leaves the disc and reaches the eye after
+     bending round the hole from any azimuth, so the circle closes even edge-on where the disc itself is a bar.
+     It carries no controls of its own: it is the disc's colour, the disc's beaming and the disc's amount, so no
+     disc means no ring and the two can never disagree about what the light is doing. */
+  col += ringAdd * trans;
+
   // In FRONT of the hole, so nothing occludes it -- this is the band that cuts the shadow in half.
   col += discFront * trans;
 
