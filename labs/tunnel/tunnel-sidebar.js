@@ -34,22 +34,29 @@ const shellRows = (i) => [
    * two ends of one gradient is one decision made twice, and split across two rows it reads as two unrelated
    * settings at twice the height. A row is hidden while its effect is off, because a color that tints nothing is
    * a control that does nothing. */
+  /* EACH EFFECT CARRIES ITS OWN SHAPE CONTROLS, directly under it.
+   *
+   * FILL, EDGE and DETAIL used to sit at the bottom serving whichever of CLOUD and BOLTS was lit, and that was
+   * wrong twice over. DETAIL and FILL only ever reached the cloud -- the bolt field is a distance to where two
+   * noise fields both cross zero, and there are no octaves in it and nothing to threshold. EDGE reached both,
+   * so tuning the cloud's softness moved the plasma's thickness. One slider, two surfaces, no way to set either
+   * without disturbing the other. */
   ['L' + i + 'Cloud', 'CLOUD', 0, 2, 0.02],
   [['L' + i + 'CloudA', 'L' + i + 'CloudB'], 'CLOUD COLOR', '#'],
+  ['L' + i + 'Fill', 'CLOUD FILL', 0, 1, 0.01],
+  ['L' + i + 'Edge', 'CLOUD EDGE', 0.02, 0.7, 0.01],
+  ['L' + i + 'Oct', 'CLOUD DETAIL', 1, 5, 1],
 
   ['L' + i + 'Bolts', 'BOLTS', 0, 2, 0.02],
   [['L' + i + 'BoltA', 'L' + i + 'BoltB'], 'BOLT COLOR', '#'],
+  ['L' + i + 'BoltFill', 'BOLT FILL', 0, 1, 0.01],
+  ['L' + i + 'BoltEdge', 'BOLT EDGE', 0.01, 0.7, 0.01],
 
   ['L' + i + 'Streak', 'STREAKS', 0, 2, 0.02],
   [['L' + i + 'StrkA', 'L' + i + 'StrkB'], 'STREAK COLOR', '#'],
   ['L' + i + 'Lanes', 'LANES', 8, 400, 1],
 
   ['L' + i + 'Ring', 'RINGS', 0, 1, 0.01],
-
-  // FILL, EDGE and DETAIL serve whichever of CLOUD and BOLTS is lit, so they sit under both rather than with one.
-  ['L' + i + 'Fill', 'FILL', 0, 1, 0.01],
-  ['L' + i + 'Edge', 'EDGE', 0.02, 0.7, 0.01],
-  ['L' + i + 'Oct', 'DETAIL', 1, 5, 1],
 ];
 
 /* Sections for the shells the state currently has. Called by the host on every rebuild, so LAYERS adds and
