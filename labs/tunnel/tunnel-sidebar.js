@@ -160,7 +160,7 @@ export const FMT = {
   lens:        as.off(as.mult(2)),
   disc:        as.off(as.ofRange(2)),
   discThick:   as.pct(),
-  discTilt:    as.rad(0),
+  discTilt:    as.deg(),
   discLean:    as.rad(0),
   discOut:     as.raw(1, ' out'),
   discSpin:    as.raw(1, 'c'),
