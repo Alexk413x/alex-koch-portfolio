@@ -86,7 +86,7 @@ export function defaultPreset(gpu) {
     holeOn: 1,
     mass: 3.0,
     disc: 1.0, discA: '#fff0cf', discB: '#c23a05',
-    discTilt: 77, discLean: 0, discOut: 4.0, discH: 0.40, discSpin: 2, doppler: 1.0,
+    discTilt: 77, discLean: 0, discOut: 4.0, discH: 0.40, discSpin: 2, discFlow: -2, doppler: 1.0,
 
     /* THREE ARE LIT AND THREE ARE NOT, and three is the fewest that reads as depth: one to pass in front, one
      * to be passed, and one between them to prove the other two are at different distances. Two reads as a
