@@ -76,6 +76,8 @@ uniform vec4 uStrkA[${MAXL}], uStrkB[${MAXL}];
 #define TAU 6.28318530718
 // The radius the arch is measured against. A bend of 1 carries the far end one of these off the axis.
 #define TUBE_R 1.0
+// How far the far end may swing, in tube radii, before it starts leaving its own tube.
+#define MAX_SWING 6.5
 
 float h31(vec3 p){
   p = fract(p * 0.3183099 + vec3(0.71, 0.113, 0.419));
@@ -159,12 +161,22 @@ vec2 bendAt(float z){
    * all its swinging at DEPTH -- which is the half that is small on screen, so most of the bend was spent where
    * it could not be seen. A quarter sine turns fastest at the eye and flattens out at DEPTH, so the curve reads
    * in the near field where the tube is large. Same swing at DEPTH either way; it just gets there earlier. */
-  return vec2(cos(a), sin(a)) * (uBend * TUBE_R * sin(f * 1.5707963));
+  /* THE SWING SATURATES, because past a few tube radii the mouth leaves its own tube.
+   *
+   * BEND is in TUBE_R units and the lit shells are 0.5 to 1.35 wide, so at BEND 10 the opening was some seven
+   * times its own radius off axis: the wall closed across most of it and the hole showed beside it rather than
+   * through it -- two overlapping discs instead of one throat. Six holds, ten does not.
+   *
+   * tanh keeps the whole slider usable instead of cutting it back. It is linear where BEND already behaved and
+   * eases into a ceiling above it, so the top of the range means "as far as it goes" rather than "broken". */
+  float swing = MAX_SWING * tanh(uBend / MAX_SWING);
+  return vec2(cos(a), sin(a)) * (swing * TUBE_R * sin(f * 1.5707963));
 }
 vec2 bendD(float z){
   float f = clamp(z / max(uFar, 1.0), 0.0, 1.0);
   float a = uBendDir + uTime * uBendFlow * 0.12;
-  return vec2(cos(a), sin(a)) * (uBend * TUBE_R * 1.5707963 * cos(f * 1.5707963) / max(uFar, 1.0));
+  float swing = MAX_SWING * tanh(uBend / MAX_SWING);
+  return vec2(cos(a), sin(a)) * (swing * TUBE_R * 1.5707963 * cos(f * 1.5707963) / max(uFar, 1.0));
 }
 
 /* WHERE THE RAY MEETS THE TUBE. |rd.xy * t - offset(t)| = R is a quadratic in t for a FIXED offset, and the
@@ -531,7 +543,14 @@ void main(){
       if (im == 1){
         float bi = ringR0 * ringR0 / max(b, 1e-4);
         suv = hc + (b > 1e-5 ? dv / b : vec2(0.0)) * bi;
-        dim = 0.55;
+        /* THE SECONDARY IMAGE HUGS THE SHADOW, and confining it is what stopped the disc reading as two lobes.
+         *
+         * Light that went behind the hole and bent back arrives compressed into a thin arc just outside the
+         * photon ring -- that is the whole reason a disc appears to wrap OVER a black hole. Unconfined it drew
+         * out to several shadow radii, and because the disc is near edge-on its apparent radius varies strongly
+         * with angle, so what spread out was two fat blobs above and below rather than an arc. */
+        dim = 0.55 * (1.0 - smoothstep(shadowR * 1.5, shadowR * 3.4, b));
+        if (dim < 0.002) continue;
       }
       vec3 srd = normalize(vec3(suv, uFov));
       /* THE DISC IS A SLAB, NOT A PLANE, and that is what puts the band through the MIDDLE of the shadow.
@@ -560,7 +579,24 @@ void main(){
       float td = dot(O, nrm) / (dn >= 0.0 ? adn : -adn);
       if (td <= 0.0) continue;
 
-      vec3 P = srd * td;
+      /* SAMPLE WHERE THE RAY IS NEAREST THE HOLE, NOT WHERE IT CROSSES THE MID-PLANE. This is what puts the bar
+       * back across the middle and stops the disc reading as two lobes.
+       *
+       * A ray that runs ALONG a near edge-on disc crosses its mid-plane a very long way out -- past discOut, so
+       * it was rejected. That threw away every ray near the plane, which is exactly the band through the middle
+       * of the shadow, and what survived was the two regions either side of the rejected band: two lobes above
+       * and below with nothing between them.
+       *
+       * The ray is inside the slab for hthick/adn either side of the crossing, and the honest sample is the point
+       * in that stay which comes closest to the hole. Clamping the nearest approach into the slab window says
+       * exactly that, and it degenerates correctly at both ends: face-on, adn is 1, the window is a hair wide and
+       * this IS the mid-plane crossing; edge-on, adn goes to zero, the window opens and it becomes the nearest
+       * approach. Nothing to threshold and nothing to blend. */
+      float hspan = hthick / adn;
+      float ts = clamp(dot(O, srd), td - hspan, td + hspan);
+      if (ts <= 0.0) continue;
+
+      vec3 P = srd * ts;
       vec3 rel3 = P - O;
       float rr = length(rel3);
       if (rr <= discIn || rr >= discOut) continue;
@@ -603,7 +639,7 @@ void main(){
       vec3 add = mix(uDiscA, uDiscB, band) * max(bright, 0.0) * max(dop, 0.0) * uDisc * 1.1 * dim;
       /* The secondary image is light that went BEHIND the hole by definition, so it is always the far half
          however near its apparent position lands. */
-      if (td < uFar && im == 0) discFront += add; else discBack += add;
+      if (ts < uFar && im == 0) discFront += add; else discBack += add;
     }
   }
 
