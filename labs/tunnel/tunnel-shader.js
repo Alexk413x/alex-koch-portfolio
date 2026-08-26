@@ -401,7 +401,17 @@ void main(){
    *
    * The disc's arc is geometry, not styling. It gets the deflection the hole actually produces, so the far side
    * rises by about the shadow's own size and its lanes carry up and over with it. */
-  float deflDisc = min(defl, b * 0.82);
+/* THE ARC HAS TO BEGIN AT THE DISC'S INNER RIM, and the cap on the deflection is what decides where it does.
+   *
+   * Bent too hard, a ray just outside the ring crosses the disc's plane INSIDE the inner edge -- in the empty
+   * hole where nothing orbits -- so nothing drew there and the arc only appeared further out, detached from the
+   * disc it belongs to. Easing the cap leaves the ray more outward angle, so it meets the plane further from the
+   * axis, and the crossing lands on the rim instead of inside it.
+   *
+   * That is also what the geometry says: a ray turns around at about its own impact parameter, so one passing
+   * just outside the shadow (2.6 Rs) meets the disc near 3 Rs, which IS the inner edge. The arc should start
+   * essentially at the ring, and now it does. */
+  float deflDisc = min(defl, b * 0.45);
   vec2 dluv = uv - bdir * deflDisc;
 
   defl = min(defl * uLens, b * 0.82);
@@ -544,7 +554,10 @@ void main(){
      * single-angle normal it replaced, so nothing already tuned moves. */
     float ct = cos(uDiscTilt), st = sin(uDiscTilt);
     float cl = cos(uDiscLean), sl = sin(uDiscLean);
-    vec3 nrm = normalize(vec3(ct * sl, ct * cl, st));
+/* TILT 0 IS FLAT. The normal points at the eye at 0, so you look down on the disc, and lies across the view
+     * at 90, where you see it edge-on. It was the other way round -- 0 gave the edge-on bar -- which is the
+     * opposite of what the word says and made the bottom of the slider look broken rather than flat. */
+    vec3 nrm = normalize(vec3(st * sl, st * cl, ct));
 
     /* THE RING IS THE DISC'S LIGHT WRAPPED ROUND, SO IT IS BEAMED LIKE THE DISC IS.
      *
@@ -592,12 +605,15 @@ void main(){
                                     + vec3(0.0, 0.0, rrad * 1.6 + rturn * 0.12), 3);
 
       /* IT HUGS THE SHADOW because that edge IS where light piles up: a ray a hair outside wraps right round,
-         one a few radii out barely bends at all. The second, wider term is a deliberate bleed outward -- it is
-         what carries the ring into the disc rather than stopping at a hard edge. */
+         one a few radii out barely bends at all.
+
+         NO HALO AROUND IT. A second, wider term used to bleed the ring outward on the theory that it would carry
+         into the disc; what it actually did was wash a soft glow over everything near the shadow, flattening the
+         very texture the ring had just been given. The disc reaches the shadow on its own. */
       float ringR = shadowR * 1.05;
       float ringW = max(shadowR * 0.07, 0.005);
       float rt = (b - ringR) / ringW;
-      float rprof = exp(-rt * rt) + 0.30 * exp(-0.16 * rt * rt);
+      float rprof = exp(-rt * rt);
       ringAdd = mix(uDiscA, uDiscB, 0.12) * rprof
               * pow(rdelta, 3.0 * uDoppler) * rgrain * uDisc * 1.7;
     }
