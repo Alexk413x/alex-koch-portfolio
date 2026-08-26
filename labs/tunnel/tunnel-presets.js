@@ -40,7 +40,7 @@ export function defaultPreset(gpu) {
 
     fov: 74, exposure: 1.15, fog: 1.0,
 
-    far: 26, wind: 1.0,
+    far: 26,
     /* BEND IS LOW NOW THE FAR END IS A HOLE, and that is a real conflict rather than a taste. BEND swings the
      * vanishing point around the frame; the lens warps everything toward it. Both are "the far end distorts",
      * and run together they fight -- the hole slides about while the image drags toward wherever it went, and
@@ -52,8 +52,7 @@ export function defaultPreset(gpu) {
        straightens and leaves. It shipped at 46, nearly twice the depth, which shows a third of one wave: that is
        a permanent lean with no corner in it, and it is why the tube read as leaning rather than bending. */
     bend: 3.0, bendDir: 0.0, bendFlow: 5.0,
-    // The whole-tunnel ring pass is off: the shells carry their own, which foreshorten with the shell they are on.
-    ringAmt: 0.0, ringN: 4.4, ringFlow: 7.4,
+    ringN: 4.4, ringFlow: 7.4,
 
 
     /* THE FAR END IS A BLACK HOLE. It was a glow sprite, which sat on top of the winding at the vanishing point

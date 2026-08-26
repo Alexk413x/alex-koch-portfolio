@@ -79,11 +79,9 @@ export const HEAD = [
 
   ['TUNNEL', [['far', 'DEPTH', 6, 90, 0.5],
               ['fog', 'DEPTH FADE', 0, 1, 0.01],
-              ['wind', 'WIND', 0.1, 4, 0.02],
               ['bend', 'BEND', 0, 12, 0.05],
               ['bendDir', 'BEND TOWARD', -3.14, 3.14, 0.02],
               ['bendFlow', 'BEND FLOW', -20, 20, 0.2],
-              ['ringAmt', 'RINGS', 0, 1, 0.01],
               ['ringN', 'RING SPACING', 0.5, 14, 0.1],
               ['ringFlow', 'RING FLOW', -20, 20, 0.2]]],
 
@@ -144,11 +142,9 @@ export const FMT = {
   fog:         as.off(as.pct()),
 
   far:         as.raw(0, ' deep'),
-  wind:        as.mult(2),
   bend:        as.off(as.mult(2)),
   bendDir:     as.rad(0),
   bendFlow:    SPEED,
-  ringAmt:     as.off(as.pct()),
   // Spacing reads as how many rings stand between the eye and the throat, which is the thing being set.
   ringN:       as.scaled(26 / (2 * Math.PI), 1, ' rings'),
   ringFlow:    SPEED,
