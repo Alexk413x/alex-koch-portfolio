@@ -33,7 +33,7 @@ export const MAXL = 6;
 export const UNIFORMS = [
   'uRes', 'uTime', 'uFov', 'uFar',
   'uBend', 'uBendFlow', 'uBendDir',
-    'uMass', 'uEndR', 'uRing', 'uRingCol',
+    'uMass', 'uLens', 'uEndR', 'uRing', 'uRingCol',
   'uDisc', 'uDiscTilt', 'uDiscLean', 'uDiscOut', 'uDiscThick', 'uDiscSpin', 'uDiscA', 'uDiscB', 'uDoppler',
   'uFog', 'uExposure',
   'uGeom', 'uMix', 'uShade', 'uExtra', 'uRingP',
@@ -47,7 +47,7 @@ out vec4 fragColor;
 uniform vec2 uRes;
 uniform float uTime, uFov, uFar;
 uniform float uBend, uBendFlow, uBendDir;
-uniform float uMass, uEndR, uRing;
+uniform float uMass, uLens, uEndR, uRing;
 uniform float uDisc, uDiscTilt, uDiscLean, uDiscOut, uDiscThick, uDiscSpin, uDoppler;
 uniform float uFog, uExposure;
 uniform vec3  uRingCol, uDiscA, uDiscB;
@@ -389,9 +389,17 @@ void main(){
   float S2 = shadowR * shadowR;
   float defl = 2.4 * S2 * b / (b * b + S2);
 
-  /* Capture is now a RATIO of two things that scale together, so the dark disc is a fixed multiple of the
-     hole at every MASS: defl/b crosses these thresholds near 1.4 and 1.1 shadow radii whatever the mass is. */
+  /* LENS IS HOW HARD THE LIGHT IS DRAGGED; MASS IS HOW BIG THE HOLE IS. They were one number, and the true
+   * deflection for a hole this size is subtle -- correct, and far less than this reads best with. Pushing MASS
+   * to get more warp only grew the shadow instead.
+   *
+   * CAPTURE STAYS ON THE PHYSICAL DEFLECTION, deliberately. The dark disc's size is the hole's, so it must not
+   * move when LENS does; only the light OUTSIDE it gets dragged harder. The 0.82 cap still stops a ray being
+   * thrown past the centre and folding the image through itself, which is what a lens this strong would
+   * otherwise do. */
   float captured = smoothstep(1.20, 2.20, defl / max(b, 1e-5));
+  defl *= uLens;
+
   defl = min(defl, b * 0.82);
   vec2 luv = uv - (b > 1e-5 ? dv / b : vec2(0.0)) * defl;
 
@@ -507,7 +515,12 @@ void main(){
   /* AND THE OUTER EDGE IS A MULTIPLE OF THE INNER, for the same reason the inner is a multiple of the hole. As an
    * absolute distance it could fall INSIDE the inner edge -- which it did the moment SIZE was raised, leaving an
    * annulus with negative width and a disc that vanished entirely. A ratio cannot invert. */
-  float discOut = discIn * max(uDiscOut, 1.05);
+  /* REACH IS THE DISC'S OUTER RADIUS OUTRIGHT, in the same world units as everything else, so it does not move
+     when MASS does. It was a MULTIPLE of the inner edge because it was once absolute while the inner edge was
+     derived, and at a large enough MASS the inner edge overtook it -- inner outside outer, no annulus anywhere,
+     a black frame. The guard says that directly: the outer edge is never inside the inner one. A guard is a
+     statement about one relationship; a multiplier was a second control pretending to be one. */
+  float discOut = max(uDiscOut, discIn * 1.05);
   /* THE DISC IS IN TWO HALVES AND THEY ARE NOT OCCLUDED THE SAME WAY.
    *
    * Half the disc is NEARER than the hole and passes in FRONT of it, so it cuts a band of light straight across
@@ -634,7 +647,11 @@ void main(){
        * beaming term and it is why one side of every image of a disc is far brighter than the other; here it is
        * a dot product. Without it a disc reads as a flat ring rather than as something spinning. */
       // Beaming follows the ORBITAL direction, and it is stronger where the orbit is faster -- inside.
-      vec3 vel = normalize(cross(nrm, rel3));
+      /* THE ORBIT'S DIRECTION IS DISC SPIN'S, and taking it from the normal alone was why DOPPLER only ever
+       * brightened one side. cross(nrm, rel3) fixes a sense of rotation from the plane's orientation, so
+       * reversing SPIN turned the pattern the other way while the bright limb stayed exactly where it was.
+       * Material orbiting the other way beams the other way. */
+      vec3 vel = normalize(cross(nrm, rel3)) * (uDiscSpin < 0.0 ? -1.0 : 1.0);
       float dop = 1.0 + uDoppler * dot(vel, -srd) * 1.3 * sqrt(kep);
 
       /* NOTHING COMES OUT OF THE MIDDLE. The disc is cut at its inner edge and the shadow cuts everything again
@@ -661,9 +678,13 @@ void main(){
    * THE SHADOW IS WEIGHTED THE SAME WAY. Cutting unconditionally would carve a black disc out of a wall standing
    * in front of it; cutting by trans removes only the light that was coming from behind. */
   // The dark disc is the geometric shadow AND everything the lens captured, which at high MASS is wider.
-  // The edge is deliberately a few percent wide: the photon ring is found from it, and at 0.92-1.10 that
-  // band was about two pixels, too thin to read as light.
-  float inside = smoothstep(shadowR * 0.84, shadowR * 1.22, b) * (1.0 - captured);
+  /* THE SHADOW'S EDGE IS A NEARLY FIXED WIDTH, NOT A FIXED FRACTION. The photon ring is found from this edge,
+     so the edge's width IS the ring's width. As a fraction of the shadow it was a couple of pixels at low MASS,
+     too thin to read, and a 35-pixel band of white at high MASS -- a real photon ring stays thin however big
+     the hole gets, and a fat one buries the warping behind it. A small floor keeps it visible when the hole is
+     tiny; above that it barely grows. */
+  float rimW = max(shadowR * 0.05, 0.0045);
+  float inside = smoothstep(shadowR - rimW, shadowR + rimW, b) * (1.0 - captured);
   col *= mix(1.0, inside, trans);
   // Behind the hole: cut by the shadow, and seen through whatever tunnel wall is in the way.
   col += discBack * inside * trans;
