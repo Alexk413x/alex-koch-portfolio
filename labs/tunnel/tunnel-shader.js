@@ -390,10 +390,22 @@ void main(){
    * thrown past the centre and folding the image through itself, which is what a lens this strong would
    * otherwise do. */
   float captured = smoothstep(1.20, 2.20, defl / max(b, 1e-5));
-  defl *= uLens;
+  vec2 bdir = b > 1e-5 ? dv / b : vec2(0.0);
 
-  defl = min(defl, b * 0.82);
-  vec2 luv = uv - (b > 1e-5 ? dv / b : vec2(0.0)) * defl;
+  /* THE DISC BENDS BY THE PHYSICAL DEFLECTION; THE TUNNEL BEHIND IT BENDS BY LENS.
+   *
+   * LENS is an artistic control -- it has to be, because everything in this scene except the disc's far side is
+   * IN FRONT of the hole, where a real lens has no lever arm. Feeding it into the disc as well was wrong: at 2.6
+   * it threw the far crossing out to a huge radius, and instead of the far edge lifting just clear of the shadow
+   * there was one enormous smooth curve sweeping the frame with none of the disc's texture in it.
+   *
+   * The disc's arc is geometry, not styling. It gets the deflection the hole actually produces, so the far side
+   * rises by about the shadow's own size and its lanes carry up and over with it. */
+  float deflDisc = min(defl, b * 0.82);
+  vec2 dluv = uv - bdir * deflDisc;
+
+  defl = min(defl * uLens, b * 0.82);
+  vec2 luv = uv - bdir * defl;
 
   vec3 rd = normalize(vec3(luv, uFov));
 
@@ -612,7 +624,7 @@ void main(){
      * axis are captured, and everything behind the hole is multiplied by that.
      */
     for (int im = 0; im < 2; im++){
-      vec2 suv = im == 0 ? uv : luv;
+      vec2 suv = im == 0 ? uv : dluv;
       float dim = im == 0 ? 1.0 : 0.9;
       vec3 srd = normalize(vec3(suv, uFov));
       /* THE DISC IS A SLAB, NOT A PLANE, and that is what puts the band through the MIDDLE of the shadow.
