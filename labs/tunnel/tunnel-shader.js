@@ -55,7 +55,7 @@ uniform float uFog, uExposure;
 uniform vec3  uRingCol, uDiscA, uDiscB;
 
 // geom: radius, amount, speed, stretch. mix: cloud, bolts, streaks, rings.
-// shade: fill, edge, detail, spin. extra: lanes, ON, spare, spare.
+// shade: cloud fill, cloud edge, cloud detail, spin. extra: lanes, ON, bolt fill, bolt edge.
 uniform vec4 uGeom[${MAXL}];
 uniform vec4 uMix[${MAXL}];
 uniform vec4 uShade[${MAXL}];
@@ -450,9 +450,15 @@ void main(){
        * Squaring cuts that to under one percent at the same distance. The coefficient carries 0.414 to keep the
        * HALF-WIDTH where it was -- solve (1 + k' r^2)^2 = 2 against 1 + k r^2 = 2 and that is the factor -- so
        * EDGE still means the same width it always did and only the shoulder changes. */
-      float r2 = f1 * f1 + f2 * f2;
-      float bo = 1.0 / (1.0 + (40.0 * 0.414 / max(sh.y, 0.02)) * r2);
-      bo *= bo;
+      /* BOLT FILL IS HOW THICK, BOLT EDGE IS HOW HARD -- the same two questions the cloud answers, asked of
+       * its own surface. The field is the distance to where both noise fields cross zero, scaled so 1 is on the
+       * line and 0 is as far from it as the field goes; thresholding that is exactly what FILL does to the
+       * cloud's fbm, and the smoothstep's width is exactly what EDGE does to it. Same shape, same meaning, one
+       * pair per effect. */
+      float r = sqrt(f1 * f1 + f2 * f2) * 1.414;
+      float v = 1.0 - min(r, 1.0);
+      float bf = uExtra[s].z;
+      float bo = smoothstep(bf, bf + max(uExtra[s].w, 0.01), v);
       d += m.y * bo;
       emit += mix(uBoltA[s].rgb, uBoltB[s].rgb, bo) * m.y * bo;
     }

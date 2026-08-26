@@ -132,7 +132,8 @@ function packed() {
     mix.push(g('Cloud'), g('Bolts'), g('Streak'), g('Ring'));
     shade.push(g('Fill'), g('Edge'), g('Oct'), g('Spin'));
     // extra.y is the shell's ON flag: the shader skips a dark shell before it solves anything for it.
-    extra.push(g('Lanes'), g('On') ? 1 : 0, 0, 0);
+    // z and w were the spare slots; they carry the bolts' own FILL and EDGE, which used to borrow the cloud's.
+    extra.push(g('Lanes'), g('On') ? 1 : 0, g('BoltFill'), g('BoltEdge'));
     cA.push(...hex(g('CloudA')), 0); cB.push(...hex(g('CloudB')), 0);
     bA.push(...hex(g('BoltA')), 0);  bB.push(...hex(g('BoltB')), 0);
     sA.push(...hex(g('StrkA')), 0);  sB.push(...hex(g('StrkB')), 0);
