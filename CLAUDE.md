@@ -80,7 +80,7 @@ lab's own handle.
 
 ```
 python bench.py                     # CRT Lab, 12 samples, verdict
-python bench.py --page reactor      # any lab: crt | reactor | wormhole | shell, or a literal path
+python bench.py --page reactor      # any lab: crt | reactor | tunnel | wormhole | shell, or a literal path
 python bench.py --uncapped          # frame COST, not frame rate
 python bench.py --inject "<js>"     # pin a setting first, so two runs are comparable
 ```

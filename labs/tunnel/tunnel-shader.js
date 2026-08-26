@@ -33,8 +33,8 @@ export const MAXL = 6;
 export const UNIFORMS = [
   'uRes', 'uTime', 'uFov', 'uFar',
   'uBend', 'uBendFlow', 'uBendDir',
-    'uMass', 'uLens', 'uEndR',
-  'uDisc', 'uDiscTilt', 'uDiscLean', 'uDiscOut', 'uDiscSpin', 'uDiscA', 'uDiscB', 'uDoppler',
+  'uMass', 'uEndR',
+  'uDisc', 'uDiscTilt', 'uDiscLean', 'uDiscOut', 'uDiscH', 'uDiscSpin', 'uDiscA', 'uDiscB', 'uDoppler',
   'uFog', 'uExposure',
   'uGeom', 'uMix', 'uShade', 'uExtra', 'uRingP',
   'uCloudA', 'uCloudB', 'uBoltA', 'uBoltB', 'uStrkA', 'uStrkB',
@@ -47,8 +47,8 @@ out vec4 fragColor;
 uniform vec2 uRes;
 uniform float uTime, uFov, uFar;
 uniform float uBend, uBendFlow, uBendDir;
-uniform float uMass, uLens, uEndR;
-uniform float uDisc, uDiscTilt, uDiscLean, uDiscOut, uDiscSpin, uDoppler;
+uniform float uMass, uEndR;
+uniform float uDisc, uDiscTilt, uDiscLean, uDiscOut, uDiscH, uDiscSpin, uDoppler;
 uniform float uFog, uExposure;
 uniform vec3  uDiscA, uDiscB;
 
@@ -183,6 +183,73 @@ vec2 bendD(float z){
   return gBendDir * (gSwing * 1.5707963 * cos(f * 1.5707963) / max(uFar, 1.0));
 }
 
+/* THE HOLE HAS ONE NUMBER AND EVERY OTHER RADIUS IS A FIXED MULTIPLE OF IT.
+ *
+ *   horizon         1.000 Rs   nothing leaves
+ *   photon sphere   1.500 Rs   where light orbits -- a COORDINATE radius, not what the eye sees
+ *   shadow edge     2.598 Rs   3*sqrt(3)/2 Rs, the CRITICAL IMPACT PARAMETER, and this is the apparent one
+ *   inner orbit     3.000 Rs   the ISCO; nothing orbits inside it, so no disc starts closer
+ *
+ * NONE OF THEM IS A SLIDER, and there is no second control for how hard the hole bends light, because gravity
+ * has no second number. LENS was one: it scaled the deflection's profile while the shadow stayed on MASS, so
+ * the warp and the thing it warped around were free to disagree about the same hole. */
+#define B_CRIT 2.59807621
+#define R_ISCO 3.0
+
+/* THE PATH IN CLOSED FORM, WHICH IS WHAT THE TUNNEL IS BENT BY.
+ *
+ * A ray passing a mass turns by 2Rs/b in total, and it does not turn all at once. The rate along the ray is
+ *   dtheta/ds = Rs*b / (s^2 + b^2)^(3/2)
+ * with s measured from the ray's closest approach. Integrating once gives how far it has turned by s, and
+ * twice gives how far sideways it has actually moved:
+ *
+ *   theta(s) = (Rs/b) * (1 + s / sqrt(s^2 + b^2))     0 long before, Rs/b at closest approach, 2Rs/b long after
+ *   delta(s) = (Rs/b) * (s + sqrt(s^2 + b^2))         0 long before, exactly Rs at closest approach
+ *
+ * THIS IS NOT AN APPROXIMATION OF THE INTEGRATOR IN main(). It is the same equation solved on paper in the
+ * regime where it can be, and the two agree wherever they overlap -- which is why the handover into the
+ * integrator below reads theta and delta straight off these two lines rather than restarting from the eye.
+ *
+ * IT IS ALSO WHY THE TUNNEL USED TO LOOK DRAGGED RATHER THAN LENSED. The old bend was one screen-space pull
+ * applied to every shell at every depth, so wall two units in front of the camera moved as far as the far
+ * mouth -- and wall two units away is nowhere near the hole and must not move at all.
+ *
+ * THE TUNNEL CANNOT FOLD THROUGH ITSELF, AND NO CLAMP SAYS SO. For every s <= 0 the bracket (s + sqrt(s^2+b^2))
+ * lies in (0, b], so delta lies in (0, Rs] whatever b is -- and the whole tunnel is at or before closest
+ * approach by construction, because the hole is at its far end. The largest sideways pull anywhere in the tube
+ * is exactly one Schwarzschild radius. */
+vec3  gHoleO;
+vec3  gHdir;
+float gB, gT0, gRs, gD0;
+
+void setupHole(vec3 rd, vec3 O, float rs){
+  gHoleO = O; gRs = rs;
+  gT0 = dot(O, rd);
+  vec3 w = rd * gT0 - O;
+  gB = max(length(w), 1e-5);
+  gHdir = w / gB;
+  gD0 = (rs / gB) * (-gT0 + sqrt(gT0 * gT0 + gB * gB));
+}
+// How far the ray has been pulled toward the hole by the time it has run t. Zero at the eye, by subtraction.
+float lensShift(float t){
+  float s = t - gT0;
+  return (gRs / gB) * (s + sqrt(s * s + gB * gB)) - gD0;
+}
+vec3 rayAt(vec3 rd, float t){ return rd * t - gHdir * lensShift(t); }
+
+/* THE NULL GEODESIC ITSELF. In Schwarzschild geometry a photon obeys d2u/dphi2 + u = 3M u^2 with u = 1/r, and
+ * as an acceleration on a Cartesian path that is
+ *
+ *   d2x/dlambda2 = -(3/2) * Rs * h^2 * x / r^5,    h = |x cross v|, conserved along the ray.
+ *
+ * One line. The speed |v| is not conserved by it and does not need to be -- it is a coordinate rate, and only
+ * the SHAPE of the path is read. */
+vec3 holeAccel(vec3 x, float h2, float rs){
+  float r2 = max(dot(x, x), 1e-12);
+  float r5 = r2 * r2 * sqrt(r2);
+  return x * (-1.5 * rs * h2 / max(r5, 1e-20));
+}
+
 /* WHERE THE RAY MEETS THE TUBE. |rd.xy * t - offset(t)| = R is a quadratic in t for a FIXED offset, and the
  * offset depends on the t being solved for -- so it is solved by repeating: guess the depth, read the offset
  * there, re-solve, repeat.
@@ -199,7 +266,12 @@ vec2 bendD(float z){
 /* Signed gap from the ray at t to this shell's wall: negative inside the tube, positive outside.
  * Split out because the scan below needs it at many t and the crossing is where it changes sign. */
 float wallGap(vec3 rd, float t, float R, vec2 b0){
-  float z = rd.z * t;
+  /* THE RAY IS NOT STRAIGHT, and this one line is how the hole reaches the tunnel. rayAt carries the closed
+     form above, so a sample near the eye sits exactly where an unbent ray would and one at the far mouth is
+     pulled a Schwarzschild radius toward the axis -- which puts the mouth's IMAGE further out, magnified, and
+     wrapped around the shadow. */
+  vec3 Pw = rayAt(rd, t);
+  float z = Pw.z;
   vec2 bo = bendAt(z) - b0;
   vec2 sl = bendD(z);
   float k = sqrt(1.0 + dot(sl, sl));
@@ -225,7 +297,7 @@ float wallGap(vec3 rd, float t, float R, vec2 b0){
    * stretched by 1/cos of the lean along the direction the tube leans, and untouched at right angles to it.
    * Stretching in every direction -- which one scalar radius does -- makes the tube FAT wherever it turns
    * instead of tilting it, and a fat tube sliding across as it recedes is a warp rather than a curve. */
-  vec2 v = rd.xy * t - bo;
+  vec2 v = Pw.xy - bo;
   float vl = length(v);
   vec2 dir = vl > 1e-5 ? v / vl : vec2(1.0, 0.0);
   vec2 lean = dot(sl, sl) > 1e-10 ? normalize(sl) : vec2(1.0, 0.0);
@@ -291,7 +363,7 @@ float solveShell(vec3 rd, float R, vec2 b0, out vec2 rel, out float zz, out floa
   }
 
   if (hitT < 0.0){ rel = vec2(0.0); zz = uFar; return -1.0; }
-  vec3 P = rd * hitT;
+  vec3 P = rayAt(rd, hitT);
   rel = P.xy - (bendAt(P.z) - b0);
   zz = P.z;
   return hitT;
@@ -337,101 +409,26 @@ void main(){
   // of sliding the whole tube sideways. It is what lets BEND go past a token lean.
   vec2 b0 = bendAt(0.0);
 
-  /* THE HOLE SITS AT THE FAR END OF THE TUNNEL, so it follows the bend: project the axis at DEPTH the way the ray
-   * direction is built and that is where it lands on screen. */
-  /* THE HOLE IS AN OBJECT AT DEPTH, not a sprite on the glass, and everything about it follows from that.
+  /* THE HOLE SITS AT THE FAR END OF THE TUNNEL, so it follows the bend: the tunnel's axis at DEPTH is where
+   * it is, and it rides round with BEND FLOW rather than sitting still while the tube swings away from it.
    *
-   * WHERE: the tunnel's axis at DEPTH, projected. The arch rotates with BEND FLOW, so the hole rides round with
-   * the far end rather than sitting still while the tube swings away from it.
+   * IT IS AN OBJECT AT A DEPTH, not a sprite on the glass, and everything about it follows from that. Push
+   * DEPTH out and it recedes and shrinks the way anything else at that distance would; nothing about it is
+   * measured in screen units, which is what a fixed screen radius got wrong.
    *
-   * HOW BIG: SHADOW is a size in the world, and what reaches the screen is size * fov / distance. Push DEPTH out
-   * and the hole recedes and shrinks like anything else would; it used to be a fixed screen radius, so a longer
-   * tunnel moved it without ever making it look further away.
-   *
-   * The whole lens scales with it for the same reason -- a deflection fixed in screen terms would grow relative
-   * to a shrinking hole and swallow the frame at long range. */
-  vec2 hc = (bendAt(uFar) - b0) * (uFov / uFar);
+   * THE RAY LEAVING THE EYE IS STRAIGHT. It was pre-warped here -- uv shifted toward the hole before a single
+   * shell was solved -- which is why the whole frame dragged. What bends it now is rayAt, evaluated at the
+   * depth of each sample, so the bend a surface gets is the bend its own light actually took. */
+  vec3 rd = normalize(vec3(uv, uFov));
+  vec3 holeO = vec3(bendAt(uFar) - b0, uFar);
 
-  /* MASS IS THE ONLY NUMBER A HOLE HAS. Everything else about one is a fixed multiple of its Schwarzschild
-   * radius, so a separate SIZE was a second control describing the same thing -- free to disagree with the first,
-   * and it did: the disc's inner edge and the tunnel's end radius were each derived from one of them and drifted
-   * apart whenever the other moved.
-   *
-   *   shadow      2.6 Rs   what the eye sees as the dark disc, wider than the horizon because of lensing
-   *   photon ring 1.5 Rs   where light orbits, and where the rim of light sits
-   *   inner orbit 3.0 Rs   nothing is stable inside it, so no disc ever starts closer
-   *
-   * Derived from one number they cannot contradict each other, and the disc stays welded to the hole at every
-   * setting rather than needing two sliders kept in step by hand. */
-  /* 0.5 WORLD UNITS PER UNIT OF MASS, and the scale is small on purpose. The visible dark disc is not 2.6 Rs
-   * but roughly twice that again, because ray capture widens it -- so a radius that looks modest on paper fills a
-   * fifth of the frame by the time it is drawn. 0.2 keeps MASS 1 a hole at the END of a tunnel rather than a
-   * hole with a tunnel around it; 0.5 was tried and still filled a third of the frame. */
+  /* ONE SOLAR MASS IS 0.2 WORLD UNITS OF SCHWARZSCHILD RADIUS, and this line is the only place that says so.
+   * The panel reads MASS in solar masses because that is the unit a hole's mass is quoted in; the scale from
+   * there to the tunnel's own units is arbitrary and is a scene decision, not physics. 0.5 was tried and a
+   * single solar mass already filled a third of the frame -- the visible dark disc is 2.598 Rs across before
+   * the lens widens it further, so a radius that looks modest on paper is large by the time it is drawn. */
   float rs = uMass * 0.2;
-  float persp = uFov / max(uFar, 1e-3);
-  float shadowR = rs * 2.6 * persp;
-  vec2 dv = uv - hc;
-  float b = length(dv);
-
-  /* THE DEFLECTION IS AN AREA OVER A DISTANCE, AND GETTING THAT WRONG IS WHAT MADE THE WARP LOOK DETACHED.
-   *
-   * A ray passing a mass at impact parameter b is bent by 2Rs/b. Carried into screen units both radii scale
-   * together, so the screen displacement goes as shadowR^2 / b -- shadowR SQUARED on top. It was written with a
-   * single shadowR, which is not a length at all: at b = shadowR that expression is 1.2, or 2.4x the frame's own
-   * half-height, and it stayed near a third of the frame right out to the corners.
-   *
-   * That is why the warp read as the whole image being dragged rather than as light wrapping something. It was
-   * not attached to the hole because it was not attached to any size -- every pixel in the frame was inside it.
-   *
-   * With the square restored the 1/b tail is local by construction: a few shadow radii out the deflection is
-   * already a fraction of a shadow radius. The cutoff that used to be multiplied in here existed only to hide
-   * the missing factor, and it is gone -- it was clamping the tail of a curve that was wrong at the head.
-   */
-  float S2 = shadowR * shadowR;
-  float deflPhys = 2.4 * S2 * b / (b * b + S2);
-
-  /* CAPTURE STAYS ON THE PHYSICAL DEFLECTION so the dark disc's size belongs to MASS alone and does not move
-     when LENS does. Only the light OUTSIDE it is dragged harder. */
-  float captured = smoothstep(1.20, 2.20, deflPhys / max(b, 1e-5));
-  vec2 bdir = b > 1e-5 ? dv / b : vec2(0.0);
-
-  /* LENS WIDENS THE LENSED REGION, NOT JUST ITS DEPTH.
-   *
-   * It used to be a plain multiplier on the deflection, so the warp got stronger while the area it covered
-   * stayed exactly the same size -- the turnover radius of the profile is set by shadowR, and multiplying the
-   * whole curve does not move it. Nothing grew outward from the edge of the mass however far the slider went.
-   *
-   * Scaling the profile's RADIUS by sqrt(LENS) does both at once: the far field, which goes as S^2/b, scales by
-   * LENS, and the turnover moves out as sqrt(LENS), so the wrapped region visibly spreads from the shadow's
-   * edge as you push it. */
-  float Sl = shadowR * sqrt(max(uLens, 1e-4));
-  float S2l = Sl * Sl;
-  float deflLens = 2.4 * S2l * b / (b * b + S2l);
-
-  /* THE DISC IS PULLED ROUND BY IT TOO, on a shorter rein. Cutting LENS out of the disc entirely stopped it
-     throwing the far crossing across the frame, but it also stopped the disc responding to the control at all.
-     The tighter cap is what keeps the arc on the rim: bent past it, a ray just outside the shadow crosses the
-     plane inside the inner edge, where there is nothing to draw. */
-/* THE WRAP GETS STRONGER AS THE DISC TURNS EDGE-ON, which is where a disc has a back side to show. Seen flat
-     the far half is already in view beside the near half and there is nothing to bring over the top; turned
-     toward its edge the far half hides behind the shadow, and the bend is the only thing that can lift it out.
-     sin(TILT) is 0 flat and 1 edge-on, which is that statement written down. */
-  float wrapGain = mix(0.45, 1.35, sin(uDiscTilt));
-/* THE CEILING RISES WITH LENS, so more of the disc keeps coming round instead of the effect saturating.
-     *
-     * It was pinned at 0.45 of the impact parameter whatever LENS said, which meant the control ran out: past a
-     * point, turning it up dragged nothing further. The cap exists because a bend of a whole impact parameter
-     * lands the sample on the axis and the image folds through itself, so it cannot reach 1 -- but between the
-     * two there is room, and that room is what LENS should be spending.
-     *
-     * Low, the bend only lifts the far edge clear of the shadow. High, it drags the disc round until the far
-     * half meets itself over the top, which is what a heavy lens does to a disc. */
-  float discCap = b * mix(0.42, 0.88, clamp(uLens / 6.0, 0.0, 1.0));
-  float deflDisc = softCap(deflLens * wrapGain, discCap);
-  vec2 dluv = uv - bdir * deflDisc;
-  vec2 luv  = uv - bdir * softCap(deflLens, b * 0.82);
-
-  vec3 rd = normalize(vec3(luv, uFov));
+  setupHole(rd, holeO, rs);
 
   vec3 col = vec3(0.0);
   float trans = 1.0;
@@ -519,285 +516,257 @@ void main(){
     trans *= 1.0 - a * 0.85;
   }
 
-  // A WHOLE-TUNNEL RING PASS, for the shells that do not carry one of their own.
-
-  /* THE ACCRETION DISC: A PLANE THROUGH THE HOLE, solved rather than drawn. A ray meets a plane at
-   * t = dot(O - eye, n) / dot(rd, n), which is one divide -- and because the ray was already bent by the lens
-   * above, the disc bends with it. Tilt it near edge-on and the far side climbs over the top of the shadow,
-   * which is the shape everyone recognises.
+  /* ================================ THE HOLE, INTEGRATED ================================
    *
-   * DOPPLER is the other half of that picture: the side turning toward you is brighter and bluer. It is a
-   * relativistic beaming term in the real thing and a dot product here, and without it a disc reads as a flat
-   * ring rather than as something spinning.
+   * EVERY FEATURE OF A BLACK HOLE FALLS OUT OF ONE LOOP, and not one of them is drawn:
+   *
+   *   THE SHADOW is the set of rays that reach r < Rs. Its edge lands at 2.598 Rs on its own -- that number
+   *     appears nowhere inside the loop, which is the test that the loop is right.
+   *   THE PHOTON RING is rays that wound most of a turn near 1.5 Rs and came back out. They cross the disc
+   *     several times on the way, so the light piles into a thin circle at the shadow's edge without anything
+   *     placing a circle there.
+   *   THE SECOND IMAGE -- the disc's far side arcing over the top of the shadow AND under the bottom at the
+   *     same time -- is simply the ray's second crossing of the disc. There is no front pass, no back pass and
+   *     no blend between them, because a curved ray is ONE ray.
+   *   THE MOUTH'S EINSTEIN RING is the tunnel wall, wrapped by the closed form above. Same law, same Rs.
+   *
+   * WHAT THIS REPLACES was a screen-space pinch whose deflection was softened to zero at the centre. It could
+   * not diverge, so it could not wind, so not one of the features above could occur -- and each had to be added
+   * by hand: a capture smoothstep for the shadow, a rim width for the ring, a squeeze gain for the fold, a
+   * two-pass split with a handover blend for the second image, a wrap gain and a cap to keep that image on the
+   * rim. All of it is gone. A LENS control is gone with it: there is no second number in gravity.
+   *
+   * IT IS BOUNDED, AND THAT IS WHY THIS LAB CAN AFFORD IT. The march runs only for rays whose impact parameter
+   * is inside rInt -- far enough out that the closed form is exact and the disc is out of reach -- and it hands
+   * over at that boundary rather than starting at the eye. At the shipped MASS that is a few per cent of the
+   * frame. Turn MASS up and the hole is most of the picture, and paying for most of the picture is fair.
    */
-  /* THE DISC'S INNER EDGE IS THE HOLE, not a number of its own.
-   *
-   * Nothing can orbit inside the innermost stable orbit -- material there has already fallen in -- so a disc
-   * always starts at the hole and never anywhere else. As two independent controls they could disagree, and
-   * every way they could disagree was wrong: a gap of empty space between hole and disc, or a disc drawn over
-   * the shadow it should be cut by. Derived, they cannot.
-   *
-   * 3x the shadow is where the real inner edge sits for a non-spinning hole, which is why every picture of one
-   * has a clear gap between the dark disc and the first light. */
-  float discIn = rs * 3.0;
-  /* AND THE OUTER EDGE IS A MULTIPLE OF THE INNER, for the same reason the inner is a multiple of the hole. As an
-   * absolute distance it could fall INSIDE the inner edge -- which it did the moment SIZE was raised, leaving an
-   * annulus with negative width and a disc that vanished entirely. A ratio cannot invert. */
-  /* REACH IS THE DISC'S OUTER RADIUS OUTRIGHT, in the same world units as everything else, so it does not move
-     when MASS does. It was a MULTIPLE of the inner edge because it was once absolute while the inner edge was
-     derived, and at a large enough MASS the inner edge overtook it -- inner outside outer, no annulus anywhere,
-     a black frame. The guard says that directly: the outer edge is never inside the inner one. A guard is a
-     statement about one relationship; a multiplier was a second control pretending to be one. */
-  float discOut = max(uDiscOut, discIn * 1.05);
-  /* THE DISC IS IN TWO HALVES AND THEY ARE NOT OCCLUDED THE SAME WAY.
-   *
-   * Half the disc is NEARER than the hole and passes in FRONT of it, so it cuts a band of light straight across
-   * the shadow -- that band is the single most recognisable thing about a picture of one, and it was missing
-   * because the whole disc was being multiplied by the shadow mask. The far half is behind and IS occluded.
-   *
-   * Which half a sample belongs to is just its hit depth against the hole's, so it costs one compare. */
-  vec3 discFront = vec3(0.0), discBack = vec3(0.0);
-  if (uDisc > 0.001){
-    vec3 O = vec3(bendAt(uFar) - b0, uFar);
-    /* A PLANE HAS TWO ANGLES AND ONLY TWO. Its orientation is its normal, and a direction on a sphere takes two
-     * numbers -- so TILT and LEAN reach every orientation there is. Rolling the disc about its own normal is the
-     * third rotation a solid would have and it does nothing at all to a plane; what people mean by it is the
-     * PATTERN turning, which is DISC SPIN.
-     *
-     * TILT is edge-on to face-on; LEAN swings which way an edge-on disc tips. At LEAN 0 this is exactly the
-     * single-angle normal it replaced, so nothing already tuned moves. */
+  vec3 discLit = vec3(0.0);
+  if (uMass > 1e-4 && uDisc > 0.001){
+    /* THE INNER EDGE IS THE ISCO AND IT IS NOT A CONTROL. Nothing orbits inside it, so a disc always starts
+       there and never anywhere else. As two independent numbers they could disagree, and every way they could
+       was wrong: a gap of empty space between hole and disc, or a disc drawn over the shadow. */
+    float discIn  = rs * R_ISCO;
+    /* REACH IS AN OUTRIGHT RADIUS in the same world units as everything else, so it stays put when MASS moves.
+       The guard says the only thing that must be true: the outer edge is never inside the inner one. */
+    float discOut = max(uDiscOut, discIn * 1.05);
+    /* HEIGHT IS AN HONEST CONTROL NOW, AND IT WAS NOT BEFORE. It used to size a sampling window and then cancel
+       straight out of the brightness, so the slider moved nothing and was removed for saying so. The disc is
+       integrated as a VOLUME along the same march that bends the light, so a deeper slab really does hold more
+       gas and really is brighter where the ray runs further through it.
+
+       IT ARRIVES IN SCHWARZSCHILD RADII, which is a length and not a ratio. It used to be a FRACTION OF THE
+       INNER EDGE shown as a percentage, and a percentage of something the panel never names is not a reading of
+       anything -- 14% of what? Rs is the one length every other radius in this picture is quoted against, so the
+       slab is measured in it too, and the slab still scales with MASS because Rs does. */
+    float hMax = max(uDiscH, 0.01) * rs;
+
+    /* A PLANE HAS TWO ANGLES AND ONLY TWO. Its orientation is its normal, and a direction on a sphere takes
+       two numbers -- so TILT and LEAN reach every orientation there is. The third rotation a solid would have
+       does nothing at all to a plane; what people mean by it is the PATTERN turning, which is DISC SPIN.
+       TILT 0 is flat: the normal points at the eye, so you look down on the disc. */
     float ct = cos(uDiscTilt), st = sin(uDiscTilt);
     float cl = cos(uDiscLean), sl = sin(uDiscLean);
-/* TILT 0 IS FLAT. The normal points at the eye at 0, so you look down on the disc, and lies across the view
-     * at 90, where you see it edge-on. It was the other way round -- 0 gave the edge-on bar -- which is the
-     * opposite of what the word says and made the bottom of the slider look broken rather than flat. */
     vec3 nrm = normalize(vec3(st * sl, st * cl, ct));
+    /* THE IN-PLANE AXES NEED A REFERENCE THE NORMAL IS NOT PARALLEL TO. Crossing with z alone returns a zero
+       vector the moment the disc is exactly face-on, and normalize(0) is a NaN that blackens every pixel the
+       disc touches at one end of the TILT slider. */
+    vec3 ref = abs(nrm.z) < 0.9 ? vec3(0.0, 0.0, 1.0) : vec3(1.0, 0.0, 0.0);
+    vec3 u1 = normalize(cross(nrm, ref));
+    vec3 u2 = cross(nrm, u1);
 
-    /* THE RAY CROSSES THE DISC'S PLANE TWICE, AND THAT IS THE WHOLE LOOK.
-     *
-     * A ray aimed just past the shadow does not travel straight: it bends round the hole. On the way it can meet
-     * the disc's plane once IN FRONT of the hole, unbent, and again BEHIND it after bending -- which is why the
-     * far side of a flat disc appears lifted above the shadow and hanging below it at the same time, while the
-     * disc itself stays flat. NASA's own visualisation puts it exactly that way: the disc behind the hole appears
-     * both above and below it.
-     *
-     * SO THE TWO PASSES ARE FRONT AND BACK, split by depth, not a direct image and an inverted copy. The
-     * inversion that used to be here drew a second arc OFFSET from the first -- two bright curves round one
-     * hole, which is not what bending light does -- and being radial it found nothing at all above or below an
-     * edge-on disc.
-     *
-     *   pass 0  the straight ray, keeping only the crossing NEARER than the hole. Its light never passed the
-     *           hole, so it is not bent, and it is not cut by the shadow: it is in front of it.
-     *   pass 1  the bent ray, keeping only the crossing BEYOND the hole. This is the arc over the top and under
-     *           the bottom, and the shadow cuts it, because it is behind.
-     *
-     * The blow-up in the middle that the lens used to cause cannot come back through pass 1: rays that near the
-     * axis are captured, and everything behind the hole is multiplied by that.
-     */
-    for (int im = 0; im < 2; im++){
-      vec2 suv = im == 0 ? uv : dluv;
-      /* THE BENT PASS BRIGHTENS WHERE IT COMPRESSES, because light is conserved. The bend pulls a ring of
-       * radius b in to one of radius b - deflDisc, so the same light lands in a smaller area and the ratio of
-       * the two IS the gain. It rises toward the shadow, where the bend is hardest and the wrap is tightest,
-       * and it is why the folded edge glows rather than merely being displaced. Radial, so it goes all the way
-       * round rather than favouring the top. */
-      float squeeze = 1.0 / max(1.0 - deflDisc / max(b, 1e-5), 0.15);
-      float dim = im == 0 ? 1.0 : 0.9 * squeeze;
-      vec3 srd = normalize(vec3(suv, uFov));
-      /* THE DISC IS A SLAB, NOT A PLANE, and that is what puts the band through the MIDDLE of the shadow.
-       *
-       * A plane has no thickness, so seen exactly edge-on it disappears -- which is why TILT 0 came back black,
-       * and why the only way to see the disc at all was from a little above or below, which throws the crossing
-       * band off centre. A real disc has depth: look along it and you see a bar straight across the hole, cutting
-       * it into a top half and a bottom half.
-       *
-       * HOW FAR THE RAY TRAVELS INSIDE IT is 2h / |dn|, which is also why an edge-on disc is BRIGHT across the
-       * middle -- the line of sight stays in the glowing gas for a long way. Clamped, because that path length
-       * runs to infinity exactly edge-on and would blow the frame out. */
-      float dn = dot(srd, nrm);
-      float adn = max(abs(dn), 1e-3);
-      /* THICKNESS IS THE SLAB'S HALF-HEIGHT AT ITS INNER EDGE, and it scales with discIn, which is 3 Rs -- so a
-       * heavier hole carries a proportionally deeper disc without a second control saying so. */
-      /* THE SLAB HAS A FIXED HALF-HEIGHT, a share of the inner edge, so it still scales with MASS.
-       *
-       * IT WAS A SLIDER AND THE SLIDER WAS A LIE. Thickness could only ever reach the BRIGHTNESS -- the disc's
-       * extent is tested against length(rel3), the distance from the hole in any direction, which carves a
-       * spherical shell rather than a disc, so height above the plane counts as radius and a deeper slab has
-       * nowhere to stand taller. A control that only brightens is DISC with another name.
-       *
-       * The half-height is still load-bearing: the window it sets is what lets a ray running ALONG a near
-       * edge-on disc find a sample at all, which is what puts the band across the shadow and lets TILT reach
-       * the edge. Giving a real disc real depth means sampling the slab as a volume rather than at one point --
-       * a short march inside the disc only -- and that is a change worth making deliberately, not a slider. */
-      float hthick = discIn * 0.16;
-      /* TILT REACHES 0 NOW, AND THE SLAB IS WHY.
-       *
-       * At exactly edge-on the disc's plane contains the eye -- any plane through the hole you see edge-on runs
-       * through where you are standing -- so dot(O,nrm) and dn both go to zero, every mid-plane crossing comes
-       * out at 0, and the whole disc was skipped. The slider was fenced above it.
-       *
-       * But a slab has somewhere to sample even then. The stay inside it is hthick/adn either side of the
-       * crossing, and as the disc turns edge-on that window opens without bound, so the clamp below stops being
-       * a clamp and becomes the ray's nearest approach to the hole -- which is exactly where a ray running along
-       * the disc is deepest inside it. All that blocked TILT 0 was testing td before the clamp had run: the test
-       * belongs on the sample actually used.
-       *
-       * The window still rejects properly when it should. If the eye is further off the plane than the slab is
-       * thick, the window sits far down the ray, the sample lands well outside the annulus, and nothing draws. */
-      float td = dot(O, nrm) / (dn >= 0.0 ? adn : -adn);
-      float hspan = hthick / adn;
-      /* SATURATE INTO THE SLAB, DO NOT CLAMP INTO IT -- this is why the disc was not round.
-       *
-       * clamp() has two corners. Either side of them the sample sits at a different place along the ray, and it
-       * moves discontinuously as the corner is crossed, so the edge of the region that finds the disc is shaped
-       * by where the clamp bites rather than by the disc: straight runs and angles instead of an ellipse.
-       *
-       * clamp(x, td-h, td+h) is td + clamp(x-td, -h, h), so the same smooth ceiling used on the deflection
-       * applies to the offset. It approaches the slab's face without a corner, the sample slides instead of
-       * jumping, and the outline is the disc's own. */
-      float ts = td + softCap(dot(O, srd) - td, hspan);
-      if (ts > 0.0) {
+    // Where the closed form stops being enough: outside the disc's reach AND well outside the winding zone.
+    float rInt  = max(discOut, rs * B_CRIT * 4.0) * 1.15;
+    // And where there is nothing left ahead worth stepping through, which is nearer than where it started.
+    float rExit = max(discOut, rs * B_CRIT * 2.5);
 
-      vec3 P = srd * ts;
-      vec3 rel3 = P - O;
-      float rr = length(rel3);
-      if (rr > discIn && rr < discOut) {
-        /* THE TWO PASSES HAND OVER SMOOTHLY, and this has to be a blend rather than a test.
-         *
-         * The straight ray owns the crossing nearer than the hole, the bent ray the one beyond -- but switching
-         * between them at exactly the hole's depth cut a hard horizontal line clean across the frame, because
-         * the two passes reach that boundary from different geometry and do not meet at the same value. A real
-         * ray curves continuously; it does not stop being straight at a plane.
-         *
-         * Weighted across a band either side of the hole's depth, each pass fades in as the other fades out and
-         * the join disappears. Away from the band the weights are still 1 and 0, so neither pass draws the
-         * other's crossing and the disc does not double. */
-        bool front = P.z < uFar;
-        float hand = smoothstep(-0.22 * uFar, 0.22 * uFar, uFar - P.z);
-        float wPass = im == 0 ? hand : 1.0 - hand;
-        if (wPass < 0.003) continue;
-
-      /* THE DISC BULGES IN THE MIDDLE, thickest at the inner edge and thinning outward -- a lens, or a UFO,
-       * rather than a sheet of card. The inner region of a real disc is the puffy one: it is hottest, radiating
-       * hardest and held up against gravity by its own pressure, while the outer disc settles flat.
-       *
-       * THICKNESS NOW REACHES THE BRIGHTNESS, and before this it could not. The path term read
-       *   min(2h/adn, 4h) / 2h
-       * and h cancels straight out of that -- it collapses to min(1/adn, 2), so DISC THICKNESS only ever sized
-       * the sampling window and never changed a single pixel. Dividing by a FIXED reference instead of by the
-       * thickness itself is what lets a deeper slab actually glow more where the ray runs further through it. */
-      float bulge = mix(1.0, 0.12, smoothstep(discIn, discOut, rr));
-      float hth = hthick * bulge;
-      /* SATURATED, NOT MIN()'d -- THIS IS WHY THE DISC WAS NOT ROUND.
-       *
-       * The path through the slab grows as 1/adn and has to be capped or a ray running along the disc integrates
-       * forever. min() puts a corner at the radius where the cap takes over, and adn is the ray's angle to the
-       * disc's NORMAL, which is constant along straight lines across the screen -- so that corner drew a straight
-       * brightness edge through the disc. Flat top, flat bottom, rounded sides: the outline of the cap, not of
-       * the disc. The third hard ceiling in this shader to do the same thing in a different place. */
-      float path = softCap(2.0 * hth / adn, 4.0 * hth) / max(discIn * 0.30, 1e-4);
-
-      /* THE IN-PLANE AXES NEED A REFERENCE THE NORMAL IS NOT PARALLEL TO. Crossing with z alone returns a zero
-       * vector the moment the disc is exactly face-on -- normalize(0) is a NaN, and a NaN here blackens every
-       * pixel the disc touches at one end of the TILT slider. Pick whichever axis the normal leans on least. */
-      vec3 ref = abs(nrm.z) < 0.9 ? vec3(0.0, 0.0, 1.0) : vec3(1.0, 0.0, 0.0);
-      vec3 u1 = normalize(cross(nrm, ref));
-      vec3 u2 = cross(nrm, u1);
-      float pa = atan(dot(rel3, u2), dot(rel3, u1));
-      float band = (rr - discIn) / max(discOut - discIn, 1e-3);
-
-      /* KEPLERIAN, NOT RIGID, and it is the difference between a disc and a painted ring. Orbital speed goes as
-       * r^-1/2, so angular rate goes as r^-3/2 and the inner edge laps the outer one many times over. Turning
-       * the whole disc at one rate is the giveaway that nothing is orbiting.
-       *
-       * IT ALSO DRIFTS INWARD. Material in a disc is falling in, not circling forever -- shifting the pattern
-       * toward the inner edge is what makes it read as being consumed rather than parked. */
-      float kep = pow(max(discIn / max(rr, 1e-3), 0.03), 1.5);
+    if (gB < rInt){
+      /* HAND OVER FROM THE CLOSED FORM AT THAT BOUNDARY rather than integrating the empty tunnel. Position is
+         delta(s) and direction is theta(s), read straight off the two lines the tunnel uses, so the march
+         starts on the path the tunnel already drew and there is no seam where they meet. */
+      float tS = max(gT0 - rInt, 0.0);
+      float sS = tS - gT0;
+      vec3 x = rayAt(rd, tS) - gHoleO;
+      vec3 v = normalize(rd - gHdir * ((rs / gB) * (1.0 + sS / sqrt(sS * sS + gB * gB))));
+      vec3 Lv = cross(x, v);
+      float h2 = dot(Lv, Lv);
+      vec3 acc = holeAccel(x, h2, rs);
       float turn = uTime * uDiscSpin;
-      float pa2 = pa + turn * kep * 0.5;
-      float grain = fbm(vec3(cos(pa2), sin(pa2), 0.0) * 3.0
-                      + vec3(0.0, 0.0, rr * 1.6 + turn * 0.12), 3);
 
-      /* BRIGHTEST AT THE INSIDE, because that is where the material is hottest and moving fastest -- a disc that
-       * is uniform, or brightest at its rim, is the wrong way round. */
-      float bright = (1.0 - band) * (0.55 + 0.9 * grain);
+      /* HOW FAR ROUND THE HOLE THE RAY HAS COME, and it is the only bookkeeping the march needs. h is
+         conserved and dphi = h dlambda / r^2, so carrying it costs one multiply and one divide a step. */
+      float phi = 0.0;
+      float hMom = sqrt(h2);
 
-      /* DOPPLER BEAMING, AS THE DOPPLER FACTOR CUBED. This is the single most recognisable thing about a
-       * picture of an accretion disc and it was modelled as a linear tint, which is why it read as a mild
-       * shading rather than one limb being violently brighter than the other.
-       *
-       * Observed brightness goes as delta^3 for a specific luminosity (delta^4 bolometric), with
-       *   delta = 1 / (gamma * (1 - beta cos(theta)))
-       * where beta is the orbital speed and theta the angle between it and the line of sight. Cubed, a beta of
-       * about a third already makes the approaching limb several times the receding one -- and the receding side
-       * genuinely goes dark rather than merely dimmer.
-       *
-       * BETA COMES FROM THE ORBIT, not a slider: circular orbital speed is sqrt(Rs / 2r), so the inner edge runs
-       * near half light speed and the outer one crawls. That is the same r^-1/2 the pattern's rotation uses, so
-       * the beaming and the turning cannot disagree about how fast the material is going.
-       *
-       * DOPPLER SCALES THE EXPONENT rather than blending toward it: 0 is no beaming, 1 is the physical cube, and
-       * above that it exaggerates without ever changing which limb is bright. */
-      /* SPIN CARRIES THE DIRECTION, AND STOPPING IT STOPS THE BEAMING. A hard sign test kept beaming at full
-       * strength with SPIN at 0 -- a disc going nowhere with one limb still lit, because beta comes from the
-       * orbital radius while only the sign came from SPIN. Easing through zero ties the two together: nothing
-       * orbiting, nothing beaming, and no jump as it crosses.
-       *
-       * DOPPLER HAS NO SIGN OF ITS OWN on purpose. Which limb approaches is a fact about the orbit and SPIN
-       * already owns it; a second signed control would let the two cancel and give two ways to say one thing. */
-      vec3 vel = normalize(cross(nrm, rel3)) * clamp(uDiscSpin / 0.4, -1.0, 1.0);
-      float beta = clamp(sqrt(rs / max(2.0 * rr, 1e-4)), 0.0, 0.85);
-      float gamma = 1.0 / sqrt(max(1.0 - beta * beta, 1e-4));
-      float delta = 1.0 / max(gamma * (1.0 - beta * dot(vel, -srd)), 1e-3);
-      float dop = pow(delta, 3.0 * uDoppler);
+      /* VELOCITY-VERLET, NOT EULER. It is symplectic, so a ray winding near the photon sphere holds its orbit
+         instead of spiralling out of it as the step count runs down -- which is the difference between a photon
+         ring and a smear.
 
-      /* NOTHING COMES OUT OF THE MIDDLE. The disc is cut at its inner edge and the shadow cuts everything again
-       * below -- light in this picture comes from the disc and from the photon ring, and from nowhere inside. */
-      bright *= smoothstep(0.0, 0.10, band) * smoothstep(1.0, 0.86, band) * path;
-      vec3 add = mix(uDiscA, uDiscB, band) * max(bright, 0.0) * max(dop, 0.0) * uDisc * 1.1 * dim * wPass;
-      /* The secondary image is light that went BEHIND the hole by definition, so it is always the far half
-         however near its apparent position lands. */
-      /* NEARER THAN THE HOLE IS A DEPTH TEST, and it was comparing a distance ALONG THE RAY against a
-         depth -- the same number only for a ray down the axis, and increasingly wrong toward the corners. */
-      if (front) discFront += add; else discBack += add;
-      }}
+         THE STEP FOLLOWS r, AND NOTHING ELSE. Coarse out where the path is nearly straight, fine in where it is
+         turning hardest, so the budget is spent where the curvature is. Its own floor is what makes it safe: the
+         loop stops at 1.02 Rs, where 0.17*(r - 0.45 Rs) is still about a tenth of Rs, so the step cannot
+         collapse and the march cannot stall however small the hole is.
+
+         IT WAS ALSO CAPPED BY THE SLAB'S THICKNESS, AND THAT CAP WAS A BUG. The cap was hMax*0.75, hMax scales
+         with MASS, and the distance to cross does not -- so the steps needed to get through the disc went as
+         1/MASS and passed the budget at MASS 1: 165 steps asked of 144, and 825 by MASS 0.2. Past that point the
+         march ran out before it reached the hole, so the shadow and the disc simply stopped being drawn, and
+         every pixel in the lensed region burned the full budget doing it. Both halves of "it breaks below a
+         certain MASS and it will not hold 60" were that one line.
+         Nothing needs it. The overlap below is EXACT for a straight segment at any step length, and where the
+         path is curved enough for straightness to matter -- near the photon sphere -- 0.17*(r - 0.45 Rs) is
+         already about 0.18 Rs against a slab 0.42 Rs thick, so the step is smaller than the slab there anyway. */
+      for (int i = 0; i < 144; i++){
+        float r = length(x);
+        if (r < rs * 1.02) break;                  // fell in. Whatever it gathered on the way still counts.
+        /* OUT AND CLIMBING, PAST EVERYTHING THERE IS TO MEET. The test used to be against rInt, which is the
+           radius the march STARTS at -- so every escaping ray was carried a long way past the disc's outer edge
+           before anything stopped it. What matters is the disc's own reach and the few Rs where the bend is
+           still worth integrating. */
+        if (dot(x, v) > 0.0 && r > rExit) break;
+        float dt = clamp(0.17 * (r - 0.45 * rs), 1e-5, 0.25 * rInt);
+
+        vec3 x0 = x;
+        v += acc * (0.5 * dt);
+        x += v * dt;
+        acc = holeAccel(x, h2, rs);
+        v += acc * (0.5 * dt);
+        phi += hMom * dt / max(dot(x, x), 1e-9);
+        if (phi > 8.0) break;    // a turn and a quarter; past it nothing found survives the damping below.
+
+        float d0 = dot(x0, nrm), d1 = dot(x, nrm);
+        if (d0 * d1 > 0.0 && min(abs(d0), abs(d1)) > hMax) continue;
+
+        /* THE DISC IS A SLAB AND THE STEP IS A SEGMENT, so what a step collects is the LENGTH of the overlap
+         * between them. This is the volume integral the old build wanted and could not afford: the march is
+         * already running for the lensing, so sampling the gas along it costs a clamp.
+         *
+         * NOTHING IS CAPPED, and the last hard ceiling in this shader goes with that. The old path length was
+         * 2h/|cos| and ran to infinity exactly edge-on, so it had to be saturated -- and the saturation drew
+         * its own straight-edged outline through the disc. A segment simply has a length, and a ray cannot stay
+         * inside the slab forever because it either falls in or leaves. Edge-on, many consecutive steps land
+         * inside and the disc reads as a bright bar clean across the middle of the shadow. Face-on, one step
+         * crosses it and it reads as a ring. */
+        /* MEASURED AT THE CROSSING, NOT AT THE MIDDLE OF THE STEP. The slab's thickness and the radial cull
+           both want to know WHERE the ray meets the plane, and the midpoint of the segment only answers that
+           while steps are short. Since the step no longer follows the slab it can be most of a world unit long
+           in the outer disc, and a midpoint there sits far enough from the crossing to cull real hits at both
+           edges of the annulus. d is linear along the segment, so the crossing is one divide. */
+        float dv = d1 - d0;
+        float uc = abs(dv) > 1e-7 ? clamp(-d0 / dv, 0.0, 1.0) : 0.5;
+        float rm = length(mix(x0, x, uc));
+        if (rm < discIn * 0.9 || rm > discOut * 1.1) continue;
+        /* THE DISC BULGES IN THE MIDDLE, thickest at the inner edge and thinning outward -- a lens rather than
+           a sheet of card. The inner region of a real disc is the puffy one: hottest, radiating hardest, and
+           held up against gravity by its own pressure, while the outer disc settles flat. */
+        float hh = hMax * mix(1.0, 0.12, smoothstep(discIn, discOut, rm));
+
+        float uA = 0.0, uB = 0.0;
+        if (abs(dv) > 1e-7){
+          float p = (-hh - d0) / dv, q = (hh - d0) / dv;
+          uA = clamp(min(p, q), 0.0, 1.0);
+          uB = clamp(max(p, q), 0.0, 1.0);
+        } else if (abs(d0) < hh){ uB = 1.0; }
+        float frac = uB - uA;
+        if (frac <= 0.0) continue;
+
+        /* LIGHT THAT WOUND FURTHER IS DAMPED, AND IT HAS TO BE DAMPED BY AN ANGLE RATHER THAN BY A COUNT.
+         *
+         * Each successive image of the disc is squeezed into an angular width about e^(-2pi) -- a five-hundredth
+         * -- of the one before. The first is the disc itself; the second is the arc that climbs over the top of
+         * the shadow and hangs under the bottom, and it is wide enough to draw. The third already lands inside a
+         * pixel, so what a pixel reports about it is not its brightness but WHICH SIDE of it that pixel fell on.
+         *
+         * COUNTING THE CROSSINGS AND CAPPING THE COUNT DOES NOT FIX THAT, and trying it is what proved the
+         * point. The count is an INTEGER function of the impact parameter: it steps as b crosses each image, and
+         * that step lands on screen as a DOTTED CIRCLE at the shadow's edge, one dot per pixel that fell the far
+         * side of the jump. Exactly the grain a march produces, arriving through the one part of this shader
+         * that is a march -- and capping the count only moves which jump draws it.
+         *
+         * phi is CONTINUOUS in b. It rises smoothly and diverges logarithmically at the capture radius, so
+         * damping by it FADES the unresolvable images out rather than switching them off, and neighbouring
+         * pixels agree about what they see.
+         *
+         * THE CURVE IS FLAT THEN STEEP, which is what lets it keep the second image and lose the third. A
+         * gentle falloff has to be strong enough at 2pi to hide the third image, and anything that strong at 2pi
+         * has already halved the second one at pi. A fourth power inside an exponential is nearly 1 out to most
+         * of a half turn and nearly 0 by a full one. */
+        float q = phi * 0.238;   // a half turn is a little under 1, a full turn a little under 1.5
+        q *= q;
+        float passAtt = exp(-q * q);
+
+        vec3 hp = mix(x0, x, 0.5 * (uA + uB));
+        float rr = length(hp);
+        if (rr <= discIn || rr >= discOut) continue;
+
+        /* WHAT A DISC ACTUALLY RADIATES, which is neither uniform nor simply brightest at the inside.
+         *
+         * Novikov-Thorne: the flux from a steadily accreting disc goes as r^-3 * (1 - sqrt(r_isco/r)). It is
+         * ZERO at the inner edge -- material there is already falling rather than orbiting, so it radiates
+         * nothing -- rises to a peak about a third of the way out, and falls away hard. THAT ZERO is why every
+         * real picture of a black hole has a clean dark gap between the shadow and the first light, and the old
+         * build drew that gap by hand with a smoothstep. 17.7 is 1/peak, so the profile arrives normalised. */
+        float ix  = discIn / rr;
+        float ix3 = ix * ix * ix;
+        float band = (rr - discIn) / max(discOut - discIn, 1e-3);
+        float emis = (ix3 - ix3 * sqrt(ix)) * 17.7 * smoothstep(1.0, 0.88, band);
+
+        /* KEPLERIAN, NOT RIGID, and it is the difference between a disc and a painted ring. Angular rate goes
+           as r^-3/2, so the inner edge laps the outer one many times over. It also drifts inward, because
+           material in a disc is being consumed rather than parked. */
+        float kep = pow(max(ix, 0.03), 1.5);
+        float pa  = atan(dot(hp, u2), dot(hp, u1)) + turn * kep * 0.5;
+        emis *= 0.55 + 0.9 * fbm(vec3(cos(pa), sin(pa), 0.0) * 3.0
+                               + vec3(0.0, 0.0, rr * 1.6 + turn * 0.12), 3);
+
+        /* ONE g-FACTOR, TWO EFFECTS, AND THAT IS WHY THERE IS NO REDSHIFT SLIDER.
+         *
+         * What reaches the eye is the emitted brightness times g^3, where g is the ratio of received to
+         * emitted frequency -- and g is the ORBITAL Doppler factor times the GRAVITATIONAL one, sqrt(1 - Rs/r).
+         * They are two halves of one number: DOPPLER only scales how far the orbital half is pushed, and the
+         * gravitational half is a fact about where the light was emitted, so it is not a control at all.
+         *
+         * BETA COMES FROM THE ORBIT, NOT A SLIDER: circular orbital speed is sqrt(Rs/2r), so the inner edge
+         * runs near half light speed and the outer one crawls -- the same r^-1/2 the pattern turns at, so the
+         * beaming and the turning cannot disagree about how fast the gas is going. Cubed, a beta of about a
+         * third already makes the approaching limb several times the receding one, and the receding side
+         * genuinely goes dark rather than merely dimmer.
+         *
+         * SPIN CARRIES THE DIRECTION, so stopping it stops the beaming. A disc going nowhere with one limb
+         * still lit was the giveaway that beta and its sign were coming from different places.
+         *
+         * THE SAME g SLIDES THE COLOUR toward the cool end, because a redshift is a redshift. One number,
+         * two effects, and no second control to disagree with the first. */
+        vec3  vel  = normalize(cross(nrm, hp)) * clamp(uDiscSpin / 0.4, -1.0, 1.0);
+        float beta = clamp(sqrt(rs / max(2.0 * rr, 1e-4)), 0.0, 0.85);
+        float gam  = inversesqrt(max(1.0 - beta * beta, 1e-4));
+        float gdop = 1.0 / max(gam * (1.0 - beta * dot(vel, -normalize(v))), 1e-3);
+        float ggrv = sqrt(max(1.0 - rs / rr, 0.0));
+        float g    = gdop * ggrv;
+        float boost = pow(max(gdop, 1e-3), 3.0 * uDoppler) * ggrv * ggrv * ggrv;
+
+        vec3 tint = mix(uDiscA, uDiscB, clamp(band + (1.0 - clamp(g, 0.0, 1.0)) * 0.7, 0.0, 1.0));
+        /* THE PATH IS MEASURED AGAINST A FIXED FRACTION OF THE INNER EDGE, not against the slab's own height.
+           Dividing by the height would cancel it straight out and DISC HEIGHT would move nothing, which is the
+           exact fault that got the earlier version of the slider deleted. */
+        discLit += tint * (emis * boost * passAtt * uDisc * 1.6
+                           * length(x - x0) * frac / max(discIn * 0.22, 1e-4));
+      }
     }
   }
 
-  /* THE HOLE IS AN OBJECT AT A DEPTH, AND THE WALL CAN BE IN FRONT OF IT.
+  /* THE HOLE IS SEEN THROUGH WHATEVER TUNNEL IS IN THE WAY, and that is the whole compositing rule.
    *
-   * It was drawn as a screen-space overlay after the shells, so its shadow punched through tunnel wall that was
-   * NEARER than it and the disc floated on top of everything. With any real BEND that separates visibly: the tube
-   * curves away, its convergence slides off to one side, and the hole stays where the axis reaches DEPTH -- two
-   * end points on screen at once, which is what gave the game away.
+   * trans is exactly the fraction of this pixel that still saw past the shells, and the hole and its disc sit
+   * at DEPTH or beyond, so trans is what they arrive through. Bend the tube far enough that the wall closes
+   * across the far end and the hole goes behind it, which is what a tunnel that bends away should do.
    *
-   * trans is exactly the fraction of this pixel that still sees DEPTH after the shells have had their turn, so
-   * it is what the hole is visible through. Bend the tube far enough that the wall closes across the far end and
-   * the hole goes behind it, which is what a tunnel that bends away should do.
-   *
-   * THE SHADOW IS WEIGHTED THE SAME WAY. Cutting unconditionally would carve a black disc out of a wall standing
-   * in front of it; cutting by trans removes only the light that was coming from behind. */
-  // The dark disc is the geometric shadow AND everything the lens captured, which at high MASS is wider.
-  /* THE SHADOW'S EDGE IS A NEARLY FIXED WIDTH, NOT A FIXED FRACTION. The photon ring is found from this edge,
-     so the edge's width IS the ring's width. As a fraction of the shadow it was a couple of pixels at low MASS,
-     too thin to read, and a 35-pixel band of white at high MASS -- a real photon ring stays thin however big
-     the hole gets, and a fat one buries the warping behind it. A small floor keeps it visible when the hole is
-     tiny; above that it barely grows. */
-  float rimW = max(shadowR * 0.05, 0.0045);
-  float inside = smoothstep(shadowR - rimW, shadowR + rimW, b) * (1.0 - captured);
-  col *= mix(1.0, inside, trans);
-  // Behind the hole: cut by the shadow, and seen through whatever tunnel wall is in the way.
-  col += discBack * inside * trans;
-
-  /* NOTHING DRAWS THE BRIGHT EDGE BUT THE DISC ITSELF.
-     There were two attempts at a photon ring here and both were the same mistake in different clothes: a band
-     of light placed at the shadow's edge because a picture of a black hole has one. The first carried its own
-     colour and slider and lit with the disc switched off; the second took the disc's colour and texture, which
-     was better and still a second description of one edge -- a stroke laid over the wrap rather than the wrap.
-     The disc's own light bends round the hole and arrives there, which is where that brightness comes from. */
-
-  // In FRONT of the hole, so nothing occludes it -- this is the band that cuts the shadow in half.
-  col += discFront * trans;
+   * THERE IS NO SHADOW MASK ANY MORE, and its absence is the point. The old build multiplied the tunnel by a
+   * dark disc, which was wrong twice over: the tunnel lies entirely IN FRONT of the hole, so the hole cannot
+   * occlude it, and a ray that reaches the shadow at all got there by leaving through the tunnel's MOUTH
+   * without meeting a wall on the way. The shadow is where the geodesic fell in and gathered nothing. It is an
+   * absence, not a stencil, and drawing it as a stencil is what bit a black disc out of wall in front of it. */
+  col += discLit * trans;
 
   // The screen radius, for the lens effects that belong to the FRAME rather than to the tunnel.
   float r = length(uv);
