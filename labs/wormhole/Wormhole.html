@@ -74,6 +74,7 @@ import { persist, fitCanvas, runLoop, textOut, reportNoGL, escapeLeaves, mountLo
 import { FRAG, UNIFORMS, MAXL } from './wormhole-shader.js';
 import { ALL_SECTIONS, sectionsFor, FMT, LAYER_NAMES } from './wormhole-sidebar.js';
 import { defaultPreset } from './wormhole-presets.js';
+import { createMoves } from './wormhole-moves.js';
 mountLoader();
 escapeLeaves();
 
@@ -125,7 +126,14 @@ function syncMode() {
   textOut(modeEl, lit.length ? lit.join(' · ') : 'NOTHING LIT');
 }
 
-buildActions(document.getElementById('actions'), [
+/* THE MOVES SIT BESIDE RESET, and ENGAGE carries a lamp because it is the only one with a state to be in --
+   BURST and STORM are events and are over before a lamp could mean anything. syncActions is called on the
+   toggle so the lamp follows it. */
+const moves = createMoves();
+const syncActions = buildActions(document.getElementById('actions'), [
+  ['◉ ENGAGE', () => moves.toggle(), () => moves.engaged],
+  ['↯ BURST', () => moves.fireBurst()],
+  ['≋ STORM', () => moves.fireStorm()],
   ['↺ RESET', () => {
     const folds = state.secClosed;
     Object.assign(state, defaultPreset(R.gpu), { secClosed: folds });
@@ -166,14 +174,14 @@ const hex = (h) => [1, 3, 5].map((i) => parseInt((h || '#ffffff').slice(i, i + 2
  * front-to-back and a ray crosses the small radius first, so the shells must arrive inner-first. Drag one shell's
  * RADIUS past another's and, unsorted, it would composite behind something it is now in front of -- which reads
  * as the near shell being transparent to the far one for no reason a viewer could name. */
-function packed() {
+function packed(st) {
   const idx = Array.from({ length: MAXL }, (_, i) => i)
-    .sort((a, b) => state['L' + a + 'Rad'] - state['L' + b + 'Rad']);
+    .sort((a, b) => st['L' + a + 'Rad'] - st['L' + b + 'Rad']);
   const geom = [], mix = [], shade = [], extra = [], ringP = [];
   const cA = [], cB = [], bA = [], bB = [], sA = [], sB = [];
   for (let s = 0; s < MAXL; s++) {
     const i = idx[s];
-    const g = (k) => state['L' + i + k];
+    const g = (k) => st['L' + i + k];
     geom.push(g('Rad'), g('Amt'), g('Speed'), g('Warp'));
     mix.push(g('Cloud'), g('Bolts'), g('Streak'), g('Ring'));
  /* FILL IS COVERAGE ON THE PANEL AND A THRESHOLD IN THE SHADER, inverted here where the two meet.
@@ -196,7 +204,10 @@ function packed() {
 function draw(dt, sec) {
   if (R.lost) { textOut(glEl, 'GL CONTEXT LOST'); return; }
   textOut(glEl, '');
-  const s = state;
+  /* THE MOVES ARE ADDED ON TOP OF THE SLIDERS, NEVER INTO THEM. step() hands back a copy while a move is
+     running and the state object ITSELF when idle -- so the scene stays a pure function of (state, time)
+     whenever nothing is playing, and renderNow(sec) still reproduces a frame exactly. */
+  const s = moves.step(state, dt, sec);
 
   R.f2('uRes', R.w, R.h);
   R.f('uTime', sec);
@@ -220,7 +231,7 @@ function draw(dt, sec) {
      pinhole at DEPTH, and a pinhole whose axis has swung sideways is a needle pointing off screen that almost
      no ray hits -- which emptied the frame and looked exactly like the bend being broken. */
   const litRad = Array.from({ length: MAXL }, (_, i) => i)
-    .filter((i) => state['L' + i + 'On']).map((i) => state['L' + i + 'Rad']);
+    .filter((i) => s['L' + i + 'On']).map((i) => s['L' + i + 'Rad']);
   const narrowest = litRad.length ? Math.min(...litRad) : 1;
   /* THE TUBE ENDS AT THE SHADOW, AND IT IS NOT ALLOWED TO END INSIDE IT.
      3*sqrt(3)/2 is the critical impact parameter -- the shadow's APPARENT radius -- and it is the same number
@@ -244,7 +255,7 @@ function draw(dt, sec) {
   R.f3('uDiscA', ...hex(s.discA)); R.f3('uDiscB', ...hex(s.discB));
   R.f('uFog', s.fog); R.f('uExposure', s.exposure);
 
-  const p = packed();
+  const p = packed(s);
   R.fv4('uGeom', p.geom); R.fv4('uMix', p.mix); R.fv4('uShade', p.shade); R.fv4('uExtra', p.extra); R.fv4('uRingP', p.ringP);
   R.fv4('uCloudA', p.cA); R.fv4('uCloudB', p.cB);
   R.fv4('uBoltA', p.bA);  R.fv4('uBoltB', p.bB);
