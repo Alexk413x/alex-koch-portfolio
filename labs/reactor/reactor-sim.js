@@ -84,7 +84,7 @@ export function createSim() {
                                : dt * (13 - Math.min(1, Math.abs(pulse)) * 10);
       inst += (instRaw - inst) * Math.min(1, k);
 
-      /* EVERY RATE IS EXACTLY ITS CONTROL. The mode used to add an instability term to each of these, which meant
+      /* EVERY RATE IS EXACTLY ITS CONTROL. Adding an instability term from the mode to each of these would mean
        * ORBIT and WOBBLE at zero still moved the ring and no slider told the truth about what it did. A preset
        * that wants a violent ring says so in its own values. */
       const rad = dt * RAD_PER_RPM;          // RPM -> radians for this frame

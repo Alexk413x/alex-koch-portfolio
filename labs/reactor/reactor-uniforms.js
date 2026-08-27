@@ -32,10 +32,10 @@ function toColumnMajor(m, out) {
 }
 
 /* Composes world -> ring space: spin about the ring's own axis, then the two world tumbles.
- * The shader used to build this per call, and ringSDF and shieldSDF each call it inside the march loop — so a
+ * Building this per call inside ringSDF and shieldSDF, both of which run inside the march loop, means a
  * 70-step ray composed the same matrix 140 times. The angles are all uniforms, so it is the same matrix for
  * every pixel in the frame.
- * The multiply order matches the old shader exactly: ringSpace applied Z first, then X, then Y.
+ * The multiply order is the one ringSpace applies: Z first, then X, then Y.
  */
 function ringMatrix(s, p) {
   const az = s.ringAngleZ + p.phOrbitZ + p.wobbleZ * Math.sin(p.phWobZ);
@@ -75,7 +75,7 @@ export function sendUniforms(R, s, p, sec) {
   R.f('uBreakBurst', p.breakBurst);
 
   // The composed form of the six angles above. They are still uploaded because the ring's shading reads them.
-  /* The angles themselves are no longer uploaded. The shader read them only to rebuild these two matrices per
+  /* The angles themselves are not uploaded. The shader would read them only to rebuild these two matrices per
      pixel, so composing them here left fourteen float uniforms with no reader. */
   R.m3('uRingM', ringMatrix(s, p));
   R.m3('uCoreM', coreMatrix(s, p));

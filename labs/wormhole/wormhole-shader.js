@@ -114,12 +114,12 @@ float fbm(vec3 p, int oct){
 
 /* THE TUNNEL IS A FIXED CURVE IN SPACE AND THE CAMERA TRAVELS ALONG IT.
  *
- * WHAT THIS REPLACES, AND WHY IT WAS WRONG. The bend used to be an arch anchored at the eye, growing as the
- * square of the distance and rotating in place. That displaces the far field and leaves the near field alone --
- * which is exactly what a LENS does, and it read as one. Nothing ever travelled: no bend ever arrived, passed,
- * or went behind you. It was a tube being deformed around a stationary viewer.
+ * WHY A PATH AND NOT A DEFORMATION. An arch anchored at the eye, growing as the square of the distance and
+ * rotating in place, displaces the far field and leaves the near field alone -- which is what a LENS does and
+ * reads as one. Nothing travels: no bend arrives, passes, or goes behind you. It is a tube being deformed
+ * around a stationary viewer.
  *
- * A path fixes that. The curve is fixed in the world; BEND FLOW moves the CAMERA along it. So the corners come
+ * So the curve is fixed in the world instead, and BEND FLOW moves the CAMERA along it. So the corners come
  * out of the distance, straighten as you reach them, and sweep past -- which is what travelling down a bent
  * tunnel is, and what the home page's lab card gets by flying its rings along a centerline.
  *
@@ -365,9 +365,9 @@ float wallGap(vec3 rd, float t, float R){
  */
 /* THE SCAN STARTS WHERE THE LAST SHELL WAS HIT, AND THAT IS MOST OF THIS SHADER'S COST.
  *
- * Every shell used to rescan the whole tube from the eye, so three lit shells swept the same stretch three
- * times over -- and measured by GPU timer query the geometry solve is 2.0 to 2.7 ms PER SHELL against an 11 ms
- * frame, about sixty per cent of it, before a single effect is drawn. Nothing else in the frame is close: the
+ * Rescanning the whole tube from the eye per shell sweeps the same stretch once for every lit shell, and
+ * measured by GPU timer query the geometry solve is 2.0 to 2.7 ms PER SHELL against an 11 ms frame, about
+ * sixty per cent of it, before a single effect is drawn. Nothing else in the frame is close: the
  * nebula at four octaves is 1.3 ms, the plasma 0.8, the black hole 0.6.
  *
  * IT IS SAFE BECAUSE THE HOST SORTS THE SHELLS INNER-FIRST, which it already must for front-to-back
@@ -454,10 +454,9 @@ float solveShell(vec3 rd, float R, float tStart, out vec2 rel, out float zz, out
 float streakAt(float ang, float z, float count, float speed, out float lr){
   /* THE LANE INDEX WRAPS, AND WITHOUT THAT THERE IS A SEAM DOWN THE TUBE.
    *
-   * atan returns (-PI, PI], so at the branch cut slot jumps by exactly count -- and the lane index used to be a
-   * bare floor(), so the hash on one side of the cut was h31(lane) and on the other h31(lane + count). Different
-   * colour, different head, different lane, meeting along one line running the length of the tunnel: it read as
-   * two tubes butted together and running side by side.
+   * atan returns (-PI, PI], so at the branch cut slot jumps by exactly count. Under a bare floor() the hash on
+   * one side of the cut is h31(lane) and on the other h31(lane + count) -- different colour, head and lane,
+   * meeting along one line running the length of the tunnel, which reads as two tubes butted side by side.
    *
    * mod() closes it, but only if count is a whole number of lanes -- a fractional count cannot tile a circle,
    * and the seam comes back as a partial lane. So the count is rounded here rather than trusted from a slider. */
@@ -519,10 +518,10 @@ void main(){
     // Fades out with distance rather than being cut off at one. Nothing past the fade is worth reading a field for.
     /* THE FADE KEEPS A FLOOR, and that floor is what makes the tunnel and the hole agree.
    *
-   * It used to reach 0 at DEPTH, which blacks out the last stretch of tube -- and the last stretch is the only
-   * one where an arch has swung anywhere. So the tube appeared to converge back near the frame centre, where it
-   * has not bent yet, while the hole drew at the true far end: two vanishing points, and the whole reason they
-   * looked unaligned. Dim but present, and the convergence is visible where the hole actually is. */
+   * Reaching 0 at DEPTH would black out the last stretch of tube, which is the only one where an arch has
+   * swung anywhere: the tube would converge back near the frame centre, where it has not bent yet, while the
+   * hole drew at the true far end -- two vanishing points. Dim but present, so the convergence is visible
+   * where the hole actually is. */
   float depth = mix(1.0, 0.16 + 0.84 * (1.0 - smoothstep(2.0, uFar, t)), uFog);
     /* THE TUBE STOPS AT DEPTH, and that is what welds its end to the hole.
        Nothing rejected hits past uFar, so a near-axis ray struck the wall extrapolated well beyond the tube's
@@ -617,11 +616,11 @@ void main(){
    *     no blend between them, because a curved ray is ONE ray.
    *   THE MOUTH'S EINSTEIN RING is the tunnel wall, wrapped by the closed form above. Same law, same Rs.
    *
-   * WHAT THIS REPLACES was a screen-space pinch whose deflection was softened to zero at the centre. It could
-   * not diverge, so it could not wind, so not one of the features above could occur -- and each had to be added
-   * by hand: a capture smoothstep for the shadow, a rim width for the ring, a squeeze gain for the fold, a
-   * two-pass split with a handover blend for the second image, a wrap gain and a cap to keep that image on the
-   * rim. All of it is gone. A LENS control is gone with it: there is no second number in gravity.
+   * WHY NOT A SCREEN-SPACE PINCH. A deflection softened to zero at the centre cannot diverge, so it cannot
+   * wind, so not one of the features above falls out of it -- each would have to be added by hand: a capture
+   * smoothstep for the shadow, a rim width for the ring, a squeeze gain for the fold, a two-pass split with a
+   * handover blend for the second image, a wrap gain and a cap to hold that image on the rim. There is no LENS
+   * control beside this one either: gravity takes a single number.
    *
    * IT IS BOUNDED, AND THAT IS WHY THIS LAB CAN AFFORD IT. The march runs only for rays whose impact parameter
    * is inside rInt -- far enough out that the closed form is exact and the disc is out of reach -- and it hands
@@ -637,15 +636,14 @@ void main(){
     /* REACH IS AN OUTRIGHT RADIUS in the same world units as everything else, so it stays put when MASS moves.
        The guard says the only thing that must be true: the outer edge is never inside the inner one. */
     float discOut = max(uDiscOut, discIn * 1.05);
-    /* HEIGHT IS AN HONEST CONTROL NOW, AND IT WAS NOT BEFORE. It used to size a sampling window and then cancel
-       straight out of the brightness, so the slider moved nothing and was removed for saying so. The disc is
-       integrated as a VOLUME along the same march that bends the light, so a deeper slab really does hold more
-       gas and really is brighter where the ray runs further through it.
+    /* HEIGHT IS AN HONEST CONTROL. The disc is integrated as a VOLUME along the same march that bends the
+       light, so a deeper slab really does hold more gas and really is brighter where the ray runs further
+       through it -- rather than sizing a sampling window that cancels straight back out of the brightness.
 
-       IT ARRIVES IN SCHWARZSCHILD RADII, which is a length and not a ratio. It used to be a FRACTION OF THE
-       INNER EDGE shown as a percentage, and a percentage of something the panel never names is not a reading of
-       anything -- 14% of what? Rs is the one length every other radius in this picture is quoted against, so the
-       slab is measured in it too, and the slab still scales with MASS because Rs does. */
+       IT ARRIVES IN SCHWARZSCHILD RADII, which is a length and not a ratio. A fraction of the inner edge shown
+       as a percentage is not a reading of anything, because the panel never names what it is a percentage of --
+       14% of what? Rs is the one length every other radius in this picture is quoted against, so the slab is
+       measured in it too, and still scales with MASS because Rs does. */
     float hMax = max(uDiscH, 0.01) * rs;
 
     /* A PLANE HAS TWO ANGLES AND ONLY TWO. Its orientation is its normal, and a direction on a sphere takes
@@ -706,10 +704,9 @@ void main(){
       for (int i = 0; i < 144; i++){
         float r = length(x);
         if (r < rs * 1.02) break;                  // fell in. Whatever it gathered on the way still counts.
-        /* OUT AND CLIMBING, PAST EVERYTHING THERE IS TO MEET. The test used to be against rInt, which is the
-           radius the march STARTS at -- so every escaping ray was carried a long way past the disc's outer edge
-           before anything stopped it. What matters is the disc's own reach and the few Rs where the bend is
-           still worth integrating. */
+        /* OUT AND CLIMBING, PAST EVERYTHING THERE IS TO MEET. Testing against rInt -- the radius the march
+           STARTS at -- carries every escaping ray a long way past the disc's outer edge before anything stops
+           it. What matters is the disc's own reach and the few Rs where the bend is still worth integrating. */
         if (dot(x, v) > 0.0 && r > rExit) break;
         float dt = clamp(0.17 * (r - 0.45 * rs), 1e-5, 0.25 * rInt);
 
@@ -725,12 +722,12 @@ void main(){
         if (d0 * d1 > 0.0 && min(abs(d0), abs(d1)) > hMax) continue;
 
         /* THE DISC IS A SLAB AND THE STEP IS A SEGMENT, so what a step collects is the LENGTH of the overlap
-         * between them. This is the volume integral the old build wanted and could not afford: the march is
-         * already running for the lensing, so sampling the gas along it costs a clamp.
+         * between them. The volume integral is affordable because the march is already running for the
+         * lensing, so sampling the gas along it costs a clamp.
          *
-         * NOTHING IS CAPPED, and the last hard ceiling in this shader goes with that. The old path length was
-         * 2h/|cos| and ran to infinity exactly edge-on, so it had to be saturated -- and the saturation drew
-         * its own straight-edged outline through the disc. A segment simply has a length, and a ray cannot stay
+         * NOTHING IS CAPPED, and there is no hard ceiling anywhere in this shader. A 2h/|cos| path length runs
+         * to infinity exactly edge-on and has to be saturated, and that saturation draws its own straight-edged
+         * outline through the disc. A segment simply has a length, and a ray cannot stay
          * inside the slab forever because it either falls in or leaves. Edge-on, many consecutive steps land
          * inside and the disc reads as a bright bar clean across the middle of the shadow. Face-on, one step
          * crosses it and it reads as a ring. */

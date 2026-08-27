@@ -363,7 +363,7 @@ void main(){
     float arc=pat*uRingR;
     float bx=(fract(arc/bayL+0.5)-0.5)*bayL;             // meters from the nearest bay center
     /* Measured off the ring's circular position, not off bx or pat: bx wraps once a bay and atan once a
-     * revolution, and with the ribs gone there is no longer a blanked-out band hiding either fold. */
+     * revolution, and nothing blanks out a band to hide either fold. */
     float aw=max(length(fwidth(vec2(cos(pat),sin(pat))))*uRingR, 1e-6);
     Surf S=ringRelief(bx, pr.y, bayL, aw);
     vec3 nb=bumpN(hp, n, S.h);
