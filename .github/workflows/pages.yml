@@ -35,8 +35,8 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/configure-pages@v5
+      - uses: actions/checkout@v7
+      - uses: actions/configure-pages@v6
 
       # The repository root is the site, but it is not ONLY the site: the bench harness, the browser suites,
       # the code graph and the agent instructions all live beside it and none of them is a page. Dropped from
@@ -45,8 +45,8 @@ jobs:
         run: rm -rf bench.py site-url.py test .githooks knowledge .claude CLAUDE.md
 
       # What is left is the repository root, exactly as served locally by `python -m http.server`.
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: '.'
       - id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
