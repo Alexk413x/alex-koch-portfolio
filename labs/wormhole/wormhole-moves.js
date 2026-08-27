@@ -20,9 +20,28 @@
  * Scaling what is there keeps the move's SHAPE while the scene keeps its character. */
 const BURST_SEC = 2.4;     // long enough that both ends of it can be eased and still leave a surge between
 const STORM_SEC = 7.0;     // long enough to arrive, sit, and leave
-const DIVE_SEC = 2.4;      // the arrival: the hole builds, then the tunnel grows around it
-const SETTLE_SEC = 3.0;    // the hole draws away and the flow eases back to the slider
-const COLLAPSE_SEC = 3.2;  // shutting down: straighten, slow, drawn in, out
+const DIVE_SEC = 3.2;      // the hole alone: huge, seen from over the top, turning down as it shrinks
+const SETTLE_SEC = 3.6;    // the tunnel forms around it and the flow eases up to the slider
+const COLLAPSE_SEC = 4.6;  // shutting down: straighten, the tunnel stops, the hole comes back, out
+
+/* THE HOLE BOTH MOVES OPEN AND CLOSE ON, relative to the scene the sliders describe. The dive starts here and
+ * leaves it; the collapse arrives back at it and goes out.
+ *
+ * REACH IS QUOTED IN SCHWARZSCHILD RADII HERE AND IN WORLD UNITS ON THE PANEL, which is the whole reason it
+ * has to move at all. DISC REACH is an outright radius, so a hole swollen four times its mass keeps a disc of
+ * the same absolute size -- and the shipped 30 units of it around a hole this close covers the frame corner to
+ * corner, with no outer edge in the picture and so nothing to read the rotation against. Tied to Rs instead,
+ * the disc stays a ring with a visible rim however large the hole is.
+ *
+ * AND IT HOLDS THAT TIE UNTIL AFTER THE ROTATION, on a curve of its own rather than the one MASS is on. Run
+ * together, REACH climbs toward the slider's 30 while the hole shrinks under it, so the disc's ANGULAR size
+ * grows even as its hole's falls: the rim leaves the frame in the middle of the sweep, which is exactly where
+ * the rim is the only thing telling you the disc is turning. Held in Rs, the disc shrinks with its hole and
+ * keeps its rim; it opens out to the slider's reach later, once the tunnel is what the eye is reading. */
+const SWELL = 4.2;        // times its own mass, so the shadow is most of the frame
+const NEAR = 0.55;        // and of DEPTH away, so it is close as well as large
+const DISC_RS = 5.8;      // the swollen hole's disc reach, in Schwarzschild radii
+const RS_PER_MASS = 0.2;  // the shader's scale from solar masses to world units, needed here to size the disc
 
 const clamp01 = (v) => (v < 0 ? 0 : v > 1 ? 1 : v);
 const ease = (v) => v * v * (3 - 2 * v);
@@ -80,25 +99,37 @@ export function createMoves() {
 
       const o = { ...s };
 
-      /* THE DIVE IS FOUR BEATS IN ORDER, not one surge with everything moving at once.
+      /* THE DIVE IS AN APPROACH SEEN FROM ITS OTHER END: it opens on the hole from directly over it, close
+       * enough to overflow the frame, and everything after that is the eye backing off and coming down onto the
+       * tunnel's axis. The tunnel only exists once there is somewhere to put it.
        *
-       * WHAT IT USED TO DO, AND WHY IT READ BACKWARDS. It drove SPEED, DEPTH and FOV together, and the three do
-       * not agree about which way anything is going: SPEED flows the pattern down the tube, which is travel;
-       * DEPTH shrinking compresses the tube toward the eye, which is a zoom, because the geometry rescales
-       * while the pattern stays anchored to world z; and FOV widening while the subject closes is the Vertigo
-       * shot, whose whole trick is that the frame appears to move two ways at once. DEPTH also ran the wrong
-       * way for what this move is: it pulled the far end IN, when the hole is supposed to draw AWAY.
+       * THERE IS NO CAMERA IN THIS SHADER, AND THE MOVE DOES NOT NEED ONE. The eye sits at the origin looking
+       * down +z and every ray is built from that, so a viewpoint over the disc cannot be had by moving it. What
+       * can be had is the disc's own orientation: TILT 0 puts the disc's normal on the eye, which IS looking
+       * straight down on it, and the slider's angle is near edge-on. Sweeping between the two makes the picture
+       * a descending camera would make, and it costs one uniform rather than a camera basis in every ray.
+       *
+       * THE HOLE DOES NOT COME CLOSER, IT GETS BIGGER -- and it has to be that way round. Angular size is
+       * rs/distance so either lever will fill the frame, but DEPTH is also where the tunnel ENDS: driving it
+       * near enough to swell the hole puts the tube's far end a few units in front of the eye, inside a disc
+       * whose reach does not move, and the shot becomes weather rather than a hole. MASS moves the hole alone.
+       * DEPTH still closes, but only to NEAR, which is a lean-in and not an arrival.
        *
        * The beats, in the order they are seen:
        *
-       *   1  THE HOLE BUILDS FROM NOTHING.  MASS and DISC come up from zero with the tunnel still dark, so the
-       *      first thing in the frame is the hole and there is nothing else to look at while it arrives.
-       *   2  THE TUNNEL GROWS TOWARD THE EYE.  The shells open from a thread to their full radius, so the tube
-       *      forms around the viewer rather than fading up in place.
-       *   3  THE HOLE DRAWS AWAY.  DEPTH grows to what the slider says, carrying the far end -- and the hole
-       *      welded to it -- off into the distance. This is the one direction the old version had backwards.
-       *   4  THE TUNNEL BENDS.  BEND and BEND FLOW come up from zero last of all.
-       *   5  THE FLOW EASES UP TO THE SLIDER'S RATE, and never past it.
+       *   1  LIGHT, NOT GROWTH.  The hole is at full size on the first frame; what comes up is the disc's
+       *      brightness. Scaling MASS from zero instead grows the shadow out of a point, which is a thing being
+       *      assembled rather than a thing being arrived at.
+       *   2  THE SWELL FALLS AWAY.  MASS eases from SWELL back to the slider and the disc opens from the tight
+       *      ring it wears close up out to the slider's reach. This is the zoom-out.
+       *   3  THE EYE COMES DOWN OFF THE TOP.  TILT sweeps from flat to the slider's angle.
+       *   4  THE FAR END DRAWS AWAY.  DEPTH grows from NEAR to what the slider says, carrying the hole with it.
+       *   5  THE TUNNEL OPENS AROUND THE VIEWER, while the hole is still shrinking rather than after it has
+       *      stopped. Waited out, the shrink leaves a second of small hole alone in a black frame, because the
+       *      hole loses the frame far faster than it loses its size -- angular size falls as 1/DEPTH and DEPTH
+       *      is still climbing. The tube has to be arriving by then or there is a dead beat in the middle.
+       *   6  THE TUNNEL BENDS, last of all.
+       *   7  THE FLOW EASES UP TO THE SLIDER'S RATE, and never past it.
        *
        * IT STARTS DEAD STRAIGHT, AND THAT IS WHY BEND IS LAST. The bend swings the vanishing point -- and the
        * hole welded to it -- off the middle of the frame, and at the shipped BEND of 12 that is most of the way
@@ -106,65 +137,80 @@ export function createMoves() {
        * threw it off: the eye had no centre to read it against. Straight first, and the bend eased in once
        * there is a tunnel to bend.
        *
-       * They overlap: each starts before the one before it is done, so it is a hand-off rather than five
+       * They overlap: each starts before the one before it has finished, so it is a hand-off rather than seven
        * separate events queued up. */
       if (moveT >= 0 && !closing) {
         const p = clamp01(moveT / (DIVE_SEC + SETTLE_SEC));
 
-        // 1. the hole, out of nothing
-        const hole = seg(p, 0.00, 0.26);
-        o.mass = s.mass * hole;
-        o.disc = s.disc * hole;
+        // 1. the light, not the hole
+        o.disc = s.disc * seg(p, 0.00, 0.12);
 
-        // 2. the tube opening around the viewer
-        const grow = seg(p, 0.16, 0.58);
+        // 2. the swell falling away, the disc holding its shape through it and opening out afterwards
+        swellHole(o, s, 1 - seg(p, 0.06, 0.54), seg(p, 0.40, 0.84));
 
-        // 3. the far end -- and the hole on it -- drawing off. Starts near, ends where the slider put it.
-        o.far = s.far * (0.34 + 0.66 * seg(p, 0.44, 0.88));
+        // 3. off the top and down onto the axis
+        o.discTilt = s.discTilt * seg(p, 0.08, 0.52);
 
-        // 4. the bend, last, so everything before it happens on the axis
-        const lean = seg(p, 0.50, 1.00);
+        // 4. the far end -- and the hole on it -- drawing off. Starts near, ends where the slider put it.
+        o.far = s.far * (NEAR + (1 - NEAR) * seg(p, 0.20, 0.82));
+
+        // 5. the tube opening around the viewer, arriving while the hole still has size to lose
+        const grow = seg(p, 0.36, 0.80);
+
+        // 6. the bend, last, so everything before it happens on the axis
+        const lean = seg(p, 0.58, 1.00);
         o.bend = s.bend * lean;
         o.bendFlow = s.bendFlow * lean;
 
-        /* 5. THE FLOW ONLY EVER RISES TO THE SLIDER'S RATE. It used to overshoot -- a bell peaking above idle
+        /* 7. THE FLOW ONLY EVER RISES TO THE SLIDER'S RATE. It used to overshoot -- a bell peaking above idle
               and easing back down -- and that fall is the thing that read as REVERSING. Anything decelerating
               from above the rate the eye has settled on looks like it is going the other way, and there is no
               easing curve that fixes it, because the direction of the change is what is wrong.
-              Nothing is lost by dropping it: beat 3 stretches DEPTH out from 0.34, and a tube being crossed in
+              Nothing is lost by dropping it: beat 4 stretches DEPTH out from NEAR, and a tube being crossed in
               more distance already reads as gathering speed. That stretch IS the acceleration; the multiplier
               was a second one arguing with it. */
-        const flow = 0.25 + 0.75 * seg(p, 0.18, 0.85);
-        o.exposure = s.exposure * (1 + 0.3 * seg(p, 0.10, 0.42) * (1 - seg(p, 0.5, 0.95)));
+        const flow = 0.25 + 0.75 * seg(p, 0.40, 0.92);
+        // A lift timed to the tunnel and not to the hole, which is already the brightest thing on screen.
+        o.exposure = s.exposure * (1 + 0.25 * seg(p, 0.42, 0.68) * (1 - seg(p, 0.84, 1.00)));
         scaleShells(o, s, { speed: flow, warp: 1, amt: grow, rad: 0.12 + 0.88 * grow });
       }
 
-      /* THE COLLAPSE IS THE DIVE RUN BACKWARDS, and it decelerates rather than rushing.
+      /* THE COLLAPSE IS THE DIVE RUN BACKWARDS, and it ends on the frame the dive opened on: the hole alone,
+       * swollen, seen from over the top. The last thing in the picture is the thing the arrival led with.
        *
-       * IT STRAIGHTENS FIRST, for the reason the dive bends last: the frame has to end on the axis or the
-       * tunnel leaves from a corner and there is nothing centred to watch it go.
+       * IT DECELERATES RATHER THAN RUSHING. An earlier version sped UP here, on the theory that being pulled
+       * into a hole should accelerate -- but the tunnel then went out at its most frantic, which reads as a cut
+       * rather than an ending. The tunnel stopping and the hole swelling into the frame it is left alone in is
+       * a place being left.
        *
-       * THEN IT SLOWS. An earlier version sped UP here, on the theory that being pulled into a hole should
-       * accelerate -- but the tunnel then went out at its most frantic, which reads as a cut rather than an
-       * ending. Slowing to a crawl and then losing the light is a machine being switched off.
+       * IT STRAIGHTENS FIRST, for the reason the dive bends last: the frame has to be on the axis or the hole
+       * swells from a corner and there is nothing centred to watch it go.
        *
        *   1  STRAIGHTEN.  BEND and BEND FLOW back to zero, so the hole returns to the middle.
-       *   2  SLOW.        The flow falls to a crawl.
-       *   3  DRAWN IN.    DEPTH closes, carrying the far end and its hole onto the eye.
-       *   4  OUT.         AMOUNT and EXPOSURE to nothing -- the walls stop arriving rather than dimming where
-       *                   they stand, which is an ending rather than a dip. */
+       *   2  THE TUNNEL STOPS ARRIVING.  The flow falls to a crawl and AMOUNT goes to nothing -- the walls stop
+       *      coming rather than dimming where they stand, which is an ending rather than a dip.
+       *   3  THE HOLE COMES BACK.  DEPTH closes to NEAR and MASS swells to SWELL, so it fills the emptied frame.
+       *   4  THE EYE LIFTS BACK OVER THE TOP.  TILT returns to flat.
+       *   5  OUT.  The disc's light and the exposure go together, on a frame with nothing else left in it. */
       if (moveT >= 0 && closing) {
         const p = clamp01(moveT / COLLAPSE_SEC);
 
-        const straight = 1 - seg(p, 0.00, 0.42);
+        const straight = 1 - seg(p, 0.00, 0.30);
         o.bend = s.bend * straight;
         o.bendFlow = s.bendFlow * straight;
 
-        const slow = 1 - 0.85 * seg(p, 0.30, 0.78);
-        o.far = s.far * (1 - 0.7 * seg(p, 0.38, 0.86));
+        const slow = 1 - 0.85 * seg(p, 0.14, 0.52);
+        const gone = seg(p, 0.20, 0.56);
 
-        const gone = seg(p, 0.55, 1.00);
-        o.exposure = s.exposure * (1 - gone);
+        const swell = seg(p, 0.34, 0.86);
+        o.far = s.far * (1 - (1 - NEAR) * swell);
+        swellHole(o, s, swell, 1 - seg(p, 0.20, 0.60));
+
+        o.discTilt = s.discTilt * (1 - seg(p, 0.38, 0.90));
+
+        const out = seg(p, 0.86, 1.00);
+        o.disc = s.disc * (1 - out);
+        o.exposure = s.exposure * (1 - out);
         scaleShells(o, s, { speed: slow, warp: 1, amt: 1 - gone });
       }
 
@@ -242,4 +288,14 @@ function scaleShells(o, s, m, from) {
        composites inner-first, and a move that changed the order would swap which shell occludes which. */
     if (m.rad) o[p + 'Rad'] = src[p + 'Rad'] * m.rad;
   }
+}
+
+/* Sizes the hole and its disc. `k` is how far the mass is swollen toward SWELL; `open` is separately how far
+   the disc has been let out from a ring DISC_RS across -- which tracks whatever the mass currently is -- to
+   the outright reach the slider asks for. Two curves, because they run at different times: see DISC_RS. */
+function swellHole(o, s, k, open) {
+  const mass = s.mass * (1 + (SWELL - 1) * k);
+  o.mass = mass;
+  const tight = mass * RS_PER_MASS * DISC_RS;
+  o.discOut = tight + (s.discOut - tight) * open;
 }
