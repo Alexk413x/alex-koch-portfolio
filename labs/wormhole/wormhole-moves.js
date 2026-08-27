@@ -27,21 +27,17 @@ const COLLAPSE_SEC = 2.4;  // shutting down: the rush in, then black
 const clamp01 = (v) => (v < 0 ? 0 : v > 1 ? 1 : v);
 const ease = (v) => v * v * (3 - 2 * v);
 
-/* EASE IN, HOLD, EASE OUT. p runs 0..1 across the move; inP and outP are the fractions of it spent on each
- * ramp, and what is left between them is held at full.
+/* ONE CURVE FOR EVERY MOVE: rises from nothing, peaks once, returns to nothing, and is flat at both ends so
+ * there is no corner where it starts or stops. p runs 0..1 across the move and k sets how broad the peak is.
  *
- * EVERY MOVE HERE USES THIS, and the first versions of BURST and ENGAGE did not: they jumped to full on the
- * frame the button was pressed and decayed from there. That reads as a switch being thrown rather than as
- * something happening -- there is no approach, so the eye gets the result without the event. A rise it can
- * follow is most of what makes a surge feel like one. */
-const envelope = (p, inP, outP) => {
-  if (p <= 0 || p >= 1) return 0;
-  if (p < inP) return ease(p / inP);
-  if (p > 1 - outP) return ease((1 - p) / outP);
-  return 1;
-};
-// Symmetric and smooth at both ends: a weather front, not an impact.
-const swell = (p) => (p <= 0 || p >= 1 ? 0 : Math.pow(Math.sin(Math.PI * p), 1.4));
+ * THERE IS NO HOLD IN THE MIDDLE, and there used to be. The first shape was ease-in, hold, ease-out, which
+ * measured as a plateau -- seven times speed for three samples running, then a fall. A value that arrives and
+ * then sits still reads as a step even when both of its ramps are smooth, because the acceleration stops dead
+ * at the top. A bell never stops accelerating until it is already slowing down.
+ *
+ * Before either of those, BURST and ENGAGE jumped to full on the frame the button was pressed, which gives the
+ * eye the result without the event. */
+const bell = (p, k) => (p <= 0 || p >= 1 ? 0 : Math.pow(Math.sin(Math.PI * p), k || 2));
 
 export function createMoves() {
   // Each is elapsed seconds since its trigger, or -1 for idle. `engaged` is the only state that persists.
@@ -87,15 +83,15 @@ export function createMoves() {
         const total = DIVE_SEC + SETTLE_SEC;
         /* THE RUSH IS EASED AT BOTH ENDS, so the tunnel gathers speed, runs, and lets go. It used to be at full
            on the first frame, which gave the fall no beginning. */
-        const rush = envelope(moveT / total, DIVE_SEC / total * 0.55, SETTLE_SEC / total);
+        const rush = bell(moveT / total);
         // The wall arrives out of nothing on its own ramp, so there is something to accelerate INTO.
         const there = ease(clamp01(moveT / (DIVE_SEC * 0.8)));
         /* DEPTH DIPS AND COMES BACK rather than starting collapsed: the far end -- and the hole welded to it --
            runs at the eye and then settles to where the slider put it. */
-        o.far = s.far * (1 - 0.62 * rush);
-        o.fov = s.fov * (1 + 0.55 * rush);
-        o.exposure = s.exposure * (1 + 1.1 * rush);
-        scaleShells(o, s, { speed: 1 + 8 * rush, warp: 1, amt: there });
+        o.far = s.far * (1 - 0.45 * rush);
+        o.fov = s.fov * (1 + 0.35 * rush);
+        o.exposure = s.exposure * (1 + 0.7 * rush);
+        scaleShells(o, s, { speed: 1 + 3 * rush, warp: 1, amt: there });
       }
 
       /* THE COLLAPSE. The same rush inward, and then the light goes: AMOUNT and EXPOSURE to nothing rather than
@@ -106,10 +102,10 @@ export function createMoves() {
         // Eased in so the fall STARTS from rest, and never eased out: this one is not meant to recover.
         const rush = ease(clamp01(p / 0.45));
         const gone = ease(clamp01((p - 0.4) / 0.6));
-        o.far = s.far * (1 - 0.82 * rush);
-        o.fov = s.fov * (1 + 0.9 * rush);
-        o.exposure = s.exposure * (1 + 1.8 * rush * (1 - gone)) * (1 - gone);
-        scaleShells(o, s, { speed: 1 + 12 * rush, warp: 1, amt: 1 - gone });
+        o.far = s.far * (1 - 0.7 * rush);
+        o.fov = s.fov * (1 + 0.6 * rush);
+        o.exposure = s.exposure * (1 + 1.2 * rush * (1 - gone)) * (1 - gone);
+        scaleShells(o, s, { speed: 1 + 5 * rush, warp: 1, amt: 1 - gone });
       }
 
       // Shut down and finished: nothing is drawn, and the hole's own light goes with it.
@@ -128,15 +124,15 @@ export function createMoves() {
          vanishing point, which is the tunnel winding up rather than the camera accelerating. Both were in the
          first version and both fought the thing the move is for. */
       if (burstT >= 0) {
-        const k = envelope(burstT / BURST_SEC, 0.3, 0.55);
-        scaleShells(o, s, { speed: 1 + 6 * k, warp: 1, amt: 1 }, o);
+        const k = bell(burstT / BURST_SEC);
+        scaleShells(o, s, { speed: 1 + 2.2 * k, warp: 1, amt: 1 }, o);
       }
 
       /* STORM. Everything drawn ON the wall thickens at once -- nebula, plasma, streaks -- and FILL comes up
          with them, because raising the amounts alone brightens what is already lit rather than covering more
          of the wall. It arrives and leaves on the same curve, so there is no moment where it snaps off. */
       if (stormT >= 0) {
-        const k = swell(stormT / STORM_SEC);
+        const k = bell(stormT / STORM_SEC, 1.4);
         for (let i = 0; i < 6; i++) {
           const p = 'L' + i;
           o[p + 'Cloud'] = s[p + 'Cloud'] * (1 + 0.9 * k);
