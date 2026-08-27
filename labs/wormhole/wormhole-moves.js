@@ -18,19 +18,30 @@
 /* WHY THESE ARE MULTIPLIERS AND NOT TARGETS. A move has to read the same on a scene dialled to a whisper and
  * one already at its ceiling, and an absolute target cannot: it would be a surge on one and a cut on the other.
  * Scaling what is there keeps the move's SHAPE while the scene keeps its character. */
-const BURST_SEC = 1.6;     // a shove, and over before it is a mode
+const BURST_SEC = 2.4;     // long enough that both ends of it can be eased and still leave a surge between
 const STORM_SEC = 7.0;     // long enough to arrive, sit, and leave
-const DIVE_SEC = 1.5;      // the fall into the throat
-const SETTLE_SEC = 2.2;    // and the recovery out of it
-const COLLAPSE_SEC = 1.8;  // shutting down: the rush in, then black
+const DIVE_SEC = 2.0;      // the fall into the throat
+const SETTLE_SEC = 2.6;    // and the recovery out of it
+const COLLAPSE_SEC = 2.4;  // shutting down: the rush in, then black
 
-// Rises fast and falls slow: a shove that arrives at once and lets go gradually reads as a release rather than
-// a switch. p runs 0..1 across the move.
-const shove = (p) => (p <= 0 ? 0 : Math.pow(1 - p, 1.7) * Math.min(1, p * 14));
-// Symmetric and smooth at both ends: a weather front, not an impact.
-const swell = (p) => (p <= 0 || p >= 1 ? 0 : Math.pow(Math.sin(Math.PI * p), 1.4));
 const clamp01 = (v) => (v < 0 ? 0 : v > 1 ? 1 : v);
 const ease = (v) => v * v * (3 - 2 * v);
+
+/* EASE IN, HOLD, EASE OUT. p runs 0..1 across the move; inP and outP are the fractions of it spent on each
+ * ramp, and what is left between them is held at full.
+ *
+ * EVERY MOVE HERE USES THIS, and the first versions of BURST and ENGAGE did not: they jumped to full on the
+ * frame the button was pressed and decayed from there. That reads as a switch being thrown rather than as
+ * something happening -- there is no approach, so the eye gets the result without the event. A rise it can
+ * follow is most of what makes a surge feel like one. */
+const envelope = (p, inP, outP) => {
+  if (p <= 0 || p >= 1) return 0;
+  if (p < inP) return ease(p / inP);
+  if (p > 1 - outP) return ease((1 - p) / outP);
+  return 1;
+};
+// Symmetric and smooth at both ends: a weather front, not an impact.
+const swell = (p) => (p <= 0 || p >= 1 ? 0 : Math.pow(Math.sin(Math.PI * p), 1.4));
 
 export function createMoves() {
   // Each is elapsed seconds since its trigger, or -1 for idle. `engaged` is the only state that persists.
@@ -73,15 +84,18 @@ export function createMoves() {
          the hole welded to it -- comes at the eye, and the walls sweep past because the same tube is being
          crossed in less distance. Speed carries the pattern with it so the wall does not slide backwards. */
       if (moveT >= 0 && !closing) {
-        const p = clamp01(moveT / DIVE_SEC);
-        const settle = clamp01((moveT - DIVE_SEC) / SETTLE_SEC);
-        // 0 at the moment of engaging, 1 once settled: how much of the user's scene is back.
-        const back = ease(settle);
-        const rush = (1 - back) * (1 - ease(p) * 0.55);
-        o.far = s.far * (0.18 + 0.82 * ease(clamp01(p * 0.7 + back)));
-        o.fov = s.fov * (1 + 0.9 * rush);
-        o.exposure = s.exposure * (1 + 1.6 * rush);
-        scaleShells(o, s, { speed: 1 + 9 * rush, warp: 1 + 1.2 * rush, amt: 0.25 + 0.75 * ease(clamp01(p * 1.4)) });
+        const total = DIVE_SEC + SETTLE_SEC;
+        /* THE RUSH IS EASED AT BOTH ENDS, so the tunnel gathers speed, runs, and lets go. It used to be at full
+           on the first frame, which gave the fall no beginning. */
+        const rush = envelope(moveT / total, DIVE_SEC / total * 0.55, SETTLE_SEC / total);
+        // The wall arrives out of nothing on its own ramp, so there is something to accelerate INTO.
+        const there = ease(clamp01(moveT / (DIVE_SEC * 0.8)));
+        /* DEPTH DIPS AND COMES BACK rather than starting collapsed: the far end -- and the hole welded to it --
+           runs at the eye and then settles to where the slider put it. */
+        o.far = s.far * (1 - 0.62 * rush);
+        o.fov = s.fov * (1 + 0.55 * rush);
+        o.exposure = s.exposure * (1 + 1.1 * rush);
+        scaleShells(o, s, { speed: 1 + 8 * rush, warp: 1, amt: there });
       }
 
       /* THE COLLAPSE. The same rush inward, and then the light goes: AMOUNT and EXPOSURE to nothing rather than
@@ -89,11 +103,13 @@ export function createMoves() {
          arriving reads as an ending. */
       if (moveT >= 0 && closing) {
         const p = clamp01(moveT / COLLAPSE_SEC);
-        const gone = ease(clamp01((p - 0.35) / 0.65));
-        o.far = s.far * (1 - 0.86 * ease(p));
-        o.fov = s.fov * (1 + 1.4 * ease(p));
-        o.exposure = s.exposure * (1 + 2.2 * ease(p) * (1 - gone)) * (1 - gone);
-        scaleShells(o, s, { speed: 1 + 14 * ease(p), warp: 1 + 1.6 * ease(p), amt: 1 - gone });
+        // Eased in so the fall STARTS from rest, and never eased out: this one is not meant to recover.
+        const rush = ease(clamp01(p / 0.45));
+        const gone = ease(clamp01((p - 0.4) / 0.6));
+        o.far = s.far * (1 - 0.82 * rush);
+        o.fov = s.fov * (1 + 0.9 * rush);
+        o.exposure = s.exposure * (1 + 1.8 * rush * (1 - gone)) * (1 - gone);
+        scaleShells(o, s, { speed: 1 + 12 * rush, warp: 1, amt: 1 - gone });
       }
 
       // Shut down and finished: nothing is drawn, and the hole's own light goes with it.
@@ -104,14 +120,16 @@ export function createMoves() {
         scaleShells(o, s, { speed: 1, warp: 1, amt: 0 });
       }
 
-      /* BURST. Faster, more twist, more roll -- and STRETCH is the one that makes it read: it scales the
-         distance the pattern is sampled over, so raising it tightens the whorl at the vanishing point and the
-         tunnel appears to wind up rather than merely run quicker. */
+      /* BURST IS TRAVEL AND ONLY TRAVEL. It is the shell SPEEDs and nothing else, because that is the one rate
+         that means "the camera is covering ground": the wall arrives faster and sweeps past.
+         BEND FLOW IS DELIBERATELY LEFT ALONE. It turns the arch, which reads as the tunnel itself writhing
+         rather than as the viewer moving through it -- a different event wearing the same button. STRETCH went
+         with it: it scales the distance the pattern is read over, so raising it tightens the whorl at the
+         vanishing point, which is the tunnel winding up rather than the camera accelerating. Both were in the
+         first version and both fought the thing the move is for. */
       if (burstT >= 0) {
-        const k = shove(burstT / BURST_SEC);
-        o.bendFlow = s.bendFlow * (1 + 1.8 * k);
-        o.discSpin = s.discSpin * (1 + 2.5 * k);
-        scaleShells(o, s, { speed: 1 + 4.5 * k, warp: 1 + 1.1 * k, amt: 1, spin: 1 + 6 * k }, o);
+        const k = envelope(burstT / BURST_SEC, 0.3, 0.55);
+        scaleShells(o, s, { speed: 1 + 6 * k, warp: 1, amt: 1 }, o);
       }
 
       /* STORM. Everything drawn ON the wall thickens at once -- nebula, plasma, streaks -- and FILL comes up
