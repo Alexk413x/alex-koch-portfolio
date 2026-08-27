@@ -1,31 +1,14 @@
-/* panel.js — THE CONTROL PANEL'S WIDGETS, FOR EVERY LAB.
- *
- * ONE COPY, for the reason panel.css gives: a slider existed three times in this repo and three implementations
- * drift. This file decides STRUCTURE and BEHAVIOR, panel.css decides appearance, and neither should start doing
- * the other's job. Plain DOM, no framework: everything here takes a host element and returns elements.
- *
- * A ROW READS STATE ONCE and owns its DOM afterwards, so a drag writes one number and one text node. The price is
- * that a value changed from OUTSIDE the panel leaves its row stale — a caller that writes state itself must
- * rebuild the panel.
- *
- * IT KNOWS NOTHING ABOUT ANY LAB. It is handed a state object, a table of formatters and one callback, and has no
- * other way to reach the page. Anything a lab needs to do on a change arrives as (key, kind) on onChange.
- *
- * WHAT IS DELIBERATELY NOT HERE: anything a single lab needs. A kit that grows a special case per caller is three
- * implementations again wearing one filename.
- */
+/* Control panel widgets shared by every lab: rows, sections, key nav, the hide toggle. Plain DOM, no
+ * framework -- takes a host element, returns elements. Panel.css owns appearance only.
+ * A row reads state once and owns its DOM after that, so a value changed from outside the panel leaves its
+ * row stale until the caller rebuilds it. This file knows nothing about any lab: state, a formatter table
+ * and one onChange(key, kind) callback are its whole contact with the page. */
 
-/* A ROW'S KIND IS ITS SPEC'S SHAPE, so a section never has to say which control it wants.
- *   ['k','LABEL','#']            color swatch
- *   [['k1','k2'],'LABEL','#']    a PAIR of swatches on one row
- *   ['k','LABEL',['A','B']]      one-of-N
- *   ['k','LABEL',0,1,1]          toggle
- *   ['k','LABEL',lo,hi,step]     slider
- *
- * Any of them may carry a trailing options object:
- *   { when: ['otherKey', [1, 2]] }   show the row only while that key holds one of those values
- *   { wide: true }                   drop the label and give the control the panel's full width, twice as tall
- */
+/* A row's kind follows its spec's shape:
+ *   ['k','LABEL','#'] color | [['k1','k2'],'LABEL','#'] color pair | ['k','LABEL',['A','B']] choice
+ *   ['k','LABEL',0,1,1] toggle | ['k','LABEL',lo,hi,step] slider
+ * A trailing options object may add { when: ['otherKey',[vals]] } (show only for those values) or
+ * { wide: true } (full width, no label). */
 export function rowKind(spec) {
   const [k, , lo, hi, st] = spec;
   if (lo === '#') return Array.isArray(k) ? 'colorPair' : 'color';
@@ -34,27 +17,21 @@ export function rowKind(spec) {
   return 'slider';
 }
 
-/* A row's trailing options object, or null. Only the LAST element is examined, so a choice row's array of names is
- * never mistaken for one. */
+// A row's trailing options object, or null. Checks only the last element, so a choice row's name array is
+// never mistaken for one.
 function rowOpts(spec) {
   const last = spec[spec.length - 1];
   return (last && typeof last === 'object' && !Array.isArray(last)) ? last : null;
 }
 
-/* A ROW THAT ONLY APPLIES SOMETIMES SHOULD ONLY BE THERE SOMETIMES.
- *
- * A control that does nothing is worse than one that is absent: the wormhole's HUE row moved and changed
- * nothing in two of its three color modes, while the two swatches did nothing in the third, and the panel gave
- * no sign which pair was live. Disabling rather than hiding was considered and dropped — a grayed row still
- * occupies the place the eye searches, and the panel is already dense.
- */
+// A row that only applies sometimes should only be shown sometimes, not grayed out: the wormhole's HUE row
+// once did nothing in two of three color modes with no visual sign of it, so `when` hides the row entirely.
 function rowWhen(spec) {
   const o = rowOpts(spec);
   return o && o.when ? o.when : null;
 }
 
-// A COLOR: a full-bleed swatch. There is no meaningful min, max or step for one, and a hex string in a numeric
-// readout is not a control -- so it is marked by '#' where the range would be.
+// A full-bleed color swatch, marked by '#' where a slider's range would be since a hex string has no min/max/step.
 function rowColor(ctx, k, label) {
   const row = document.createElement('div'); row.className = 'row';
   row.innerHTML = '<label>' + label + '</label>';
@@ -65,14 +42,8 @@ function rowColor(ctx, k, label) {
   return row;
 }
 
-/* TWO COLORS THAT DESCRIBE ONE THING, on one row.
- *
- * A gradient's two ends, or an effect's near and far tint, are ONE decision made twice -- and split across two
- * rows they read as two unrelated settings and cost twice the panel height. The pair shares a label because the
- * label names the thing, not either end of it.
- *
- * The key is an ARRAY, which is what tells rowKind this is a pair; everything else about a swatch is unchanged.
- */
+// Two colors describing one decision (a gradient's two ends) share a row and a label instead of costing
+// double the panel height. The key being an array is what tells rowKind this is a pair.
 function rowColorPair(ctx, keys, label) {
   const row = document.createElement('div'); row.className = 'row';
   row.innerHTML = '<label>' + label + '</label>';
@@ -87,7 +58,7 @@ function rowColorPair(ctx, keys, label) {
   return row;
 }
 
-// A BOOLEAN: a button. 0..1 step 1 is one bit, not a range worth a slider, a stepper pair and a numeric readout.
+// A boolean as a button: 0..1 step 1 is one bit, not a range worth a slider and a numeric readout.
 function rowToggle(ctx, k, label) {
   const row = document.createElement('div'); row.className = 'row';
   row.innerHTML = '<label>' + label + '</label><button class="tgl"></button>';
@@ -101,18 +72,12 @@ function rowToggle(ctx, k, label) {
   return row;
 }
 
-/* A NUMBER: slider, a stepper either side of the readout, and real units.
- *
- * The steppers repeat on hold, because a fine step over a wide range is hundreds of clicks otherwise, and they are
- * tabindex -1: the slider is the focusable thing in a row, and three tab stops per row across seventy rows would
- * make the panel unusable from the keyboard.
- *
- * THE READOUT IS AN INPUT, NOT A LABEL, and it is typeable in the unit it displays — see units.js for the inverse.
- * A span selects like text and so reads as editable while doing nothing, and an affordance that lies is worse than
- * one that is absent. tabindex -1 for the reason above: reachable by click, not another stop between every slider.
- */
+// A number: slider, a stepper pair, and a typeable readout in the unit it displays (see units.js for the
+// inverse). The readout is an <input>, not a <label>, so it actually is the editable thing it looks like.
 function rowSlider(ctx, k, label, lo, hi, st) {
   const row = document.createElement('div'); row.className = 'row';
+  // tabindex -1 on the steppers/readout: the range input is the row's one tab stop, so three stops per row
+  // across seventy rows doesn't make the panel unusable from the keyboard.
   row.innerHTML = '<label>' + label + '</label><input type="range" min="' + lo + '" max="' + hi +
                   '" step="' + st + '" value="' + ctx.state[k] + '">' +
                   '<button class="stp" tabindex="-1" data-d="-1">‹</button>' +
@@ -127,9 +92,8 @@ function rowSlider(ctx, k, label, lo, hi, st) {
   const commit = () => { show(); ctx.onChange(k, 'slider'); };
   inp.addEventListener('input', () => { ctx.state[k] = parseFloat(inp.value); commit(); });
 
-  /* Typed values are clamped to the row's own range and snapped to its step, so the field cannot express a value
-   * the slider could not — the thumb pinning at one end while the readout shows something else is precisely the
-   * disagreement persist() clamps against on restore. An unparseable entry reverts rather than zeroing. */
+  // Typed values are clamped to the row's range and snapped to its step, so the field can't express a value
+  // the slider couldn't; an unparseable entry reverts instead of zeroing.
   const parse = (ctx.fmt[k] && ctx.fmt[k].parse) || parseFloat;
   const takeTyped = () => {
     const raw = parse(val.value);
@@ -166,12 +130,8 @@ function rowSlider(ctx, k, label, lo, hi, st) {
   return row;
 }
 
-/* ONE OF N: a row of buttons of which exactly one is ever lit, holding a small integer.
- *
- * A three-way is not three toggles and it is not a 0..2 slider. As toggles nothing enforces the exclusivity and
- * two can read as lit at once; as a slider "CENTER" is a numeric position between two others, which is a lie
- * about a set that has no order.
- */
+// A row of buttons of which exactly one is lit: not toggles, which don't enforce exclusivity, and not a
+// slider, which would give an unordered set a numeric position.
 function rowChoice(ctx, k, label, names) {
   const row = document.createElement('div'); row.className = 'row choice';
   row.innerHTML = '<label>' + label + '</label>';
@@ -185,6 +145,8 @@ function rowChoice(ctx, k, label, names) {
   return row;
 }
 
+// Dispatches a spec to its row builder, then tags the element with the metadata the builders don't set:
+// the state key, and any `when`/`wide` options.
 export function buildRow(ctx, spec) {
   const [k, label, lo, hi, st] = spec;
   let row;
@@ -195,8 +157,8 @@ export function buildRow(ctx, spec) {
     case 'toggle': row = rowToggle(ctx, k, label); break;
     default:       row = rowSlider(ctx, k, label, lo, hi, st);
   }
-  // The state key on the element, because a LABEL DOES NOT IDENTIFY A ROW: SPEED, SPIN and BRIGHTNESS each occur
-  // in several sections, and anything reaching in by label picks whichever came first.
+  // Not the label: SPEED, SPIN and BRIGHTNESS each occur in several sections, so a label-based lookup
+  // would pick whichever came first.
   row.dataset.k = Array.isArray(k) ? k[0] : k;
   const opts = rowOpts(spec);
   if (opts && opts.wide) row.classList.add('wide');
@@ -205,13 +167,9 @@ export function buildRow(ctx, spec) {
   return row;
 }
 
-/* A SECTION: a header that folds, and optionally a master that switches its effect off.
- *
- * THOSE ARE DIFFERENT THINGS. A master kills the effect -- no molding, no instruments, guns converged. Folding
- * just hides the rows while everything carries on exactly as it was. Conflating them would mean you could not
- * tidy the panel without changing the picture. Both can apply, so rows show only when open AND enabled, and the
- * master's button stops its click propagating or pressing it would fold the section as a side effect.
- */
+// A section header that folds, and optionally a master that switches its effect off -- different things: a
+// master kills the effect, folding only hides its rows. Both can apply, so rows show only when open AND
+// enabled, and the master button stops its click from also folding the section.
 export function buildSection(ctx, name, rowSpecs, masterKey) {
   const head = document.createElement('div'); head.className = 'sec';
   const caret = document.createElement('span'); caret.className = 'caret';
@@ -246,17 +204,11 @@ export function buildSection(ctx, name, rowSpecs, masterKey) {
   return [head, group];
 }
 
-/* UP/DOWN WALK THE LIST, LEFT/RIGHT CHANGE THE VALUE. A range input binds all four arrows to its own value, so out
- * of the box Up/Down cannot move between rows and the panel is unnavigable from the keyboard beyond Tab. Since the
- * two pairs are redundant on a slider, taking the vertical one for navigation costs nothing.
- *
- * PageUp/PageDown jump a whole section, Home/End go to the ends of the panel, and the focused row is scrolled into
- * view — a focus ring you have to hunt for is not much better than none.
- */
+// Up/Down move focus between rows (a range input claims all four arrows for its own value otherwise, and
+// Left/Right still change it); PageUp/PageDown jump a section, Home/End the ends of the panel.
 export function attachKeyNav(host) {
   host.addEventListener('keydown', (e) => {
-    // offsetParent is null for anything inside a display:none row or a folded section, so Up/Down walks what is
-    // actually on screen rather than stopping on a control nobody can see.
+    // offsetParent is null inside a display:none row or a folded section, so Up/Down walks only what's on screen.
     const all = [...host.querySelectorAll('input[type=range]')].filter((el) => el.offsetParent !== null);
     const i = all.indexOf(e.target);
     if (i < 0) return;
@@ -275,14 +227,9 @@ export function attachKeyNav(host) {
   });
 }
 
-/* A STRIP OF ACTION BUTTONS. `lit` is a PREDICATE, not a flag, and an action without one is not a state and
- * never lights -- asking the page rather than remembering is what stops a restored session showing POWER lit
- * over a dark tube.
- *
- * Returns its own sync(), because a predicate can go false without anyone pressing the button that owns it: which
- * preset is lit is derived from the values, so moving any slider can extinguish one. Callers with no such
- * coupling can ignore the return.
- */
+// A strip of action buttons. `lit` is a predicate, not a flag -- asking the page rather than remembering a
+// state is what stops a restored session showing POWER lit over a dark tube. Returns sync() since a
+// predicate (e.g. which preset matches the current values) can go false without its button being pressed.
 export function buildActions(host, actions, after) {
   const lamps = [];
   actions.forEach(([label, fn, lit]) => {
@@ -296,21 +243,11 @@ export function buildActions(host, actions, after) {
   return sync;
 }
 
-/* THE SWITCH THAT HIDES THE PANEL, because 340px of controls is a sidebar on a desktop and most of the screen on a
- * phone. panel.css owns what hiding LOOKS like at each width; this owns only the state and the button.
- *
- * IT REPORTS THE CHANGE RATHER THAN ACTING ON IT, for the reason the file header gives. Hiding the panel on a wide
- * screen grows the stage, and a renderer sized to the old box will stretch until something else resizes it — so
- * `onToggle(hidden)` fires AFTER the class lands, with layout already settled. On a narrow screen the panel is out
- * of the flow and nothing moves, so the same callback is harmless there.
- *
- * THE DEFAULT IS PER-SIZE AND NOT REMEMBERED: a stored "hidden" restored onto a desktop is a lab that opens looking
- * broken, and the state is one button away either direction.
- *
- * `shortSide` IS THE HANDSET ON ITS SIDE. A width test alone calls a phone in landscape a desktop — 852x393 is
- * wider than any phone breakpoint — so the panel comes back into the flex flow and takes 340 of those 852 px. The
- * numbers pair with the `(max-width), (max-height)` query in panel.css and must move together with it.
- */
+// Hides the panel because 340px of controls is a sidebar on desktop and most of the screen on a phone;
+// panel.css owns the look, this owns the state and button. Reports via onToggle rather than acting, firing
+// after the class lands so a caller resizing its stage sees settled layout. Open/hidden is per-size and not
+// persisted. `shortSide` catches a phone in landscape (852x393 passes any width-only test); it and
+// `breakpoint` must move together with the `(max-width), (max-height)` query in panel.css.
 export function mountPanelToggle({ panel, host = document.body, breakpoint = 820, shortSide = 500,
                                    onToggle = () => {} } = {}) {
   const b = document.createElement('button');
@@ -320,9 +257,8 @@ export function mountPanelToggle({ panel, host = document.body, breakpoint = 820
 
   const apply = (hidden, notify) => {
     document.body.classList.toggle('panel-hidden', hidden);
-    /* THE GLYPH IS THE DIRECTION THE PANEL MOVES, not a word: > sends it away, < brings it back. It carries
-     * no meaning to a screen reader, so aria-label states the ACTION and aria-expanded the state -- a button
-     * whose whole label is a punctuation mark is announced as "greater-than" without them. */
+    // The glyph shows the direction the panel moves, not a word, so aria-label states the action and
+    // aria-expanded the state -- otherwise a screen reader announces only "greater-than".
     b.textContent = hidden ? '‹' : '›';
     b.setAttribute('aria-expanded', String(!hidden));
     b.setAttribute('aria-label', hidden ? 'Show controls' : 'Hide controls');
@@ -331,9 +267,8 @@ export function mountPanelToggle({ panel, host = document.body, breakpoint = 820
     if (notify) onToggle(hidden);
   };
 
-  /* THE OPENING STATE IS PAINTED, NOT ANIMATED -- see the note on .panel-boot in panel.css. The class is
-   * dropped after two frames rather than one: the first commits the style, and only from the second is a
-   * later change a transition from something already on screen. */
+  // Painted, not animated -- see .panel-boot in panel.css. Two rAFs, not one: the first commits the style,
+  // and only from the second does a later change read as a transition from something already on screen.
   document.body.classList.add('panel-boot');
   apply(window.matchMedia(`(max-width: ${breakpoint}px), (max-height: ${shortSide}px)`).matches, false);
   requestAnimationFrame(() => requestAnimationFrame(() => document.body.classList.remove('panel-boot')));
@@ -346,26 +281,17 @@ export function mountPanelToggle({ panel, host = document.body, breakpoint = 820
            get hidden() { return document.body.classList.contains('panel-hidden'); } };
 }
 
-/* THE WHOLE PANEL, from a SECTIONS table. The only entry point most callers need.
- *
- * `folds` IS A FUNCTION, NOT AN OBJECT, and that is load-bearing rather than fussy. A lab's persistence merge
- * generally restores by whole key -- `for (const k in state) state[k] = stored[k]` -- which REPLACES the fold
- * map rather than filling it. A reference captured when the panel was built then points at an orphan: measured,
- * sections folded correctly on screen while state.secClosed stayed {} and no fold ever reached storage. The
- * code this kit replaced looked the map up on every read and so never had the problem; resolving per use keeps
- * that property, and costs one call.
- *
- * Which slice of state holds the map is still the caller's business -- pass a getter for anything but the
- * default `state.secClosed`.
- */
+// Builds the whole panel from a sections table -- the entry point most callers need. `folds` is a function,
+// not an object: a lab's persistence merge typically replaces state wholesale (`state[k] = stored[k]`), which
+// would orphan a fold map reference captured once at build time. Resolving per use keeps folds landing in
+// storage. Pass a getter for anything but the default `state.secClosed`.
 export function createPanel({ host, state, sections, fmt = {}, folds, onChange = () => {} }) {
   const foldMap = typeof folds === 'function' ? folds : () => (state.secClosed ||= {});
   const conditional = [];
   const syncRows = () => conditional.forEach(({ row, key, values }) => {
     row.style.display = values.indexOf(state[key]) >= 0 ? '' : 'none';
   });
-  /* THE PANEL RE-EVALUATES ITS OWN `when` ROWS, so a lab never has to know which of its controls governs the
-   * visibility of another. The caller's onChange still sees every change, unwrapped and in order. */
+  // Re-evaluates `when` rows itself, so a lab never has to know which control governs another's visibility.
   const ctx = {
     state, fmt, foldMap, conditional, syncRows,
     onChange: (k, kind) => { syncRows(); onChange(k, kind); },

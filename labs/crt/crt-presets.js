@@ -1,266 +1,163 @@
-/* crt-presets.js — the shipped values, lifted out of the lab page.
- *
- * A view is a scene, a set of values and some chrome. Holding the values here is what lets a second view drive the
- * same scene from a different starting point instead of copying the scene to change its numbers.
- *
- * `gpu` is a parameter rather than an import because this module has no renderer to ask, and a preset that reached
- * for one could not be read without first booting WebGL.
- */
+// The shipped preset values, held apart from the scene so a second view can drive it from different starting values.
+// `gpu` is a parameter, not an import — this module has no renderer to ask before one exists.
 export function defaultPreset(gpu) {
   return {
   power: 1, lightOn: 1,
-  /* HOW LONG THE TUBE TAKES TO GO OUT AND TO COME BACK, in seconds -- the reference's own COLLAPSE and WARM-UP,
-   * at the reference's own defaults. They are the animation's duration and nothing else: the poses and the
-   * easing are fixed, because a collapse is the strike played backwards and that relationship is not a setting. */
+  // Seconds for the tube's collapse and warm-up, at the reference's own defaults — duration only; the poses
+  // and easing are fixed, since a collapse is the strike played backward.
   collapse: 1, ignite: 1,
-  /* THE MAGNET. field/wiggle/warpSec are the reference's FIELD, WIGGLE and DURATION at its own defaults (1 / 1.4 /
-   * 2.2s); the four below them are what this build can express and the DOM one could not. There, the warp is a CSS
-   * transform on the text element, so its shape is fixed at "rigid sheet" and its only knobs are how hard and how
-   * long. Here it is a displacement field on the beam's coordinate, so the SHAPE is separable: how much is a pull
-   * toward the middle of the tube, how much is the traveling pole, how much is the twist, and how far in from the
-   * rim the raster stops being clamped. */
+  // wint/wwig/warpSec mirror the reference's FIELD/WIGGLE/DURATION. Here the warp is a displacement field on
+  // the beam's coordinate, so its shape splits into drag, pull, twist and rim clamp below.
   wint: 2.7, wwig: 4, warpSec: 5.4,
-  /* DRAG LEADS NOW. PULL and SWIRL are bounded by the pole's own gaussian, so on their own they can only ever
-   * disturb a patch -- which is what "the warp effect seems like a really small management" was describing, and
-   * no amount of driving them harder fixes it, because the bound is the shape of the term and not its size. DRAG
-   * has no falloff, so the whole picture leans with the pole and the effect is as big as the tube. */
+  // warpPull/warpPinch/warpSwirl are bounded by the pole's own gaussian and can only ever disturb a local patch.
+  // warpDrag has no falloff, so it alone leans the whole picture with the pole.
   warpDrag: 0.205, warpPull: 0.18, warpPinch: 0, warpSwirl: 0,
   warpSpring: 0.29,   // how much of the motion is the raster ringing back rather than following the field
-  /* LARGE AGAIN, AND THE ORBIT IS WHY IT CAN BE. A wide reach was tried and rejected once -- at 0.45 with a pole
-   * crossing left to right it read as a global breath, because a wide field on a straight path is a wave by
-   * construction. What made it a wave was the PATH. With the pole going round instead, a wide field is a large
-   * area being swung about, which is the thing a coil held against the glass actually does. */
+  // warpR is wide because the pole orbits: a wide field on a straight path reads as a global wave, but on an
+  // orbit it reads as a large area being swung, like a coil held against the glass.
   warpR: 1.64,        // the pole's reach, in picture widths
   warpRim: 0,      // how far out the clamp starts -- 1 pins only the last pixel, 0 pins nearly everything
-  /* IN CSS PIXELS, like every other screen distance on this panel — the scanline width, the frame, the beam tip and
-   * the CONVERGENCE rows this one adds to. A fraction of the picture reads as one distance on this window and
-   * another on the next; a gun split is a distance on the glass.
-   *
-   * The guns are seated 120° apart, so this is the RADIUS of the triad. Set against CONVERGENCE's own couple of
-   * pixels the separation is real and reads as nothing; at this size the three rasters land a full glyph apart and
-   * the text genuinely comes to pieces, which is the ask. */
+  // warpRGB and CONVERGENCE below are in CSS px, like every screen distance on this panel. The guns sit 120°
+  // apart, so this is the triad's radius; at 31.5 the three rasters land a full glyph apart.
   warpRGB: 31.5,
-  /* THE MAINS FAULT. crt-flicker owns the 4.6s timeline -- the same one the reference fires -- and everything here
-   * is how hard this build spends it. Each gain scales the fault's DEPARTURE from normal rather than its value, so
-   * 1 is the reference's own event, 0 removes that channel from the fault entirely, and 3 is the same fault taken
-   * somewhere a real supply would not survive. */
+  // crt-flicker owns the 4.6s mains-fault timeline. Each gain here scales the fault's departure from normal:
+  // 1 is the reference's own event, 0 removes the channel, 3 exceeds what a real supply would survive.
   surgeScreen: 1, surgeLamp: 1, surgeWarm: 3300, surgeHealth: 1,
-  /* SLOWER THAN THE REFERENCE ON PURPOSE. Its 4.6s is paced for a lab where the fault is one of a dozen things
-   * being tuned; as a thing to WATCH it is over before the dark has had time to feel like anything. 0.55 puts
-   * it at 8.4s, which spends the extra time where the suspense is -- the dark stretches from 0.9s to 1.6s, and
-   * the failed restrikes have room to land in it. */
+  // surgeRate paces the fault slower than the reference (0.55 puts it at 8.4s) so the dark stretch (0.9-1.6s)
+  // has room for failed restrikes before it reads as suspense rather than a blip.
   surgeRate: 1,
-  // The guttering the fault drives ON TOP of the timeline, at its worst where the level is furthest from normal.
+  // Guttering the fault drives on top of the timeline, worst where the level is furthest from normal.
   surgeHz: 14, surgeStr: 0.75, surgeLampHz: 18,
-  // How much of the fault is not authored: where the chop lands, and how many times the supply fails to restrike
-  // in the dark. 0 is the reference's behavior -- the identical fault every press.
+  // How much of the fault is not authored: where the chop lands, and how many restrikes fail in the dark.
+  // 0 is the reference's behavior -- the identical fault every press.
   surgeChaos: 0.7,
   face: 1, overscan: 1, corner: 30, bend: 6,
   frameOn: 1,            // the reference ships frameOn: true; off shows the bare tube
   frameCol: '#2d1b15',   // the molding's own plastic -- crt-bezel's default, and the reference's
   famp: 2.1,          // DEPTH: scales the fold-bounded amplitude; 1 is the reference's own depth
-  /* THERE IS NO FIT CONTROL, AND THE PIN IS WHY. A FIT would hold the picture's rim on the glass by overriding
-   * OVERSCAN with the face LUT's last sample — but buildFaceLUT solves for the radius at s = 1 against
-   * target = r1 = F(1), which returns u = 1 by construction for every profile at every FACE. The number it read
-   * would be the constant 1.0, making the switch "force OVERSCAN to 100%", which the OVERSCAN slider does.
-   *
-   * The rim it would guard is guarded. That is what the pin IS. */
+  // No FIT control: buildFaceLUT solves the face LUT for u=1 by construction at s=1, so a FIT reading the LUT's
+  // last sample would always yield 1.0 — identical to forcing OVERSCAN to 100%, which OVERSCAN already does.
   fexp: 3, grings: 20,        // FALLOFF exponent and CURVE AREA, both tuned on this build rather than the reference's
   scan: 10, scanw: 1.0, scanop: 50, grille: 17, grillew: 1.0, grilleop: 40,
   glow: 1,          // SCREEN GLOW in nits -- the excited coating around active content, on BRIGHTNESS's scale
   glowFall: 0.095,  // how far past the block's own edge that excitation reaches
-  /* THE COATING RUNS COOLER THAN IT DID. glow 3 -> 1, glowFall 0.13 -> 0.095 and phos 0.13 -> 0.07 were tuned
-   * together on the running build: less excitation around the text, reaching less far, over a dimmer wash on
-   * the empty glass. They belong together because they are one surface -- lowering the wash without pulling
-   * the glow in leaves the text haloed on a face that has gone dark behind it. */
+  // glow, glowFall and phos were tuned together (3->1, 0.13->0.095, 0.13->0.07): less excitation reaching less
+  // far, over a dimmer wash -- lowering the wash alone would leave the text haloed on a face gone dark behind it.
   phos: 0.07, bloom: 0.5, bloomThresh: 0.72, bright: 0.7, beam: 1.0,
-  /* BLOOM'S RADIUS, IN CSS PIXELS, and 16 is the reference's own default. BLOOM was a gain with no width
-   * beside it -- the spread was a constant of the quarter-res buffer the blur runs on -- so the panel could
-   * say how much bloom and never how far it reached. The reference's single bloom control IS the width. */
+  // bloomSize is the blur radius in CSS px; 16 is the reference's own default. The reference's single bloom
+  // control IS the width -- here BLOOM (the gain) and bloomSize (the reach) are separate.
   bloomSize: 16,
   vig: 0.5, vigFall: 0.22,
-  /* THE TWO RATES ARE SET IN SECONDS, NOT IN RATE. A slider linear in FREQUENCY is wildly non-linear in the TIME
-   * anyone reads off it: at the fast end one step moves the sweep by a hundredth of a second and at the slow end
-   * the same step moves it by twenty, so every useful setting is crammed into the last few pixels of travel.
-   *
-   * Storing the PERIOD makes every step the same size, and the reciprocal is taken once at the boundary where it is
-   * handed to the shader. Zero means parked. */
+  // sweepSec stores the period in seconds, not the rate: a rate slider is wildly non-linear in perceived time,
+  // cramming every useful setting into the last few pixels of travel. The reciprocal is taken once where it's
+  // handed to the shader; 0 means parked.
   sweepSec: 20, sweepOn: 1,
-  /* THE BEAM IS MEASURED IN SCANLINES, NOT IN SCREEN PERCENT -- the same move the terminal's text made.
-   *
-   * SWEEP HEIGHT was a fraction of the picture, and a fraction of the picture is not a thing the beam knows
-   * about: at 5% it drew a band 118 rows tall on a 1250-row picture and read as a glow with no edge, while the
-   * SAME setting on a different window drew a different beam. What the beam actually relates to is the raster it
-   * is writing -- it covers some number of LINES -- so that is the number, and changing SCANLINES H now resizes
-   * the beam with the pattern it belongs to. */
+  // sweepSL is in scanlines, not screen %: a 5% band drew 118 of 1250 rows and looked different per window
+  // size. Scanlines tie the beam to the raster it's writing, so it resizes with the pattern.
   sweepSL: 0.25,
-  /* THE BEAM TIP AND ITS SIDE EFFECTS. The tip is the one part of a raster genuinely lit at any instant, so it
-   * is drawn rather than implied by the band alone.
-   *   sweepSol  how square the band's own profile is; 0 a soft haze, 1 a hard-edged line
-   *   sweepRGB  the guns' split ACROSS the band, in CSS px -- fringes its edge, which is where it shows
-   *   hsweep    the tip's rate; 1/hsweep is the seconds it takes to cross
-   *   dotR      the tip's radius in CSS px, dotLvl how hard it drives the coating
-   *   beamPull  how far the active line is dragged as the tip loads the supply, in CSS px */
+  // Beam-tip params, all CSS px unless noted: sweepSol is edge hardness (0 soft, 1 hard); sweepRGB is the guns'
+  // split across the band; hsweep is the tip rate (1/hsweep seconds to cross); dotR/dotLvl are its radius and
+  // drive; beamPull is how far the active line drags as the tip loads the supply.
   sweepSol: 1, sweepRGB: 2,
-  /* TIP GLOW IN NITS, on BRIGHTNESS's own scale -- it is the same coating emitting, so it is readable against
-   * it: 90 nt of tip beside 62 nt of beam says the spot is driving the phosphor about half again as hard.
-   * sweepStep is in SCANLINES, like everything else describing the beam's geometry. */
+  // Tip glow in nits, same coating as the beam (90 nt tip vs 62 nt beam is about half again as hard). sweepStep
+  // is in scanlines, like the rest of the beam's geometry.
   hsweepSec: 25, dotNits: 100, dotHaloNits: 0, tipRGBc: 0.5, tipRGBr: 0.25, beamConvC: 1.75, dipNoise: 0.75, pullInk: 0.85, sweepStep: 0.5, beamPull: 20,
-  // THE TIP GETS BOTH AXES, in the units each one belongs to: its height in scanlines, its width in the grille's
-  // own columns. One radius could only ever be round on the glass, which is not the frame the beam works in.
+  // The tip gets both axes in their own units -- height in scanlines, width in grille columns -- since one
+  // round radius wouldn't fit the frame the beam actually works in.
   dotH: 0.5, dotW: 0.5,
-  /* THE DEFICIT AHEAD OF THE BEAM -- see the note in crt-gl. dipFall is in multiples of SWEEP HEIGHT, so
-   * widening the beam widens the shadow it is chasing, which is the relationship the two actually have. */
+  // The deficit ahead of the beam -- see the note in crt-gl. dipFall is in multiples of sweep height.
   sweepDip: 1, dipFall: 60, sweepWhite: 0,
-  // CONVERGE as a signed percentage of the full-deflection error; 11 is 0.45px.
-  /* CONVERGENCE PER GUN, in CSS px, uniform across the face -- static convergence, as a service manual
-   * means it. Red and blue split a couple of px either side of green, which is a well-set-up tube. */
+  // CONVERGE as a signed percentage of the full-deflection error; 11 is 0.45px. Per-gun convergence is
+  // uniform across the face -- static convergence, as a service manual means it.
   beamOn: 1,        // the whole sweep assembly; off also skips its per-pixel work
   convOn: 1, convRX: 1, convRY: -1, convGX: 3, convGY: 1, convBX: 1, convBY: -3, persist: 0.4,
-  /* MEASURED OFF THE REFERENCE, not chosen. Read out of the running lab: fw=60 fh=30 in --cm (0.45vw) units,
-   * centerd at fposx/fposy = 0 on a 1245x933 glass -- so the opening is 432x216px, half-extents 0.347 x 0.232 of
-   * the glass half-size. Inside it the tubes are ltwd=76% wide, at lt1=29% / lt2=71% down the opening, ltk=20
-   * thick, and ftilt ships at 0. Every one of these was a guess before and every one of them was wrong -- the
-   * fixture was at the top of the glass when the real one is dead center. */
-  /* THE FIXTURE IN MILLIMETERS, because a light fitting has a size. A bare fraction of the glass means nothing on its
-   * own and lets you build a fitting that could not exist: a 26mm tube in a housing 40mm deep, ends sticking through
-   * the sides, two lamps closer together than their own diameter. Real numbers make those states unreachable and the
-   * plausible ones obvious — a T8 tube IS 26mm, a 4-foot lamp IS 1200mm, an office troffer IS about 600x600x90.
-   *
-   * WHAT IS DERIVED STAYS DERIVED. Tube length is the housing minus an end allowance, because that is what decides it
-   * on a real fitting. Same for the caps: an end cap is a molded part about 25mm long whatever tube it is on.
-   *
-   * SCALE ties millimeters to the picture: how much of the room the glass half-height spans. */
-  /* MM_PER_UNIT IS A CONSTANT, NOT A CONTROL. Apparent size is (real size / U) over (real distance / U), so the U
-   * cancels and fixWmm/distMM is the entire answer — a global scale on top of a real size and a real distance can
-   * only be a no-op or a bug. It appeared to work only while DISTANCE was secretly a focal length.
-   *
-   * Kept as a constant because the conversion still has to happen somewhere; it just is not anybody's decision. */
+  // Measured off the reference lab: opening 432x216px (half-extents 0.347 x 0.232 of glass half-size) on a
+  // 1245x933 glass; tubes 76% wide at 29%/71% down the opening, 20 thick, ftilt 0.
+  //
+  // Fixture size is stored in millimeters, not a fraction of the glass, so an impossible fitting (a tube longer
+  // than its housing, lamps closer than their own diameter) can't be represented. Tube length and cap size stay
+  // derived from the housing/tube spec rather than stored separately. SCALE maps mm to the picture via the glass
+  // half-height.
+  //
+  // mm-to-unit scale is a constant, not a control: apparent size is (real size/U)/(real distance/U), so U
+  // cancels -- a slider here could only ever be a no-op or a bug.
   distMM: 1200,        // how far the fitting is from the glass
   fixWmm: 1200, fixHmm: 600, recessMM: 40,
   tubeDiaMM: 20,       // T8. T5 is 16, T12 is 38
   tubeInsetMM: 60,     // how far short of the housing each lamp stops -- tube LENGTH derives from this
   tubeGapMM: 250,      // between the two lamps' axes
   fixXmm: 550,
-  /* 19mm because that is the REFERENCE'S RATIO, not a round number. Measured off the lab's computed style, its
-   * rail is 9.1875px on a 592.76px fitting -- 1.55% -- which at the default 1200mm housing here is 18.6mm. The
-   * overhang and fade follow at 4x and 2x, also measured (36.55px and 18.28px against that same 9.1875px). */
+  // railMM matches the reference's measured rail ratio: 9.1875px on a 592.76px fitting (1.55%) ~ 18.6mm at
+  // this 1200mm housing. Overhang and fade follow at 4x and 2x, also measured (36.55px and 18.28px).
   railMM: 20,
   capMM: 15,   // the ferrule -- flush with the glass, so this is only how far down the tube it reaches
   fixYmm: 680,
   frost: 0.1, diffuse: 0.1, prism: 0.5, prismN: 40,
   fixTilt: 1.276637,
-  // A LAMP AT A TIME: its own level, its own color. Two tubes in one fitting are rarely the same age,
-  // and color is the first thing to drift as a phosphor blend ages -- that mismatch is most of what makes
-  // real fluorescent light read as real.
+  // One lamp at a time: its own level and color. Two tubes in one fitting are rarely the same age, and color
+  // drift as a phosphor blend ages is most of what makes real fluorescent light read as real.
   lightA: 0.8, tempA: 5000,
   lightB: 0.8, tempB: 4400,
   healthA: 1.0, healthB: 1.0, lflickA: 6, lflickB: 3,
-  // flickerOn is gone -- a second gate on the lamps' flicker with no row on the panel, which could and did
-  // strand the four FLICKER rows switched off with no way to reach them. See the note at lampOn.
+  // flickerOn is gone: it was a second gate on the lamps' flicker with no panel row, which could strand the
+  // four FLICKER rows switched off with no way back. See the note at lampOn.
   lfstrA: 0.5, lfstrB: 0.7, lfjit: 0.72, lfchaos: 0.5, fstr: 0.3, flickHz: 3.5,
-  /* HOW HARD A STRIKE READS. crt-flicker decides WHEN a tube re-ignites at a different temperature and how far
-   * its coating stumbles; these two decide what those decisions are worth on screen. The reference's own values
-   * are 1500K and a gain of 1 -- correct for a fitting glimpsed in the corner of a lab, and too quiet when the
-   * fitting is the thing being watched. Both are honest multipliers on the machine's own picks, so the timing
-   * stays unpredictable and only the amplitude moves. */
+  // crt-flicker decides when a tube re-ignites and how far its coating stumbles; these scale what that's worth
+  // on screen. Reference values are 1500K and gain 1 -- too quiet once the fitting is the thing being watched,
+  // so these are honest multipliers on the machine's own picks; timing stays unpredictable, only amplitude moves.
   lfwarmK: 2600, lfhdip: 2.0,
-  /* HOW MUCH OF A SPENT SECTION IS STILL THERE. crt-gl kept this as a fixed floor so a dead tube stayed a solid
-   * object rather than a hole -- defensible, and it meant a fully dead middle still measured 118 of 255 against
-   * lit ends at 239. Half lit is not what a failed lamp looks like. 0.18 leaves just enough body to read as
-   * glass rather than absence, and lets the ends do the talking. */
+  // tubeDead floors how much of a spent section still shows, so a dead tube reads as glass, not a hole. A
+  // higher floor measured 118/255 against 239 lit -- too bright for a failed lamp; 0.18 leaves just enough body.
   tubeDead: 0.18,
   sheen: 0.06, matte: 0.0,
-  /* GLARE IS A TRANSPARENCY SPENT IN DISPLAY SPACE, not a reflectance in linear light — see the note in crt-gl
-   * where emisBare is taken. A session stored under the older unit keeps its number and loses its meaning, so it
-   * reads much weaker until the slider is touched once. Deliberately not migrated: a schema bump would discard
-   * every other setting to fix one row. */
+  // glare is a display-space transparency, not a linear-light reflectance -- see the note in crt-gl where
+  // emisBare is taken. Not migrated from the older unit, so a stored session reads weaker until touched once.
   glare: 0.21,
-  // SCATTER IS A DISTANCE IN THE ROOM, so it is stored in cm and converted by SCALE like the fitting's own
-  // dimensions. In bare shader units, changing SCALE would move the fitting and leave its glow the same size --
-  // the halo detaching from the thing casting it.
+  // scatterCM is a room distance, stored in cm and converted by SCALE like the fitting's own dimensions --
+  // in bare shader units, changing SCALE would move the fitting but leave its glow the same size.
   scatterCM: 25,
   // How much of the face's curve the reflection takes. See the note where rd is built -- 1 is physical
   // and unusable, so this is a fraction and the useful settings are low.
-  /* THE RIPPLE EVERY MAINS-DRIVEN DISCHARGE HAS -- a fluorescent runs at twice mains, so 100Hz on a 50Hz
-   * supply. There is no separate tube texture beside it: at the size this fitting is ever drawn, coating grain
-   * and striation read as noise and fight the burnout pattern along the tube, which is the detail that carries
-   * information. */
-  /* The reference's --bgvis and --railvis: the housing and the rails fade INDEPENDENTLY of each other and
-   * of the lamps, so either can be taken out without touching what is standing in front of it. */
+  // ripple is the 100Hz mains beat every fluorescent has (twice the 50Hz supply). No separate tube-grain
+  // texture besides it: at this size, grain and striation read as noise fighting the burnout pattern.
+  // Matches the reference's --bgvis/--railvis: housing and rails fade independently of each other and the lamps.
   boxVis: 0.4, railVis: 0.29,
   glowA: 0.15, glowB: 0.15, ripple: 0,
-  /* ROOM LIGHT IS CALIBRATED AGAINST A FLAT 4% REFLECTANCE, which lights the whole face rather than only the
-   * rim. At 0.5 empty glass measures 35.6 against the reference's 13.4. The reference ships lightOn:false, so
-   * this is the level at which the room is present without washing the tube out. */
+  // spot is calibrated against a flat 4% reflectance so room light lights the whole face, not just the rim.
+  // The reference ships lightOn:false; 0.5 measures 35.6 against its 13.4.
   spot: 1,
-  /* THE TEXT IS MEASURED IN RASTER CELLS, NOT PIXELS -- see textGrid().
-   *
-   * These were `tsize` (a percentage of the render height) and `tlh` (a bare line-height multiplier), which is a
-   * type scale that knows nothing about the tube it is drawn on: changing SCANLINES H moved the raster and left
-   * the glyphs exactly where they were. The reference has never done that. Its cell height is in SCANLINES and
-   * its cell width is in GRILLE COLUMNS, so the text sits on the same lattice the scan pattern draws and a
-   * change of density resizes the type with it. Same three numbers, said in the units the surface has.
-   */
+  // Text is measured in raster cells, not pixels -- see textGrid(). Cell height is in scanlines and cell width
+  // is in grille columns, so text sits on the same lattice the scan pattern draws and a density change resizes
+  // the type with it.
   tcell: 3, tgap: 1,   // ROW HEIGHT and LINE GAP, in scanlines
   tcols: 0,            // CHAR WIDTH, in grille columns; 0 = AUTO, i.e. derived from the font's own advance
-  /* 70 / 64 ARE THE REFERENCE'S OWN SHIPPED VALUES, and the height especially is not cosmetic: with ANCHOR
-   * BOTTOM the text stands on the block's lower edge, so a block 64% of the picture tall puts the boot low on
-   * the tube where it belongs. AUTO height makes the block exactly as tall as the text, which then centers on
-   * TEXT Y and floats the whole thing into the middle of the screen. */
+  // 70/64 are the reference's own shipped values. Height isn't cosmetic: with ANCHOR BOTTOM the text stands on
+  // the block's lower edge, so 64% puts the boot low on the tube; AUTO height instead centers the block on TEXT Y.
   tw: 74, tht: 67,     // the block's size as a % of the picture; 0 = AUTO (shrink to the text)
   tjust: 0,            // ALIGN: 0 left, 1 center, 2 right -- the ragged edge INSIDE the block
   type: 1.2,             // TYPE SPEED, x350 = WPM
   tox: 0, toy: 0,
   tvert: 0,        // 0 = anchor bottom (grows up), 1 = anchor top (grows down)
-  /* WHICH SECTIONS ARE FOLDED. An object, so a section added later defaults to open without a migration.
-   *
-   * ONLY THE CLOSED ONES ARE NAMED: absent means open, so anything renamed or added stays open for free. Listing the
-   * open ones too would work and would quietly break that.
-   *
-   * A fourteen-section panel opened on all fourteen is a wall, so the shipped fold is the working set. */
+  // Which sections are folded. Only the closed ones are named: absent means open, so a section renamed or
+  // added later stays open with no migration needed.
   secClosed: {
     BEAM: true, CONVERGENCE: true, FIXTURE: true, FRAME: true, GLASS: true, POWER: true,
     RASTER: true, SURGE: true, TERMINAL: true, TUBE: true, WARP: true,
   },
-  // fixSolo had a row under DEBUG and a read in the draw call but no entry here, so it was undefined until the
-  // slider was touched -- harmless only because the upload carries a || 0. A control needs a default like any other.
+  // Every control needs a default here: fixSolo had a row and a read in the draw call but no entry, so it was
+  // undefined until touched -- harmless only because the upload carries `|| 0`.
   debugOn: 0, guidesOn: 1, heat: 1, gridOn: 1, fixSolo: 0,
-  // The phosphor is a setting like any other; it just lived in a module variable rather than here.
   phName: 'amber', phCustom: '#4c67f0',
-  /* WIDTH IN CSS PIXELS. It was a fraction of the glass half-height, which meant the same setting drew a
-   * different molding on a different window -- and crt-bezel wants px anyway, so the fraction had to be
-   * converted back at every call site. 13 is the reference's own fwid. */
-  /* THE NUMBER CHANGED BECAUSE THE UNIT DID — the same story as GLARE. FRAME scaled the molding's radiance ahead of
-   * the tone map and the gamma, so most of its visible range sat in the bottom of the travel; it fades the finished
-   * tone now, which is a true opacity, and a given fraction of a finished tone is dimmer than the same fraction of a
-   * radiance. This is the same frame, said in the new unit.
-   *
-   * A STORED VALUE KEEPS ITS NUMBER AND LOSES ITS MEANING, exactly as GLARE's did. */
+  // frameW is in CSS px, matching what crt-bezel expects; 13 is the reference's own fwid.
+  // frame is a post-tone-map opacity, not a pre-tone-map radiance -- same story as glare. A stored value keeps
+  // its number and loses its meaning until the slider is touched.
   frame: 0.19, frameW: 13, frameBleed: 0.8,
   frameScreen: 1,     // the tube's output reflected across the bezel, in the screen's color
   frameFixture: 1,    // the light fixture, across the whole bezel, from wherever POS Y puts it
-  /* 0.62 ON INTEGRATED, AND THE NUMBER IS MEASURED RATHER THAN CHOSEN. At 0.72 this scene sits exactly on the
-     * 16.67ms edge on a UHD 630: min 16.4ms every time, but the median alternates between 16.9 and 33.2 across
-     * repeats -- half the frames land one vsync late. A build that is marginal is a build that stutters on any
-     * machine slightly slower than the one it was tuned on, so the cap buys headroom rather than an average. */
-  /* FULL RESOLUTION EVERYWHERE NOW. This was 0.62 on integrated, chosen when the fill rate looked like the
-   * binding constraint. Measured since, on the UHD 630 this targets: 60 FPS at 0.62, at 0.80 AND at 1.00 -- the
-   * scale was not buying frames. It was costing the shadow mask, which is a one-pixel structure and gets averaged
-   * away by the upscale: cell-grid energy on empty glass measured 0.379 / 0.496 / 0.686 across those three
-   * scales, against the reference's 1.256. Kept as a control for slower hardware than this. */
-  /* BACK TO ADAPTIVE. I raised this to 1.0 on a single reading that showed 60 FPS at every scale; repeated runs
-   * show 38-44 at 1.00 and it fell to 21 once the fixture became genuinely visible, so that reading was noise and
-   * the claim it supported was wrong. The scale is a real trade -- cell-grid energy measured 0.379 / 0.496 / 0.686
-   * at 0.62 / 0.80 / 1.00 -- so it stays a control, defaulted to what the hardware can actually hold. */
-  /* CHOSEN FOR THE LOOK RATHER THAN THE BUDGET, which reverses the reasoning above and is worth saying plainly. Every
-   * earlier move of this number was a fill-rate decision that regretted what it cost the shadow mask; here the
-   * one-pixel structure is averaged down far enough that the tube reads as an older, softer set, which is the wanted
-   * result rather than a price paid for frames.
-   *
-   * ONLY THE INTEGRATED BRANCH MOVED. The discrete default stays 1.0: a look tuned at one sampling density is not
-   * evidence about another. If the softness is wanted everywhere, the honest edit is to drop the branch entirely
-   * rather than guess a second number. */
+  // The integrated branch is chosen for look, not budget: downscaling averages the one-pixel shadow-mask
+  // structure down far enough that the tube reads as an older, softer set. The discrete default stays 1.0 --
+  // a look tuned at one sampling density says nothing about another, so extending the softness elsewhere means
+  // dropping the branch rather than reusing this number.
   renderScale: gpu.integrated ? 0.5 : 1.0,
   };
 }
