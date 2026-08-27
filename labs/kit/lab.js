@@ -189,6 +189,8 @@ export function mountLoader(stage = 'Compiling shaders') {
 export function labReady() {
   const el = document.querySelector('.kit-load');
   if (!el || el.classList.contains('done')) return;
+  // The lab is up, so boot-guard's one retry is spent on nothing and is handed back for a later failure.
+  try { sessionStorage.removeItem('kit-boot-retry'); } catch (e) {}
   el.classList.add('done');
   const drop = () => el.remove();
   el.addEventListener('transitionend', drop, { once: true });
