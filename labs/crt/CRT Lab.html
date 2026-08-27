@@ -175,12 +175,11 @@ const memo = (key, build) => { const box = { k: null, v: null };
                         return box.v; };
   f.box = box; return f; };
 
-/* THE TEMPERATURES ARE ARGUMENTS NOW, not closure reads, and the mains fault is why.
- *
- * They used to come straight off state, which is correct for a control and wrong for an EVENT: a surge drags the
- * arc cold, so what the lamps are emitting this frame is not what the TEMP sliders say. Taking them as parameters
- * lets the caller hand over the surge-shifted pair while the sliders stay the sliders -- and because they are in
- * the memo key, the cache still holds for as long as the color genuinely holds still. */
+/* THE TEMPERATURES ARE ARGUMENTS, NOT CLOSURE READS, and the mains fault is why. Reading them straight off
+ * state is correct for a control and wrong for an EVENT: a surge drags the arc cold, so what the lamps emit
+ * this frame is not what the TEMP sliders say. Taking them as parameters lets the caller hand over the
+ * surge-shifted pair while the sliders stay the sliders -- and because they are in the memo key, the cache
+ * still holds for as long as the color genuinely holds still. */
 const pal = memo((tA, tB) => phName + '|' + tA + '|' + tB, (tA, tB) => ({
   ink:     toLinear(hexRgb(ph.fg)),
   hi:      toLinear(hexRgb(ph.hi)),
@@ -561,8 +560,8 @@ const caretWaiting = () => !!(state.power && typed === 0 && typeAt && performanc
 function drawContent(force) {
   const g = textGrid();
   /* THE COLUMN BUDGET IS THE BLOCK'S, AND bootLines WANTS IT. It sets where the dot leaders stop and the value
-   * column starts, so the boot text re-lays itself when the block or the grille changes -- the old build passed a
-   * hardcoded 44 and the masthead never reflowed with the tube. Rebuilt only when the count actually moves;
+   * column starts, so the boot text re-lays itself when the block or the grille changes. A hardcoded count here
+   * leaves the masthead never reflowing with the tube. Rebuilt only when the count actually moves;
    * `typed` is a flat index into it, so it is clamped rather than left pointing past the end. */
   const blockW = state.tw < 1 ? g.W : g.W * state.tw / 100;
   const cols = Math.max(1, Math.floor(blockW / g.charW));
@@ -618,8 +617,8 @@ function drawContent(force) {
 
   /* THE BLOCK IS CENTERD ON TEXT X / TEXT Y, as the reference's is: #crt_term sits at 50%+tox / 50%+toy and is
    * pulled back by half its own size. A center anchor is what lets ALIGN be only the ragged edge of the lines
-   * INSIDE the block -- with a corner anchor the two cannot be separated, which is why the reference's ALIGN
-   * used to jump TEXT X to a side and re-anchor. AUTO width is the widest row of the FINISHED text, not of what
+   * INSIDE the block -- with a corner anchor the two cannot be separated, and ALIGN jumps TEXT X to a side and
+   * re-anchors. AUTO width is the widest row of the FINISHED text, not of what
    * has been typed, or the block would slide sideways as the longest line arrived. */
   const wide = rows.reduce((m, r) => Math.max(m, r.reduce((a, sg) => a + sg.t.length, 0)), 0);
   // A WHOLE NUMBER OF CELLS EITHER WAY: `cols` is already the budget floor(tw / charW), so reusing it makes the
@@ -882,9 +881,9 @@ const host = document.getElementById('controls');
 
 /* THE PANEL IS THE SHARED KIT'S, not this page's — ../kit/panel.js and ../kit/panel.css.
  *
- * THE TWO THINGS THE BUILDERS USED TO REACH IN FOR arrive as (key, kind) instead. A color is always a bezel
- * color, so it invalidates that memo; RENDER SCALE is the one control that reallocates the buffer. The kit stays
- * ignorant of both.
+ * THE TWO THINGS A BUILDER WOULD OTHERWISE REACH IN FOR arrive as (key, kind) instead. A color is always a
+ * bezel color, so it invalidates that memo; RENDER SCALE is the one control that reallocates the buffer. The
+ * kit stays ignorant of both.
  *
  * THE FOLD MAP IS NOT PASSED, so the kit resolves state.secClosed on every read. Handing it the object is a real
  * bug: the restore replaces whole keys, so the panel folds on screen while nothing reaches storage. */
@@ -1368,10 +1367,10 @@ function frame(now) {
         frost: state.frost, diffuse: state.diffuse, prism: state.prism, prismN: state.prismN,
       };
     })(),
-    /* NOTE THE ABSENCE. fixY / fixW / fixH / fixGap / fixDepth / openW / openH used to be set from state HERE,
-     * and because that was after the millimeter block above, they silently overwrote every one of its answers --
-     * HOUSING W measured byte-identical at 1200mm and 600mm, and FROST was dead, for the same reason. A later
-     * key in an object literal wins, so a conversion is only a conversion if nothing restates its output. */
+    /* NOTE THE ABSENCE. fixY / fixW / fixH / fixGap / fixDepth / openW / openH are NOT set from state here.
+     * Restating them after the millimeter block above silently overwrites every one of its answers -- measured,
+     * HOUSING W came out byte-identical at 1200mm and 600mm, and FROST was dead. A later key in an object
+     * literal wins, so a conversion is only a conversion if nothing restates its output. */
     /* uFixture IS A GATE NOW, not a level. Each lamp carries its own output in its flux below, and how much
      * of it comes back off the glass is GLARE's job -- so a third multiplier in the middle was one scale too
      * many and made LIGHT and GLARE fight over the same result. */

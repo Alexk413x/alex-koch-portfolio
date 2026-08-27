@@ -208,8 +208,8 @@ a:hover { color: var(--accent-hover) }
 #nav .links a[aria-current="true"]::after { height: 2px; background: var(--accent) }
 
 /* The quietest thing in the bar, on purpose: all three are reachable again in CONTACT, so up here they are a
-   shortcut and not the route. That is also why they are marks rather than the old LINKEDIN label, which was the
-   loudest item in the nav and the one that took you off the page. */
+   shortcut and not the route. That is also why they are marks rather than a LINKEDIN label, which would be the
+   loudest item in the nav and the one that takes you off the page. */
 #nav .tools { display: flex; justify-self: end; align-items: center; gap: 8px }
 #nav .tools a, #nav .tools button {
   display: grid; place-items: center; width: 28px; height: 28px;
@@ -937,7 +937,7 @@ html.booting { scroll-snap-type: none }
 .term ul { margin: 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 6px 14px }
 
 /* RUNS and RESULT are the argument, not a footnote to it — they sit above the coverage list and are set to be
-   read, at the same weight as the names in it rather than at the caption size they used to carry. */
+   read, at the same weight as the names in it rather than at caption size. */
 .term li { font-size: 15.5px; line-height: 1.45; color: var(--text-strong) }
 
 /* A slash between terms rather than a box around each: at four rows the boxes stack into one undifferentiated slab.
@@ -1440,9 +1440,9 @@ html.booting { scroll-snap-type: none }
 }
 .reel:active { cursor: grabbing }
 
-/* The act of whatever is centerd, changing as the reel crosses into the next one. It is the narrative the four
-   shelves used to carry, kept without paying four rows for it — and it sits ABOVE the crate, where it names what
-   you are looking at rather than captioning what you have finished with. */
+/* The act of whatever is centerd, changing as the reel crosses into the next one. It carries the narrative
+   without paying four shelf rows for it, and it sits ABOVE the crate, where it names what you are looking at
+   rather than captioning what you have finished with. */
 /* THE ACT, ON THE RAIL AND IN --amber. It names what the rack is showing and changes as you cross into the
    next act, which is the one line here that carries state — at --text-muted it was the faintest thing in the
    column while being the only thing in it that moves. Amber rather than white because it is a label on the
@@ -1685,8 +1685,8 @@ html.booting { scroll-snap-type: none }
   letter-spacing: .53cqw; color: rgba(255, 255, 255, .55);
 }
 
-/* Hover lifts the artwork's line the way it used to lift the placeholder's, but only the accent ramp moves —
-   the lit shape is the one thing on a cover that is already at full strength. */
+/* Hover lifts the artwork's line, but only the accent ramp moves — the lit shape is the one thing on a cover
+   that is already at full strength. */
 .box:hover .cover-art .s-line { stroke: var(--amber) }
 
 
@@ -1701,10 +1701,9 @@ html.booting { scroll-snap-type: none }
 /* THE FLIP IS THE SECTION'S MECHANISM. Every other section on this page has one — the graph builds, the
    calculator turns, the reactor is struck — and the shelf had only a panel that appeared. Picking a box takes
    it off the shelf, and turning it over is how anybody has ever read what a boxed thing does. */
-/* THE BOX IS THE CASE'S SIZE, not the column's. It used to fill the column and hold a case at 78% of itself,
-   so 22% of the column was dead air inside the box — invisible, and it pushed the button away from the object
-   it belongs to. The height moves here and the case fills it, which is the same case at the same size with the
-   slack taken out from around it. */
+/* THE BOX IS THE CASE'S SIZE, not the column's. A box filling the column and holding a case at 78% of itself
+   leaves 22% of the column as dead air inside the box — invisible, and it pushes the button away from the
+   object it belongs to. The height moves here and the case fills it instead. */
 /* 92%, which is all the column has once the button's own 34px and the 12px gap are taken out. 78% was set when
    the box still had to leave room for slack it was hiding inside itself; with the button on the floor and the
    case filling this box, the remaining eight per cent is the margin the case needs to not touch its own foot. */
@@ -1915,12 +1914,12 @@ html.booting { scroll-snap-type: none }
    reading as part of the sentence they sit in. */
 .b-lede b, .b-wins b { font-weight: 700; color: var(--text-strong) }
 /* THE HEADLINE SLOT. It carried the product name and now carries the ROLE — same size, same weight, same place.
-   A job title is several words where a product name is one or two, so this wraps where the old one rarely did:
-   line-height comes up from 1.05, which is a display-headline value and too tight for two or three lines. */
+   A job title is several words where a product name is one or two, so this wraps where a product name rarely
+   would: line-height comes up from 1.05, a display value too tight for two or three lines. */
 .c3-back .b-lead { font-family: var(--font-display); font-weight: 900; font-size: clamp(20px, calc(var(--case-w, 400px) * .0593), 40px); line-height: 1.12; letter-spacing: -.5px; color: var(--text-strong) }
-/* THE ROLE ON ITS OWN ROW, then the employer and the dates under it. All three used to run together on one
-   wrapped line in one size and one gray, so the job title — the thing a reader of a CV is actually looking for
-   — was a middle phrase between a company and a date range with nothing to separate them but a gap.
+/* THE ROLE ON ITS OWN ROW, then the employer and the dates under it. Run together on one wrapped line in one
+   size and one gray, the job title — the thing a reader of a CV is actually looking for — becomes a middle
+   phrase between a company and a date range with nothing but a gap to separate them.
    flex-basis: 100% on the role is what breaks the row; the other two then share the second. */
 .c3-back .b-at { margin-top: 10px; display: flex; flex-wrap: wrap; align-items: baseline; gap: 5px 12px; font-family: var(--font-mono); font-size: var(--t-meta); letter-spacing: .1em; color: var(--ink-meta) }
 .c3-back .b-at .product {
@@ -2253,9 +2252,8 @@ html.booting { scroll-snap-type: none }
    even train needs delay = index x duration / 14 at both speeds — delays fixed in seconds would bunch the
    rings into the first half of the tube the moment the duration changed. */
 .wh { --fly: 7.2s }
-/* Hover runs the travel at the speed it used to run at always, alongside the wall. Every ring is identical and
-   the train is a full even lattice, so rescaling the cycle slides the whole set by less than one gap rather
-   than scattering it. */
+/* Hover doubles the travel alongside the wall. Every ring is identical and the train is a full even lattice,
+   so rescaling the cycle slides the whole set by less than one gap rather than scattering it. */
 .wh:hover { --fly: 3.6s }
 .wh .rg {
   width: 158px; height: 158px; margin: -79px 0 0 -79px;

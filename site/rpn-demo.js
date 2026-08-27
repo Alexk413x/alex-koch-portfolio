@@ -128,10 +128,10 @@
     };
   }
 
-  /* Where a key comes from, or goes to, when it exists on only one keyboard. Every key used to collapse into
-     the pad's center, which made the whole set converge on one point and read as a group being sucked in
-     rather than as parts detaching. A golden-angle spread gives each key its own direction with no two
-     neighbors agreeing, and no randomness, so the motion is identical on every load. */
+  /* Where a key comes from, or goes to, when it exists on only one keyboard. Collapsing every key into the
+     pad's center converges the whole set on one point and reads as a group being sucked in rather than as
+     parts detaching. A golden-angle spread gives each key its own direction with no two neighbors agreeing,
+     and no randomness, so the motion is identical on every load. */
   function exitVector(i) {
     const a = ((i * 137.508) % 360) * Math.PI / 180;
     return { dx: Math.cos(a) * 46, dy: Math.sin(a) * 34 };

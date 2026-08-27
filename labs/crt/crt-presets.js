@@ -59,12 +59,12 @@ export function defaultPreset(gpu) {
   frameOn: 1,            // the reference ships frameOn: true; off shows the bare tube
   frameCol: '#2d1b15',   // the molding's own plastic -- crt-bezel's default, and the reference's
   famp: 2.1,          // DEPTH: scales the fold-bounded amplitude; 1 is the reference's own depth
-  /* FIT IS GONE, AND THE PIN IS WHY. It held the picture's rim on the glass by overriding OVERSCAN with the face
-   * LUT's last sample. buildFaceLUT now solves for the radius at s = 1 against target = r1 = F(1), which returns
-   * u = 1 by construction for every profile at every FACE — so the number FIT read became the constant 1.0 and the
-   * switch quietly turned into "force OVERSCAN to 100%", which the OVERSCAN slider already does.
+  /* THERE IS NO FIT CONTROL, AND THE PIN IS WHY. A FIT would hold the picture's rim on the glass by overriding
+   * OVERSCAN with the face LUT's last sample — but buildFaceLUT solves for the radius at s = 1 against
+   * target = r1 = F(1), which returns u = 1 by construction for every profile at every FACE. The number it read
+   * would be the constant 1.0, making the switch "force OVERSCAN to 100%", which the OVERSCAN slider does.
    *
-   * The rim it was guarding is still guarded. That is what the pin IS. */
+   * The rim it would guard is guarded. That is what the pin IS. */
   fexp: 3, grings: 20,        // FALLOFF exponent and CURVE AREA, both tuned on this build rather than the reference's
   scan: 10, scanw: 1.0, scanop: 50, grille: 17, grillew: 1.0, grilleop: 40,
   glow: 1,          // SCREEN GLOW in nits -- the excited coating around active content, on BRIGHTNESS's scale
