@@ -553,7 +553,17 @@ void main(){
      * mid-level is a surface and reads as froth; the crossing of two is a filament. */
     if (m.y > 0.001){
       vec3 q = tc * 1.6 + vec3(19.3, 7.1, 3.7);
-      float f1 = n3(q) - 0.5, f2 = n3(q * 1.31 + vec3(5.2, 1.7, 9.1)) - 0.5;
+      /* RIPPLE DRIFTS ONE FIELD AGAINST THE OTHER, and that is why it costs an add rather than a warp.
+       *
+       * The filament is not a thing being drawn, it is where these two fields BOTH cross zero -- so moving
+       * either one moves the crossing, and moving only one moves it in a way no translation can produce. The
+       * whole line reshapes: it snakes, pinches and reconnects while it travels, which is what plasma does and
+       * what sliding a frozen pattern down the tube never looks like.
+       *
+       * SPEED already carries it ALONG the tube, through tc. The two are different motions and neither is the
+       * other: at RIPPLE 0 the filament is rigid however fast it flows, and at SPEED 0 it writhes in place. */
+      float f1 = n3(q) - 0.5;
+      float f2 = n3(q * 1.31 + vec3(5.2, 1.7, 9.1) + vec3(0.0, 0.0, uTime * uRingP[s].z)) - 0.5;
       /* PLASMA FILL IS HOW THICK, PLASMA EDGE IS HOW HARD -- the same two questions the nebula answers, asked of
        * its own surface. The field is the distance to where both noise fields cross zero, scaled so 1 is on the
        * line and 0 is as far from it as the field goes; thresholding that is exactly what FILL does to the
