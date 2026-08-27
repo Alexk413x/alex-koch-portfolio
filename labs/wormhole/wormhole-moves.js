@@ -98,7 +98,7 @@ export function createMoves() {
        *   3  THE HOLE DRAWS AWAY.  DEPTH grows to what the slider says, carrying the far end -- and the hole
        *      welded to it -- off into the distance. This is the one direction the old version had backwards.
        *   4  THE TUNNEL BENDS.  BEND and BEND FLOW come up from zero last of all.
-       *   5  THE FLOW EASES BACK.  Speed returns to the slider's own rate.
+       *   5  THE FLOW EASES UP TO THE SLIDER'S RATE, and never past it.
        *
        * IT STARTS DEAD STRAIGHT, AND THAT IS WHY BEND IS LAST. The bend swings the vanishing point -- and the
        * hole welded to it -- off the middle of the frame, and at the shipped BEND of 12 that is most of the way
@@ -127,10 +127,16 @@ export function createMoves() {
         o.bend = s.bend * lean;
         o.bendFlow = s.bendFlow * lean;
 
-        // 5. the flow, up while the tube is forming and back to the slider's rate by the end
-        const rush = seg(p, 0.10, 0.46) * (1 - seg(p, 0.58, 1.0));
-        o.exposure = s.exposure * (1 + 0.35 * rush);
-        scaleShells(o, s, { speed: 1 + 1.2 * rush, warp: 1, amt: grow, rad: 0.12 + 0.88 * grow });
+        /* 5. THE FLOW ONLY EVER RISES TO THE SLIDER'S RATE. It used to overshoot -- a bell peaking above idle
+              and easing back down -- and that fall is the thing that read as REVERSING. Anything decelerating
+              from above the rate the eye has settled on looks like it is going the other way, and there is no
+              easing curve that fixes it, because the direction of the change is what is wrong.
+              Nothing is lost by dropping it: beat 3 stretches DEPTH out from 0.34, and a tube being crossed in
+              more distance already reads as gathering speed. That stretch IS the acceleration; the multiplier
+              was a second one arguing with it. */
+        const flow = 0.25 + 0.75 * seg(p, 0.18, 0.85);
+        o.exposure = s.exposure * (1 + 0.3 * seg(p, 0.10, 0.42) * (1 - seg(p, 0.5, 0.95)));
+        scaleShells(o, s, { speed: flow, warp: 1, amt: grow, rad: 0.12 + 0.88 * grow });
       }
 
       /* THE COLLAPSE IS THE DIVE RUN BACKWARDS, and it decelerates rather than rushing.
