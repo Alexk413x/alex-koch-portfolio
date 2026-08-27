@@ -21,7 +21,7 @@ NAME = 'seo'
 SELF_HOST = re.compile(r'https?://[\w.-]*alexk413x[\w.-]*[^\s"\'<>)]*')
 
 # Every file that writes the address down. Kept in step with FILES in site-url.py by the first check in run().
-ADDRESSED = ['index.html', 'robots.txt', 'sitemap.xml', 'site/share.js',
+ADDRESSED = ['README.md', 'index.html', 'robots.txt', 'sitemap.xml', 'site/share.js',
              'labs/crt/CRT Lab.html', 'labs/reactor/Reactor.html', 'labs/wormhole/Wormhole.html']
 
 LABS = [
@@ -131,8 +131,8 @@ def strings_in(node):
 def run(page, r):
     page.goto('index.html')
 
-    # --- ONE ADDRESS, WRITTEN IN SEVEN FILES ----------------------------------------------------------
-    # The site renders at any base because its links and assets are relative; these seven are the places the
+    # --- ONE ADDRESS, WRITTEN IN EIGHT FILES ----------------------------------------------------------
+    # The site renders at any base because its links and assets are relative; these eight are the places the
     # address is written down and cannot be. site-url.py moves them together, and this is what proves it did.
     CANON = page.js("document.querySelector('link[rel=canonical]')?.href||''")
     r.ok('the home page declares a canonical base', CANON.startswith('http'), CANON)

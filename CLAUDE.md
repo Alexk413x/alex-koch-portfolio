@@ -73,8 +73,9 @@ and would publish all of it.
 
 **Move the site's address with `python site-url.py https://<host>/`, never by hand.** Six things cannot be
 relative — the canonical URL, the OG URL, the OG image, the sitemap `<loc>`s, robots' `Sitemap:` line and the QR
-encoder's string — and the script moves all of them at once. `python test/run.py --only seo` fails when they
-disagree. **`README.md` also holds the live URL and is NOT in the script's file list**; fix that one by hand.
+encoder's string — and the script moves all of them at once. `README.md` is in its list too, for the live URL
+in its header. `python test/run.py --only seo` fails when they disagree, and the suite asserts its own list and
+the script's are the same list, so a file that writes the address cannot be added to one and missed by the other.
 
 Two traps, both hit on 2026-08-27:
 
