@@ -2,8 +2,9 @@
 
 ## What this is
 
-A CRT terminal calibration instrument: an amber CRT with a curved glass face, a measurement grid, and a
-heat-map overlay reporting how hard the surface is being compressed. It is a finished, working desktop tool.
+A portfolio site and three WebGL instruments, hand-authored, with no build step. `index.html` is a
+scroll-driven home page; `labs/` holds a CRT, a reactor core and a wormhole, each a fragment shader with a
+control panel and a measurement story. Live at **https://alexk413x.com**.
 
 ## The first rule: this is working code, not a draft to rewrite
 
@@ -12,49 +13,41 @@ do not extract the inline `<style>` blocks into a framework's idea of components
 already plain.** There is no build step here and that is the point.
 
 `labs/crt/` is twelve **pure** ES modules: no DOM, no component state. That is load-bearing, not stylistic — see
-`labs/crt/README.md`. Geometry that can read the renderer is geometry that can disagree with it, and every serious
-bug in this project's history has been two descriptions of the same surface drifting apart.
-
-**The DOM/SVG CRT build is gone.** `CRT Lab.dc.html` rendered the same tube thirteen blended layers deep, and the
-two builds agreeing was the verification story. It was deleted deliberately on 2026-08-08: the GL build looks and
-performs better, and one renderer that is right beats two that must be kept in step. Deleted with it, because
-nothing else reached them: `crt-controls.js`, `crt-fixture.js`, `crt-vars.js`, `crt-warp.js`, `crt-glow.js`,
-`crt.css`, `fps-probe.js`. It is all in the history if the cross-check is ever wanted back.
+`labs/crt/README.md`. Geometry that can read the renderer is geometry that can disagree with it, and every
+serious bug in this project's history has been two descriptions of the same surface drifting apart.
 
 ## There is ONE copy of everything
 
-There used to be a `deploy/` folder holding a byte-for-byte mirror of the lab for GitHub Pages — a second
-`index.html`, a second `labs/crt/`, a second `support.js`, a second copy of both handoffs. It was **46% of the
-repo** and it was maintained by hand, which meant every edit had to be made twice and a missed copy shipped a
-site that silently disagreed with its source. That is the same failure this project's one rule is about, one
-level up from the geometry. It is deleted. If Pages is wanted again, serve the repo ROOT — it already works
-as-is — or add a script that copies; do not reintroduce a hand-kept mirror.
+The same fault, one level up from the geometry. It has been caught three times:
 
-The same rule caught the **control panel**, which existed three times: inline in CRT Lab, again in the DC
-`Sidebar.dc.html`, and a third time in `components/ControlPanel.dc.html`. All that survives is
-`labs/kit/panel.js` + `panel.css`, and every lab uses it, tinted through custom properties. **Do not add a
-second.** It caught the **host scaffolding** too: Reactor and Wormhole came out 113 lines identical — 58% of one
-of them — and that is now `labs/kit/lab.js`.
+- A `deploy/` folder mirroring the whole site for Pages — 46% of the repo, hand-maintained, so a missed copy
+  shipped a site that disagreed with its source. **Pages now serves the repo root**; see *Deploying* below.
+- The control panel, which existed three times. All that survives is `labs/kit/panel.js` + `panel.css`, used by
+  every lab and tinted through custom properties. **Do not add a second.**
+- The host scaffolding: Reactor and Wormhole were 113 lines identical. That is now `labs/kit/lab.js`.
 
-## Everything under labs/ is plain HTML, and that direction is settled
+**The DOM/SVG CRT build is gone**, deleted 2026-08-08 along with `crt-controls.js`, `crt-fixture.js`,
+`crt-vars.js`, `crt-warp.js`, `crt-glow.js`, `crt.css` and `fps-probe.js`. Two builds agreeing was the old
+verification story; one renderer that is right beats two that must be kept in step. It is all in the history.
 
-There is no framework, no CDN and no build step in any lab. `labs/kit/` is the shared kit; a lab is a thin host
-page plus pure modules for its shader, its sim, its control table and its values.
+## Plain HTML, and that direction is settled
 
-**The home page is now a consumer of `labs/`.** `site/hero-core.js` imports `labs/kit/glquad.js`, `labs/kit/lab.js`
-and four of `labs/reactor/`'s modules to draw the reactor's core, alone and ring-off, behind the hero. It is the
-lab's scene, not a copy of it — the uniform block both pages upload lives in `labs/reactor/reactor-uniforms.js`
-for that reason. So `labs/` is no longer only a lab: renaming or deleting anything in it breaks `index.html`.
+No framework, no CDN, no build step in any lab. A lab is a thin host page plus pure modules for its shader, its
+sim, its control table and its values. `labs/kit/` is the shared kit.
+
+**The home page is a consumer of `labs/`.** `site/hero-core.js` imports `labs/kit/glquad.js`, `labs/kit/lab.js`
+and four of `labs/reactor/`'s modules to draw the reactor's core behind the hero. It is the lab's scene, not a
+copy — the uniform block both pages upload lives in `labs/reactor/reactor-uniforms.js` for that reason. So
+renaming or deleting anything in `labs/` breaks `index.html`.
 
 **Start a new lab from `labs/shell/Shell.html`.** It is the base lab — a live catalog of every control type and
-every formatter, annotated with why each is the kind it is, built on the same scaffold the real labs use. It is
-not linked from the index and is not meant for users.
+formatter, annotated, on the same scaffold the real labs use. Not linked from the index, not meant for users.
 
-**Nothing here runs React, Babel or a CDN any more.** Five `.dc.html` pages sat at the repository root — the
-portfolio, the console, the intro and two notes — on a `support.js` runtime that pulled React and Babel from
-unpkg. They were deleted along with `support.js` and `experience.html`, whose role viewer the back catalog
-replaced. Every page that ships is now plain HTML plus ES modules, and the only network dependency left on first
-load is fonts from Google.
+**`labs/kit/boot-guard.js` is deliberately NOT a module. Do not convert it.** A module body does not run if any
+import fails to fetch, so one 503 skips both `mountLoader()` and `labReady()` and leaves an opaque black sheet
+a viewer cannot tell from a slow load. A guard inside that graph would be skipped with it, which is why it is a
+classic script loaded *before* the entry module in every lab. It reloads once, flagged in `sessionStorage`, and
+`labReady()` clears the flag on success. Nothing tests this; converting it breaks it silently.
 
 ## Running it
 
@@ -66,107 +59,100 @@ python -m http.server 8000     # then http://localhost:8000/labs/crt/CRT%20Lab.h
 
 First load needs network for the fonts from Google, and nothing else.
 
-**Editing anything in `labs/crt/` needs a hard reload**, and a plain reload is not always enough — the browser will
-serve the modules from cache while the HTML is fresh, which looks exactly like a math bug. Either hard-reload
-with the cache disabled, or serve with `Cache-Control: no-store`.
+**Editing anything in `labs/crt/` needs a hard reload**, and a plain reload is not always enough — the browser
+serves the modules from cache while the HTML is fresh, which looks exactly like a math bug. Hard-reload with the
+cache disabled, or serve with `Cache-Control: no-store`.
+
+## Deploying
+
+`.github/workflows/pages.yml` deploys the repo root to GitHub Pages on every push to `main`. It uses a workflow
+rather than the built-in branch deploy because the branch deploy wedged: two runs sat `queued` for 46 minutes
+and four hours with no runner assigned. **The workflow strips the tooling** — `bench.py`, `site-url.py`, `test`,
+`.githooks`, `knowledge`, `.claude`, `CLAUDE.md` — from the artifact before upload. A branch deploy would not,
+and would publish all of it.
+
+**Move the site's address with `python site-url.py https://<host>/`, never by hand.** Six things cannot be
+relative — the canonical URL, the OG URL, the OG image, the sitemap `<loc>`s, robots' `Sitemap:` line and the QR
+encoder's string — and the script moves all of them at once. `python test/run.py --only seo` fails when they
+disagree. **`README.md` also holds the live URL and is NOT in the script's file list**; fix that one by hand.
+
+Two traps, both hit on 2026-08-27:
+
+- **Never change the Pages custom domain while a deploy is in flight.** Pages sits in `updating_pages` during
+  the change and `deploy-pages` gives up after ~90s, leaving a deployment GitHub holds as "in progress" while
+  its own API reports it `deployment_cancelled`. Every later deploy 400s for ~25 minutes and no API clears it.
+- **Never use "Re-run failed jobs" on this workflow.** The re-run uploads a second artifact named
+  `github-pages` into the same run and `deploy-pages` refuses to choose. Start a fresh run —
+  `workflow_dispatch` is on the workflow for exactly this.
 
 ## Measuring frame rate
-
-`fps-probe.js` and its `CRTFPS.stress()` / `CRTFPS.attribute()` went with the DOM build — they knew that lab's
-thirteen layers by name, and nothing else has layers to attribute cost to. What remains is the harness and each
-lab's own handle.
 
 ### `python bench.py` — the whole measurement in one command
 
 ```
 python bench.py                     # CRT Lab, 12 samples, verdict
-python bench.py --page reactor      # any lab: crt | reactor | tunnel | wormhole | shell, or a literal path
+python bench.py --page reactor      # any lab: crt | reactor | wormhole | shell, or a literal path
 python bench.py --uncapped          # frame COST, not frame rate
 python bench.py --inject "<js>"     # pin a setting first, so two runs are comparable
 ```
 
-The sampler needs nothing from the page, but it also cannot fix the page's state — a run measures whatever was
-restored, which on a fresh bench profile is the shipped default. **`--inject` is how you pin one**, and it is
-required for any before/after comparison:
+It serves the repo, launches an isolated Chrome, warms the profile's cache, drives the page over CDP and prints
+the **distribution**, not a single number. It refuses a verdict when `median > 2.5 × min`, because at that point
+the minimum is finding gaps between interference rather than measuring the renderer.
+
+A run measures whatever state was restored, which on a fresh bench profile is the shipped default. **`--inject`
+is how you pin one**, and it is required for any before/after comparison:
 
 ```
 python bench.py --page reactor --uncapped --inject "REACTOR.state.renderScale=0.62; REACTOR.fit(true); 1"
 ```
 
-The **first sampling window is excluded as a warm-up**: uncapped with an idle compositor it comes back at well
-under 1 ms where every later window sits at 4–6 ms, and it was making the tool refuse a verdict on runs whose
-remaining samples agreed to within 5%.
+The **first sampling window is excluded as a warm-up**: uncapped with an idle compositor it returns well under
+1 ms where every later window sits at 4–6 ms, which was making the tool refuse verdicts on runs whose remaining
+samples agreed to within 5%.
 
-It serves the repo, launches an isolated Chrome with the flags below, warms the profile's cache, drives the page
-over CDP and prints the **distribution**, not a single number. It refuses a verdict when `median > 2.5 × min`,
-because at that point the minimum is finding gaps between interference rather than measuring the renderer — a
-session here read `18.0 ms` once and `35.7 ms` as the minimum of twelve repeats of the identical state.
-
-**Close other tabs and applications first.** Everything below is why the script does what it does.
-
-### The reason this page could not be measured: Chrome stops rendering occluded windows
+### Why this page could not be measured: Chrome stops rendering occluded windows
 
 `document.visibilityState` reads **`hidden` while `document.hasFocus()` is `true`** whenever the Chrome window is
 occluded or minimized on Windows — and a hidden page gets **zero** animation frames. Not slow frames. None. Every
-frame number this project has ever been quoted from a tab that was not the front-most window was measuring nothing,
-and a CDP screenshot forces a single frame, which moves the readout just enough to look alive.
+frame number quoted from a tab that was not front-most measured nothing, and a CDP screenshot forces a single
+frame, which moves the readout just enough to look alive.
 
-**Launch Chrome like this and the problem disappears:**
+`bench.py` launches with the flags that fix it. **`--disable-features=CalculateNativeWinOcclusion` is the one
+that matters**; `--disable-backgrounding-occluded-windows` and `--disable-renderer-backgrounding` go with it.
+Verified: without them the page reported `hidden` and 0 rAF callbacks per second; with them, `visible` and 57
+frames in the first second.
 
-```
-chrome --user-data-dir=%TEMP%\crt-bench --no-first-run --disable-extensions ^
-       --remote-debugging-port=9222 --remote-allow-origins=* ^
-       --disable-backgrounding-occluded-windows --disable-renderer-backgrounding ^
-       --disable-features=CalculateNativeWinOcclusion ^
-       --new-window --window-size=1600,1000 "http://localhost:8000/labs/crt/CRT%20Lab.html"
-```
+**`renderNow()` is the way round it entirely** — it draws synchronously and needs no animation frame. Each lab
+pauses its loop on `visibilitychange` deliberately, so a frozen clock in a hidden tab is correct, not a fault.
 
-Verified: without those flags the page reported `hidden` and 0 rAF callbacks per second; with them, `visible` and
-**57 frames in the first second**. `CalculateNativeWinOcclusion` is the one that matters.
-
-The debugging port then lets you drive the page without a human at the keyboard — `POST /json/new`,
-`GET /json/activate/<id>`, and `Runtime.evaluate` over the websocket. A throwaway profile also starts with an EMPTY
-HTTP CACHE, so load the page once to pull the fonts before measuring anything.
-
-**Measure on an IDLE machine, in ONE tab.** This is not fussiness — it is the difference between a number and a
-mood. During one session an *unchanged* build measured 33ms early and 71ms late, and the per-second curve degraded
-36 → 53 → 70 → 88ms *within a single 60s run*, because a dozen lab instances had accumulated across tabs. Every lab
-tab holds a live WebGL context and its buffers whether or not it is rendering. Close them all, then measure.
-Interleaved A/B results survive this; absolute numbers do not.
-
-A throwaway profile (`chrome --user-data-dir=...`) is the clean room, with one catch: **its HTTP cache and its GPU
-shader cache are both empty**, so the first run recompiles every shader. `bench.py` warms the profile for you, and
-`--warm` reuses it. The harness measured ~4x pessimistic cold against the same page in a warm everyday profile.
-
-**A backgrounded tab reports nothing.** Chrome runs no animation frames in a tab that is not visible, so every
-wall-clock frame measurement reads 0–1 there — and a CDP screenshot forces one frame, which moves the number just
-enough to look alive. Each lab pauses its loop on `visibilitychange` deliberately, so a frozen clock in a hidden
-tab is correct behavior and not a fault. **`renderNow()` is the way round it**: it draws synchronously and needs
-no animation frame at all.
+**Measure on an IDLE machine, in ONE tab.** An *unchanged* build measured 33ms early and 71ms late in one
+session, degrading 36 → 53 → 70 → 88ms within a single 60s run, because a dozen lab instances had accumulated
+across tabs. Every lab tab holds a live WebGL context and its buffers whether or not it is rendering. A throwaway
+profile is the clean room, with one catch: its HTTP and GPU shader caches are both empty, so the first run
+recompiles every shader — measured ~4x pessimistic cold. `bench.py` warms it; `--warm` reuses it.
 
 Costs are reported in **ms per frame, not fps**. fps deltas are not additive and mislead near the target — a
 layer costing 2ms reads as "−25 fps" at 60 and "−3 fps" at 20, for identical work.
 
 ## What local testing is actually for
 
-These are the checks a small embedded preview cannot perform. They are the reason to run it locally at all:
+The checks a small embedded preview cannot perform:
 
-1. **Geometry above 1024px.** There was a long-running "bottom-left corner is messed up" bug that only
-   reproduces when the glass exceeds 1024px on both axes. Open the window wide — target ~1560x1100 — and
-   inspect the corners at high FACE and high CURVE AREA.
-2. **Resize behavior.** Drag the window across the 1024px boundary and watch the grid stay aligned to the
-   rings. A grid line and its ring must coincide on every ray, by construction. Then hide the panel with the
-   chevron: the stage grows without the window changing, and a buffer sized from `innerWidth` instead of the
-   stage would stretch here.
-3. **Settings persistence.** Each lab stores under its own key — `crtgl`, `reactor`, `tunnel`, `labshell` —
-   and **NEITHER `crtgl` NOR `tunnel` matches its lab's name**: a storage key is an address, not a label, and
-   moving it orphans every stored configuration silently. Wormhole Lab stores under `tunnel` because that is
-   what it was called while it was built; taking `wormhole` would also have handed it the *previous* occupant's
-   saved state, which describes a different set of controls entirely. See the note above `SAVE_KEY` before touching it —
-   carrying a `v` that is checked on the way in. The shipped defaults are a real saved configuration, not a
-   neutral baseline, so to see them you need an origin with no stored state; clearing localStorage and calling
-   `location.reload()` does NOT give you one, because the flush on hide writes the in-memory state straight back.
-   Clear it from a page on the same origin that is not the app, then navigate in.
+1. **Geometry above 1024px.** A long-running "bottom-left corner is messed up" bug only reproduces when the
+   glass exceeds 1024px on both axes. Open wide — target ~1560x1100 — and inspect the corners at high FACE and
+   high CURVE AREA.
+2. **Resize behavior.** Drag across the 1024px boundary and watch the grid stay aligned to the rings; a grid
+   line and its ring must coincide on every ray, by construction. Then hide the panel with the chevron: the
+   stage grows without the window changing, and a buffer sized from `innerWidth` would stretch here.
+3. **Settings persistence.** Each lab stores under its own key — `crtgl`, `reactor`, `tunnel`, `labshell` — and
+   **NEITHER `crtgl` NOR `tunnel` matches its lab's name**: a storage key is an address, not a label, and moving
+   it orphans every stored configuration silently. Wormhole stores under `tunnel` because that is what it was
+   called while it was built; taking `wormhole` would also have handed it the *previous* occupant's saved state.
+   See the note above `SAVE_KEY` before touching it. The shipped defaults are a real saved configuration, so to
+   see them you need an origin with no stored state — clearing localStorage and calling `location.reload()` does
+   NOT give you one, because the flush on hide writes the in-memory state straight back. Clear it from a page on
+   the same origin that is not the app, then navigate in.
 4. **Context loss.** `WEBGL_lose_context` on the canvas, then restore. The page must rebuild rather than stay
    black — and every uniform must be re-sent, which is why `glquad` clears its dirty cache on relink.
 
@@ -178,27 +164,22 @@ math bug.
 
 ## Known, deliberate, not bugs
 
-- **SQUIRCLE shapes the guide outline and the clip, not the picture's warp.** Known gap; wiring it to the
-  frame toggle is the fix if you want it.
+- **SQUIRCLE shapes the guide outline and the clip, not the picture's warp.** Known gap; wiring it to the frame
+  toggle is the fix if you want it.
 - **GLARE reaches the fixture only.** The stored default is `0`, so a reading of 0 is correct, not broken.
 - **The rim is unpinned** — the picture sits inside the glass and that gap is real.
-- **Reactor's ring pattern does not travel with a scattered fragment.** The nine pieces are displaced and tumbled
-  inside `ringSDF`, but the shading reads `ringSpace(hp)` — the unscattered frame — so a flown-off piece's machined
-  surface swims across it rather than riding on it. Fixing it means returning the per-piece transform out of the
-  SDF. The pieces are small on screen for most of a break, which is why it has not been worth that.
 - **The corners are cut, not warped.** Settled; the picture ends on the squircle by clip.
+- **Reactor's ring pattern does not travel with a scattered fragment.** The nine pieces are displaced and tumbled
+  inside `ringSDF`, but the shading reads `ringSpace(hp)` — the unscattered frame — so a flown-off piece's
+  machined surface swims across it rather than riding on it. Fixing it means returning the per-piece transform
+  out of the SDF. The pieces are small on screen for most of a break, which is why it has not been worth that.
 - **The tunnel's grain rings are gone but the speckle is not.** The concentric banding was `graze`, differenced
   over a bracket the refinement had already collapsed, and it is fixed. The remaining stipple along the nebula's
-  edges is the noise field genuinely outrunning the sample rate where the wall goes edge-on, which is a
-  filtering problem and not a bug.
-- **`fieldFolds`'s 2x threshold no longer bounds anything physical** (it predates the removal of the
-  displacement lens) but it still sets how deep FACE bends, and every stored setting is calibrated against
-  it. Change it knowingly or not at all.
-
-**The two CRT handoff documents are gone.** They recorded the settled decisions of a build that no longer
-exists, and every decision in them that still binds is already stated where it applies: the sag amplitude in
-`crt-projection.js`'s header, the `BEND` double root in `crt-geometry.js`'s, and the rest in the list above.
-A decision written twice is two descriptions that can drift, which is the fault this whole file is about.
+  edges is the noise field genuinely outrunning the sample rate where the wall goes edge-on — a filtering
+  problem, not a bug.
+- **`fieldFolds`'s 2x threshold no longer bounds anything physical** (it predates the removal of the displacement
+  lens) but it still sets how deep FACE bends, and every stored setting is calibrated against it. Change it
+  knowingly or not at all.
 
 ## Not yet done
 

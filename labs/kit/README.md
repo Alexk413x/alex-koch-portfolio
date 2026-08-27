@@ -12,7 +12,15 @@ labs/kit/
   lab.js       persistence, canvas fitting, the frame loop, textOut
   glquad.js    one full-screen fragment shader, hosted
   units.js     how a number reads — `as.pct()`, `as.rad()`, `as.off(...)`
+  boot-guard.js  recovers a load whose module graph never arrived — NOT a module
 ```
+
+**`boot-guard.js` is the one file here that is not an ES module, and it must stay that way.** A module body
+does not run if any of its imports fails to fetch, so a single 503 skips both `mountLoader()` and `labReady()`
+and leaves an opaque black sheet a viewer cannot tell apart from a slow load. A guard living inside that graph
+would be skipped along with it. Each lab loads it as a classic `<script>` *before* its entry module. It reloads
+the page once, flagged in `sessionStorage`, and `labReady()` clears that flag on success so a later failure
+still gets its own retry.
 
 **Start from [`../shell/Shell.html`](../shell/Shell.html).** It is the base lab: a live catalog of every control
 type and every formatter, annotated with why each one is the kind it is. Copy it, replace the subject, and delete
