@@ -20,8 +20,8 @@
  * Scaling what is there keeps the move's SHAPE while the scene keeps its character. */
 const BURST_SEC = 2.4;     // long enough that both ends of it can be eased and still leave a surge between
 const STORM_SEC = 7.0;     // long enough to arrive, sit, and leave
-const DIVE_SEC = 2.0;      // the fall into the throat
-const SETTLE_SEC = 2.6;    // and the recovery out of it
+const DIVE_SEC = 2.4;      // the arrival: the hole builds, then the tunnel grows around it
+const SETTLE_SEC = 3.0;    // the hole draws away and the flow eases back to the slider
 const COLLAPSE_SEC = 2.4;  // shutting down: the rush in, then black
 
 const clamp01 = (v) => (v < 0 ? 0 : v > 1 ? 1 : v);
@@ -38,6 +38,10 @@ const ease = (v) => v * v * (3 - 2 * v);
  * Before either of those, BURST and ENGAGE jumped to full on the frame the button was pressed, which gives the
  * eye the result without the event. */
 const bell = (p, k) => (p <= 0 || p >= 1 ? 0 : Math.pow(Math.sin(Math.PI * p), k || 2));
+
+/* One beat of a sequence: 0 before `a`, 1 after `b`, eased between. The beats OVERLAP on purpose -- each starts
+   before the one before it has finished, so the move hands over instead of stopping and starting. */
+const seg = (p, a, b) => ease(clamp01((p - a) / (b - a)));
 
 export function createMoves() {
   // Each is elapsed seconds since its trigger, or -1 for idle. `engaged` is the only state that persists.
@@ -76,29 +80,45 @@ export function createMoves() {
 
       const o = { ...s };
 
-      /* THE DIVE IS ONE MOTION, and getting there took removing two others.
+      /* THE DIVE IS FOUR BEATS IN ORDER, not one surge with everything moving at once.
        *
-       * It drove SPEED, DEPTH and FOV together, and the three do not agree about which way anything is going.
-       * SPEED flows the pattern down the tube, which is travel. DEPTH shrinking compresses the tube toward the
-       * eye, which is a zoom -- the geometry rescales while the pattern stays anchored to world z, so nothing
-       * actually travels. FOV widening is the third, and the worst: a lens opening while the subject closes is
-       * the Vertigo shot, whose entire trick is that the frame appears to move two ways at once. Run together
-       * they read as exactly that.
+       * WHAT IT USED TO DO, AND WHY IT READ BACKWARDS. It drove SPEED, DEPTH and FOV together, and the three do
+       * not agree about which way anything is going: SPEED flows the pattern down the tube, which is travel;
+       * DEPTH shrinking compresses the tube toward the eye, which is a zoom, because the geometry rescales
+       * while the pattern stays anchored to world z; and FOV widening while the subject closes is the Vertigo
+       * shot, whose whole trick is that the frame appears to move two ways at once. DEPTH also ran the wrong
+       * way for what this move is: it pulled the far end IN, when the hole is supposed to draw AWAY.
        *
-       * Only SPEED is left. The wall arrives faster and sweeps past, which is the one thing that means the
-       * camera is covering ground -- the same argument BURST was cut down to. */
+       * The beats, in the order they are seen:
+       *
+       *   1  THE HOLE BUILDS FROM NOTHING.  MASS and DISC come up from zero with the tunnel still dark, so the
+       *      first thing in the frame is the hole and there is nothing else to look at while it arrives.
+       *   2  THE TUNNEL GROWS TOWARD THE EYE.  The shells open from a thread to their full radius, so the tube
+       *      forms around the viewer rather than fading up in place.
+       *   3  THE HOLE DRAWS AWAY.  DEPTH grows to what the slider says, carrying the far end -- and the hole
+       *      welded to it -- off into the distance. This is the one direction the old version had backwards.
+       *   4  THE FLOW EASES BACK.  Speed returns to the slider's own rate.
+       *
+       * They overlap: each starts before the one before it is done, so it is a hand-off rather than four
+       * separate events queued up. */
       if (moveT >= 0 && !closing) {
-        const total = DIVE_SEC + SETTLE_SEC;
-        /* THE RUSH IS EASED AT BOTH ENDS, so the tunnel gathers speed, runs, and lets go. It used to be at full
-           on the first frame, which gave the fall no beginning. */
-        const rush = bell(moveT / total);
-        // The wall arrives out of nothing on its own ramp, so there is something to accelerate INTO.
-        const there = ease(clamp01(moveT / (DIVE_SEC * 0.8)));
-        /* DEPTH DIPS AND COMES BACK rather than starting collapsed: the far end -- and the hole welded to it --
-           runs at the eye and then settles to where the slider put it. */
-        // Exposure lifts a little on the way through: light, not motion, so it cannot argue with the travel.
-        o.exposure = s.exposure * (1 + 0.5 * rush);
-        scaleShells(o, s, { speed: 1 + 3 * rush, warp: 1, amt: there });
+        const p = clamp01(moveT / (DIVE_SEC + SETTLE_SEC));
+
+        // 1. the hole, out of nothing
+        const hole = seg(p, 0.00, 0.26);
+        o.mass = s.mass * hole;
+        o.disc = s.disc * hole;
+
+        // 2. the tube opening around the viewer
+        const grow = seg(p, 0.16, 0.58);
+
+        // 3. the far end -- and the hole on it -- drawing off. Starts near, ends where the slider put it.
+        o.far = s.far * (0.34 + 0.66 * seg(p, 0.44, 0.88));
+
+        // 4. the flow, up while the tube is forming and back to the slider's rate by the end
+        const rush = seg(p, 0.10, 0.46) * (1 - seg(p, 0.58, 1.0));
+        o.exposure = s.exposure * (1 + 0.35 * rush);
+        scaleShells(o, s, { speed: 1 + 1.2 * rush, warp: 1, amt: grow, rad: 0.12 + 0.88 * grow });
       }
 
       /* THE COLLAPSE. The same rush inward, and then the light goes: AMOUNT and EXPOSURE to nothing rather than
@@ -114,7 +134,7 @@ export function createMoves() {
            and the frame goes dark before the two could be told apart. */
         o.far = s.far * (1 - 0.7 * rush);
         o.exposure = s.exposure * (1 + 1.2 * rush * (1 - gone)) * (1 - gone);
-        scaleShells(o, s, { speed: 1 + 5 * rush, warp: 1, amt: 1 - gone });
+        scaleShells(o, s, { speed: 1 + 2.2 * rush, warp: 1, amt: 1 - gone });
       }
 
       // Shut down and finished: nothing is drawn, and the hole's own light goes with it.
@@ -134,7 +154,7 @@ export function createMoves() {
          first version and both fought the thing the move is for. */
       if (burstT >= 0) {
         const k = bell(burstT / BURST_SEC);
-        scaleShells(o, s, { speed: 1 + 2.2 * k, warp: 1, amt: 1 }, o);
+        scaleShells(o, s, { speed: 1 + 1.1 * k, warp: 1, amt: 1 }, o);
       }
 
       /* STORM. Everything drawn ON the wall thickens at once -- nebula, plasma, streaks -- and FILL comes up
@@ -169,5 +189,8 @@ function scaleShells(o, s, m, from) {
     if (m.warp !== 1) o[p + 'Warp'] = src[p + 'Warp'] * m.warp;
     if (m.amt !== 1) o[p + 'Amt'] = src[p + 'Amt'] * m.amt;
     if (m.spin) o[p + 'Spin'] = src[p + 'Spin'] * m.spin;
+    /* RADIUS SCALES EVERY SHELL BY THE SAME FACTOR, which keeps their ORDER -- the host sorts by radius and
+       composites inner-first, and a move that changed the order would swap which shell occludes which. */
+    if (m.rad) o[p + 'Rad'] = src[p + 'Rad'] * m.rad;
   }
 }
