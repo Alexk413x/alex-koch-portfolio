@@ -76,9 +76,17 @@ export function createMoves() {
 
       const o = { ...s };
 
-      /* THE DIVE. DEPTH collapsing is what makes this read as travel rather than as a zoom: the far end -- and
-         the hole welded to it -- comes at the eye, and the walls sweep past because the same tube is being
-         crossed in less distance. Speed carries the pattern with it so the wall does not slide backwards. */
+      /* THE DIVE IS ONE MOTION, and getting there took removing two others.
+       *
+       * It drove SPEED, DEPTH and FOV together, and the three do not agree about which way anything is going.
+       * SPEED flows the pattern down the tube, which is travel. DEPTH shrinking compresses the tube toward the
+       * eye, which is a zoom -- the geometry rescales while the pattern stays anchored to world z, so nothing
+       * actually travels. FOV widening is the third, and the worst: a lens opening while the subject closes is
+       * the Vertigo shot, whose entire trick is that the frame appears to move two ways at once. Run together
+       * they read as exactly that.
+       *
+       * Only SPEED is left. The wall arrives faster and sweeps past, which is the one thing that means the
+       * camera is covering ground -- the same argument BURST was cut down to. */
       if (moveT >= 0 && !closing) {
         const total = DIVE_SEC + SETTLE_SEC;
         /* THE RUSH IS EASED AT BOTH ENDS, so the tunnel gathers speed, runs, and lets go. It used to be at full
@@ -88,9 +96,8 @@ export function createMoves() {
         const there = ease(clamp01(moveT / (DIVE_SEC * 0.8)));
         /* DEPTH DIPS AND COMES BACK rather than starting collapsed: the far end -- and the hole welded to it --
            runs at the eye and then settles to where the slider put it. */
-        o.far = s.far * (1 - 0.45 * rush);
-        o.fov = s.fov * (1 + 0.35 * rush);
-        o.exposure = s.exposure * (1 + 0.7 * rush);
+        // Exposure lifts a little on the way through: light, not motion, so it cannot argue with the travel.
+        o.exposure = s.exposure * (1 + 0.5 * rush);
         scaleShells(o, s, { speed: 1 + 3 * rush, warp: 1, amt: there });
       }
 
@@ -102,8 +109,10 @@ export function createMoves() {
         // Eased in so the fall STARTS from rest, and never eased out: this one is not meant to recover.
         const rush = ease(clamp01(p / 0.45));
         const gone = ease(clamp01((p - 0.4) / 0.6));
+        /* FOV IS LEFT ALONE HERE TOO, for the reason the dive gives. DEPTH still closes, because on the way
+           out it is not competing with anything: the travel and the tube's end are both heading the same way,
+           and the frame goes dark before the two could be told apart. */
         o.far = s.far * (1 - 0.7 * rush);
-        o.fov = s.fov * (1 + 0.6 * rush);
         o.exposure = s.exposure * (1 + 1.2 * rush * (1 - gone)) * (1 - gone);
         scaleShells(o, s, { speed: 1 + 5 * rush, warp: 1, amt: 1 - gone });
       }
