@@ -21,7 +21,7 @@
 
   // The address the site is actually served from. `python site-url.py <base>` moves this with the canonical
   // URL, the cards and the sitemap; a code encoding a host that serves something else scans to the wrong site.
-  const SITE_URL = 'https://www.alexk413x.com';
+  const SITE_URL = 'https://alexk413x.com';
   const MODULE = '#dd6a20';    // --accent, the same orange the mark is drawn in
   const GROUND = '#0c0c0e';    // --ink
   const LEVEL = 'H';           // the recovery budget the center stamp spends
