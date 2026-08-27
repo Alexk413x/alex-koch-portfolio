@@ -191,21 +191,36 @@ export function createMoves() {
         scaleShells(o, s, { speed: 1 + 1.1 * k, warp: 1, amt: 1 }, o);
       }
 
-      /* STORM. Everything drawn ON the wall thickens at once -- nebula, plasma, streaks -- and FILL comes up
-         with them, because raising the amounts alone brightens what is already lit rather than covering more
-         of the wall. It arrives and leaves on the same curve, so there is no moment where it snaps off. */
+      /* STORM. Each effect is pushed the way that effect gets more intense, and they are not the same way.
+       *
+       * THE NEBULA GAINS COVERAGE AND NOT BRIGHTNESS. Its FILL is the threshold the fbm is cut at, so lowering
+       * it lights wall that was dark -- the cloud spreads. Its AMOUNT is left alone: raising that would make
+       * the cloud already on screen glare instead, which is a brighter picture rather than a heavier one, and
+       * the wall is the backdrop the other two are read against.
+       *
+       * PLASMA AND STREAKS GAIN BRIGHTNESS, because that is what those two are for: they are the sharp things
+       * in the frame, and a storm should put more of them in it and drive them harder.
+       *
+       * STREAK COUNT IS DELIBERATELY NOT TOUCHED. LANES sets how many there are, and the lane index seeds the
+       * hash that gives each one its head, its colour and whether it is lit at all -- so changing the count
+       * re-rolls every streak at once and they all jump. More streaks has to come from their amount.
+       *
+       * NO EXPOSURE LIFT EITHER. That multiplies the whole frame, nebula included, which is the brightness the
+       * first clause of this comment exists to avoid.
+       *
+       * It arrives and leaves on the same curve, so there is no moment where it snaps off. */
       if (stormT >= 0) {
         const k = bell(stormT / STORM_SEC, 1.4);
         for (let i = 0; i < 6; i++) {
           const p = 'L' + i;
-          o[p + 'Cloud'] = s[p + 'Cloud'] * (1 + 0.9 * k);
-          o[p + 'Bolts'] = s[p + 'Bolts'] * (1 + 1.6 * k) + 0.35 * k;
-          o[p + 'Streak'] = s[p + 'Streak'] * (1 + 1.4 * k) + 0.25 * k;
-          // FILL is coverage on the panel and the host inverts it, so raising it here is more wall alight.
-          o[p + 'Fill'] = Math.min(1, s[p + 'Fill'] + 0.22 * k);
+          // The cloud spreads. FILL is coverage on the panel and the host inverts it into the threshold.
+          o[p + 'Fill'] = Math.min(1, s[p + 'Fill'] + 0.30 * k);
+          // The sharp things get harder. The added term is what lights a shell whose amount is zero.
+          o[p + 'Bolts'] = s[p + 'Bolts'] * (1 + 1.8 * k) + 0.30 * k;
+          o[p + 'Streak'] = s[p + 'Streak'] * (1 + 1.8 * k) + 0.30 * k;
+          // And the filament writhes harder while it is happening.
           o[p + 'BoltRipple'] = s[p + 'BoltRipple'] + 1.2 * k;
         }
-        o.exposure = s.exposure * (1 + 0.25 * k);
       }
       return o;
     },
