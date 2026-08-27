@@ -49,7 +49,7 @@ const ease = (v) => v * v * (3 - 2 * v);
 /* ONE CURVE FOR EVERY MOVE: rises from nothing, peaks once, returns to nothing, and is flat at both ends so
  * there is no corner where it starts or stops. p runs 0..1 across the move and k sets how broad the peak is.
  *
- * THERE IS NO HOLD IN THE MIDDLE, and there used to be. The first shape was ease-in, hold, ease-out, which
+ * THERE IS NO HOLD IN THE MIDDLE. An ease-in, hold, ease-out shape would be
  * measured as a plateau -- seven times speed for three samples running, then a fall. A value that arrives and
  * then sits still reads as a step even when both of its ramps are smooth, because the acceleration stops dead
  * at the top. A bell never stops accelerating until it is already slowing down.
@@ -162,13 +162,12 @@ export function createMoves() {
         o.bend = s.bend * lean;
         o.bendFlow = s.bendFlow * lean;
 
-        /* 7. THE FLOW ONLY EVER RISES TO THE SLIDER'S RATE. It used to overshoot -- a bell peaking above idle
-              and easing back down -- and that fall is the thing that read as REVERSING. Anything decelerating
-              from above the rate the eye has settled on looks like it is going the other way, and there is no
-              easing curve that fixes it, because the direction of the change is what is wrong.
-              Nothing is lost by dropping it: beat 4 stretches DEPTH out from NEAR, and a tube being crossed in
-              more distance already reads as gathering speed. That stretch IS the acceleration; the multiplier
-              was a second one arguing with it. */
+        /* 7. THE FLOW ONLY EVER RISES TO THE SLIDER'S RATE, AND NEVER PAST IT. A bell peaking above idle and
+              easing back down reads as REVERSING: anything decelerating from above the rate the eye has settled
+              on looks like it is going the other way, and no easing curve fixes that, because the direction of
+              the change is what is wrong. Nothing is lost by leaving it out -- beat 4 stretches DEPTH out from
+              NEAR, and a tube crossed in more distance already reads as gathering speed. That stretch IS the
+              acceleration, and a multiplier would be a second one arguing with it. */
         const flow = 0.25 + 0.75 * seg(p, 0.40, 0.92);
         // A lift timed to the tunnel and not to the hole, which is already the brightest thing on screen.
         o.exposure = s.exposure * (1 + 0.25 * seg(p, 0.42, 0.68) * (1 - seg(p, 0.84, 1.00)));

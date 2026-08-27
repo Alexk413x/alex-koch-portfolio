@@ -40,7 +40,7 @@ const shellRows = (i) => [
    * a control that does nothing. */
   /* EACH EFFECT CARRIES ITS OWN SHAPE CONTROLS, directly under it.
    *
-   * FILL, EDGE and DETAIL used to sit at the bottom serving whichever of NEBULA and PLASMA was lit, and that was
+   * FILL, EDGE and DETAIL could sit at the bottom serving whichever of NEBULA and PLASMA is lit, and that would be
    * wrong twice over. DETAIL and FILL only ever reached the nebula -- the plasma field is a distance to where two
    * noise fields both cross zero, and there are no octaves in it and nothing to threshold. EDGE reached both,
    * so tuning the nebula's softness moved the plasma's thickness. One slider, two surfaces, no way to set either
@@ -81,7 +81,7 @@ export function shellSections(n) {
 /* RENDER first, because its rows are cost and framing rather than scene. TUNNEL next: the shape every shell is
  * drawn in. Then BLACK HOLE, which is what the tunnel ends at. Then the shells themselves.
  *
- * There was an IMAGE section between the first two and it is gone -- it held the lens and the whole-frame post,
+ * There is no IMAGE section between the first two: it would hold the lens and the whole-frame post,
  * and RENDER SCALE alone is not a section. Nobody looking for EXPOSURE knew whether that counted as image or as
  * render, which is the test a section boundary has to pass.
  */
@@ -147,7 +147,7 @@ export const HEAD = [
    * SPIN AND FLOW ARE THE DISC'S TWO MOTIONS AND THEY ARE INDEPENDENT. SPIN is how fast it turns and which way;
    * FLOW is how fast its material travels along the radius and which way. FLOW is a RATE OF CHANGE OF RADIUS and
    * reads with that sign: NEGATIVE falls toward the hole, positive streams away from it, so an accreting disc is
-   * a negative one and that is what ships. FLOW used to be taken from SPIN, rate and sign together, so turning
+   * a negative one and that is what ships. Taking FLOW from SPIN -- rate and sign together -- means turning
    * the disc the other way made its material flow outward and there was no way to ask for an accreting disc that
    * spins anticlockwise. Which way a disc orbits says nothing about which way its material goes.
    *

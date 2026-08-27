@@ -52,11 +52,11 @@ export function defaultPreset(gpu) {
     fov: 30, exposure: 1, fog: 0,
 
     far: 90,
-    /* BEND IS AT ITS CEILING, AND IT CAN BE. The note that used to sit here said BEND and the hole fought each
-       other, which was true of the screen-space lens: it dragged the whole frame toward the hole, so swinging
-       the vanishing point away with BEND left the image pulling one way and the tunnel going another. A traced
-       geodesic only bends light that passes near the hole, and the hole rides the tunnel's own axis at DEPTH --
-       so the tube can swing as far as it likes and the hole goes with it, wall and all.
+    /* BEND IS AT ITS CEILING, AND IT CAN BE. BEND and the hole fight each other only under a screen-space
+       lens, which drags the whole frame toward the hole, so swinging the vanishing point away with BEND leaves
+       the image pulling one way and the tunnel going another. A traced geodesic bends only light that passes
+       near the hole, and the hole rides the tunnel's own axis at DEPTH -- so the tube can swing as far as it
+       likes and the hole goes with it, wall and all.
 
        The swing saturates in the shader (see MAX_SWING), so 12 is not twelve tube radii off axis; it is as far
        round as the arch is allowed to go. */
