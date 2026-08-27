@@ -18,6 +18,7 @@ import sys
 
 # Every file that writes the address down. A file added here without a matching check in suite_seo can drift.
 FILES = [
+    'README.md',
     'index.html',
     'robots.txt',
     'sitemap.xml',
