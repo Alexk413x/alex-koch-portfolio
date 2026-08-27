@@ -59,6 +59,11 @@ python -m http.server 8000     # then http://localhost:8000/labs/crt/CRT%20Lab.h
 
 First load needs network for the fonts from Google, and nothing else.
 
+**NEVER put a backtick in a comment inside a GLSL template literal.** The shaders are template strings, so a
+backtick there is not comment text — it closes the string, and everything after it parses as code. In pairs
+(`` `graze` ``) it closes and reopens, which can parse cleanly while silently truncating the shader. Write the
+identifier bare. `python test/run.py --only labs` catches it; nothing else does.
+
 **Editing anything in `labs/crt/` needs a hard reload**, and a plain reload is not always enough — the browser
 serves the modules from cache while the HTML is fresh, which looks exactly like a math bug. Hard-reload with the
 cache disabled, or serve with `Cache-Control: no-store`.
