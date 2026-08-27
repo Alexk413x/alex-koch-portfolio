@@ -45,7 +45,15 @@
     if (e.target && e.target !== window && e.target.tagName === 'SCRIPT') recover('This lab did not load');
   }, true);
   window.addEventListener('unhandledrejection', function () { recover('This lab did not load'); });
-  window.addEventListener('load', function () {
-    setTimeout(function () { recover('This lab is not responding'); }, GRACE_MS);
-  });
+  /* THE GRACE TIMER RUNS ONLY WHILE THE PAGE IS VISIBLE. Chrome delivers no animation frames to a hidden tab,
+     so runLoop's first frame -- and the labReady() on it that clears the sheet -- cannot happen there. Timers
+     still fire, so a healthy lab opened in a background tab was being declared dead ten seconds later and
+     reloaded. Measured: visibilityState 'hidden', window.SHELL present, navigation type 'reload'. */
+  var timer = null;
+  function armTimer() {
+    if (document.visibilityState === 'hidden') { clearTimeout(timer); timer = null; return; }
+    if (timer === null) timer = setTimeout(function () { recover('This lab is not responding'); }, GRACE_MS);
+  }
+  window.addEventListener('load', armTimer);
+  document.addEventListener('visibilitychange', armTimer);
 })();
