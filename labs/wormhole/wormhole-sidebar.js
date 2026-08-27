@@ -55,6 +55,7 @@ const shellRows = (i) => [
   [['L' + i + 'BoltA', 'L' + i + 'BoltB'], 'PLASMA COLOR', '#'],
   ['L' + i + 'BoltFill', 'PLASMA FILL', 0, 1, 0.01],
   ['L' + i + 'BoltEdge', 'PLASMA EDGE', 0.01, 0.7, 0.01],
+  ['L' + i + 'BoltRipple', 'PLASMA RIPPLE', 0, 4, 0.05],
 
   ['L' + i + 'Streak', 'STREAKS', 0, 2, 0.02],
   [['L' + i + 'StrkA', 'L' + i + 'StrkB'], 'STREAK COLOR', '#'],
@@ -238,6 +239,8 @@ for (let i = 0; i < MAXL; i++) {
     // The bolts' pair reads the same way the cloud's does, because it means the same thing on its own surface.
     ['L' + i + 'BoltFill']: as.ends(as.pct(), 'RARE', 'SOLID', 1),
     ['L' + i + 'BoltEdge']: as.ends(as.pct(), 'HARD', 'SOFT', 0.7),
+    // How fast the filament reshapes, as distinct from how fast SPEED carries it along the tube.
+    ['L' + i + 'BoltRipple']: as.off(as.mult(2)),
     ['L' + i + 'Speed']:  SPEED,
     ['L' + i + 'Warp']:   as.ends(as.mult(2), 'STREAKY', 'ROUND', 1.2),
     ['L' + i + 'Spin']:   DEG,

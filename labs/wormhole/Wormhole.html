@@ -184,7 +184,8 @@ function packed() {
     // extra.y is the shell's ON flag: the shader skips a dark shell before it solves anything for it.
     // z and w were the spare slots; they carry the bolts' own FILL and EDGE, which used to borrow the cloud's.
     extra.push(g('Lanes'), g('On') ? 1 : 0, 1 - g('BoltFill'), g('BoltEdge'));
-    ringP.push(g('RingN'), g('RingFlow'), 0, 0);
+    // z is the plasma's ripple rate. uRingP had two spare slots and the other four vec4s are full.
+    ringP.push(g('RingN'), g('RingFlow'), g('BoltRipple'), 0);
     cA.push(...hex(g('CloudA')), 0); cB.push(...hex(g('CloudB')), 0);
     bA.push(...hex(g('BoltA')), 0);  bB.push(...hex(g('BoltB')), 0);
     sA.push(...hex(g('StrkA')), 0);  sB.push(...hex(g('StrkB')), 0);

@@ -26,7 +26,7 @@ function shell(i, v) {
     BoltA: '#ffce85', BoltB: '#ff4d00',
     StrkA: '#ffb454', StrkB: '#ffffff',
     Fill: 0.42, Edge: 0.20, Oct: 4, Lanes: 190,
-    BoltFill: 0.23, BoltEdge: 0.25,
+    BoltFill: 0.23, BoltEdge: 0.25, BoltRipple: 0.6,
     Speed: 6.0, Warp: 0.30, Spin: 0.0,
   };
   const out = {};
