@@ -129,19 +129,14 @@ function syncMode() {
   textOut(modeEl, lit.length ? lit.join(' · ') : 'NOTHING LIT');
 }
 
-/* THE MOVES SIT BESIDE RESET, and ENGAGE carries a lamp because it is the only one with a state to be in --
-   BURST and STORM are events and are over before a lamp could mean anything. syncActions is called on the
+/* THE ACTIONS ARE THE THREE MOVES, and ENGAGE carries a lamp because it is the only one with a state to be in
+   -- BURST and STORM are events and are over before a lamp could mean anything. syncActions is called on the
    toggle so the lamp follows it. */
 const moves = createMoves();
 const syncActions = buildActions(document.getElementById('actions'), [
   ['◉ ENGAGE', () => moves.toggle(), () => moves.engaged],
   ['↯ BURST', () => moves.fireBurst()],
   ['≋ STORM', () => moves.fireStorm()],
-  ['↺ RESET', () => {
-    const folds = state.secClosed;
-    Object.assign(state, defaultPreset(R.gpu), { secClosed: folds });
-    rebuildPanel(); syncMode(); fit(true); store.queueSave();
-  }],
 ]);
 
 const host = document.getElementById('controls');
