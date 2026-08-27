@@ -22,7 +22,7 @@ const BURST_SEC = 2.4;     // long enough that both ends of it can be eased and 
 const STORM_SEC = 7.0;     // long enough to arrive, sit, and leave
 const DIVE_SEC = 2.4;      // the arrival: the hole builds, then the tunnel grows around it
 const SETTLE_SEC = 3.0;    // the hole draws away and the flow eases back to the slider
-const COLLAPSE_SEC = 2.4;  // shutting down: the rush in, then black
+const COLLAPSE_SEC = 3.2;  // shutting down: straighten, slow, drawn in, out
 
 const clamp01 = (v) => (v < 0 ? 0 : v > 1 ? 1 : v);
 const ease = (v) => v * v * (3 - 2 * v);
@@ -97,9 +97,16 @@ export function createMoves() {
        *      forms around the viewer rather than fading up in place.
        *   3  THE HOLE DRAWS AWAY.  DEPTH grows to what the slider says, carrying the far end -- and the hole
        *      welded to it -- off into the distance. This is the one direction the old version had backwards.
-       *   4  THE FLOW EASES BACK.  Speed returns to the slider's own rate.
+       *   4  THE TUNNEL BENDS.  BEND and BEND FLOW come up from zero last of all.
+       *   5  THE FLOW EASES BACK.  Speed returns to the slider's own rate.
        *
-       * They overlap: each starts before the one before it is done, so it is a hand-off rather than four
+       * IT STARTS DEAD STRAIGHT, AND THAT IS WHY BEND IS LAST. The bend swings the vanishing point -- and the
+       * hole welded to it -- off the middle of the frame, and at the shipped BEND of 12 that is most of the way
+       * to the edge. Building the hole out there meant the whole move arrived from a corner, which is what
+       * threw it off: the eye had no centre to read it against. Straight first, and the bend eased in once
+       * there is a tunnel to bend.
+       *
+       * They overlap: each starts before the one before it is done, so it is a hand-off rather than five
        * separate events queued up. */
       if (moveT >= 0 && !closing) {
         const p = clamp01(moveT / (DIVE_SEC + SETTLE_SEC));
@@ -115,26 +122,44 @@ export function createMoves() {
         // 3. the far end -- and the hole on it -- drawing off. Starts near, ends where the slider put it.
         o.far = s.far * (0.34 + 0.66 * seg(p, 0.44, 0.88));
 
-        // 4. the flow, up while the tube is forming and back to the slider's rate by the end
+        // 4. the bend, last, so everything before it happens on the axis
+        const lean = seg(p, 0.50, 1.00);
+        o.bend = s.bend * lean;
+        o.bendFlow = s.bendFlow * lean;
+
+        // 5. the flow, up while the tube is forming and back to the slider's rate by the end
         const rush = seg(p, 0.10, 0.46) * (1 - seg(p, 0.58, 1.0));
         o.exposure = s.exposure * (1 + 0.35 * rush);
         scaleShells(o, s, { speed: 1 + 1.2 * rush, warp: 1, amt: grow, rad: 0.12 + 0.88 * grow });
       }
 
-      /* THE COLLAPSE. The same rush inward, and then the light goes: AMOUNT and EXPOSURE to nothing rather than
-         a fade to grey, because a tunnel dimming uniformly reads as a dip and a tunnel whose walls stop
-         arriving reads as an ending. */
+      /* THE COLLAPSE IS THE DIVE RUN BACKWARDS, and it decelerates rather than rushing.
+       *
+       * IT STRAIGHTENS FIRST, for the reason the dive bends last: the frame has to end on the axis or the
+       * tunnel leaves from a corner and there is nothing centred to watch it go.
+       *
+       * THEN IT SLOWS. An earlier version sped UP here, on the theory that being pulled into a hole should
+       * accelerate -- but the tunnel then went out at its most frantic, which reads as a cut rather than an
+       * ending. Slowing to a crawl and then losing the light is a machine being switched off.
+       *
+       *   1  STRAIGHTEN.  BEND and BEND FLOW back to zero, so the hole returns to the middle.
+       *   2  SLOW.        The flow falls to a crawl.
+       *   3  DRAWN IN.    DEPTH closes, carrying the far end and its hole onto the eye.
+       *   4  OUT.         AMOUNT and EXPOSURE to nothing -- the walls stop arriving rather than dimming where
+       *                   they stand, which is an ending rather than a dip. */
       if (moveT >= 0 && closing) {
         const p = clamp01(moveT / COLLAPSE_SEC);
-        // Eased in so the fall STARTS from rest, and never eased out: this one is not meant to recover.
-        const rush = ease(clamp01(p / 0.45));
-        const gone = ease(clamp01((p - 0.4) / 0.6));
-        /* FOV IS LEFT ALONE HERE TOO, for the reason the dive gives. DEPTH still closes, because on the way
-           out it is not competing with anything: the travel and the tube's end are both heading the same way,
-           and the frame goes dark before the two could be told apart. */
-        o.far = s.far * (1 - 0.7 * rush);
-        o.exposure = s.exposure * (1 + 1.2 * rush * (1 - gone)) * (1 - gone);
-        scaleShells(o, s, { speed: 1 + 2.2 * rush, warp: 1, amt: 1 - gone });
+
+        const straight = 1 - seg(p, 0.00, 0.42);
+        o.bend = s.bend * straight;
+        o.bendFlow = s.bendFlow * straight;
+
+        const slow = 1 - 0.85 * seg(p, 0.30, 0.78);
+        o.far = s.far * (1 - 0.7 * seg(p, 0.38, 0.86));
+
+        const gone = seg(p, 0.55, 1.00);
+        o.exposure = s.exposure * (1 - gone);
+        scaleShells(o, s, { speed: slow, warp: 1, amt: 1 - gone });
       }
 
       // Shut down and finished: nothing is drawn, and the hole's own light goes with it.
@@ -142,6 +167,9 @@ export function createMoves() {
         o.exposure = 0;
         o.disc = 0;
         o.mass = 0;
+        // Straight while it is off, so the next engage begins on the axis rather than mid-swing.
+        o.bend = 0;
+        o.bendFlow = 0;
         scaleShells(o, s, { speed: 1, warp: 1, amt: 0 });
       }
 
