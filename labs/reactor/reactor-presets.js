@@ -8,25 +8,11 @@ export const CAM_KEYS = ['cam', 'zoom', 'camAngle', 'camEl'];
 
 export const MODES = ['STABLE', 'CRITICAL', 'MELTDOWN'];
 
-/* THE RING SWEEPS HARDER AS THE REACTION WORSENS, and the coverage comes from the two TUMBLES, not the spin.
- * `orbit` turns the band inside its own plane: the surface pattern travels, but a rotationally symmetric band
- * presents exactly the same silhouette to the core as it did standing still. `orbitX` and `orbitZ` are what tip
- * the plane, and running both means the ring's axis can reach anywhere rather than tracing one circle.
- *
- * The two are deliberately COPRIME (5 : 3, 17 : 11, 32 : 21) — rates in a simple ratio retrace the same path every
- * few seconds and the sweep reads as a loop instead of as containment.
- *
- * STABLE TUMBLES TOO, slowly. It shipped with both at zero, which left the only moving ring control as `orbit` —
- * and that one cannot move the silhouette at all, so the default scene read as a static ring. Calm is 5 RPM with
- * no wobble, not stopped.
- *
- * Rates are plain RPM, the unit their rows read and step in. reactor-sim converts to rad/s once, where a
- * rate becomes a phase, so nothing here and nothing in the panel does any arithmetic.
- *
- * THESE VALUES ARE THE WHOLE OF THE MOTION. Nothing downstream scales them by mode — see the note in
- * reactor-sim's step() — so a mode is only ever as violent as what is written here, and zeroing a row in the panel
- * genuinely stops it.
- */
+/* Ring motion in RPM; reactor-sim converts to rad/s once, so nothing here or in the panel does arithmetic.
+ * The two tumble rates are COPRIME (5:3, 17:11, 32:21) — a simple ratio retraces one path every few seconds and
+ * reads as a loop, not containment. Both stay non-zero because `orbit` spins a rotationally symmetric band
+ * inside its own plane and cannot change its silhouette at all.
+ * Nothing downstream scales these by mode (see reactor-sim's step), so zeroing a row genuinely stops it. */
 export const PRESETS = [
   { size: 0.50, visc: 1.8, turb: 0.40, rate: 5, amp: 0.03, glow: 1.25, orbit: 4, cam: 0, zoom: 1.0, ringR: 1.10, ringAngleY: 0, orbitX: 5, ringAngleX: 0, wobbleX: 0, wobSpdX: 1.5, orbitZ: 3, ringAngleZ: 0, wobbleZ: 0, wobSpdZ: 1.5, ringLight: 0.5, ringGlow: 0.17, camAngle: 0, camEl: 0, coreSpin: 10, coreAngle: 0, coreSpinX: 2, coreAngleX: 0.15, pulseAmp: 10, pulseBright: 1, pulseDur: 1.2, ventSize: 3, ventBright: 1, ventDur: 6, coreHex: '#28ff1a' },
   { size: 0.75, visc: 3.4, turb: 0.50, rate: 6, amp: 0.08, glow: 1.0, orbit: 38, cam: 0, zoom: 1.0, ringR: 1.10, ringAngleY: 0, orbitX: 17, ringAngleX: 0, wobbleX: 0.45, wobSpdX: 7, orbitZ: 11, ringAngleZ: 0, wobbleZ: 0.30, wobSpdZ: 5, ringLight: 1.0, ringGlow: 0.70, camAngle: 0, camEl: 0, coreSpin: 19, coreAngle: 0, coreSpinX: 11, coreAngleX: 0.25, pulseAmp: 15, pulseBright: 1.6, pulseDur: 1, ventSize: 1.4, ventBright: 1.6, ventDur: 4.5, coreHex: '#ffcc14' },
