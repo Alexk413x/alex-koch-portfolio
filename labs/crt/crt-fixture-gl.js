@@ -512,8 +512,8 @@ vec3 traceFixture(vec2 sp2, float ct, float st, vec3 boxLo, vec3 boxHi,
          * smooth by construction, being an integral over the tube rather than a sample of it -- and not a blur.
          * A blur of two bright bars is two soft bright bars; a diffuser is neither. */
         /* THE APERTURE'S OWN IRRADIANCE, smooth by construction -- it is an integral over the tubes rather than
-         * a sample of them. DIFFUSER crossfades toward it. MATTE used to as well, which was the bug directly
-         * below; it is a screen property and has no business reaching inside the fitting. */
+         * a sample of them. DIFFUSER crossfades toward it; MATTE deliberately does not, being a screen property
+         * with no business reaching inside the fitting. */
         vec3 atPanel = vec3(atOpen.xy, 0.0);
         vec3 panelN  = vec3(0.0, 0.0, 1.0);
         vec3 smoothLit = tubeLight(atPanel, panelN, -uFixGap, tubeZ, halfLen, tubeRlit, uLampA, flkA * uHealthA, litReach(uHealthA))

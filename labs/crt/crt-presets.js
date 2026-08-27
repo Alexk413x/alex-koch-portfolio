@@ -94,9 +94,9 @@ export function defaultPreset(gpu) {
    * is writing -- it covers some number of LINES -- so that is the number, and changing SCANLINES H now resizes
    * the beam with the pattern it belongs to. */
   sweepSL: 0.25,
-  /* THE BEAM TIP AND ITS SIDE EFFECTS. The sweep used to be a vertical band and nothing else -- no tip, so the
-   * one part of a raster that is genuinely lit at any instant was the part that was not drawn.
-   *   sweepSol  how square the band's own profile is; 0 is the old four-gaussian haze, 1 a hard-edged line
+  /* THE BEAM TIP AND ITS SIDE EFFECTS. The tip is the one part of a raster genuinely lit at any instant, so it
+   * is drawn rather than implied by the band alone.
+   *   sweepSol  how square the band's own profile is; 0 a soft haze, 1 a hard-edged line
    *   sweepRGB  the guns' split ACROSS the band, in CSS px -- fringes its edge, which is where it shows
    *   hsweep    the tip's rate; 1/hsweep is the seconds it takes to cross
    *   dotR      the tip's radius in CSS px, dotLvl how hard it drives the coating
@@ -112,7 +112,7 @@ export function defaultPreset(gpu) {
   /* THE DEFICIT AHEAD OF THE BEAM -- see the note in crt-gl. dipFall is in multiples of SWEEP HEIGHT, so
    * widening the beam widens the shadow it is chasing, which is the relationship the two actually have. */
   sweepDip: 1, dipFall: 60, sweepWhite: 0,
-  // CONVERGE as a signed percentage of the full-deflection error; 11 is the old 0.45px default.
+  // CONVERGE as a signed percentage of the full-deflection error; 11 is 0.45px.
   /* CONVERGENCE PER GUN, in CSS px, uniform across the face -- static convergence, as a service manual
    * means it. Red and blue split a couple of px either side of green, which is a well-set-up tube. */
   beamOn: 1,        // the whole sweep assembly; off also skips its per-pixel work
@@ -171,38 +171,28 @@ export function defaultPreset(gpu) {
    * glass rather than absence, and lets the ends do the talking. */
   tubeDead: 0.18,
   sheen: 0.06, matte: 0.0,
-  /* THE NUMBER CHANGED BECAUSE THE UNIT DID. GLARE was a reflectance spent in linear light; it is a transparency spent
-   * in display space now — see the note in crt-gl where emisBare is taken. Under the old mapping the tone map and
-   * gamma between the control and the eye meant a low value already produced most of a full reflection, so this is
-   * the same picture said in the new unit and nothing about the shipped look moves.
-   *
-   * A STORED VALUE KEEPS ITS NUMBER AND LOSES ITS MEANING, which is worth knowing rather than migrating: an old
-   * session will read much weaker until the slider is touched once. Not worth a schema bump — that discards every
-   * other setting to fix one row. */
+  /* GLARE IS A TRANSPARENCY SPENT IN DISPLAY SPACE, not a reflectance in linear light — see the note in crt-gl
+   * where emisBare is taken. A session stored under the older unit keeps its number and loses its meaning, so it
+   * reads much weaker until the slider is touched once. Deliberately not migrated: a schema bump would discard
+   * every other setting to fix one row. */
   glare: 0.21,
   // SCATTER IS A DISTANCE IN THE ROOM, so it is stored in cm and converted by SCALE like the fitting's own
-  // dimensions. It was a bare 0..1 in shader units, which meant changing SCALE moved the fitting and left
-  // its glow the same size -- the halo detaching from the thing casting it.
+  // dimensions. In bare shader units, changing SCALE would move the fitting and leave its glow the same size --
+  // the halo detaching from the thing casting it.
   scatterCM: 25,
   // How much of the face's curve the reflection takes. See the note where rd is built -- 1 is physical
   // and unusable, so this is a fraction and the useful settings are low.
   /* THE RIPPLE EVERY MAINS-DRIVEN DISCHARGE HAS -- a fluorescent runs at twice mains, so 100Hz on a 50Hz
-   * supply. TUBE TEXTURE used to sit beside it (coating grain, discharge striation, cathode hot-spots) and is
-   * gone: at the size this fitting is ever drawn it was noise, and it fought the burnout pattern along the
-   * tube, which is the detail that actually carries information. SPILL and SPILL SIZE went earlier, for a
-   * different reason -- a painted glow standing in for light the ray-traced tubes now actually cast. */
+   * supply. There is no separate tube texture beside it: at the size this fitting is ever drawn, coating grain
+   * and striation read as noise and fight the burnout pattern along the tube, which is the detail that carries
+   * information. */
   /* The reference's --bgvis and --railvis: the housing and the rails fade INDEPENDENTLY of each other and
    * of the lamps, so either can be taken out without touching what is standing in front of it. */
   boxVis: 0.4, railVis: 0.29,
   glowA: 0.15, glowB: 0.15, ripple: 0,
-  /* ROOM LIGHT RECALIBRATED, because the reflectance underneath it changed meaning. It was 0.5 back when the
-   * glass's reflectance ramped from 0.03 at the center to 1.0 at the rim -- so at the center the room was being
-   * multiplied by 0.0009 and contributed essentially nothing, and 0.5 was a number chosen to make the RIM look
-   * right. With a flat, physical 4% the same 0.5 lit the whole face: empty glass measured 35.6 against the
-   * reference's 13.4. The reference ships lightOn:false, i.e. no room at all, so this is the level at which the
-   * room is present without washing the tube out. */
-  // GLASS DEPTH is gone -- it bought about eight pixels of parallax at the rim and nothing anyone could point
-  // at. The note at the deleted `par` in crt-gl records what it did and why it is not worth reinventing.
+  /* ROOM LIGHT IS CALIBRATED AGAINST A FLAT 4% REFLECTANCE, which lights the whole face rather than only the
+   * rim. At 0.5 empty glass measures 35.6 against the reference's 13.4. The reference ships lightOn:false, so
+   * this is the level at which the room is present without washing the tube out. */
   spot: 1,
   /* THE TEXT IS MEASURED IN RASTER CELLS, NOT PIXELS -- see textGrid().
    *

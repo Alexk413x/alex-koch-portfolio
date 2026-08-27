@@ -274,10 +274,9 @@ export const SECTIONS = [
              * only means anything if you say WHERE. The page converts to the shader's uv units against the stage's own
              * size, which is what makes the number survive a resize. */]],
 
-  /* GLASS SITS WITH THE TUBE, because it IS the tube's front surface. It used to be filed after FIXTURE, which
-   * put it next to the thing it reflects rather than next to the thing it belongs to -- and that is backwards:
-   * the fitting is one of several things the faceplate can show, while the faceplate is part of the tube whether
-   * anything is being reflected in it or not.
+  /* GLASS SITS WITH THE TUBE, because it IS the tube's front surface. Filing it next to FIXTURE would put it
+   * beside the thing it reflects rather than the thing it belongs to: the fitting is one of several things the
+   * faceplate can show, while the faceplate is part of the tube whether anything is reflected in it or not.
    *
    * Within the section: the room is the source, the glass is the medium, MATTE is its finish -- and the finish
    * governs how SHEEN and GLARE come back off it, so it sits above them rather than being filed after. */

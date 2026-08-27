@@ -193,12 +193,9 @@ export function faceShaped(deg, fadeSpan, shape, pow, amp) {
   return g;
 }
 
-/* The displacement field used to live here: for every output pixel, how far along its own ray it should fetch from,
- * so an feDisplacementMap could resample the tube through it.
+/* NOTHING RESAMPLES HERE. Every curved layer is plotted through faceF above and is generated bent, which is the
+ * right mechanism for an instrument whose content is all generated geometry.
  *
- * REMOVED WITH THE LENS. Nothing resamples any more — every curved layer is plotted through faceF above and is
- * generated bent. A resampled curve was the wrong mechanism for an instrument whose content is all generated geometry.
- *
- * fieldFolds and faceAmax above are NOT lens code, despite the filter language in their comments: faceF uses faceAmax
+ * fieldFolds and faceAmax are NOT filter code, despite the filter language in their comments: faceF uses faceAmax
  * as its amplitude scale, so they set how deep FACE goes for every plotted layer.
  */

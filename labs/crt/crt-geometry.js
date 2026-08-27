@@ -162,9 +162,9 @@ export function ringLadder(prof, n, stepK, fF, rays) {
   const pts = prof.pts, hwG = prof.hw, hhG = prof.hh, out = [];
   const nR = Math.max(0, n || 0);
   /* ONE SCALE PER RAY, and it has to be. The projection carries a THETA term now -- crt-projection scales the sag
-   * amplitude by the face's own shape ratio, so a corner and an edge midpoint no longer land at the same depth -- and the
-   * per-ring scalar this used to build is exactly the collapse the old note warned about: one column of a table that has
-   * stopped being constant. Each ring is walked point by point through fF(u, theta).
+   * amplitude by the face's own shape ratio, so a corner and an edge midpoint do not land at the same depth. A
+   * per-ring scalar would collapse that into one column of a table that is not constant, so each ring is walked
+   * point by point through fF(u, theta) instead.
    *
    * FORCED MONOTONE, PER POINT: never let a ring pass the one outside it ON ITS OWN RAY. KG is the minimum scale
    * separation kept between neighbors; prevK holds the outer ring's value at each sampled index, so the guard is a
