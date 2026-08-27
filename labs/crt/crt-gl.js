@@ -172,7 +172,7 @@ uniform float uSweep, uSweepOn, uSweepH;
  *   uDotRX/RY its radii, already in suv -- the caller measures them in GRILLE COLUMNS and SCANLINES and
  *             converts, so the spot is round in RASTER CELLS rather than round on the glass
  *   uDotLvl   how hard it drives the coating under it
- *   uSweepSol how square the V-sweep's own profile is -- 0 is the old gaussian, 1 a hard-edged line
+ *   uSweepSol how square the V-sweep's own profile is -- 0 a soft gaussian, 1 a hard-edged line
  *   uSweepRGB the three guns' vertical split ACROSS the sweep, in screen pixels
  *   uBeamPull how far the active line is dragged off true as the tip loads the supply, in screen pixels */
 uniform float uHSweep, uDotRX, uDotRY, uDotLvl, uSweepSol, uSweepRGB, uBeamPull;
@@ -235,7 +235,7 @@ uniform float uResH;
 // uFixSolo  the fixture on its own, straight to the screen -- a bench view, not a look
 uniform float uFixSolo;
 uniform float uSpot;
-// uTubeDead  how much a SPENT section of a lamp still shows. 1 is the old fixed floor, 0 is truly black.
+// uTubeDead  how much a SPENT section of a lamp still shows. 1 leaves it at the lit floor, 0 is truly black.
 uniform float uFrame, uFrameW, uFrameOn, uFrameFit;
 /* TWO LAMPS, TWO COLORS. A pair of tubes in one fitting are rarely the same age and almost never the same
  * batch, and color temperature is the first thing to drift as a phosphor blend ages -- one goes green,
@@ -336,7 +336,8 @@ void main(){
    * edge of it. The outline spans the whole box, so a frame drawn from ap = 1 outward has nowhere to go.
    *
    * Multiplying ap by 1 + WIDTH lands the rim at 1/(1 + WIDTH) of the outline, which puts the molding's OUTER
-   * edge where the glass rim used to be. The picture follows automatically, because the gather is indexed by ap.
+   * edge where the glass rim sits with the frame off. The picture follows automatically, because the gather is
+   * indexed by ap.
    * Exactly 1 when the frame is off, so nothing moves. */
   float oR = outlineR(c);
   float ap = length(c) / oR * uFrameFit;
@@ -490,10 +491,9 @@ void main(){
     // toward white rather than being a fade. Only the 0..1 half is an opacity, which is the half that was wrong.
     m = pow(max(m, 0.0), vec3(1.0/2.2)) * max(uFrame, 0.0);
     moldCol = m;
-    /* COVERAGE AT BOTH EDGES. The inner one is new: this block used to return unconditionally for ap > 1, so the
-     * molding REPLACED the picture along a hard threshold and the join stair-stepped exactly as its outer edge
-     * did. There was no glass color to blend toward because the gather had not run yet -- so the fix is to let
-     * the boundary band fall through and composite at the end instead. */
+    /* COVERAGE AT BOTH EDGES, AND THE BOUNDARY BAND MUST FALL THROUGH RATHER THAN RETURN. There is no glass
+     * color to blend toward here because the gather has not run yet, so the molding is composited at the end.
+     * Returning on ap > 1 would replace the picture along a hard threshold and stair-step the join. */
     moldCov = smoothstep(1.0 - aaB, 1.0 + aaB, ap);
     /* THE OUTER SILHOUETTE IS ANTIALIASED. The band test is binary, so the outside edge would be a hard threshold
      * against near-black — a stair-step, worst at the corners. fwidth(ap) is how much ap changes across one pixel,
@@ -723,7 +723,7 @@ void main(){
    * the middle of the screen, which is where the text is.
    *
    * A real set has three guns, each adjustable in x and y, and static convergence is a uniform shift of one raster
-   * against another. Green is adjustable too rather than assumed. The old symmetric pair is a special case:
+   * against another. Green is adjustable too rather than assumed. A symmetric pair is a special case:
    * RED X = +n with BLUE X = -n.
    *
    * The uniforms arrive in content-uv, converted from CSS px by the page, so the number is a screen distance and
@@ -867,7 +867,7 @@ void main(){
      * written" and "already written" is sharp because the beam either is or is not there.
      *
      * So: a flat-topped core with real shoulders, plus an exponential wake trailing back the way the beam came,
-     * with SOLIDITY crossfading to the old gaussian for anyone who wants the haze. The wake is one-sided on
+     * with SOLIDITY crossfading to a soft gaussian for anyone who wants the haze. The wake is one-sided on
      * purpose — light ahead of the beam is light the beam has not emitted yet. */
     float d    = suv.y - sp;                        // >0 is BEHIND, because sp descends
     float w    = max(uSweepH, 1e-4);
@@ -1004,10 +1004,9 @@ void main(){
    *
    * A real spot is on the order of a pixel. Everything wider than that is coating glowing, not electrons arriving,
    * so body and halo both belong to the phosphor and only the tight core stays hot. */
-  /* THE TIP IS THE PHOSPHOR'S COLOR, ALL OF IT. The core used to run 45% toward white on the argument that the
-   * beam is hotter than what it excites -- true of the electrons, but what LEAVES the screen at that point is
-   * still the same coating giving back the same spectrum, just harder. Only the amount differs, and TIP GLOW is
-   * the amount. So it is uHalo throughout and the level carries the difference. */
+  /* THE TIP IS THE PHOSPHOR'S COLOR, ALL OF IT, rather than run toward white. The beam is hotter than what it
+   * excites, but what LEAVES the screen is still the same coating giving back the same spectrum, just harder.
+   * Only the amount differs, and TIP GLOW is the amount -- so it is uHalo throughout and the level carries it. */
   /* NORMALIZED SO THE LEVEL MEANS WHAT IT SAYS. The dot peaks at 1.0 + 0.10, so without dividing by that the tip
    * emits nearly twice its stated level. The tone map is x/(1+x) per channel, so anything that bright drives red,
    * green and blue all to the top and the tip renders pure white whatever color it was given.
@@ -1156,8 +1155,8 @@ void main(){
    * A matte face does not change the lamp -- it scatters the lamp's IMAGE, which is the same integral seen from
    * the other end. Treating the source as larger is the cheap equivalent and needs no second pass. */
   /* MATTE'S ONE JOB: how far the reflected IMAGE is smeared. Inflating the source is the cheap equivalent
-   * of blurring what comes back off the glass, and with the additive wash gone this carries the control
-   * on its own -- so it reaches further than it used to. FROST is the same operation on the lamp itself. */
+   * of blurring what comes back off the glass, and it carries the control on its own with no additive wash
+   * beside it. FROST is the same operation on the lamp itself. */
   float tubeRlit = tubeR * (1.0 + uFrost * 1.8);
   /* THE LAMPS SIT INSIDE THE HOUSING, at a proportion of the way into their reflector.
    *
@@ -1249,10 +1248,8 @@ void main(){
    * through tubeLight(), so an elliptical blob of lamp color laid over the reflection is the same light modeled
    * twice, and the second model is the worse one. */
 
-  /* NO LONGER SQUARED. The squaring existed to stop the lamp sitting visibly across the middle of the picture --
-   * but that was the ramp's fault, not the lamp's: at ap = 0 the old fres was 0.03, so squaring it drove the
-   * center to 0.0009 and crushed the fixture into invisibility while leaving the rim at full strength. With a flat
-   * reflectance there is nothing to shape and squaring would just be a second, invented attenuation. */
+  /* NOT SQUARED. With a flat reflectance there is nothing for a square to shape, so it would only be a second,
+   * invented attenuation on top of fres. */
   /* GLARE IS HOW MIRRORED THE FACE IS, which is a better control than a haze added beside the reflection.
    *
    * fres is what the glass really does: about 4% head-on, rising at the rim. Physically honest and, on its own,

@@ -12,8 +12,7 @@ import { hexRgb, mix } from './crt-phosphor.js';
 /* The boot sequence: a masthead, four status rows as a two-column table, and a prompt.
  *
  * The four table rows carry a label, a dot leader, and a value, and the leader is COMPUTED so all four values start in the
- * same column. It used to be hand-typed: one row carried 33 dots, another three, two had none at all, and the values landed
- * wherever the label happened to end. Hand-aligned columns only stay aligned until someone edits a label.
+ * same column. Hand-typed leaders only stay aligned until someone edits a label.
  *
  * THE LEADER IS BUDGETED AGAINST THE WRAP WIDTH, not just against the labels, and that omission is what made the first
  * version of this useless. Sized from label lengths alone the column was arithmetically perfect and invisible: every value
