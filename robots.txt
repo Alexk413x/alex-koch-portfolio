@@ -15,4 +15,4 @@ Allow: /
 # sitemap has to be handed to Search Console directly. It becomes live the moment a custom domain is.
 Disallow: /README.md
 
-Sitemap: https://www.alexk413x.com/sitemap.xml
+Sitemap: https://alexk413x.com/sitemap.xml

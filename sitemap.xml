@@ -4,25 +4,25 @@
      for readers, and it carries a noindex of its own. -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://www.alexk413x.com/</loc>
+    <loc>https://alexk413x.com/</loc>
     <lastmod>2026-08-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://www.alexk413x.com/labs/crt/CRT%20Lab.html</loc>
+    <loc>https://alexk413x.com/labs/crt/CRT%20Lab.html</loc>
     <lastmod>2026-08-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://www.alexk413x.com/labs/reactor/Reactor.html</loc>
+    <loc>https://alexk413x.com/labs/reactor/Reactor.html</loc>
     <lastmod>2026-08-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://www.alexk413x.com/labs/wormhole/Wormhole.html</loc>
+    <loc>https://alexk413x.com/labs/wormhole/Wormhole.html</loc>
     <lastmod>2026-08-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
