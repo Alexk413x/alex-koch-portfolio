@@ -174,11 +174,10 @@
         (q) => project([w / 2, q[0], q[1]], yaw, pitch)), false));
       /* THE SIDE IS BUILT AS SURFACES, one quad per segment of the outline.
        *
-       * It used to be the even-odd difference of the two silhouettes — a 2D set operation over the whole
+       * NOT THE EVEN-ODD DIFFERENCE OF THE TWO SILHOUETTES, which is a 2D set operation over the whole
        * perimeter at once. That fills the right pixels and is not a surface: it cannot tell the spine from the
-       * opening edge, cannot tell a wall turned toward the reader from one turned away, and so it painted every
-       * rim at one value. The box came out with a back edge indistinguishable from its opening, and nothing on
-       * it read as solid.
+       * opening edge, cannot tell a wall turned toward the reader from one turned away, and so paints every rim
+       * at one value — a back edge indistinguishable from the opening, and nothing reading as solid.
        *
        * Each segment of the ring now spans a real quad — near[i], near[i+1], far[i+1], far[i] — and the sign of
        * that quad's projected area says which way it faces. Front-facing quads are the rim you can see; the rest

@@ -164,9 +164,9 @@
     /* The calculator is two stops, not one, and they are the ENDS of its pin: the faceplate it arrives at and
        the shipped app it leaves as. The same two positions scenes.js stops the scroll on, so a press and a
        gesture land a reader on the same frame of one hand-off.
-       It used to be a stop just past the trigger instead, which was a position the morph had been COMMITTED at
-       rather than one it had finished turning at — a press landed there and the calculator went on moving for
-       most of a second afterwards. */
+       Not a stop just past the trigger: that is a position the morph has been COMMITTED at rather than one it
+       has finished turning at, so a press lands there and the calculator goes on moving for most of a second
+       afterwards. */
     const appScroll = document.getElementById('app-scroll');
     const appStage = document.getElementById('app-stage');
     if (appScroll && appStage) {

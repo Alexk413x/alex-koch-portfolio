@@ -5,8 +5,8 @@
 <title>Open Graph card &middot; Alex Koch</title>
 
 <!-- THE SOURCE OF site/og-card.png, AND THE ONLY PLACE THE CARD IS DESIGNED.
-     The card used to be a committed PNG with nothing behind it: no template, no script, no way to change a word
-     without opening a bitmap editor. Render it with `python og-card.py`, which writes the PNG beside this file.
+     Render it with `python og-card.py`, which writes the PNG beside this file. A committed PNG with nothing
+     behind it has no way to change a word without a bitmap editor.
 
      THIS IS NOT A BUILD STEP. The PNG stays committed and is what scrapers fetch; nothing renders at request
      time. Editing this file changes nothing until the renderer is run, exactly as site-url.py works.
@@ -79,9 +79,9 @@
     position:relative;
   }
 
-  /* THE HALO IS THE HOME PAGE'S, PATH FOR PATH. It used to be two CSS circles fitted to a picture of it, which
-     is the fault the mark below already avoids by drawing favicon.svg's own paths: an approximation of something
-     the repository states exactly, free to drift the moment the original moves. These two cubics are copied from
+  /* THE HALO IS THE HOME PAGE'S, PATH FOR PATH. Two CSS circles fitted to a picture of it would be the fault
+     the mark below already avoids by drawing favicon.svg's own paths: an approximation of something the
+     repository states exactly, free to drift the moment the original moves. These two cubics are copied from
      index.html's #hero-halo and nothing here reshapes them.
 
      preserveAspectRatio="none" maps the 1000x1000 viewBox onto the 1200x630 frame, which is what puts the feet

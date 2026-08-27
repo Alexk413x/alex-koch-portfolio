@@ -183,12 +183,12 @@ function packed(st) {
     geom.push(g('Rad'), g('Amt'), g('Speed'), g('Warp'));
     mix.push(g('Cloud'), g('Bolts'), g('Streak'), g('Ring'));
  /* FILL IS COVERAGE ON THE PANEL AND A THRESHOLD IN THE SHADER, inverted here where the two meet.
-       Raising a threshold passes LESS, so the slider used to count upward as the nebula got rarer -- backwards
-       from what the word says. One flip at the boundary, so the control reads the way it is named and the shader
-       keeps the form its smoothstep wants. */
+       Raising a threshold passes LESS, so an uninverted slider counts upward as the nebula gets rarer --
+       backwards from what the word says. One flip at the boundary, so the control reads the way it is named and
+       the shader keeps the form its smoothstep wants. */
     shade.push(1 - g('Fill'), g('Edge'), g('Oct'), g('Spin'));
     // extra.y is the shell's ON flag: the shader skips a dark shell before it solves anything for it.
-    // z and w were the spare slots; they carry the bolts' own FILL and EDGE, which used to borrow the cloud's.
+    // z and w are the spare slots; they carry the bolts' own FILL and EDGE rather than borrowing the cloud's.
     extra.push(g('Lanes'), g('On') ? 1 : 0, 1 - g('BoltFill'), g('BoltEdge'));
     // z is the plasma's ripple rate. uRingP had two spare slots and the other four vec4s are full.
     ringP.push(g('RingN'), g('RingFlow'), g('BoltRipple'), 0);
@@ -217,7 +217,7 @@ function draw(dt, sec) {
   /* THE SECTION'S MASTER RIDES ON MASS, and on MASS alone, because MASS is now the only thing the hole's
      gravity comes from. Zero it and rs is zero, so lensShift returns zero, the tunnel un-bends and the march
      never starts -- switching the section off removes the lensing rather than just stopping the disc being
-     drawn. It used to have to reach SHADOW and RING as well, and those controls no longer exist. */
+     drawn. */
   const H = s.holeOn ? 1 : 0;
   R.f('uMass', s.mass * H);
 

@@ -212,9 +212,9 @@ vec2 bendD(float z){
  * regime where it can be, and the two agree wherever they overlap -- which is why the handover into the
  * integrator below reads theta and delta straight off these two lines rather than restarting from the eye.
  *
- * IT IS ALSO WHY THE TUNNEL USED TO LOOK DRAGGED RATHER THAN LENSED. The old bend was one screen-space pull
- * applied to every shell at every depth, so wall two units in front of the camera moved as far as the far
- * mouth -- and wall two units away is nowhere near the hole and must not move at all.
+ * IT IS ALSO WHAT SEPARATES LENSED FROM DRAGGED. One screen-space pull applied to every shell at every depth
+ * moves wall two units in front of the camera as far as the far mouth -- and wall two units away is nowhere
+ * near the hole and must not move at all.
  *
  * THE TUNNEL CANNOT FOLD THROUGH ITSELF, AND NO CLAMP SAYS SO. For every s <= 0 the bracket (s + sqrt(s^2+b^2))
  * lies in (0, b], so delta lies in (0, Rs] whatever b is -- and the whole tunnel is at or before closest
@@ -876,11 +876,11 @@ void main(){
    * at DEPTH or beyond, so trans is what they arrive through. Bend the tube far enough that the wall closes
    * across the far end and the hole goes behind it, which is what a tunnel that bends away should do.
    *
-   * THERE IS NO SHADOW MASK ANY MORE, and its absence is the point. The old build multiplied the tunnel by a
-   * dark disc, which was wrong twice over: the tunnel lies entirely IN FRONT of the hole, so the hole cannot
-   * occlude it, and a ray that reaches the shadow at all got there by leaving through the tunnel's MOUTH
-   * without meeting a wall on the way. The shadow is where the geodesic fell in and gathered nothing. It is an
-   * absence, not a stencil, and drawing it as a stencil is what bit a black disc out of wall in front of it. */
+   * THERE IS NO SHADOW MASK, and its absence is the point. Multiplying the tunnel by a dark disc is wrong
+   * twice over: the tunnel lies entirely IN FRONT of the hole, so the hole cannot occlude it, and a ray that
+   * reaches the shadow at all got there by leaving through the tunnel's MOUTH without meeting a wall on the
+   * way. The shadow is where the geodesic fell in and gathered nothing -- an absence, not a stencil, and
+   * drawing it as a stencil bites a black disc out of wall in front of it. */
   col += discLit * trans;
 
   // The screen radius, for the lens effects that belong to the FRAME rather than to the tunnel.

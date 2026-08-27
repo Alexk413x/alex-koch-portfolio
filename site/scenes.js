@@ -250,11 +250,10 @@
   const WHOLE = .91;
 
   /* THE STOPPING POINT IS THE PIN'S MIDPOINT, and the build's length is whatever it takes to land there.
-     Both of these used to be written down, and the stationary scroll either side of the point came out unequal
-     because nothing made them agree — 20px above and 36px below, for no reason other than two constants having
-     been chosen separately. Deriving the span from the pin makes the point central by construction, so the
-     scroll stands still for the same distance whichever way the reader leaves, and --loop-run stays the one
-     place the runway is declared. */
+     Writing both down leaves the stationary scroll either side of the point unequal, because nothing makes
+     them agree — 20px above and 36px below, for no reason but two constants chosen separately. Deriving the
+     span from the pin makes the point central by construction, so the scroll stands still for the same
+     distance whichever way the reader leaves, and --loop-run stays the one place the runway is declared. */
   let fallAt = .03, buildSpan = .71;
 
   function shapeLoop() {

@@ -1,9 +1,9 @@
 /* index.js — the seventeen covers, keyed by the id of the record each one belongs to.
  *
- * KEYED BY PRODUCT, NOT BY DOMAIN. The rack used to draw one wireframe motif per domain because the real art
- * did not exist yet, which meant three products shared a picture. Every product now has its own drawing, so the
- * key is the product's own record id — the same `pf-*` the spine's aria-controls points at. A cover and its
- * record cannot drift apart, because there is only one name for the pair.
+ * KEYED BY PRODUCT, NOT BY DOMAIN. One wireframe motif per domain hands three products the same picture.
+ * Every product has its own drawing, so the key is the product's own record id — the same `pf-*` the spine's
+ * aria-controls points at. A cover and its record cannot drift apart, because there is only one name for the
+ * pair.
  *
  * The lockup is NOT here. Kicker, title, tagline, company and years are HTML over the top of this, so the title
  * stays selectable and reflows at blade size. See buildCover in catalog.js.

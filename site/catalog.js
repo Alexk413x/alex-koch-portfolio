@@ -135,9 +135,9 @@ import { coverArt } from './cover-art/index.js';
 
   /* ---- the box art ----
    *
-   * THE DRAWING IS IN site/cover-art/, KEYED BY THE RECORD'S OWN ID. This used to be one axonometric motif per
-   * domain, which meant three products shared a picture; they were placeholders and they said so. What is left
-   * here is the LOCKUP — the words printed on the cover — because words belong in HTML: the title stays
+   * THE DRAWING IS IN site/cover-art/, KEYED BY THE RECORD'S OWN ID, not by domain — one motif per domain
+   * would hand three products the same picture. What stays here is the LOCKUP — the words printed on the
+   * cover — because words belong in HTML: the title stays
    * selectable, it reflows at blade size, and a crawler running no JavaScript still reads it out of index.html.
    */
 
@@ -250,10 +250,10 @@ import { coverArt } from './cover-art/index.js';
   const RIM = 18;       // px of rim each blade actually shows
   const STEP = 24;      // px between blades: the rim plus six of daylight, so every name stands clear
   const LIFT = 60;      // px the facing cover stands in front of the fan
-  /* EVERY BLADE STANDS AT THE SAME DEPTH. They used to recede 7px each, which shrinks the far ones through the
-     perspective divide — and the spine is the only thing naming a blade, so a rack that recedes is a rack whose
-     far names are smaller than its near ones. The fan's own overlap already says which is nearer; it does not
-     need the size to say it a second time at the cost of legibility. */
+  /* EVERY BLADE STANDS AT THE SAME DEPTH. Receding a few px each shrinks the far ones through the perspective
+     divide — and the spine is the only thing naming a blade, so a rack that recedes is a rack whose far names
+     are smaller than its near ones. The fan's own overlap already says which is nearer; it does not need the
+     size to say it a second time at the cost of legibility. */
   const REACH = 16;     // blades drawn each side: all of them.
   /* THE FAN COMPRESSES WITH DISTANCE instead of stepping evenly. Even spacing has to fit sixteen blades in the
      rack's half-width, which left every one of them STEP apart and the near ones as crowded as the far ones —
@@ -279,9 +279,9 @@ import { coverArt } from './cover-art/index.js';
     b.setAttribute('role', 'option');
     b.setAttribute('aria-label', p.name + ', ' + p.at);
     /* THE SAME OBJECT AS THE ONE ON THE STAGE, at rack size: a drawn wireframe carrying the outlines, the
-       glass and the side walls, with the print over it in its own 3D box. The cover used to be a bordered div
-       with a 14px strip down its right edge standing in for thickness — a flat slab that could not follow the
-       corners and did not turn, which is exactly what the stage's case stopped doing. */
+       glass and the side walls, with the print over it in its own 3D box. A bordered div with a strip down
+       its right edge standing in for thickness is a flat slab: it cannot follow the corners and does not
+       turn. */
     const wire = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     wire.setAttribute('class', 'c3-wire box-wire');
     wire.setAttribute('aria-hidden', 'true');
@@ -317,9 +317,9 @@ import { coverArt } from './cover-art/index.js';
 
   /* THE RACK RUNS ON A FLOAT, TWEENED BY HAND. `at` is still the integer you are on; `pos` is where the rack
      actually is, and every blade's angle, offset and depth is a function of `i - pos`.
-     It used to be integers with a CSS transition doing the moving, which cannot work now that each blade
-     carries a drawn wireframe: the print would ease over .44s while the drawing snapped to its final angle on
-     the first frame — the same two-clock fault the case on the stage had. One number, read by both.
+     Integers with a CSS transition doing the moving cannot work while each blade carries a drawn wireframe:
+     the print eases over .44s while the drawing snaps to its final angle on the first frame — two clocks for
+     one motion. One number, read by both.
      It also makes the fan continuous rather than three fixed angles, so a cover turns as it comes round instead
      of jumping to face you. */
   let pos = 0, glide = 0;
@@ -462,9 +462,9 @@ import { coverArt } from './cover-art/index.js';
          round the shift is dragged into the rotation and every blade lands somewhere it was never sent.
          The offset clears the FACING cover's half width before the blades start, or the first one either side
          is buried behind it. */
-      /* ONE EXPRESSION FOR EVERY POSITION, continuous through the center. Each term is the old discrete case
-         with `turn` ramping it in over the first step, so a cover at n = 1 lands exactly where the fan used to
-         put it and a cover part way between turns part way.
+      /* ONE EXPRESSION FOR EVERY POSITION, continuous through the center. Each term is the discrete case with
+         `turn` ramping it in over the first step, so a cover at n = 1 lands exactly on a fan position and a
+         cover part way between turns part way.
          The offset clears the FACING cover's full half-width before the fan starts, or the first blade each
          side is buried behind it. */
       const half = bw / 2;
@@ -475,11 +475,11 @@ import { coverArt } from './cover-art/index.js';
       b.style.transform = 'translate(-50%, 0) translate3d(' + (x - shift).toFixed(1) + 'px, 0, ' +
                           z.toFixed(1) + 'px)';
       b._print.style.transform = 'rotateY(' + yaw.toFixed(1) + 'deg)';
-      /* THE COVER STAYS ON. It used to fade out as a blade turned, because sixteen transparent covers stacked
-         their artwork through each other into a scribble — but that was at twelve pixels of spacing, where a
-         blade showed nothing but rim. At twenty-four each blade exposes its rim AND a strip of its own cover,
-         and turning that off left the fan a row of blank edges when the art is the thing that distinguishes
-         them. Both faces are front-facing at 79 degrees either way, so this reads on both sides of the rack. */
+      /* THE COVER STAYS ON. Fading it out as a blade turns keeps sixteen transparent covers from stacking
+         their artwork into a scribble, but that only matters at twelve pixels of spacing, where a blade shows
+         nothing but rim. At twenty-four each blade exposes its rim AND a strip of its own cover, so fading
+         would leave the fan a row of blank edges when the art is what distinguishes them. Both faces are
+         front-facing at 79 degrees either way, so this reads on both sides of the rack. */
 
       /* Redrawn only when its angle or size has actually moved — a rack step turns a handful of blades, not
          seventeen, and this runs on every frame of the glide. */
@@ -628,9 +628,9 @@ import { coverArt } from './cover-art/index.js';
 
     /* AND A LOOK AT WHAT IS COMING, ON THE SIDE YOU ARE HEADED. The bar is a jump list, so showing the company
        you are on and nothing beyond it hides the answer to "what is next" — which is most of why anybody scans
-       it. This used to peek at idx + 1 always, which is the wrong neighbor half the time: walking BACK through
-       the rack it revealed the company you had just left and kept the one you were heading toward under the
-       fade, so the bar led you in the opposite direction to the one you were moving.
+       it. Peeking at idx + 1 always is the wrong neighbor half the time: walking BACK through the rack it
+       reveals the company you have just left and keeps the one you are heading toward under the fade, so the
+       bar leads you opposite to the way you are moving.
        Never at the current chip's expense, either way: the peek is taken only if the chip being named keeps its
        own far edge inside the view, so the thing the bar is pointing at can never be pushed out to show its
        neighbor. */
@@ -1003,11 +1003,11 @@ import { coverArt } from './cover-art/index.js';
   }
 
   /* EVERY TURN AIMS AT A GRID POSE, never at an offset from wherever the case happens to be.
-     flip() used to ask for `turn - 180`, read off the LIVE angle — and swingTo cancels the frame in flight, so
-     interrupting a turn took some arbitrary mid-swing value as the new origin. Moving through the rack faster
-     than the swing therefore landed the case off a face and KEPT the error, which compounds: measured,
-     eight steps 120ms apart ended at -949.5 degrees, 5.16 half turns from rest — stuck 29 degrees askew with
-     the button still naming a face. Rounding on the way in cannot drift, whatever interrupts it. */
+     Asking for `turn - 180` reads off the LIVE angle, and swingTo cancels the frame in flight, so interrupting
+     a turn takes an arbitrary mid-swing value as the new origin. Moving through the rack faster than the swing
+     then lands the case off a face and KEEPS the error, which compounds: measured, eight steps 120ms apart
+     ended at -949.5 degrees, 5.16 half turns from rest — stuck 29 degrees askew with the button still naming a
+     face. Rounding on the way in cannot drift, whatever interrupts it. */
   function turnTo(k, ms, ease) {
     aim = k;
     /* THE LABEL FOLLOWS THE INTENT, NOT THE LANDING. `flipped` was written only by setTurn, which swingTo calls
@@ -1197,8 +1197,8 @@ import { coverArt } from './cover-art/index.js';
       down.held = true;
     }
     if (!down.held) return;
-    /* One blade of travel per box. SPREAD was the old fan's constant and did not survive the rewrite — with it
-       undefined this whole handler threw on the first pointermove and dragging did nothing at all. */
+    /* One blade of travel per box, from DRAG_STEP. An undefined constant here throws on the first pointermove
+       and drag silently does nothing at all, with no error the user can see. */
     go(down.at - Math.round(dx / DRAG_STEP));
   });
 
