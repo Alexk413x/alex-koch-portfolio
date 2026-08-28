@@ -2505,6 +2505,13 @@ The hover swell lives on a wrapper, not the core — on the core it would fight 
     position: sticky; top: calc(var(--app-lift, 0px) * -1);
     height: auto; min-height: calc(100dvh + var(--app-lift, 0px));
     background: var(--ink);
+    /* THE CALCULATOR SHOWS PAST THE STAGE, on one axis. The desktop's `overflow: hidden` (declared once, above)
+       is what a phone inherits, and with the pin's negative top the stage's box no longer bounds what the
+       calculator has to show — a key that leans out of the plate is cut at the edge instead of leaning.
+       Not `visible`: a retracting key's cap carries an inverse scale that reaches 25x, and released sideways
+       that hands a 390px phone a horizontally scrollable page. `clip` on x is the same trade #experience.js-cat
+       makes for the open case, and for the same reason. */
+    overflow-x: clip; overflow-y: visible;
   }
   /* 90, not the desktop's 90/60: the bar's box runs to 82px here (22 + content + the 30px scrim tail), and
      scenes.js reads this very number as the clearance the pin lands THEN/NOW at. */
@@ -2619,6 +2626,16 @@ The hover swell lives on a wrapper, not the core — on the core it would fight 
   .tagline { margin-top: 8px }
   .loop-say .sec-lede { margin-top: 14px }
   .reach { margin-top: 12px }
+  /* THE THREE CLAIMS STAY ON ONE LINE. Measured: the row is 275px of text, so at the flat 56px gap it needs
+     388px of column and wraps on every phone narrower than ~432px — and wrapped, "Any LLM" alone on a second
+     line reads as an afterthought rather than the third of three. The gap is what gives first, not the words.
+     Still ONE gap: --claim-gap is overridden rather than .reach's own, so the checks grid below tracks it and
+     the column keeps the single horizontal rhythm the desktop rule sets. Both cap at 56px by 800px wide, so
+     nothing above this breakpoint moves. */
+  #cartographer { --claim-gap: clamp(12px, 7vw, 56px) }
+  .reach { flex-wrap: nowrap; font-size: clamp(15.5px, 4.4vw, 19px) }
+  /* The gap can absorb a narrow screen; a claim broken across two lines cannot be absorbed at all. */
+  .reach span { white-space: nowrap }
   .terms { margin-top: 14px }
   .demo-cta { margin-top: 16px }
   /* Squarish, so this is its height too — and the height is what the section did not have. */
