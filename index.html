@@ -66,7 +66,15 @@
   <div class="brand">
     <a class="mark" href="#alex">ALEXK413X</a>
   </div>
-  <div class="links">
+  <!-- THE CHAPTER METER, COLLAPSED. Six labels do not fit across a 393px bar, so on a phone this button is the
+       list's face: nav.js writes the name from the same --k the bars run on, and the rule under it is the whole
+       page's progress rather than one chapter's. The stylesheet only shows it once nav.js has flagged itself in,
+       so a reader with no JS keeps the plain list rather than a door that opens nothing. -->
+  <button class="nav-now" type="button" aria-expanded="false" aria-controls="nav-links">
+    <span class="nav-now-name">ALEX</span>
+  </button>
+
+  <div class="links" id="nav-links">
     <a href="#alex">ALEX</a>
     <a href="#cartographer">CARTOGRAPHER</a>
     <a href="#app">CALCULATOR</a>
@@ -76,22 +84,26 @@
   </div>
   <!-- Deliberately the quietest thing in the bar: all three are reachable again in CONTACT, so up here they are
        a shortcut rather than the route. -->
-  <div class="tools">
+  <!-- The same door for the marks. A row of four icons and a wordmark do not both fit on a phone, and once they
+       are a list rather than a row they can carry the names the hover tip carries on a desktop. -->
+  <button class="nav-more" type="button" aria-expanded="false" aria-controls="nav-tools">LINKS</button>
+
+  <div class="tools" id="nav-tools">
     <!-- The only route off the page that is an invitation rather than a destination, so it leads the cluster and
          names itself on hover: an envelope alone does not say WHICH address it opens. -->
     <a class="tip" data-tip="Alexk413x@gmail.com" href="mailto:Alexk413x@gmail.com" aria-label="Email Alexk413x@gmail.com">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 5h17A1.5 1.5 0 0 1 22 6.5v11a1.5 1.5 0 0 1-1.5 1.5H19v-9.2l-7 5.25-7-5.25V19H3.5A1.5 1.5 0 0 1 2 17.5v-11A1.5 1.5 0 0 1 3.5 5m1.1 1.6L12 12.15 19.4 6.6z"/></svg>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 5h17A1.5 1.5 0 0 1 22 6.5v11a1.5 1.5 0 0 1-1.5 1.5H19v-9.2l-7 5.25-7-5.25V19H3.5A1.5 1.5 0 0 1 2 17.5v-11A1.5 1.5 0 0 1 3.5 5m1.1 1.6L12 12.15 19.4 6.6z"/></svg><span class="tool-name">Email</span>
     </a>
     <a class="tip" data-tip="linkedin.com/in/alexk413x" href="https://www.linkedin.com/in/alexk413x/" target="_blank" rel="noopener" aria-label="LinkedIn">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.98 3.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5M3 9h4v12H3zM9 9h3.8v1.7h.05c.53-.95 1.83-1.95 3.76-1.95 4.02 0 4.76 2.5 4.76 5.76V21h-4v-5.6c0-1.34-.02-3.06-1.95-3.06-1.95 0-2.25 1.45-2.25 2.96V21H9z"/></svg>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.98 3.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5M3 9h4v12H3zM9 9h3.8v1.7h.05c.53-.95 1.83-1.95 3.76-1.95 4.02 0 4.76 2.5 4.76 5.76V21h-4v-5.6c0-1.34-.02-3.06-1.95-3.06-1.95 0-2.25 1.45-2.25 2.96V21H9z"/></svg><span class="tool-name">LinkedIn</span>
     </a>
     <a class="tip" data-tip="github.com/Alexk413x" href="https://github.com/Alexk413x" target="_blank" rel="noopener" aria-label="GitHub">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 0 0-3.16 19.49c.5.09.68-.22.68-.48v-1.7c-2.78.6-3.37-1.34-3.37-1.34-.45-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.61.07-.61 1 .07 1.53 1.03 1.53 1.03.9 1.53 2.35 1.09 2.92.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.94 0-1.09.39-1.98 1.03-2.68-.1-.25-.45-1.27.1-2.64 0 0 .84-.27 2.75 1.02a9.5 9.5 0 0 1 5 0c1.91-1.29 2.75-1.02 2.75-1.02.55 1.37.2 2.39.1 2.64.64.7 1.03 1.59 1.03 2.68 0 3.84-2.34 4.68-4.57 4.93.36.31.68.92.68 1.86v2.75c0 .27.18.58.69.48A10 10 0 0 0 12 2"/></svg>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 0 0-3.16 19.49c.5.09.68-.22.68-.48v-1.7c-2.78.6-3.37-1.34-3.37-1.34-.45-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.61.07-.61 1 .07 1.53 1.03 1.53 1.03.9 1.53 2.35 1.09 2.92.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.94 0-1.09.39-1.98 1.03-2.68-.1-.25-.45-1.27.1-2.64 0 0 .84-.27 2.75 1.02a9.5 9.5 0 0 1 5 0c1.91-1.29 2.75-1.02 2.75-1.02.55 1.37.2 2.39.1 2.64.64.7 1.03 1.59 1.03 2.68 0 3.84-2.34 4.68-4.57 4.93.36.31.68.92.68 1.86v2.75c0 .27.18.58.69.48A10 10 0 0 0 12 2"/></svg><span class="tool-name">GitHub</span>
     </a>
     <!-- One dialog, two triggers. share.js binds every [data-qr-open], so this and the contact button are two
          doors into the same drawn-once canvas rather than two descriptions of it. -->
     <button class="tip" data-tip="Show QR code" type="button" data-qr-open aria-label="Show QR code for this site">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3h8v8H3zm2 2v4h4V5zM13 3h8v8h-8zm2 2v4h4V5zM3 13h8v8H3zm2 2v4h4v-4zM13 13h3v3h-3zm5 0h3v3h-3zm-5 5h3v3h-3zm5 0h3v3h-3z"/></svg>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3h8v8H3zm2 2v4h4V5zM13 3h8v8h-8zm2 2v4h4V5zM3 13h8v8H3zm2 2v4h4v-4zM13 13h3v3h-3zm5 0h3v3h-3zm-5 5h3v3h-3zm5 0h3v3h-3z"/></svg><span class="tool-name">Share</span>
     </button>
   </div>
 </nav>
@@ -119,6 +131,13 @@
     <path d="M 0 1000 C 450 930 450 660 450 0" pathLength="100"/>
     <path d="M 1000 1000 C 550 930 550 660 550 0" pathLength="100"/>
   </svg>
+
+  <!-- The ground under the core: black at the middle, falling off to nothing well outside it, so the ring's
+       two edges are muted where they pass closest and the core reads against something. Its own element and
+       not a pseudo on the canvas, since a replaced element has no reliable ::before. Sized from --core-shade,
+       which tracks the DRAWN core rather than the buffer around it, and unaffected by the pulse — that lives
+       in the shader and never changes the canvas box. -->
+  <div id="hero-shade" aria-hidden="true"></div>
 
   <!-- The reactor's core, and the whole of what sits behind this scene. site/hero-core.js drives it; without
        WebGL the element stays empty. -->

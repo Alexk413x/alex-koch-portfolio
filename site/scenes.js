@@ -43,14 +43,55 @@
   // synchronous layout, and every scroll frame would otherwise ask again where something already measured is.
   let appTop = 0, appRun = 0, loopTop = 0;
 
+  /* HOW FAR THE CALCULATOR SECTION SCROLLS BEFORE IT PINS, on a portrait phone.
+   *
+   * The section is taller than the screen at --m 1, so it cannot pin at the top with everything visible. It
+   * pins LOW instead: the stylesheet sticks it at a negative top of this distance, which is exactly how far
+   * #app's own top sits above .then-now once the header's clearance is taken off. The reader gets ordinary
+   * scroll through the title and the lede, and the pin catches at the moment THEN/NOW reaches the bar — which
+   * is the block the scrub actually drives, so it is the one that has to stay in frame.
+   *
+   * MEASURED, NOT DECLARED. It is the height of two text blocks at whatever width and font the reader got: at
+   * 393px the lede runs five lines and at 360px it runs six, and a constant would put THEN/NOW under the bar
+   * on one and behind it on the other. Zero on anything but a portrait phone, where the stylesheet's own
+   * fallback (0px) is already the desktop behavior.
+   */
+  const APP_TRIP_AFTER = 40;    // px past the pin at which the morph commits, so it fires pinned and not before
+  const portrait = window.matchMedia('(max-width: 820px) and (orientation: portrait)');
+  let appLiftPx = 0;
+
+  function appLift() {
+    const then = document.querySelector('.then-now');
+    if (!portrait.matches || !then) {
+      appLiftPx = 0;
+      morphStage.style.removeProperty('--app-lift');
+      return;
+    }
+    const app = document.getElementById('app');
+    // The clearance is #app's OWN padding-top, read rather than restated: that padding is what holds the title
+    // off the bar before the pin, and THEN/NOW has to land in the same place the title just left.
+    const clear = parseFloat(getComputedStyle(app).paddingTop) || 0;
+    appLiftPx = Math.max(0, Math.round(
+      then.getBoundingClientRect().top - app.getBoundingClientRect().top - clear));
+    morphStage.style.setProperty('--app-lift', appLiftPx + 'px');
+  }
+
   // Caches every section's layout, refreshed by measure() off resize/load/a body ResizeObserver — all three are
   // needed since fonts landing after first paint reflows sections under the fold.
   function shape() {
     if (morphScroll && morphStage) {
+      appLift();
       appTop = morphScroll.offsetTop;
       appRun = morphScroll.offsetHeight - morphStage.offsetHeight;
     }
     if (loopScroll) loopTop = loopScroll.offsetTop;
+    // The graph's own page box, which is what loopFlat times against. Read here rather than per frame: a rect
+    // read forces layout, and this only moves when something above it reflows — which is what shape() is for.
+    if (loopFlow) {
+      const r = loopFlow.getBoundingClientRect();
+      flowTop = Math.round(r.top + (window.scrollY || window.pageYOffset || 0));
+      flowH = Math.round(r.height);
+    }
     // The plain sections don't animate; their beat is just the section top.
     if (expSec) expTop = expSec.offsetTop;
     if (labsSec) labsTop = labsSec.offsetTop;
@@ -138,19 +179,57 @@
   // How far through the pin a scroll position is; the rail's calculator beats are read off this same measurement.
   const morphAt = (y) => (appRun > 0 ? (y - appTop) / appRun : 1);
 
-  // Commits the morph to a direction once the scroll crosses the trigger or its release fraction.
+  /* Where the morph commits, as a fraction of the pin's runway.
+   *
+   * The stylesheet's --morph-trip is a fraction of a runway that assumes the stage pins with its top at the
+   * viewport's top. On a portrait phone it does not: it pins LOW, at appLiftPx into the section, so a fraction
+   * chosen against the old geometry fires the morph while the reader is still scrolling the title past. The
+   * trigger is therefore derived from the pin itself — just past where it catches — rather than restated.
+   */
+  const tripAt = () =>
+    (appLiftPx > 0 && appRun > 0 ? Math.min(.9, (appLiftPx + APP_TRIP_AFTER) / appRun) : trip);
+
+  /* Viewport heights of pinned scroll the turn is spread over, where it is scrubbed. Under the 644px the pin
+     holds for on a 393x852 phone, so it lands with travel to spare. */
+  const MORPH_SCRUB = .7;
+
+  // Whether the reader drives the turn directly. Only where the pin is long enough to be worth scrubbing, which
+  // is the portrait phone that measures a lift; everywhere else appLiftPx is 0.
+  const scrubbing = () => appLiftPx > 0;
+
+  // --m straight off the scroll: 0 until the pin catches, then the turn over MORPH_SCRUB of pinned travel.
+  const scrubAt = (y) => clamp((y - appTop - appLiftPx) / Math.max(1, vh * MORPH_SCRUB));
+
+  /* Commits the morph to a direction once the scroll crosses the trigger — or, where the pin is long enough,
+   * hands the turn to the scroll outright.
+   *
+   * THE THRESHOLD AND ITS 900ms CLOCK EXIST FOR A SHORT PIN. Committing and playing out guarantees a pure end
+   * state on a runway too short to hold a part-played one, which is what the desktop's .7 gives. A portrait
+   * phone now pins for 644px, and over that distance a fixed clock is the wrong instrument: it fires at a line
+   * the reader cannot see and then ignores them for 900ms, so scrolling back mid-turn does nothing and the two
+   * states are a switch rather than the two ends of a gesture.
+   */
   function morph(y) {
     if (!morphStage || !morphScroll) return;
-    const p = morphAt(y);
-    if (p >= trip) setMorph(1);
-    else if (p <= trip * RELEASE) setMorph(0);
+    if (scrubbing()) {
+      // The tween and its safety timer are the other mode's; left running they would fight the scrub for --m.
+      if (mAnim) { cancelAnimationFrame(mAnim); mAnim = 0; }
+      if (mSettle) { clearTimeout(mSettle); mSettle = 0; }
+      const m = scrubAt(y);
+      mValue = mTarget = mFrom = m;
+      writeMorph(m);
+      return;
+    }
+    const p = morphAt(y), t = tripAt();
+    if (p >= t) setMorph(1);
+    else if (p <= t * RELEASE) setMorph(0);
   }
 
   // Sets the pad's resting state from the actual scroll position on load — without this, a page loaded past
   // the trigger showed the app layout until crossing the trigger snapped it back to the faceplate first.
   function morphInit(y) {
     if (!morphStage || !morphScroll) return;
-    mValue = mTarget = mFrom = morphAt(y) >= trip ? 1 : 0;
+    mValue = mTarget = mFrom = scrubbing() ? scrubAt(y) : (morphAt(y) >= tripAt() ? 1 : 0);
     writeMorph(mValue);
   }
 
@@ -170,6 +249,8 @@
   // and one scalar can't have the top row lead both.
   const loopStage = document.getElementById('loop-stage');
   const loopScroll = document.getElementById('loop-scroll');
+  const loopFlow = document.querySelector('.flow');
+  let flowTop = 0, flowH = 0;
 
   const LOOP_LIFT = 80;   // px the section trails the scroll by when its arrival begins
   const LOOP_IN = .8;     // fraction of the arrival it's up to full strength over, so it isn't still fading in
@@ -221,10 +302,42 @@
 
   // Writes every per-scroll-frame custom property: the words' exit, the cue's fade, and the core/ring's own
   // curve, which starts once the words are clear and runs past the pin's end so they leave the stage still lit.
+  /* THE GRAPH STILL RUNS WHEN THE SECTION IS NOT PINNED.
+   *
+   * Below shortLoop the section gives its pin back and simply passes, and the build and strike envelopes went
+   * with it — the graph sat fully drawn and motionless while the one section whose whole point is a mechanism
+   * scrolled by. Same two scalars, driven off a plain section's own travel instead of a pin's runway: assembled
+   * as it rises into the screen, whole while it is seated, struck as it climbs out the top.
+   *
+   * --o2/--y2 are deliberately not written. Unpinned there is no arrival to trail, and the stylesheet's own
+   * defaults on #loop-stage are the seated values.
+   */
+  /* BOTH ENVELOPES RUN OFF THE GRAPH, NOT THE SECTION. The graph sits at the bottom of a screen-tall section,
+     under all of the copy, so a strike timed against the SECTION's travel began while the graph was still in the
+     middle of the screen — measured, it started 422px down. Timed against the graph's own box instead it draws
+     as it rises into view and does not begin to leave until it is near the top edge. */
+  function loopFlat(y) {
+    if (!loopStage || !loopScroll || !flowH) return;
+    // Whole once it is entirely on screen, which for a box shorter than the viewport is its own height of travel.
+    const built = ease((y - (flowTop - vh)) / flowH);
+    /* NOTHING COLLAPSES WHILE THE GRAPH IS STILL WHOLLY BELOW THE TOP EDGE. The strike opens exactly as its own
+       top crosses that edge (in practice, slides under the bar) and finishes as its bottom follows — so the
+       collapse is the graph LEAVING rather than something that happens to it in the middle of the screen. An
+       earlier start is the same animation begun too soon, not a longer one: leading it by .12vh had the first
+       elements going while two thirds of the graph was still comfortably in frame.
+       Linear and spanned by STRUCK, for the same reason the pinned envelope is. */
+    const struck = clamp((y - flowTop) / (flowH / STRUCK));
+    loopStage.style.setProperty('--gb', built.toFixed(3));
+    loopStage.style.setProperty('--gf', struck.toFixed(3));
+    // The idle circuit runs only while the graph is standing whole; drawing or striking, it is paused.
+    loopStage.classList.toggle('is-drawing', built < .999 || struck > .001);
+  }
+
   function frame() {
     const y = K.scrollY();
     morph(y);
-    if (!shortLoop.matches) loop(y);
+    if (shortLoop.matches) loopFlat(y);
+    else loop(y);
     const e = ease((y - hold * vh) / (exit * vh));
 
     // Opaque while climbing, fading only once mostly out — fading from pixel one would hide it before it had
@@ -281,6 +394,12 @@
   // Matches the stylesheet's query for when Cartographer gives its pin back, so the script stops driving the
   // section exactly when the stylesheet stops pinning it.
   const shortLoop = window.matchMedia('(max-height: 760px), (max-width: 1080px) and (max-height: 900px)');
+
+  // The rail is off on a phone: scrolling is the reader's own gesture there and the content needs more of the
+  // screen than a beat leaves it, so a glide they didn't ask for takes the page off them mid-read. Every scrub
+  // and pin above this stays running. The stylesheet drops scroll-snap-type on the same pair — 820/500, the one
+  // the labs use — so the barriers go with it.
+  const phone = window.matchMedia('(max-width: 820px), (max-height: 500px)');
 
   // The position to aim at when showing Cartographer: the pin's midpoint, where the graph is whole, rather than
   // the top where nothing is drawn yet. Falls back to the section top once the scene has given its pin back.
@@ -450,7 +569,7 @@
   function holdSettle() {
     holdWait = 0;
     snapArm();
-    if (reduced.matches || short.matches) return;
+    if (reduced.matches || short.matches || phone.matches) return;
     // nav.js is moving the page itself (a keyboard step or anchor jump): re-armed rather than dropped, so the
     // rail still tidies up once the press lands instead of leaving two glides racing for the same position.
     if (K.glideOwner() === 'nav') {
@@ -497,7 +616,6 @@
     holdStop();
     snapOff = -1;
     if (reduced.matches || short.matches) { placeSnap(); clear(); morphFinal(); return; }
-    if (shortLoop.matches) loopFinal();
     measure();
     morphInit(K.scrollY());
     frame();
@@ -509,7 +627,7 @@
 
   apply();
   // addListener is the pre-2021 Safari spelling; without it the fallback is simply that the rig never re-arms.
-  for (const q of [reduced, short, shortLoop]) {
+  for (const q of [reduced, short, shortLoop, phone]) {
     if (q.addEventListener) q.addEventListener('change', apply);
     else if (q.addListener) q.addListener(apply);
   }
