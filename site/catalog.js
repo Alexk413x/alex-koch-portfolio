@@ -277,8 +277,13 @@ import { coverArt } from './cover-art/index.js';
     // `fit` is the widest cover whose leaning projection still fits height h — a blade's near edge swings to
     // z=w/2·sin(BLADE), magnified by the perspective divide; unaccounted for, tall windows clipped by 6-8px.
     const fit = h * P / ((4 / 3) * P + h * k);
-    // Reserved once, not twice, since place() positions the rack by its own left edge, not pinned to the cover.
-    const room = reel.clientWidth - REACH * STEP - 24;
+    /* THE FAN IS ALLOWED OFF THE EDGES; THE COVER IS NOT ALLOWED TO SHRINK TO FIT IT.
+       Reserving the fan's whole half-width (REACH * STEP = 384px each side) meant a column narrower than about
+       800px had nothing left, and the cover fell to the 90px floor — seventeen unreadable slivers. The fan is
+       scenery: what has to be on screen is the facing cover and enough of its neighbours to show the crate
+       continues, which is what .58 of the column buys. The rest runs off and #experience clips it, so turning
+       the carousel brings the next ones in rather than everything being visible and tiny. */
+    const room = Math.round(reel.clientWidth * .58);
     if (h > 40) reel.style.setProperty('--box-w', Math.max(90, Math.min(Math.round(fit), room)) + 'px');
 
     // Sized to the rack's projected height, not the column's remainder, or the carousel floats in empty space.
@@ -306,15 +311,16 @@ import { coverArt } from './cover-art/index.js';
       const z = LIFT * (1 - t) + half0 * Math.sin(a);
       return half0 * Math.cos(a) * P / (P - z);
     };
-    let lo = Infinity, hi = -Infinity;
-    boxes.forEach((b, i) => {
-      const n = i - pos, f = Math.abs(n), t = Math.min(1, f);
-      if (f > REACH) return;
-      const e = (n < 0 ? -1 : 1) * (t * (half0 + 4) + gap(f));
-      lo = Math.min(lo, e - hw(t));
-      hi = Math.max(hi, e + hw(t));
-    });
-    const shift = (lo < hi ? lo + reel.clientWidth / 2 - 2 : 0) + shiftFix;
+    /* THE PLAYHEAD IS ANCHORED, NOT THE FAN'S LEFT EDGE.
+       Aligning the leftmost VISIBLE blade to the rail meant the rack moved right by whatever appeared on the
+       left: at the first cover there is nothing there, by the ninth there are eight blades and 400px of rack,
+       and the facing cover marched off the right edge of a phone-width column with every upcoming cover behind
+       it. Anchoring rack-space x = 0 instead — which is the playhead itself, wherever `pos` happens to be —
+       leaves the covers already passed to slide off to the left and keeps the ones still coming in frame.
+       CENTERED, so the crate reads as having a behind as well as an ahead: rack-space x = 0 is the playhead and
+       the boxes are already laid out around it, so centering it is simply shift = 0 plus the correction below.
+       Continuous through a glide, since x = 0 is a position on the rack and not one of the boxes. */
+    const shift = shiftFix;
 
     boxes.forEach((b, i) => {
       const n = i - pos;                      // < 0 to the left, 0 facing you, > 0 to the right
@@ -351,20 +357,24 @@ import { coverArt } from './cover-art/index.js';
       b.setAttribute('aria-selected', i === at ? 'true' : 'false');
     });
 
-    // Measured over the rims too — a spine face projects past the print (42px vs 36px, clipping 4px). Aligned
-    // to the column's fixed rail, not centered, since the span shifts ~40px between a cover and a blade
-    // leading.
+    /* The correction closes whatever hw() under-reports — a spine face projects past the print (42px vs 36px).
+       Measured on the FACING cover alone, for the same reason the shift above anchors it: the leftmost blade is
+       a different object at every position, so correcting against it re-introduces exactly the drift the shift
+       just removed. Rims included, since one of those is the edge that clips.
+       ONLY AT REST. Between two covers there is no facing box — `pos` is fractional and the nearest one is
+       half-turned — so a correction taken mid-glide would measure a projection that is still moving and step
+       the rack sideways under the reader. The last correction stands until the glide lands. */
     const rr = reel.getBoundingClientRect();
-    const want = rr.left + 2;
-    let got = Infinity;
-    boxes.forEach((b) => {
-      if (b.style.getPropertyValue('--vis') === '0') return;
-      got = Math.min(got, b._print.getBoundingClientRect().left);
-      b._rims.forEach((r) => { got = Math.min(got, r.getBoundingClientRect().left); });
-    });
-
-    // Clamped, so a bad frame during a resize cannot walk the rack off the column.
-    if (got < Infinity) shiftFix = Math.max(-400, Math.min(400, shiftFix + (got - want)));
+    const want = rr.left + rr.width / 2;
+    const face = boxes[Math.max(0, Math.min(boxes.length - 1, Math.round(pos)))];
+    if (face && Math.abs(pos - Math.round(pos)) < .01) {
+      // The facing cover's own centre. Its rims are edge-on when it is square to you, so the print is the whole
+      // of its extent here and no rim can pull the centre off.
+      const r = face._print.getBoundingClientRect();
+      const got = r.left + r.width / 2;
+      // Clamped, so a bad frame during a resize cannot walk the rack off the column.
+      shiftFix = Math.max(-400, Math.min(400, shiftFix + (got - want)));
+    }
 
     stepCase();
   }
@@ -499,7 +509,33 @@ import { coverArt } from './cover-art/index.js';
     caseD = Math.max(14, Math.round(w / 11));
     body.style.setProperty('--case-d', caseD + 'px');
     body.style.setProperty('--case-w', w + 'px');
+    fitBack();
     paint();
+  }
+
+  /* THE CASE GROWS TO ITS BACK; THE BACK NEVER SCROLLS.
+   *
+   * The write-up runs a few hundred words on some records, and at a phone's column width nine of the seventeen
+   * overrun a 3:4 case — worst 100px. It used to scroll, which put a scroll view on the back of a physical
+   * object: the case stayed the size of a case and the reader had to drag inside it, and every scroll gesture
+   * near it was ambiguous. So the ratio is a MINIMUM now (aspect-ratio still sets it) and this extends the case
+   * downward when the record needs it.
+   *
+   * Cleared before measuring, or the height set for a long record becomes the floor for the next short one and
+   * the case only ever grows. Reading scrollHeight after clearing is what forces the reflow that makes the
+   * second read honest.
+   */
+  function fitBack() {
+    const body = document.getElementById('case-body');
+    if (!body || !back) return;
+    body.style.removeProperty('--case-min-h');
+    const over = back.scrollHeight - back.clientHeight;
+    // The bottom padding the back's own rule leaves off, so the last line does not sit on the case's edge.
+    const pad = parseFloat(getComputedStyle(back).paddingTop) || 0;
+    if (over > 1) {
+      body.style.setProperty('--case-min-h',
+        Math.ceil(body.getBoundingClientRect().height + over + pad) + 'px');
+    }
   }
 
   function paint() {
@@ -614,6 +650,7 @@ import { coverArt } from './cover-art/index.js';
       // cover onto the hidden back panel.
       drawFront(items[k], false);
       drawBack(items[k]);
+      fitBack();
     }
     slide.style.translate = (off * CASE_TRAVEL * (caseW || 260)).toFixed(1) + 'px';
     // Opacity reaches 0 at half a box either side — the only moment art is swapped, so it's never on screen.
@@ -624,6 +661,7 @@ import { coverArt } from './cover-art/index.js';
     showing = at;
     drawFront(items[at], true);
     drawBack(items[at]);
+    fitBack();
     slide.style.translate = '0px';
     slide.style.opacity = '1';
   }
@@ -761,10 +799,28 @@ import { coverArt } from './cover-art/index.js';
 
   let grab = null;
 
+  /* TWO AXES, EARNED SEPARATELY.
+   *
+   * The case used to take `touch-action: none`, so every swipe that crossed it was swallowed and the page did
+   * not scroll. Now it takes `pan-y`: a horizontal drag is the browser's to hand over and turns the object
+   * immediately, while a vertical one stays the page's and scrolls past.
+   *
+   * Pitch is the axis that conflicts, so it is the one that has to be asked for. HOLD_MS of a finger down
+   * without a real move promotes the grab: the element goes to `touch-action: none` for the rest of the
+   * gesture and dy starts driving tilt. A mouse has no such conflict and is promoted on contact.
+   */
+  const HOLD_MS = 320;    // press before the case takes the vertical axis; under ~250 it fires on a scroll flick
+  const HOLD_SLOP = 8;    // px of travel that cancels the promotion — a moving finger is a gesture, not a hold
+
   caseBody.addEventListener('pointerdown', (e) => {
     // Skips the grab on a link target — setPointerCapture below would retarget its click to the case body.
     if (e.target.closest && e.target.closest('a')) return;
-    grab = { x: e.clientX, y: e.clientY, moved: 0 };
+    grab = { x: e.clientX, y: e.clientY, moved: 0, pitch: e.pointerType !== 'touch', hold: 0 };
+    if (!grab.pitch) {
+      grab.hold = setTimeout(() => {
+        if (grab) { grab.pitch = true; grab.y = lastY; }   // rebased, or the held frame jumps by the drift
+      }, HOLD_MS);
+    }
     turnAtGrab = turn;
     cancelAnimationFrame(swing);
     swing = 0;
@@ -773,18 +829,23 @@ import { coverArt } from './cover-art/index.js';
     caseBody.setPointerCapture(e.pointerId);
   });
 
+  let lastY = 0;
+
   caseBody.addEventListener('pointermove', (e) => {
     if (!grab) return;
+    lastY = e.clientY;
     const dx = e.clientX - grab.x, dy = e.clientY - grab.y;
     grab.moved = Math.max(grab.moved, Math.abs(dx), Math.abs(dy));
+    if (grab.hold && grab.moved > HOLD_SLOP) { clearTimeout(grab.hold); grab.hold = 0; }
     // Straight to the angle, no tween: a hand on the case is the clock, and easing under it is lag.
-    tilt = 2 + -dy * TILT_PER_PX;
+    if (grab.pitch) tilt = 2 + -dy * TILT_PER_PX;
     turn = turnAtGrab + dx * TURN_PER_PX;
     apply();
   });
 
   const drop = (e) => {
     if (!grab) return;
+    if (grab.hold) clearTimeout(grab.hold);
     grab = null;
     caseBody.classList.remove('held');
     caseBody.classList.add('springing');

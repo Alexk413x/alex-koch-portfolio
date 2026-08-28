@@ -39,6 +39,17 @@
   /* Scene 01's two side columns, equal so the hero balances about the core. 530px is the measured floor for the
      lockup's ink at 176px; smaller wraps. */
   --hero-col: 530px;
+  /* THE HERO CORE, AS ONE DESCRIPTION. The buffer, how far the camera is pulled in, and the ground under it are
+     three views of the same object, so the last is DERIVED rather than guessed: sized in vh on a desktop and in
+     lane-fractions on a phone, the shade came out 1.43x its core's radius on one and 0.75x on the other.
+     hero-core.js reads --core-zoom back rather than restating it.
+     .167 is the drawn core's radius as a fraction of the buffer at zoom 1 — the shader fills about a third of
+     its buffer — and the camera scales that linearly, so the product is the core's radius on screen whatever
+     the two are set to. 1.1 of that is the ground: just past the ring, where its own falloff has nothing left
+     to show an edge against. */
+  --core-canvas: min(94vh, 900px);
+  --core-zoom: 1;
+  --core-shade: calc(var(--core-canvas) * .167 * var(--core-zoom) * 1.1);
   /* Three columns wide (lockup, core lane, aside) — wider than the 1400px the sections below share, deliberately,
      since the stage is full-bleed. */
   --hero-max: calc(var(--hero-col) * 3);
@@ -201,6 +212,10 @@ a:hover { color: var(--accent-hover) }
 }
 #nav .tools .tip:hover::after, #nav .tools .tip:focus-visible::after { opacity: 1; transform: none }
 
+/* The two phone doors and the marks' names. Off everywhere but a phone, and the portrait block below is the only
+   place they come back — a bar with room for the list has no use for a button that hides it. */
+.nav-now, .nav-more, .tool-name { display: none }
+
 section[id] { scroll-margin-top: 84px }
 
 /* ---------------- the scroll rig ---------------- */
@@ -261,6 +276,28 @@ section[id] { scroll-margin-top: 84px }
 #hero-halo path:first-of-type { transform: translateX(calc(var(--halo-x, 0px) * -1)) }
 #hero-halo path:last-of-type { transform: translateX(var(--halo-x, 0px)) }
 
+/* The ground under the core: solid to the drawn core's own edge, then falling off to nothing across as much
+   again. --core-shade is the DRAWN core, not the buffer — at zoom 1 the shader fills about a third of its
+   canvas and on a portrait phone most of it, so a size taken from the canvas would be wrong at one end or the
+   other. It rides --core-s and --ring-o with the core, or a black disc would sit on the stage after the thing
+   it grounds had left; it does NOT ride the pulse, which lives in the shader and never touches the canvas box. */
+#hero-shade {
+  position: absolute; top: calc(50% + 5px); left: 50%;
+  width: calc(var(--core-shade) * 2); height: calc(var(--core-shade) * 2);
+  transform: translate(-50%, -50%) scale(var(--core-s, 1));
+  /* --ink, for the same reason the word scrims are: the ground under the core is the page's ground, and at
+     black it was darker than the section it sits in. Every stop carries the ink's own channels, the fully
+     transparent one included — fading to `transparent` (which is transparent BLACK) interpolates through
+     progressively darker greys in sRGB and leaves a dark ring where the falloff meets the page. */
+  background: radial-gradient(closest-side,
+    rgb(12, 12, 14) 0%, rgb(12, 12, 14) 40%, rgba(12, 12, 14, .78) 58%,
+    rgba(12, 12, 14, .34) 78%, rgba(12, 12, 14, 0) 100%);
+  opacity: var(--ring-o, 1);
+  /* After #hero-halo in the DOM and on the same layer, so it mutes the ring's two edges where they pass the
+     core; under #hero-core's z-index 1, so it never dims the core itself. */
+  pointer-events: none; z-index: 0;
+}
+
 /* The reactor's core, the only thing in the middle of this scene.
    LIGHTEN, not screen: the shader fills undrawn pixels with near-black rather than zero, and screen would ADD
    that across the whole canvas, reading as a circle behind the core. Lighten takes the per-channel max instead.
@@ -270,12 +307,17 @@ section[id] { scroll-margin-top: 84px }
   /* Centered 5px below the stage's middle: the scene's padding-top and the foot land within 10px of each other,
      so this is the line the columns are actually arranged around. */
   position: absolute; top: calc(50% + 5px); left: 50%;
-  width: min(94vh, 900px); height: min(94vh, 900px);
+  width: var(--core-canvas); height: var(--core-canvas);
   /* Collapses into itself on exit — shrinking reads as the reactor leaving the stage, dimming alone would just
      read as a light turning down. */
   transform: translate(-50%, -50%) scale(var(--core-s, 1));
   opacity: var(--ring-o, 1);
   mix-blend-mode: lighten;
+  /* The buffer's edge can never be a line. Under `lighten` any pixel the shader leaves above the ground shows,
+     so a hard boundary is one step from a visible rectangle — which is exactly what a bright glow reaching the
+     edge produced. The fade is inside the room the buffer now has, so it costs no picture. */
+  -webkit-mask-image: radial-gradient(closest-side, #000 62%, rgba(0, 0, 0, 0) 100%);
+  mask-image: radial-gradient(closest-side, #000 62%, rgba(0, 0, 0, 0) 100%);
   pointer-events: none; z-index: 1;
 }
 /* Arrives when its shader does, and fades rather than appears — hero-core.js adds this class once, on the first
@@ -354,6 +396,21 @@ html:not(.core-lit) #hero-halo path {
   grid-column: 3;
   color: var(--text-body); font-size: clamp(13px, 1.4vw, 16px); line-height: 1.65;
   text-align: center;
+}
+
+/* A GROUND UNDER THE WORDS, at every width. The ring's two edges and the core's glow pass behind the type at
+   full strength, and the lockup is only the brightest thing in frame if what is behind it is not. Blurred
+   rather than a box: a scrim with an edge of its own reads as a panel laid on the scene.
+   z-index -1 stays inside .hero's own stacking context (z-index 3), so it darkens the core and the halo under
+   it without reaching the page's ground. */
+.hero-grid > div:first-child, .aside { position: relative }
+.hero-grid > div:first-child::before, .aside::before {
+  content: ''; position: absolute; inset: -20px -26px; z-index: -1;
+  /* --ink at half strength, NOT black: this is the page's own ground brought forward over the scene, so at
+     full opacity it has to be indistinguishable from the ground either side of it. Pure black read as a dark
+     patch laid on the page rather than as more of the page. */
+  background: rgba(12, 12, 14, .5); border-radius: 44px; filter: blur(24px);
+  pointer-events: none;
 }
 
 .hero-foot { padding: 0 var(--pad-page) 30px; position: relative; z-index: 3 }
@@ -490,8 +547,9 @@ html:not(.core-lit) #hero-halo path {
      since the edges use it as a width and the outline as a Z offset. */
   --dep: calc(110 + (95 - 110) * var(--m));
   transform-style: preserve-3d;
+  /* Turns in place. Both ends are centered in the column, so nothing slides sideways during the scrub — a
+     translation here pushed the faceplate's left edge geometry off a 393px viewport. */
   transform:
-    translateX(calc((-24 + (0 - -24) * var(--m)) * 1px))
     rotateY(calc((18 + (-15 - 18) * var(--m)) * 1deg))
     /* Tilted at both ends: the top/bottom edges bridge this vertical offset, which at zero would project onto the
        front's own edge and vanish. */
@@ -1106,7 +1164,11 @@ Barely dimmed: depth here is carried by size (2.4x the distance), and dimming a 
    stays here since .cat carries the content rail.
 The section clips, not the grid: the case is drawn wider than its own box when it turns (the wire's viewBox is
    twice the case on both axes), so clipping at the content rail would cut the far corners off mid-swing. */
-#experience.js-cat { padding: 0 var(--pad-page); overflow: hidden }
+/* CLIPPED SIDEWAYS ONLY. The fan and the company bar run off both edges by design and must not widen the page;
+   the case and the blades are 3D objects whose drawn extent is taller than the box that lays them out, and
+   `overflow: hidden` cut 138px off the bottom of the open case. `clip` on one axis is what allows the other to
+   stay visible — `hidden` on x would compute y to `auto` and turn the section into a scroll container. */
+#experience.js-cat { padding: 0 var(--pad-page); overflow-x: clip; overflow-y: visible }
 
 .cat {
   /* One screen, nothing scrolling: the carousel takes whatever the blocks above it leave, measured in catalog.js.
@@ -1227,6 +1289,14 @@ min-width: 0 is load-bearing: a grid item's automatic minimum is its content, so
 
 /* flex: 0 1 auto: as tall as the rack in it, so the column centers the whole stack rather than this growing to
    swallow the slack. catalog.js sizes it from the column and the fixed blocks above, never from this rule. */
+/* THE CRATE FADES OUT AT ITS OWN EDGES, the same treatment (and the same gradient shape) the company bar uses,
+   so the fan reads as continuing past the column rather than being sliced off by whatever clips the section.
+   ON THE WRAP, NOT ON .reel: a mask is a grouping property and forces the masked element's transform-style to
+   flat, which would collapse the 3D fan into a stack of flat cards. .reel-wrap carries no 3D of its own, so the
+   blades keep their perspective inside it.
+   mask-repeat: repeat-y, NOT the default `repeat`: the profile is uniform vertically, so tiling down preserves
+   a leaning blade's overflow above and below the reel's own box (which .reel keeps `overflow: visible` for),
+   while NOT tiling sideways is what stops anything rendering past the left and right bounds. */
 .reel-wrap { flex: 0 1 auto; min-height: 0; margin-top: 20px; display: flex; flex-direction: column; gap: 10px }
 
 /* A 3D stage, not a row that scrolls — every box is placed by catalog.js from its distance to the playhead.
@@ -1235,6 +1305,22 @@ min-width: 0 is load-bearing: a grid item's automatic minimum is its content, so
 flex: 0 0 auto, height set by catalog.js from the rack in it — left to grow, the reel took the column's whole
    remainder and the carousel floated in empty space (measured at 1600x1000: 361px of box around 299px of cards). */
 .reel {
+  /* THE CRATE FADES OUT AT ITS OWN EDGES, the same treatment (and the same gradient shape) the company bar uses,
+     so the fan reads as continuing past the column rather than being sliced off by whatever clips the section.
+     ON .reel AND NOT ON .reel-wrap: the wrap holds the act line too, and masking that faded the first word of
+     "Act III: ...". A mask does force this element's transform-style to flat — which costs nothing here,
+     because the blades are z-ordered explicitly in place() (zIndex = 100 - distance) rather than sorted by
+     depth, and each blade still carries its own preserve-3d under .reel's perspective.
+     mask-repeat: repeat-y, NOT the default `repeat`: the profile is uniform vertically, so tiling down preserves
+     a leaning blade's overflow above and below the box (which overflow: visible below exists for), while NOT
+     tiling sideways is what stops anything rendering past the left and right bounds. */
+  --reel-fade: 56px;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 var(--reel-fade),
+                      #000 calc(100% - var(--reel-fade)), transparent 100%);
+  mask-image: linear-gradient(90deg, transparent 0, #000 var(--reel-fade),
+              #000 calc(100% - var(--reel-fade)), transparent 100%);
+  -webkit-mask-repeat: repeat-y;
+  mask-repeat: repeat-y;
   /* overflow: visible — clipping forced covers down to a fraction of fit, since a leaning blade's near edge
      swings forward and the perspective divide makes it taller than the cover it copies. The section still clips outward. */
   flex: 0 0 auto; min-height: 0; position: relative; overflow: visible;
@@ -1453,11 +1539,22 @@ Hover is one color across the outline, rim name and artwork ramp (all --amber) �
    The box is sized to the case, not the column: filling the column at 78% case size left 22% dead air inside the
    box, pushing the button away from the object it belongs to. 92% is what's left of the column once the
    button's own 34px and the 12px gap come out. */
-.case-box { flex: 0 1 auto; height: 92%; min-height: 0; margin-block: auto; display: grid; place-items: center; width: 100% }
+/* minmax(0, 1fr), not the implicit `auto` track: an auto track is sized to its item's max-content, and
+   .case-body's 3/4 ratio takes its width from its height — so on a narrow column the track grew to 396px inside
+   a 349px box and the front face's text ran 29px off the screen. The 0 floor is what lets max-width: 100% bind. */
+.case-box {
+  flex: 0 1 auto; height: 92%; min-height: 0; margin-block: auto; width: 100%;
+  display: grid; grid-template-columns: minmax(0, 1fr); place-items: center;
+}
 
 /* Thrown in and out harder the further you jumped — stepping to a neighbor is a nudge, clicking nine products
    away sends the old one off the edge. catalog.js writes distance and duration; this only says which properties move. */
-.case-slide { width: 100%; height: 100%; display: grid; place-items: center; transform-style: preserve-3d }
+/* Same minmax(0, 1fr) as .case-box, and for the same reason: this is the second auto track between the column
+   and the case, and capping only the outer one left .case-body free to overrun it here instead. */
+.case-slide {
+  width: 100%; height: 100%; transform-style: preserve-3d;
+  display: grid; grid-template-columns: minmax(0, 1fr); place-items: center;
+}
 /* ---- the case: a drawing, and text over it ----
    The wireframe is SVG since a CSS face is a quad and can't follow a rounded corner. The print is HTML over it,
    in a 3D box under the same perspective and angles case3d.js projects with, so the two line up by construction.
@@ -1468,10 +1565,18 @@ The case stands well off its own edges, with real air over and under — the sec
    things that can give height back.
    max-width binds on a short, narrow window: at 3:4 height decides width, and without it the case would grow sideways out of its column. */
 .case-body {
+  /* 3/4 is the FLOOR, not the shape: --case-min-h is what fitBack() writes when a record's write-up needs more
+     room than the ratio leaves, and the case extends downward rather than putting a scroll view on its back. */
   position: relative; height: 100%; aspect-ratio: 3 / 4; max-height: 100%; max-width: 100%;
+  min-height: var(--case-min-h, 0px);
   perspective: 1400px; perspective-origin: 50% 50%;
-  cursor: grab; touch-action: none;
+  /* pan-y, not none: a vertical drag is the page scrolling and must stay the page's, or the case swallows every
+     swipe that crosses it. A HORIZONTAL drag is what grabs the object — the browser hands those through as
+     pointer events — and a press-and-hold takes the vertical axis too (see catalog.js's hold timer). */
+  cursor: grab; touch-action: pan-y;
 }
+/* Held: the object owns both axes for as long as the finger is down. */
+.case-body.held { touch-action: none }
 .case-body.held { cursor: grabbing }
 
 /* The drawing overflows its own box when the case turns, so it's given room and centerd rather than clipped to
@@ -1574,10 +1679,10 @@ Rules drawn in dimmed --scenery, not --hairline: --hairline's blue gray is right
   --t-body: clamp(11.5px, calc(var(--case-w, 400px) * .0275), 18px);
   --t-meta: clamp(9.5px, calc(var(--case-w, 400px) * .0254), 16px);
   display: flex; flex-direction: column; padding: var(--pad) var(--pad) 0;
-  /* Scrolls rather than clips — the write-up runs to a few hundred words on some records, and overflow: hidden
-     would hide the tail with nothing on screen saying so. Temporary until the copy gets trimmed. */
-  overflow-y: auto; overflow-x: hidden; scrollbar-width: thin;
-  scrollbar-color: var(--scenery) transparent;
+  /* NEITHER SCROLLS NOR CLIPS: catalog.js's fitBack() extends the case until the write-up fits, so there is
+     nothing here to scroll past. A scroll view on the back of a physical object read as a panel pasted onto it,
+     and every gesture near the case was ambiguous between turning it and scrolling inside it. */
+  overflow: hidden;
 }
 /* What it is, then what it did — the lede is one paragraph, brighter than the list under it, since it's the
    sentence a reader who stops after one sentence gets.
@@ -1714,7 +1819,8 @@ A record can carry more than one lede (e.g. a second paragraph on how the work w
    one-screen rule is a desktop claim — below this the section is a document again, like every pinned scene here. */
 @media (max-width: 1080px) {
   .cat { height: auto; overflow: visible; grid-template-columns: minmax(0, 1fr); gap: 36px; padding-bottom: 80px }
-  .case { order: -1 }
+  /* Reading order, not display order: the crate is the index and the open case is what one entry in it looks
+     like, so the case follows the carousel rather than standing above it and the copy. */
   .case-box { height: 62vh }
   .reel-wrap { height: 46vh; margin-top: 18px }
 }
@@ -2175,11 +2281,271 @@ The hover swell lives on a wrapper, not the core — on the core it would fight 
   /* Release the column with the grid — pinned to 3 against a single-column template, the aside would open an
      implicit third column and land on top of the lockup. */
   .aside { grid-column: auto; max-width: 46ch }
-  /* The chapter meter goes with the links — a progress readout is a document convention, and this isn't one; the
-     marks stay as the two things worth a tap. */
-  #nav { grid-template-columns: 1fr auto }
-  #nav .links { display: none }
+  /* THE BAR COLLAPSES TO TWO DOORS, NOT TO A WORDMARK. Six chapter labels and four marks do not fit across
+     393px beside the wordmark; dropping the meter outright took away the one readout that says where in the
+     page a reader is. Both panels are hidden only once nav.js has flagged itself in, so with no JS the list and
+     the marks stay in the bar as they were rather than sitting behind a button that cannot open them.
+     1fr auto 1fr, as on a desktop: the middle cell is centered against the VIEWPORT rather than against
+     whatever the wordmark and LINKS happen to weigh, so the current chapter holds still as its name changes. */
+  #nav { grid-template-columns: 1fr auto 1fr; gap: 12px }
+  .nav-now, .nav-more { display: flex }
+  /* OPEN AND CLOSED ARE A TRANSFORM, NOT A DISPLAY SWITCH: display cannot be transitioned, so both panels stay
+     laid out and are lifted out of reach instead. visibility rather than display keeps them out of the tab
+     order and off the pointer while closed, and it is held for the length of the slide so the panel is still
+     there to animate on the way back up. */
+  #nav.js-nav .links, #nav.js-nav .tools {
+    visibility: hidden; opacity: 0; pointer-events: none;
+    transition: opacity .2s var(--ease-settle), transform .24s var(--ease-settle), visibility 0s .24s;
+  }
+  #nav.js-nav .links.is-open, #nav.js-nav .tools.is-open {
+    visibility: visible; opacity: 1; pointer-events: auto;
+    transition: opacity .2s var(--ease-settle), transform .24s var(--ease-settle), visibility 0s;
+  }
+
+  .nav-now, .nav-more {
+    position: relative; align-items: center; gap: 7px;
+    padding: 5px 2px 8px; border: 0; background: none;
+    font: inherit; letter-spacing: .1em; text-transform: uppercase;
+    color: var(--text-muted); cursor: pointer;
+  }
+  .nav-more { justify-self: end; color: var(--text-faint) }
+  .nav-now[aria-expanded="true"], .nav-more[aria-expanded="true"] { color: var(--accent) }
+  .nav-now:focus-visible, .nav-more:focus-visible {
+    outline: none; color: var(--accent); box-shadow: 0 0 0 2px var(--amber-focus); border-radius: 3px;
+  }
+  .nav-now .nav-now-name { color: var(--accent) }
+
+  /* HOW MUCH OF THE SECTION NAMED ABOVE IS LEFT. --sp is nav.js's span reading, not the --k meter: the label
+     says which section the reader is IN, so the rule under it has to answer the same question rather than
+     report the page. No transition — the value is scrubbed. */
+  .nav-now::after {
+    content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 2px;
+    background: var(--accent);
+    transform: scaleX(var(--sp, 0)); transform-origin: left;
+  }
+
+  /* Both panels hang off the fixed bar, so they scroll with nothing. */
+  #nav .links, #nav .tools {
+    position: absolute; top: calc(100% - 14px); z-index: 1;
+    flex-direction: column; gap: 0;
+    /* z-index -1 on the plate below is clamped to the panel's own context by this, so it sits behind the rows
+       instead of behind #nav's gradient. */
+    isolation: isolate;
+  }
+
+  /* THE PLATE, on both panels. A blurred layer behind rather than a background on the box: the blur is what
+     gives the edges their falloff, and run on the panel itself it would take the names with it. */
+  #nav .links::before, #nav .tools::before {
+    content: ''; position: absolute; z-index: -1;
+    background: rgba(0, 0, 0, .5); border-radius: 18px; filter: blur(11px);
+  }
+
+  /* THE CHAPTERS CARRY NO PANEL. No plate, no border: the list is centered under the name it belongs to and
+     reads as that name opening out. Both axes live in one transform, since translateX is what centers it and
+     the slide has to compose with that rather than replace it. */
+  /* Sized to its widest name (CARTOGRAPHER) rather than to a min-width: a fixed 210 left air either side of
+     every shorter row, and the plate under it made that air visible. */
+  /* stretch, not center: centered, each row was a flex item only as wide as its own name, so ALEX's rule was a
+     third the length of CARTOGRAPHER's and the six bars read as six different meters. Stretched, every row is
+     the panel's width — which max-content still sets from the longest name, so the panel is one constant width
+     and the rules under the rows are one constant length. */
+  #nav .links {
+    left: 50%; align-items: stretch; text-align: center;
+    width: max-content; min-width: 0; padding: 6px 0;
+    background: none; border: 0; box-shadow: none;
+    transform: translate(-50%, -12px);
+  }
+  #nav .links.is-open { transform: translate(-50%, 0) }
+  #nav .links::before { inset: -2px -10px }
+
+  /* With no plate under them the names sit straight on whatever section is passing, and the top rows landed
+     inside a paragraph unreadable. A shadow is the one way to buy contrast without the panel the list is
+     deliberately not carrying. */
+  #nav .links a {
+    padding: 11px 6px; border-radius: 3px; text-align: center;
+    text-shadow: 0 0 5px #000, 0 0 14px #000;
+  }
+
+  /* The panel answers the same question its own button does. Opening a menu that lit a different row from the
+     one the button just named would be the disagreement collapsing to one label was meant to remove, so on a
+     phone the accent follows [data-here] — the span the reader is inside — and the rail's aria-current keeps
+     the bar it is filling to itself. */
+  #nav .links a[aria-current="true"] { color: var(--text-muted) }
+  #nav .links a[data-here] { color: var(--accent) }
+
+  /* The per-item rule sits under its own row rather than spanning the panel, so six stacked bars still read as
+     six chapters — and each fills on the span reading, so the row the button names is the row part-filled.
+     --h is the index of that row; adding it back turns the fraction into a playhead the shared rule can read. */
+  #nav .links a::after {
+    left: 12px; right: 12px; bottom: 4px;
+    transform: scaleX(clamp(0, calc(var(--h, 0) + var(--sp, 0) - var(--i, 0)), 1));
+  }
+  #nav .links a[aria-current="true"]::after { height: 1px; background: var(--border-accent) }
+  #nav .links a[data-here]::after { height: 2px; background: var(--accent) }
+
+  /* THE MARKS DO CARRY ONE, because they are four names over whatever section is passing under them. Sized to
+     its widest row rather than to a min-width, and right-justified into the page's own edge so the column of
+     names lines up with LINKS above it. */
+  /* No side padding: the panel's right edge IS --pad-page, the same rail LINKS is justified to, so a row's
+     right edge lands under the trigger's own. Any inset here and the marks hang left of the word that opens
+     them. The plate takes the air instead, since it is outside the box. */
+  #nav .tools {
+    right: var(--pad-page); width: max-content; min-width: 0;
+    align-items: stretch; text-align: right;
+    padding: 8px 0; background: none; border: 0; box-shadow: none;
+    transform: translateY(-12px);
+  }
+  #nav .tools.is-open { transform: translateY(0) }
+  #nav .tools::before { inset: -4px -16px }
+  /* Faint is right for four marks in a bar; in a list over live content it is not readable. */
+  #nav .tools a, #nav .tools button {
+    color: var(--text-muted);
+    /* The plate falls off before its own left edge, which is where the names start. */
+    text-shadow: 0 0 5px #000, 0 0 14px #000;
+  }
+
+  /* The marks become rows: a name beside each icon, which is what the hover tip carries on a desktop and what a
+     touch pointer never gets. The icon trails the name so the names hold the right edge together. */
+  #nav .tools a, #nav .tools button {
+    display: flex; flex-direction: row-reverse; justify-content: flex-start; align-items: center; gap: 12px;
+    width: auto; height: auto; padding: 9px 0; border-radius: 3px;
+  }
+  .tool-name { display: inline; letter-spacing: .1em; text-transform: uppercase }
+  /* The name is in the row now; a tip repeating it would open over the row below. */
+  #nav .tools .tip::after { content: none }
   #labs, #contact { padding-top: 72px; padding-bottom: 72px }
+
+  /* The bar is fixed over sections whose own padding no longer clears it, so the scrim has to carry the
+     separation on its own: at the desktop's .92 -> 0 ramp a heading passing under the mark stayed legible
+     through it and read as a collision. */
+  #nav {
+    background: linear-gradient(180deg,
+      rgba(12, 12, 14, .97) 46%, rgba(12, 12, 14, .8) 72%, rgba(12, 12, 14, 0));
+    padding-bottom: 30px;
+  }
+}
+
+/* THE BEATS ARE OFF ON A PHONE, at the source rather than per target: one declaration cannot fall out of step
+   with the seven-target list the way clearing each alignment could, and it covers a reader with no JS.
+   A barrier is for arresting a gesture that would cross a beat, which assumes the beat is a place the whole of
+   fits on screen; here the content is taller than the screen, so a target under the reader arrests a flick they
+   meant to carry. scenes.js stands the rail down on this same pair — the 820/500 the labs use. */
+@media (max-width: 820px), (max-height: 500px) {
+  html { scroll-snap-type: none }
+}
+
+/* ---------------- portrait phone ----------------
+   One axis of room and no pointer. Everything here is a POSITION, not a restyle: the pinned scenes were drawn
+   against a landscape stage and place their parts side by side, which on a 393x852 screen puts content off the
+   bottom of a pin or leaves a third of a section empty. */
+@media (max-width: 820px) and (orientation: portrait) {
+
+  /* The core's lane, declared once — #hero-core is sized from it and .hero-grid reserves it as a row, so the
+     picture and the hole left for it cannot disagree. */
+  :root { --hero-lane: min(78vw, 38vh) }
+
+  /* WHERE EVERY SECTION PUTS ITS FIRST LINE. One figure, used as the top padding of each section that has a
+     title, so arriving at any of them looks the same — they were landing at 64 / 102 / 156 / 168, which read as
+     four different pages. 104 clears the bar's 82px box with air to spare.
+     scroll-margin-top goes to 0 with it: the padding IS the clearance now, and the 84 the stylesheet declares
+     for a desktop anchor would apply it a second time. */
+  :root { --title-top: 104px }
+  section[id] { scroll-margin-top: 0 }
+  /* The padding alone decides where the first line sits. .sec-title carries a 12px top margin for the rhythm
+     BETWEEN blocks, and as a section's first child that margin was adding to the padding — #app and #labs
+     landed at 116 against Cartographer's and Experience's 104. Exactly the fault .loop-say already zeroes for
+     its own first child; this is the same rule for the rest. */
+  .inner > :first-child, .cat-left > :first-child, .app-copy > :first-child { margin-top: 0 }
+
+  /* THE NAME OVER THE CORE, THE PARAGRAPH UNDER IT.
+     #hero-core is absolutely positioned outside .scene and must stay there — inside it, it would inherit the
+     words' rise-and-blur exit, which is the whole point of scenes.js running two envelopes off one scroll. So
+     the lane it sits in is centered by construction instead: equal 1fr rows above and below it, inside a .hero
+     box the foot's padding makes symmetric with .scene's own 68px padding-top. */
+  .hero-foot { padding-bottom: 50px }
+  /* THE BUFFER OVERFLOWS THE LANE. Sized to the lane exactly, the core's glow was still bright where the
+     canvas ended and the boundary read as a step — measured 12,12,14 outside against 25,16,14 inside. The lane
+     is where the CORE goes; the canvas needs room around it for the falloff, so it is 1.7x that and spills over
+     the words either side, which is what the scrims under them are for. The zoom comes down to match, or a
+     bigger buffer would just draw a bigger core — and --core-shade follows both without being restated. */
+  :root {
+    --core-canvas: calc(var(--hero-lane) * 1.7);
+    --core-zoom: 1.4;
+  }
+  #hero-core { top: 50% }
+  #hero-shade { top: 50% }
+
+  .hero { align-items: stretch }
+  .hero-grid {
+    height: 100%;
+    grid-template-rows: 1fr var(--hero-lane) 1fr;
+    row-gap: 0;
+    justify-items: center; text-align: center;
+  }
+  /* Seated against the lane from above. display-lockup.js fits the kicker to the lockup's ink width, so both
+     boxes are the same width and centering them centers the pair — its own margin correction lands at ~0. */
+  .hero-grid > :first-child {
+    align-self: end; margin-bottom: 10px;
+    display: grid; justify-items: center;
+  }
+  /* Row 3 explicitly: auto-placement would drop the paragraph into the core's lane. */
+  .aside { grid-row: 3; align-self: start; margin-top: 18px; max-width: 34ch }
+
+  /* THE PIN ENGAGES WHERE THE READER STOPS NEEDING THE TITLE.
+     #app measures 1096px at --m 1 against an 852px screen, so something above the phone has to leave. Not the
+     copy: THEN/NOW is the one block that CHANGES as the morph runs, so hiding it hides the readout the scrub
+     exists to drive. So the section scrolls normally — title, lede, all of it — and pins only once THEN/NOW
+     has reached the header, by sticking at a NEGATIVE top of exactly that distance. From there the copy that
+     matters holds under the bar and the phone has the rest of the screen at full size.
+     --app-lift is measured by scenes.js, not written here: it is the distance from #app's top to .then-now,
+     which is a text block's height at whatever width and font the reader actually got. min-height carries the
+     lift too, or the stage's BOTTOM would rise by it and leave a strip of the next section under the pin. */
+  #app-stage {
+    display: block; align-items: initial;
+    position: sticky; top: calc(var(--app-lift, 0px) * -1);
+    height: auto; min-height: calc(100dvh + var(--app-lift, 0px));
+    background: var(--ink);
+  }
+  /* 90, not the desktop's 90/60: the bar's box runs to 82px here (22 + content + the 30px scrim tail), and
+     scenes.js reads this very number as the clearance the pin lands THEN/NOW at. */
+  /* THE PIN NEEDS TRAVEL TO BE SCRUBBED THROUGH. At the desktop's .7 the stage caught at local 232 and released
+     at 364 — 132px of hold for a turn the reader is supposed to drive. 1.3 gives 644px, which is what lets
+     scenes.js run --m off the scroll here instead of firing a fixed clock at a threshold. */
+  :root { --morph-run: 1.3 }
+
+  /* scenes.js reads this back as the pin's clearance, so the calculator's THEN/NOW lands on the same line every
+     other section's title does. */
+  #app { padding: var(--title-top) var(--pad-page) 28px }
+  /* Stacked, the store badge and the device sit nose to tail and read as one block; the desktop's 30-68px gap
+     is a COLUMN gap and buys nothing here. Room enough that the badge is a link and not the calculator's lid. */
+  .app-grid { gap: 34px }
+
+  /* The cover is sized from the height this leaves it (catalog.js's `fit`), so the wrap is what decides how
+     big the crate reads. 175 gave a 108px cover; 300 gives ~195, which is where the printed title on the spine
+     becomes legible on a phone. */
+  .reel-wrap { height: min(52vh, 300px) }
+
+  /* WIDTH DECIDES HERE, NOT HEIGHT. With height: 100% the 3/4 ratio loses to max-width on a narrow column and
+     the case is laid out 349x528 — a 2:3 box, which case3d.js then draws as one, since it takes both edges from
+     this element. Driving it from the width keeps the proportion the drawing is built for. */
+  .case-body { width: 100%; height: auto; max-height: none }
+  .case-box { height: auto }
+
+  /* .cat has exactly two children, so this gap is the one between the crate and the open case. Stacked, 36px
+     read as the case being part of the carousel rather than the thing the carousel indexes — and the blades
+     lean toward the reader, so they need clearance the desktop's side-by-side columns never asked for.
+     padding-top matches #labs's 72. The 1080px rule overrides only .cat's padding-BOTTOM, so a phone inherited
+     the desktop's 132 — which is right there, where the section starts at the viewport top under a floating
+     bar, and wrong here: #experience.js-cat has no top padding of its own, so those 132px were the whole gap
+     and the title landed 60px lower than every other section's after an anchor jump. */
+  .cat { gap: 64px; padding-top: var(--title-top) }
+
+  /* KEPT FULL HEIGHT, though the reason changed. It was sized to give the rail a release region below #labs,
+     and the rail is off here — but it is also the page's last screen, and the base rule already centers its
+     content in it. Collapsed to its 276px of content it stopped being a closing screen and became a footer, and
+     the header's own chapter meter had CONTACT as a sliver. */
+  #contact { padding-top: 96px; padding-bottom: 96px }
+  #labs { padding-top: var(--title-top) }
 }
 
 /* vh caps, not replacements — the width clamp still governs on a tall narrow phone, and this only bites when
@@ -2226,6 +2592,39 @@ The hover swell lives on a wrapper, not the core — on the core it would fight 
   .lockup { font-size: min(clamp(64px, 13vw, 176px), 21vh); letter-spacing: -2px }
   .aside { font-size: 12.5px; line-height: 1.5 }
   .hero-foot { padding-bottom: 14px }
+}
+
+
+/* ---- Cartographer, on a portrait phone ----
+   MEASURED AT 979px AGAINST AN 852px SCREEN, so the section ran over by a section's worth of nothing and the
+   graph — the one thing here that is a picture rather than a paragraph — was the part squeezed. The copy is
+   genuinely short (517px of it), so the fix is air rather than words: the margins between seven stacked blocks
+   give back 32px, the grid gap and the section's own padding another 28, and the graph takes the remaining 67
+   by capping at 272 rather than the column's full 349.
+   ITS OWN BLOCK, AT THE END. The `max-height: 880px` rule below sets the same margins and sits after the
+   portrait block, so these have to come after both to survive the cascade. */
+@media (max-width: 820px) and (orientation: portrait) {
+  /* TOP-ALIGNED, NOT CENTERED. Centering it in a screen put its title at a different height from every other
+     section's and pinned the whole section to one viewport, which is what the graph was being shrunk to fit.
+     Off that budget it can simply be as tall as it needs. */
+  #cartographer { padding-top: var(--title-top); padding-bottom: 56px }
+
+  /* THE HERO HOLDS BEFORE IT LEAVES. 0 is right on a desktop, where the scene is already visible on load and a
+     hold would only stall the first half-screen. A phone reads the same scene through a third of the width, so
+     the words start rising almost as soon as the thumb moves and the reactor is gone before it has been looked
+     at. Half a screen of stationary scroll first — scenes.js reads this back and #scroll's height already adds
+     it to the runway, so this one declaration is the whole change. */
+  :root { --scene-hold: .5 }
+  .loop-grid { gap: 20px }
+  .tagline { margin-top: 8px }
+  .loop-say .sec-lede { margin-top: 14px }
+  .reach { margin-top: 12px }
+  .terms { margin-top: 14px }
+  .demo-cta { margin-top: 16px }
+  /* Squarish, so this is its height too — and the height is what the section did not have. */
+  /* The full column, now that the section is not squeezed into one screen. margin-inline restores what the
+     920px rule's `margin: 0` took. */
+  .flow { max-width: 100%; margin-inline: auto }
 }
 
 
