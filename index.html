@@ -60,6 +60,11 @@
 </head>
 <body>
 
+<!-- The one stable screen height, measured rather than assumed. A custom property carrying a unit cannot be
+     read back in pixels, so scenes.js measures this element; the stylesheet and the script therefore cannot
+     disagree about how tall a screen is. See #screen-probe in site.css for why it is svh and not dvh. -->
+<i id="screen-probe" aria-hidden="true"></i>
+
 <!-- Three zones on one row: the mark, the sections, the marks. The middle zone is centerd against the viewport
      rather than against whatever the two sides weigh, so the links hold still when either side changes width. -->
 <nav id="nav">
