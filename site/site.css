@@ -2522,7 +2522,12 @@ The hover swell lives on a wrapper, not the core — on the core it would fight 
 
   /* scenes.js reads this back as the pin's clearance, so the calculator's THEN/NOW lands on the same line every
      other section's title does. */
-  #app { padding: var(--title-top) var(--pad-page) 28px }
+  /* The bottom is the SHADOW'S ROOM, not spacing. The chassis casts 0 50px 90px -22px, which reaches 73px below
+     it, and at 28px only 22px of that fell inside the ink panel — the rest landed on #cat, which is opaque and
+     paints later, cutting the shadow off in a straight line across the object's foot. Nothing was clipping it;
+     raising the stage instead would put the calculator over the section that is meant to slide across it.
+     scenes.js reads padding-TOP as the pin's clearance and never this, so the two move independently. */
+  #app { padding: var(--title-top) var(--pad-page) 80px }
   /* Stacked, the store badge and the device sit nose to tail and read as one block; the desktop's 30-68px gap
      is a COLUMN gap and buys nothing here. Room enough that the badge is a link and not the calculator's lid. */
   .app-grid { gap: 34px }
