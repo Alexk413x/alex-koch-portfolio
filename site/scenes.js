@@ -34,7 +34,9 @@
     // Not `|| .9`: 0 is a legitimate --loop-run (no stationary scroll at all), and `||` would treat it as absent.
     const run = parseFloat(cs.getPropertyValue('--loop-run'));
     loopRun = Number.isFinite(run) ? run : .9;
-    vh = window.innerHeight || 1;
+    // The probe's height, not innerHeight, for the same reason screenH reads it: the scrubs this sizes run over
+    // runways declared in svh, and innerHeight is the one number on a phone that disagrees with them.
+    vh = screenH();
     shape();
     shapeLoop();
   }
@@ -101,10 +103,16 @@
   const K = window.AKKIT;
   const clamp = K.clamp01;
 
-  // Live window height, for anything reporting a position rather than scrubbing one. Exported stops must read
-  // this instead of the cached vh: apply() re-adds this file's resize listener behind nav.js's, so a cached
-  // height there would be one handler stale.
-  const screenH = () => window.innerHeight || vh;
+  /* A SCREEN IS WHAT THE STYLESHEET SAYS IT IS, measured off #screen-probe rather than taken from innerHeight.
+     The runways are svh, which does not move when a phone's URL bar does; innerHeight is dvh, which does. Read
+     from innerHeight, every position derived here would be calibrated against a different number than the
+     runway it runs on, and would drift by the height of that bar for as long as it was hidden.
+     Falls back to innerHeight where the element or the unit is missing. */
+  const probe = document.getElementById('screen-probe');
+  // Live, for anything reporting a position rather than scrubbing one. Exported stops must read this instead of
+  // the cached vh: apply() re-adds this file's resize listener behind nav.js's, so a cached height there would
+  // be one handler stale.
+  const screenH = () => (probe && probe.offsetHeight) || window.innerHeight || vh;
 
   // Smoothstep, applied exactly once per scrub — nothing this writes also carries a CSS transition.
   const ease = (t) => { const x = clamp(t); return x * x * (3 - 2 * x); };

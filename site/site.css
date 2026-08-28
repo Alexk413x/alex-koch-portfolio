@@ -220,14 +220,31 @@ section[id] { scroll-margin-top: 84px }
 
 /* ---------------- the scroll rig ---------------- */
 
+/* THE RUNWAYS ARE SIZED IN svh AND THE STAGES IN dvh, and the split is the whole point.
+   dvh tracks the phone's URL bar: it GROWS as the bar hides and shrinks as it returns. A stage wants that — it
+   should fill whatever screen there is. A runway must not have it. Every runway is a multiple of a screen, so
+   the four of them above Experience turned 84px of returning URL bar into 378px of document, and the page slid
+   out from under a reader who had just stopped scrolling. Measured on a 390x844 phone: 53px of visible lurch
+   mid-section, after the browser's own scroll anchoring had absorbed what it could.
+   svh is the viewport with the bar SHOWING and never changes, so the document height stops depending on it.
+   The vh line above each stays as the fallback for a browser without the units.
+
+   The probe carries the same height so scenes.js can MEASURE it: a custom property holding `100svh` reads back
+   as that string, not as pixels, and the script's idea of a screen has to be the stylesheet's exactly or every
+   scrub is calibrated against a different number than the runway it runs on. visibility, not display: none —
+   a display: none element has no height to read. */
+#screen-probe {
+  position: fixed; top: 0; left: 0; width: 0;
+  height: 100vh; height: 100svh;
+  visibility: hidden; pointer-events: none; z-index: -1;
+}
+
 /* One tall container, one sticky stage, one listener. Every scene is absolutely positioned inside the stage and
-   reads its transform from custom properties the listener writes, so a scroll frame touches one element.
-   dvh, not vh: a phone's vh is sized with the URL bar showing, which would make the stage taller than the screen.
-   dvh also tracks window.innerHeight, which scenes.js measures against; the vh line stays as a fallback. */
+   reads its transform from custom properties the listener writes, so a scroll frame touches one element. */
 #scroll {
   position: relative;
   height: calc(100vh + (var(--scene-hold) + var(--scene-exit)) * 100vh);
-  height: calc(100dvh + (var(--scene-hold) + var(--scene-exit)) * 100dvh);
+  height: calc(100svh + (var(--scene-hold) + var(--scene-exit)) * 100svh);
 }
 
 /* Flat, not a radial gradient — a pool centerd at 50% 42% sat exactly where the core is and read as a second,
@@ -429,7 +446,7 @@ html:not(.core-lit) #hero-halo path {
 
 /* The morph's pin. Height is the viewport plus the scrub runway; scenes.js derives progress from this exact
    geometry, so the runway is declared once, here. */
-#app-scroll { position: relative; height: calc(100vh + var(--morph-run) * 100vh); height: calc(100dvh + var(--morph-run) * 100dvh) }
+#app-scroll { position: relative; height: calc(100vh + var(--morph-run) * 100vh); height: calc(100svh + var(--morph-run) * 100svh) }
 /* --m defaults to the shipped state on the element scenes.js writes to, so an inline style can outrank it while
    no-JS/reduced-motion inherit the finished calculator. Defaulting on .phone instead would shadow that and pin
    the morph at 1 forever. */
@@ -815,7 +832,7 @@ html:not(.core-lit) #hero-halo path {
 #loop-scroll {
   position: relative;
   height: calc(100vh + var(--loop-run) * 100vh);
-  height: calc(100dvh + var(--loop-run) * 100dvh);
+  height: calc(100svh + var(--loop-run) * 100svh);
 }
 
 /* CSS, not a settle in the rig: a script can only correct where a gesture ENDED, and a flick past the graph has
