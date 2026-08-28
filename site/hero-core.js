@@ -6,7 +6,7 @@
  *
  * The pointer does exactly two things, and both are read off its POSITION. The face turns to where it is, and
  * how near it is drives VISCOSITY, which is what makes the surface roil. A click fires the lab's pulse. Nothing
- * else on this canvas reacts to anything.
+ * else on this canvas reacts to anything. A finger counts as a pointer here, including while it is scrolling.
  */
 import { createQuad } from '../labs/kit/glquad.js';
 import { runLoop, fitCanvas } from '../labs/kit/lab.js';
@@ -180,8 +180,22 @@ function init() {
   addEventListener('pointermove', (e) => { ptrX = e.clientX; ptrY = e.clientY; ptrMoved = true; },
                    { passive: true });
 
+  /* A FINGER IS TRACKED THROUGH touchmove, NOT pointermove. The moment the browser claims a drag for scrolling
+     it fires pointercancel and delivers no further pointermove, so on a phone the core stopped reading the
+     finger exactly when it started moving. Passive touchmove keeps arriving for the whole scroll. */
+  addEventListener('touchmove', (e) => {
+    const t = e.touches[0];
+    if (!t) return;
+    ptrX = t.clientX; ptrY = t.clientY; ptrMoved = true;
+  }, { passive: true });
+
   // Nothing to face and nothing to stir: the core returns to its resting pose and keeps only its idle drift.
-  document.addEventListener('pointerleave', () => { ptrMoved = false; target = aimY = aimX = 0; });
+  const rest = () => { ptrMoved = false; target = aimY = aimX = 0; };
+  /* Touch is exempt: the scroll takeover's pointercancel is followed by pointerleave, so honoring it here would
+     undo the touchmove tracking above on the first frame of every swipe. A finger leaves on touchend instead. */
+  document.addEventListener('pointerleave', (e) => { if (e.pointerType !== 'touch') rest(); });
+  addEventListener('touchend', (e) => { if (!e.touches.length) rest(); }, { passive: true });
+  addEventListener('touchcancel', (e) => { if (!e.touches.length) rest(); }, { passive: true });
 
   /* Everything the pointer does, from ONE reading of where it is: how near it is, and which way the face turns.
      Both are positions, so both are exact — nothing here differentiates the event stream.
