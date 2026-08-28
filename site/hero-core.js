@@ -127,10 +127,26 @@ function init() {
     orbit: 0, orbitX: 0, orbitZ: 0,
     ...PULSE,
     coreHex: preTonemap(accent),
-    // 1 because #hero-core is capped at min(94vh, 900px): the buffer IS the CSS box, and above this is
-    // supersampling. Costs 6.8ms/frame of a 16.67ms budget on an Intel UHD 630, at any window size.
+    // 1 because #hero-core is capped by its CSS box — min(94vh, 900px), or --hero-lane on a portrait phone: the
+    // buffer IS that box, and above this is supersampling. Costs 6.8ms/frame of a 16.67ms budget on an Intel
+    // UHD 630, at any window size.
     renderScale: 1,
   };
+
+  /* THE CAMERA IS THE STYLESHEET'S, NOT THIS FILE'S. On a portrait phone site.css stands the core in a band
+   * between the name and the paragraph and sizes the buffer to 1.7x that band; at zoom 1 the shader draws the
+   * core across about a third of whatever buffer it is given, so the camera has to come in to fill the band.
+   * Both numbers, and the ground under the core that is derived from them, are declared together in --core-canvas
+   * / --core-zoom / --core-shade — three views of one object, which is why this reads the value back instead of
+   * carrying its own copy and its own idea of where the breakpoint is. */
+  const setZoom = () => {
+    const v = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--core-zoom'));
+    state.zoom = Number.isFinite(v) && v > 0 ? v : 1;
+  };
+  setZoom();
+  // The same channel every other measurement on this page re-reads on: resize, load, and a body observer, which
+  // is what catches the breakpoint being crossed without this file knowing where the breakpoint is.
+  if (window.AKKIT && window.AKKIT.onResize) window.AKKIT.onResize(setZoom);
 
   // Whether the shader has landed. One-way: a lost context rebuilds through onRestore, not through here.
   let lit = false;

@@ -76,13 +76,59 @@
     return out;
   }
 
+  /* ---- the phone's two doors ----
+   *
+   * The bar has room for a wordmark and two buttons at 393px, not for six chapter labels and four marks. Each
+   * button is the face of a panel that already exists: .links keeps its per-item progress bars and its
+   * aria-current, .tools keeps its marks, and neither is restated as a second list that could disagree.
+   *
+   * `.js-nav` IS WHAT HIDES THEM. The stylesheet leaves both panels in the bar until this class lands, so a
+   * reader with no JS gets the plain row rather than a button that opens nothing.
+   */
+  const panels = [
+    { btn: nav.querySelector('.nav-now'), panel: nav.querySelector('.links') },
+    { btn: nav.querySelector('.nav-more'), panel: nav.querySelector('.tools') },
+  ].filter((p) => p.btn && p.panel);
+
+  const nowName = nav.querySelector('.nav-now-name');
+  // The divisor the collapsed progress rule reads, beside the --k it is measured against, so the two cannot
+  // fall out of step with the list they both describe.
+  nav.style.setProperty('--n', items.length);
+
+  function openPanel(which) {
+    for (const p of panels) {
+      const on = p === which;
+      p.panel.classList.toggle('is-open', on);
+      p.btn.setAttribute('aria-expanded', on ? 'true' : 'false');
+    }
+  }
+  const closePanels = () => openPanel(null);
+
+  for (const p of panels) {
+    p.btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      openPanel(p.panel.classList.contains('is-open') ? null : p);
+    });
+  }
+  if (panels.length) {
+    nav.classList.add('js-nav');
+    // Anything outside a panel closes it, the anchor handler below included — a menu that survived the jump it
+    // asked for would sit over the section it just named.
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('#nav .links, #nav .tools')) closePanels();
+      else if (e.target.closest('a, button')) closePanels();
+    });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closePanels(); });
+  }
+
   /* Two pixels' worth of a bar, in k. See the current-item note in frame(). */
   const SETTLED = .002;
 
   let spans = [];
   let stops = [];
   let runway = 1;
-  let current = -1;
+  let current = -1;   // the bar the meter is filling
+  let here = -1;      // the span the reader is actually inside; see the second reading in frame()
 
   /* THE SCROLL POSITION IS THE SCROLL POSITION. Nothing waits for the reader to stop and then moves the page for
      them; every scene is scrubbed, so scrolling through one already plays it. The keyboard keeps its stepping —
@@ -115,7 +161,10 @@
   function measure() {
     const y = window.scrollY || window.pageYOffset || 0;
     const tops = items.map((it) => it.el.getBoundingClientRect().top + y);
-    const end = items[items.length - 1].el.getBoundingClientRect().bottom + y;
+    /* The last span ends at max scroll, not at the section's own bottom: the page bottoms out above it, so a
+       fraction measured against the box could never reach 1 and the last section would read as unfinished
+       however far down the reader got. */
+    const end = Math.max(maxScroll(), items[items.length - 1].el.getBoundingClientRect().bottom + y);
     spans = tops.map((t, i) => [t, i + 1 < tops.length ? tops[i + 1] : end]);
     stops = buildStops();
     /* CACHED, because scrollHeight forces a synchronous layout and the readout below wanted it on every scroll
@@ -260,9 +309,6 @@
   function frame() {
     const y = window.scrollY || window.pageYOffset || 0;
     const vh = window.innerHeight || 1;
-    /* 42% down the viewport at rest, 92% at the bottom. Contact is ~350px tall and the page bottoms out several
-       hundred px above it, so a line fixed inside the viewport can never reach the last section and CONTACT
-       would never light. This is the kind of thing that looks like a bug for a week if it is not written down. */
 
     /* THE METER IS THE RAIL, not a line swept through section boxes.
      * Every beat says which bar it belongs to and how much of that bar standing on it earns, so the hero
@@ -297,10 +343,50 @@
        measured k = 1.0003 and ceil handed the name to CARTOGRAPHER when the reader had not left ALEX at all.
        A beat is about 950px of page to a whole bar, so two thousandths is two pixels of tolerance. */
     const i = Math.min(items.length - 1, Math.max(0, Math.ceil(k - SETTLED) - 1));
-    if (i === current) return;
-    if (current >= 0) items[current].a.removeAttribute('aria-current');
-    items[i].a.setAttribute('aria-current', 'true');
-    current = i;
+    if (i !== current) {
+      if (current >= 0) items[current].a.removeAttribute('aria-current');
+      items[i].a.setAttribute('aria-current', 'true');
+      current = i;
+    }
+
+    /* ---- and the other question ----
+     *
+     * WHERE THE READER IS, which is not what the meter above answers. The meter is the rail: it names the
+     * section being moved TOWARD, so CONTACT lights while the reader is still inside LABS — deliberate for a
+     * row of six bars, where the next one filling is the useful signal. Collapsed to a single label on a phone
+     * that reads as simply wrong, because one label is being asked "which section am I in".
+     *
+     * So the phone reads the SPANS instead: which one contains the scroll position, and how far through it the
+     * reader has got. Not a second measurement of the same thing — the spans are section boundaries and the
+     * meter is the beat rail, and nav.js has always measured both.
+     */
+    if (!spans.length) return;   // a scroll landing before the first measure() has nothing to read
+    /* A READING LINE, NOT THE VIEWPORT'S TOP EDGE. 42% down the screen, dropping to the bottom over the LAST
+       viewport of scroll. Both halves are load-bearing, and so is the fact that the drop is confined:
+       - the offset, because a section is the one you are IN when it holds the screen, not when its top edge
+         crosses zero — at the edge the label flips a third of a screen after the section has taken over;
+       - the drop, because the final viewport is never scrolled PAST, so the last section's top always sits
+         above max scroll (contact starts at 7044 of a 6467 max on a 393x852 phone) and a line at any fixed
+         depth could never enter it. This one reaches the document's bottom exactly at max scroll, which is
+         what lets CONTACT light and its rule fill;
+       - confined to the last viewport, because ramping across the whole page put the line 73% down at half
+         scroll, which named EXPERIENCE while the calculator still filled the screen.
+       The same trap the old sweep hit; the note it left behind is why it did not have to be found twice. */
+    const line = y + vh * (.42 + .58 * clamp((y - (runway - vh)) / vh));
+    let h = 0;
+    while (h < spans.length - 1 && line >= spans[h + 1][0]) h++;
+    // Measured off the line too, not off `y`: taken from the raw scroll it would sit pinned at 0 for the third
+    // of a screen between the label flipping and the section's top arriving.
+    const sp = clamp((line - spans[h][0]) / Math.max(1, spans[h][1] - spans[h][0]));
+    // Two properties rather than one playhead: the trigger's rule wants the fraction alone and the panel's
+    // wants the index added back, and CSS floor() is too new to lean on for splitting one number into both.
+    nav.style.setProperty('--h', h);
+    nav.style.setProperty('--sp', sp.toFixed(4));
+    if (h === here) return;
+    if (here >= 0) items[here].a.removeAttribute('data-here');
+    items[h].a.setAttribute('data-here', 'true');
+    here = h;
+    if (nowName) nowName.textContent = items[h].a.textContent.trim();
   }
 
   const maxScroll = () =>
@@ -392,18 +478,35 @@
     const hash = a.getAttribute('href');
     if (!hash || hash.length < 2) return;
     const target = document.querySelector(hash);
-    const range = target && target.closest('[data-range]');
-    if (!range) return;
+    if (!target) return;
+    const range = target.closest('[data-range]');
 
     e.preventDefault();
     stopIndex = -1;
 
-    /* CARTOGRAPHER IS THE ONE SCENE WHOSE TOP IS NOT ITS DESTINATION. The top of its range is the section
-       arriving with nothing drawn — a reader who asks for Cartographer and is put there sees an empty frame and
-       has to scroll to find out what they clicked. Land on the running graph instead, which is what the section
-       is FOR. Every other range still goes to its top, because for those the top is the scene. */
-    let y = Math.round(range.getBoundingClientRect().top + (window.scrollY || window.pageYOffset || 0));
-    if (hash === '#cartographer') y = loopIdle() || y;
+    const top = (el) => Math.round(el.getBoundingClientRect().top + (window.scrollY || window.pageYOffset || 0));
+    let y;
+
+    if (range) {
+      /* CARTOGRAPHER IS THE ONE SCENE WHOSE TOP IS NOT ITS DESTINATION. The top of its range is the section
+         arriving with nothing drawn — a reader who asks for Cartographer and is put there sees an empty frame
+         and has to scroll to find out what they clicked. Land on the running graph instead, which is what the
+         section is FOR. Every other range still goes to its top, because for those the top is the scene. */
+      y = top(range);
+      if (hash === '#cartographer') y = loopIdle() || y;
+    } else {
+      /* A PLAIN SECTION, WHICH THIS USED TO HAND BACK TO THE BROWSER. Native anchor scrolling honors
+         scroll-margin-top, and that 84px is what stops a section's title landing under the fixed bar — so the
+         clearance is read from the stylesheet rather than restated, and applied here instead.
+         THE LAST SECTION IS REACHED BY GOING TO THE END. CONTACT's top IS max scroll on a phone, so taking the
+         clearance off it left the reader 84px short of the bottom with the page still able to move — which is
+         what a tap on CONTACT looked like. Nothing below it needs revealing, so the honest destination is the
+         document's own end. */
+      const bottom = top(target) + Math.round(target.getBoundingClientRect().height);
+      y = bottom >= document.documentElement.scrollHeight - 1
+        ? maxScroll()
+        : top(target) - (parseFloat(getComputedStyle(target).scrollMarginTop) || 0);
+    }
 
     glideTo(Math.max(0, Math.min(maxScroll(), y)));
     if (history.replaceState) history.replaceState(null, '', hash);
