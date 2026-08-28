@@ -168,6 +168,12 @@ something is measuring the mirror rather than the shape.
 **Editing any module requires a full page reload before you measure.** A stale cached module looks exactly like a
 math bug.
 
+**`index.html?debug` puts the hero core's pointer state on screen** — viewport, reach, finger and core positions,
+the distance between them, `target`/`near`, `churn`, `visc`, `--ring-o`, and counters for `touchmove`,
+`pointercancel` and `pointerleave`. It exists because a phone has no console attached, which is what made the
+touch path guesswork: a real device answers in one look whether the finger is out of REACH, whether `touchmove`
+survives the scroll takeover, or whether the scene rig has simply faded the core out on schedule.
+
 ## Known, deliberate, not bugs
 
 - **SQUIRCLE shapes the guide outline and the clip, not the picture's warp.** Known gap; wiring it to the frame
