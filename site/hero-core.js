@@ -284,6 +284,35 @@ function init() {
 
   const loop = runLoop({ draw });
 
+  /* An on-screen readout of what the pointer path is actually doing, for a phone with no console attached.
+     Off unless the URL carries ?debug, so it costs nothing in normal use. */
+  if (/[?&]debug\b/.test(location.search)) {
+    let moves = 0, cancels = 0, leaves = 0;
+    addEventListener('touchmove', () => { moves++; }, { passive: true });
+    addEventListener('pointercancel', () => { cancels++; }, { passive: true });
+    document.addEventListener('pointerleave', () => { leaves++; });
+    const box = document.createElement('pre');
+    box.style.cssText = 'position:fixed;left:6px;top:6px;z-index:99999;margin:0;padding:6px 8px;' +
+      'font:11px/1.4 monospace;color:#0f0;background:rgba(0,0,0,.82);pointer-events:none';
+    document.body.appendChild(box);
+    setInterval(() => {
+      const b = canvas.getBoundingClientRect();
+      const cx = b.left + b.width / 2, cy = b.top + b.height / 2;
+      const reach = Math.min(innerWidth, innerHeight) * REACH;
+      box.textContent = [
+        'vp     ' + innerWidth + 'x' + innerHeight + '   reach ' + reach.toFixed(0),
+        'finger ' + ptrX.toFixed(0) + ',' + ptrY.toFixed(0),
+        'core   ' + cx.toFixed(0) + ',' + cy.toFixed(0) + '   box ' + b.width.toFixed(0),
+        'dist   ' + Math.hypot(ptrX - cx, ptrY - cy).toFixed(0),
+        'target ' + target.toFixed(3) + '   near ' + near.toFixed(3),
+        'churn  ' + churn.toFixed(2) + '   visc ' + state.visc.toFixed(2),
+        'ring-o ' + (getComputedStyle(stage).getPropertyValue('--ring-o').trim() || 'unset'),
+        'onScr  ' + onScreen + '  reduced ' + reduced.matches + '  lit ' + lit,
+        'events move ' + moves + ' cancel ' + cancels + ' leave ' + leaves,
+      ].join(String.fromCharCode(10));
+    }, 100);
+  }
+
   /* The handle, on the same terms as the labs' — a scene with no panel still has to be reachable to be measured
    * or tuned. renderNow draws synchronously, which is the only way to step this in a window that is not
    * front-most: Windows Chrome delivers no animation frames to one that is not. */
