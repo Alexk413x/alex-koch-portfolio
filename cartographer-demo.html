@@ -18,7 +18,7 @@
   .demo .inner { width: 100%; max-width: var(--content-max); margin: 0 auto }
   /* Three columns: the words, the phone, the run. The phone is sized by height and takes its own width, so the
      two text columns share what is left. */
-  .demo-grid { display: grid; grid-template-columns: minmax(0, 6fr) auto minmax(0, 4fr); gap: clamp(28px, 4vw, 64px); align-items: center }
+  .demo-grid { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: clamp(28px, 4vw, 64px); align-items: center }
   .demo .sec-title { font-size: clamp(34px, 4.2vw, 60px) }
   .demo .sec-lede { max-width: 520px }
 
@@ -41,21 +41,19 @@
 
   /* The run: one row per action the driver sent. State is a class the script swaps; --p is the running row's
      progress through its own window, written per frame. */
-  .demo-run { width: 100%; max-width: 440px; justify-self: end }
+  .demo-run { width: 100%; max-width: 480px; justify-self: end }
   /* Two figures over the list, in the title's face: what the run is, before the rows say how it went. */
-  .run-head { margin: 0 0 20px; text-align: right; font-family: var(--font-display); font-weight: 900; font-size: clamp(32px, 3.2vw, 48px); line-height: 1; letter-spacing: -1.5px }
-  .run-head b { display: block; color: var(--accent); font-weight: 900 }
-  .run-head span { display: block; color: var(--text-strong); margin-top: 6px }
+  .run-head { margin: 0 0 20px; text-align: right; white-space: nowrap; font-family: var(--font-display); font-weight: 900; font-size: clamp(32px, 3.1vw, 48px); line-height: 1; letter-spacing: -2px; color: var(--text-strong) }
+  .run-head b { font-weight: 900 }
+  .run-head span { color: var(--accent); margin-left: .2em }
   .run { list-style: none; margin: 0; padding: 0; display: grid; gap: 5px }
   .step {
-    position: relative; display: grid; grid-template-columns: 22px minmax(0, 1fr) auto; gap: 14px; align-items: center;
+    position: relative; display: grid; grid-template-columns: 22px minmax(0, 1fr) auto; gap: 12px; align-items: center;
     padding: 8px 14px 8px 12px; border-radius: var(--radius-chip);
     border: 1px solid var(--hairline); background: rgba(255, 255, 255, .02);
     transition: border-color .3s var(--ease-settle), background .3s var(--ease-settle);
     overflow: hidden; cursor: pointer;
   }
-  .step:hover, .step:focus-visible { border-color: var(--border-neutral); outline: none }
-  .step:focus-visible { box-shadow: 0 0 0 3px var(--amber-focus) }
   .step-mark {
     position: relative; width: 22px; height: 22px; border-radius: 50%;
     border: 1.5px solid var(--border-neutral); display: grid; place-items: center;
@@ -64,11 +62,11 @@
   .step-mark svg { width: 13px; height: 13px; fill: none; stroke: #06170d; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round }
   .step-mark svg path { stroke-dasharray: 16; stroke-dashoffset: 16; transition: stroke-dashoffset .35s var(--ease-settle) .1s }
   .step-mark::after { content: ''; position: absolute; inset: 4px; border-radius: 50%; background: var(--accent); opacity: 0; transform: scale(.4) }
-  .step-body { display: flex; align-items: baseline; gap: 12px; min-width: 0 }
-  .step-verb { flex: none; font-family: var(--font-mono); font-size: 10.5px; letter-spacing: .18em; text-transform: uppercase; color: var(--text-faint); width: 7.5em }
+  .step-body { display: flex; align-items: baseline; gap: 10px; min-width: 0 }
+  .step-verb { flex: none; font-family: var(--font-mono); font-size: 10.5px; letter-spacing: .18em; text-transform: uppercase; color: var(--text-faint); width: 8.2em; white-space: nowrap }
   .step-verb b { font-weight: 500; letter-spacing: 0 }
-  .step-target { font-family: var(--font-body); font-weight: 500; font-size: 14px; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; transition: color .3s var(--ease-settle) }
-  .step-time { font-family: var(--font-mono); font-size: 11px; color: var(--text-faint); font-variant-numeric: tabular-nums; min-width: 5em; text-align: right }
+  .step-target { font-family: var(--font-body); font-weight: 500; font-size: 13.5px; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; transition: color .3s var(--ease-settle) }
+  .step-time { font-family: var(--font-mono); font-size: 11px; color: var(--text-faint); font-variant-numeric: tabular-nums; min-width: 4.5em; text-align: right }
   .step-bar { position: absolute; left: 0; right: 0; bottom: 0; height: 2px; background: var(--accent); transform-origin: left; transform: scaleX(var(--p)); opacity: 0 }
 
   .step.is-running { border-color: rgba(221, 106, 32, .55); background: rgba(221, 106, 32, .07) }
@@ -84,7 +82,15 @@
   .step.is-done .step-target { color: var(--text-body) }
   .step.is-done .step-time { color: var(--ok) }
 
-  .run-foot { margin-top: 16px; font-family: var(--font-mono); font-size: 11px; letter-spacing: .16em; color: var(--text-faint); font-variant-numeric: tabular-nums }
+  /* Hover is the site's accent-hover, and it sits after the state rules so it wins in every state: a row is a
+     link to its moment in the run, and that has to read whether it is pending, running or done. */
+  .step:hover, .step:focus-visible { border-color: var(--accent-hover); background: rgba(240, 137, 79, .12); outline: none }
+  .step:focus-visible { box-shadow: 0 0 0 3px var(--amber-focus) }
+  .step:hover .step-mark, .step:focus-visible .step-mark { border-color: var(--accent-hover) }
+  .step:hover .step-target, .step:focus-visible .step-target { color: var(--text-strong) }
+  .step:hover .step-verb, .step:hover .step-time, .step:focus-visible .step-verb, .step:focus-visible .step-time { color: var(--accent-hover) }
+
+  .run-foot { margin-top: 16px; text-align: right; font-family: var(--font-mono); font-size: 11px; letter-spacing: .16em; color: var(--text-faint); font-variant-numeric: tabular-nums }
   .demo .cta-row { margin-top: 30px }
 
   @media (max-width: 1100px) {
@@ -92,7 +98,7 @@
     .demo-grid { grid-template-columns: 1fr; gap: 36px }
     .demo .sec-lede { max-width: 620px }
     .demo-run { max-width: 620px; justify-self: start }
-    .run-head { text-align: left }
+    .run-head, .run-foot { text-align: left }
     .phone-frame { height: min(62vh, 620px) }
   }
   @media (max-width: 600px) {
@@ -109,7 +115,7 @@
 <nav id="nav">
   <a class="mark" href="index.html">ALEXK413X</a>
   <div class="links">
-    <a href="index.html#cartographer">← QA CARTOGRAPHER</a>
+    <a href="index.html#cartographer">← BACK TO PORTFOLIO</a>
   </div>
 </nav>
 
@@ -125,7 +131,7 @@
         </p>
 
         <div class="cta-row">
-          <a class="primary" href="index.html#cartographer">BACK TO CARTOGRAPHER ←</a>
+          <a class="primary" href="index.html#cartographer">← BACK TO PORTFOLIO</a>
         </div>
       </div>
 
@@ -140,7 +146,7 @@
       </div>
 
       <div class="demo-run">
-        <h2 class="run-head" id="run-head"><b></b><span></span></h2>
+        <h2 class="run-head" id="run-head"><b></b> <span></span></h2>
         <ol class="run" id="run" aria-label="Actions in this run"></ol>
         <div class="run-foot" id="run-status"></div>
       </div>
