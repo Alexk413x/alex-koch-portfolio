@@ -4,13 +4,105 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Cartographer demo · Alex Koch</title>
-<meta name="description" content="The Cartographer-surveyed walkthrough of this site. Not deployed yet.">
+<meta name="description" content="The Cartographer-surveyed walkthrough of this site. Not deployed yet; a sneak peek of one recorded run in the meantime.">
 <meta name="color-scheme" content="dark">
 <meta name="robots" content="noindex">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="site/site.css">
+<style>
+  /* Page-local: the run list and the phone frame exist nowhere else on the site. */
+  .demo { --ok: #4fcf86; --ok-dim: rgba(79, 207, 134, .16);
+    min-height: 100vh; min-height: 100dvh; display: flex; align-items: center; padding: 110px var(--pad-page) 60px }
+  .demo .inner { width: 100%; max-width: var(--content-max); margin: 0 auto }
+  /* Three columns: the words, the phone, the run. The phone is sized by height and takes its own width, so the
+     two text columns share what is left. */
+  .demo-grid { display: grid; grid-template-columns: minmax(0, 6fr) auto minmax(0, 4fr); gap: clamp(28px, 4vw, 64px); align-items: center }
+  .demo .sec-title { font-size: clamp(34px, 4.2vw, 60px) }
+  .demo .sec-lede { max-width: 520px }
+
+  /* The phone: the video's own aspect, sized off the shorter axis so it stays on one screen beside the list. */
+  .demo-phone { display: flex; justify-content: center; align-items: center }
+  .phone-frame {
+    position: relative; aspect-ratio: 720 / 1606; height: min(72vh, 720px); max-width: 100%;
+    border-radius: 34px; padding: 10px; background: #17181c;
+    box-shadow: 0 0 0 1.5px #2a2d33, 0 30px 80px rgba(0, 0, 0, .6), inset 0 0 0 1px rgba(255, 255, 255, .05);
+  }
+  .phone-frame video { display: block; width: 100%; height: 100%; object-fit: cover; border-radius: 26px; background: #000; cursor: pointer }
+  .phone-frame button {
+    position: absolute; inset: 0; margin: auto; width: 72px; height: 72px; border-radius: 50%;
+    border: 1.5px solid rgba(255, 255, 255, .25); background: rgba(12, 12, 14, .7); color: var(--text-strong);
+    display: grid; place-items: center; cursor: pointer; backdrop-filter: blur(6px);
+  }
+  .phone-frame button[hidden] { display: none }
+  .phone-frame button svg { width: 26px; height: 26px; fill: currentColor; margin-left: 4px }
+  .phone-frame button:hover { border-color: var(--accent); color: var(--accent) }
+
+  /* The run: one row per action the driver sent. State is a class the script swaps; --p is the running row's
+     progress through its own window, written per frame. */
+  .demo-run { width: 100%; max-width: 440px; justify-self: end }
+  /* Two figures over the list, in the title's face: what the run is, before the rows say how it went. */
+  .run-head { margin: 0 0 20px; text-align: right; font-family: var(--font-display); font-weight: 900; font-size: clamp(32px, 3.2vw, 48px); line-height: 1; letter-spacing: -1.5px }
+  .run-head b { display: block; color: var(--accent); font-weight: 900 }
+  .run-head span { display: block; color: var(--text-strong); margin-top: 6px }
+  .run { list-style: none; margin: 0; padding: 0; display: grid; gap: 5px }
+  .step {
+    position: relative; display: grid; grid-template-columns: 22px minmax(0, 1fr) auto; gap: 14px; align-items: center;
+    padding: 8px 14px 8px 12px; border-radius: var(--radius-chip);
+    border: 1px solid var(--hairline); background: rgba(255, 255, 255, .02);
+    transition: border-color .3s var(--ease-settle), background .3s var(--ease-settle);
+    overflow: hidden; cursor: pointer;
+  }
+  .step:hover, .step:focus-visible { border-color: var(--border-neutral); outline: none }
+  .step:focus-visible { box-shadow: 0 0 0 3px var(--amber-focus) }
+  .step-mark {
+    position: relative; width: 22px; height: 22px; border-radius: 50%;
+    border: 1.5px solid var(--border-neutral); display: grid; place-items: center;
+    transition: border-color .3s var(--ease-settle), background .3s var(--ease-settle), box-shadow .3s var(--ease-settle);
+  }
+  .step-mark svg { width: 13px; height: 13px; fill: none; stroke: #06170d; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round }
+  .step-mark svg path { stroke-dasharray: 16; stroke-dashoffset: 16; transition: stroke-dashoffset .35s var(--ease-settle) .1s }
+  .step-mark::after { content: ''; position: absolute; inset: 4px; border-radius: 50%; background: var(--accent); opacity: 0; transform: scale(.4) }
+  .step-body { display: flex; align-items: baseline; gap: 12px; min-width: 0 }
+  .step-verb { flex: none; font-family: var(--font-mono); font-size: 10.5px; letter-spacing: .18em; text-transform: uppercase; color: var(--text-faint); width: 7.5em }
+  .step-verb b { font-weight: 500; letter-spacing: 0 }
+  .step-target { font-family: var(--font-body); font-weight: 500; font-size: 14px; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; transition: color .3s var(--ease-settle) }
+  .step-time { font-family: var(--font-mono); font-size: 11px; color: var(--text-faint); font-variant-numeric: tabular-nums; min-width: 5em; text-align: right }
+  .step-bar { position: absolute; left: 0; right: 0; bottom: 0; height: 2px; background: var(--accent); transform-origin: left; transform: scaleX(var(--p)); opacity: 0 }
+
+  .step.is-running { border-color: rgba(221, 106, 32, .55); background: rgba(221, 106, 32, .07) }
+  .step.is-running .step-mark { border-color: var(--accent); box-shadow: 0 0 12px rgba(221, 106, 32, .45) }
+  .step.is-running .step-mark::after { opacity: 1; transform: none; animation: ak-live 1.9s linear infinite }
+  .step.is-running .step-target { color: var(--text-strong) }
+  .step.is-running .step-verb, .step.is-running .step-time { color: var(--accent) }
+  .step.is-running .step-bar { opacity: 1 }
+
+  .step.is-done { border-color: rgba(79, 207, 134, .35); background: var(--ok-dim) }
+  .step.is-done .step-mark { border-color: var(--ok); background: var(--ok) }
+  .step.is-done .step-mark svg path { stroke-dashoffset: 0 }
+  .step.is-done .step-target { color: var(--text-body) }
+  .step.is-done .step-time { color: var(--ok) }
+
+  .run-foot { margin-top: 16px; font-family: var(--font-mono); font-size: 11px; letter-spacing: .16em; color: var(--text-faint); font-variant-numeric: tabular-nums }
+  .demo .cta-row { margin-top: 30px }
+
+  @media (max-width: 1100px) {
+    .demo { padding-top: 90px; align-items: start }
+    .demo-grid { grid-template-columns: 1fr; gap: 36px }
+    .demo .sec-lede { max-width: 620px }
+    .demo-run { max-width: 620px; justify-self: start }
+    .run-head { text-align: left }
+    .phone-frame { height: min(62vh, 620px) }
+  }
+  @media (max-width: 600px) {
+    .step-verb { width: 6.5em }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .step, .step-mark, .step-mark svg path, .step-target { transition: none }
+    .step.is-running .step-mark::after { animation: none }
+  }
+</style>
 </head>
 <body>
 
@@ -21,20 +113,41 @@
   </div>
 </nav>
 
-<!-- A holding page, and it says so. A placeholder that pretends to be a product is worse than an empty one. -->
-<section class="holding">
+<section class="demo">
   <div class="inner">
-    <div class="sec-label">CARTOGRAPHER // DEMO</div>
-    <h1 class="sec-title">NOT YET<br><span style="color:var(--accent)">DEPLOYED</span></h1>
-    <p class="sec-lede">
-      The surveyed walkthrough of this site lands here: the screens Cartographer found, the states it
-      recorded, and the verified routes it can replay between them. The plugin is still being built.
-    </p>
-    <div class="cta-row">
-      <a class="primary" href="index.html#cartographer">BACK TO CARTOGRAPHER ←</a>
+    <div class="demo-grid">
+      <div class="demo-say">
+        <div class="sec-label">CARTOGRAPHER // DEMO</div>
+        <h1 class="sec-title">NOT YET<br><span style="color:var(--accent)">DEPLOYED</span></h1>
+        <p class="sec-lede">
+          A sneak peek. One recorded run, replayed beside the actions the driver sent, each
+          checked off the moment the device confirms it. The full site is coming soon.
+        </p>
+
+        <div class="cta-row">
+          <a class="primary" href="index.html#cartographer">BACK TO CARTOGRAPHER ←</a>
+        </div>
+      </div>
+
+      <div class="demo-phone">
+        <div class="phone-frame">
+          <video id="flow" src="site/media/rpn-dominator-flow.mp4" muted playsinline preload="auto"
+                 aria-label="Screen recording of the run"></video>
+          <button id="run-play" type="button" aria-label="Play the run" hidden>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4l14 8-14 8z"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="demo-run">
+        <h2 class="run-head" id="run-head"><b></b><span></span></h2>
+        <ol class="run" id="run" aria-label="Actions in this run"></ol>
+        <div class="run-foot" id="run-status"></div>
+      </div>
     </div>
   </div>
 </section>
 
+<script type="module" src="site/cartographer-demo.js"></script>
 </body>
 </html>
