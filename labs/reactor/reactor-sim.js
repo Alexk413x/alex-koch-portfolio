@@ -29,6 +29,13 @@ export function ventTimings(vd) {
  * the phases they feed are radians. Converting here rather than in the panel keeps the UI arithmetic-free. */
 const RAD_PER_RPM = Math.PI / 30;
 
+/* What is left of the ring's rates and wobble once it has flown apart. Broken, the ring is no longer a machine
+ * driving its pieces: they stop orbiting and wobbling entirely and drift on the motion they had at the break,
+ * instead of being whirled by the tumble and the wobble a MELTDOWN preset carries. Eased over LOOSE_SEC so the
+ * orientation does not jump. */
+const LOOSE_BROKEN = 0;
+const LOOSE_SEC = 0.8;
+
 export function createSim() {
   const P = { spin: 0, orbitX: 0, orbitZ: 0, wobX: 0, wobZ: 0, cam: 0, coreY: 0, coreX: 0, rate: 0 };
   let pulse = 0, pulseVel = 0, pulseSeed = 0;
@@ -37,6 +44,7 @@ export function createSim() {
   let inst = 0;
   let breakPrev = false, burstOn = false, burstT = 0;
   let scatArm = false, scatActive = false, scatEl = 0, scatMaxD = 0, scatterT = 0;
+  let loose = 1;   // 1 whole, LOOSE_BROKEN once flown apart; see the constants above createSim
   // STARTS SETTLED, NOT AT ZERO. shieldFac ramps the shield back over a second after a break; from 0 the lab would
   // open with no shield at all and grow one, which reads as a bug on first load.
   let shieldT = 5;
@@ -88,9 +96,9 @@ export function createSim() {
        * ORBIT and WOBBLE at zero still moved the ring and no slider told the truth about what it did. A preset
        * that wants a violent ring says so in its own values. */
       const rad = dt * RAD_PER_RPM;          // RPM -> radians for this frame
-      P.spin   += s.orbit * rad;             // about the ring's own axis: moves the surface pattern, nothing else
-      P.orbitX += s.orbitX * rad;            // tumble about world X
-      P.orbitZ += s.orbitZ * rad;            // tumble about world Z
+      P.spin   += s.orbit * rad * loose;     // about the ring's own axis: moves the surface pattern, nothing else
+      P.orbitX += s.orbitX * rad * loose;    // tumble about world X
+      P.orbitZ += s.orbitZ * rad * loose;    // tumble about world Z
       P.cam    += s.cam * rad;
       P.coreY  += s.coreSpin * rad;
       P.coreX  += s.coreSpinX * rad;
@@ -182,7 +190,8 @@ export function createSim() {
       let dist = 0;
       if (scatActive) {
         scatEl += dt;
-        const outT = 3.0, holdT = 13.0, home = 16.0, maxD = scatMaxD || 3.0;
+        // scatSec is how long the fly-apart takes; the hold and the return keep their lengths after it.
+        const outT = s.scatSec || 3.0, holdT = outT + 10.0, home = outT + 13.0, maxD = scatMaxD || 3.0;
         if (scatEl < outT) dist = maxD * (scatEl / outT);                       // fly apart
         else if (scatEl < holdT) dist = maxD;                                   // sit broken
         else dist = maxD * (1 - (scatEl - holdT) / (home - holdT));             // return
@@ -196,12 +205,15 @@ export function createSim() {
 
       if (burstOn) { burstT += dt; if (burstT > 0.25) burstOn = false; }
 
+      // Read next frame by the rate integration above, which runs before the scatter is known for this one.
+      loose += ((scatActive ? LOOSE_BROKEN : 1) - loose) * Math.min(1, dt / LOOSE_SEC);
+
       out.inst = inst;
       out.pulse = pulse; out.vent = vent; out.ventBurst = ventBurst; out.ventSwell = ventSwell;
       out.phSpin = P.spin; out.phOrbitX = P.orbitX; out.phOrbitZ = P.orbitZ;
       out.phWobX = P.wobX; out.phWobZ = P.wobZ; out.phCam = P.cam;
       out.phCoreY = P.coreY; out.phCoreX = P.coreX; out.phRate = P.rate;
-      out.wobbleX = s.wobbleX; out.wobbleZ = s.wobbleZ;
+      out.wobbleX = s.wobbleX * loose; out.wobbleZ = s.wobbleZ * loose;
       out.ringGlow = Math.max(0, Math.min(1.6, shieldLvl)) * shieldFac;
       out.shieldExpand = scatterT * 1.3;
       out.scatter = scatterT;

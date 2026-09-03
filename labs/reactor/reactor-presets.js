@@ -31,6 +31,7 @@ export function defaultPreset(gpu) {
   return {
     shape: 0,
     ringOn: 1, ringBreak: 0, breakSpd: 0,
+    scatSec: 3,   // seconds for the broken ring to fly apart; no panel row, the intro sets it longer
     ringRough: 0.62, ringWear: 0.45,
     // subSurf splits off subVT's second job; 1 is the value at which the two together read as subVT alone.
     ventSwellPct: 0.9, subVT: 1, subSurf: 1, ventVT: 1,

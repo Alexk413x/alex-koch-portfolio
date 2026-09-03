@@ -65,6 +65,13 @@ The Keplerian **shear saturates**, and it has to. Rotation twists the pattern by
 falls outward, so the spiral would wind tighter forever; a winding spiral's constant-phase curves travel
 outward for *both* signs of rotation, which made the disc read as spraying out however it was spun.
 
+## Rates are integrated, not multiplied by the clock
+
+The host integrates every rate — each shell's SPEED and SPIN, and BEND FLOW — into a phase, and hands the shader
+the phase instead of the rate. The shader used to compute `uTime * rate`, so when a move scaled a rate the change
+was multiplied by the whole elapsed clock: a burst lurched the walls forward as the speed rose and back as it
+fell. At rest the phase is exactly rate times time, so nothing about the shipped look changed.
+
 ## Running it
 
 ES modules mean `file://` will not work.

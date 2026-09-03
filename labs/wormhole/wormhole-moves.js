@@ -13,6 +13,35 @@ const STORM_SEC = 7.0;     // long enough to arrive, sit, and leave
 const DIVE_SEC = 3.2;      // the hole alone: huge, seen from over the top, turning down as it shrinks
 const SETTLE_SEC = 3.6;    // the tunnel forms around it and the flow eases up to the slider
 const COLLAPSE_SEC = 4.6;  // shutting down: straighten, the tunnel stops, the hole comes back, out
+const OPEN_SEC = 4.7;      // the intro's arrival: the depth brings the hole in, a slow tilt, the walls come up and it backs off
+const RUN_SEC = 3.6;       // the intro's exit: the tube straightens and its end comes up to the eye
+// The cruise's depth and lens, as fractions of the sliders: shorter and wider so the bend reads as the arch it is.
+// The arrival lands on these, so the hand-off to the cruise does not step.
+// Shorter and wider still than the lab's: the same swing over less depth is a sharper arch.
+const CRUISE_FAR = 0.5;
+const CRUISE_FOV = 1.35;
+// Where the arrival's tilt lands and the cruise holds it: face-on, in the panel's degrees.
+const FACE = 0;
+// The arrival's nearest depth, the exit's, and the bend the cruise ramps to. World units, as the sliders are.
+const NEAR_FAR = 15;
+const START_FAR = 1.8;   // times the slider's depth: where the arrival begins, so the hole opens small
+const EXIT_FAR = 2;       // close enough that the shadow grows past the frame's edges
+const BEND = 20;
+const BEND_IN_SEC = 3.5;   // the cruise's bend comes up over this, from nothing
+const BEND_WAIT_SEC = 0.4;   // the flight is moving before it starts to turn
+/* The flow through the intro, as multiples of the slider's speed. The walls rise through the arrival's back-off
+ * to seven tenths of CRUISE_TOP, then on to CRUISE_TOP over CRUISE_ACCEL_SEC of flight; the exit climbs to RUN_SPEED
+ * before the depth pulls in. Bursts ride on top of this. */
+const CRAWL = 0.3;
+const CRUISE_TOP = 2.4;
+const CRUISE_ACCEL_SEC = 3.0;
+const RUN_SPEED = 3.6;
+
+// The reactor's STABLE green, in hue degrees. The palette starts turning to it TINT_START seconds into the
+// flight and is there TINT_SEC later, which runs on into the exit.
+const GREEN_HUE = 118;
+const TINT_START = 2.0;
+const TINT_SEC = 3.5;
 
 /* The hole both moves open and close on. DISC_RS is in Schwarzschild radii, not
  * the panel's world units -- tied to the hole's own mass, the disc keeps a
@@ -38,17 +67,29 @@ const seg = (p, a, b) => ease(clamp01((p - a) / (b - a)));
 
 // Tracks the lab's transient moves (burst, storm, engage/disengage) as pure
 // state, so the host drives animation without owning any of the timing itself.
-export function createMoves() {
+// `opts.engaged` false starts the tunnel dark, so a host can open on black and dive in on cue.
+export function createMoves(opts) {
   // Each is elapsed seconds since its trigger, or -1 for idle. `engaged` is the only state that persists.
-  let burstT = -1, stormT = -1, moveT = -1;
-  let engaged = true, closing = false;
+  let burstT = -1, stormT = -1, moveT = -1, runT = -1, openT = -1;
+  let engaged = !(opts && opts.engaged === false), closing = false;
+  // After the intro's arrival the tube cruises: the bend at full swing, its direction wandering, until the run.
+  let cruise = false, cruiseT = 0;
 
   const api = {
     get engaged() { return engaged; },
-    get busy() { return burstT >= 0 || stormT >= 0 || moveT >= 0; },
+    get busy() { return burstT >= 0 || stormT >= 0 || moveT >= 0 || runT >= 0 || openT >= 0 || cruise; },
+    // Where each move has got to, in seconds, or -1. A director sequencing the moves reads these.
+    get moveT() { return moveT; },
+    get runT() { return runT; },
+    get openT() { return openT; },
+    get cruising() { return cruise; },
+    // The intro's arrival, from dark. Ends in the cruise, which the run ends.
+    fireOpen() { openT = 0; cruise = false; cruiseT = 0; },
 
     fireBurst() { burstT = 0; },
     fireStorm() { stormT = 0; },
+    // The exit. Ends with the frame at white and the tunnel gone, so whatever follows can cut in under it.
+    fireRun() { runT = 0; },
 
     // One button, two directions: engaging dives in, disengaging collapses out.
     // Re-engaging always starts a fresh dive, never resumes a stopped collapse.
@@ -68,9 +109,14 @@ export function createMoves() {
         moveT += d;
         if (moveT > (closing ? COLLAPSE_SEC : DIVE_SEC + SETTLE_SEC)) moveT = -1;
       }
+      if (openT >= 0) { openT += d; if (openT > OPEN_SEC) { openT = -1; cruise = true; } }
+      if (cruise && runT < 0) cruiseT += d;
+      // The run holds at its last frame rather than retiring: what follows it is a cut, and the cut decides
+      // when this scene is done.
+      if (runT >= 0 && runT < RUN_SEC) runT = Math.min(RUN_SEC, runT + d);
 
       // A shut-down lab should cost nothing per frame, so this is checked once.
-      const dark = !engaged && moveT < 0;
+      const dark = !engaged && moveT < 0 && runT < 0 && openT < 0 && !cruise;
       if (!api.busy && !dark) return s;
 
       const o = { ...s };
@@ -144,6 +190,70 @@ export function createMoves() {
         scaleShells(o, s, { speed: slow, warp: 1, amt: 1 - gone });
       }
 
+      /* The intro's arrival. The hole is lit under the tube's collapse, then the DEPTH brings it to the eye:
+       * the slider's far end down to NEAR_FAR, the mass unchanged, so it grows the way a thing does when it is
+       * approached. The tilt to face-on begins as that approach eases to a stop, three quarters of the way in,
+       * and holds from then on. The walls begin just before the approach and the tilt land together, and the
+       * depth slides back out to the cruise's, the flow easing up to speed. */
+      if (openT >= 0) {
+        const p = clamp01(openT / OPEN_SEC);
+        // The disc lights under the tube's collapse and is already growing and coming in before the tube fades,
+        // so nothing waits for the screen to go dark.
+        const lit = seg(p, 0.021, 0.043);
+        const near = seg(p, 0.066, 0.48);
+        const form = seg(p, 0.46, 0.72);
+        const out = seg(p, 0.50, 1.00);
+        o.disc = s.disc * lit;
+        const inFar = s.far * START_FAR + (NEAR_FAR - s.far * START_FAR) * near;
+        o.far = inFar + (s.far * CRUISE_FAR - inFar) * out;
+        o.fov = s.fov * (1 + (CRUISE_FOV - 1) * out);
+        o.discTilt = s.discTilt + (FACE - s.discTilt) * seg(p, 0.27, 0.48);
+        o.bend = 0;
+        o.exposure = s.exposure * (1 + 0.2 * form);
+        scaleShells(o, s, { speed: CRAWL + (CRUISE_TOP - CRAWL) * 0.7 * out, warp: 1, amt: form, rad: 0.12 + 0.88 * form });
+      }
+
+      /* The cruise, and the run over it. The bend ramps in over the first seconds of the flight, from nothing
+       * to BEND, and its DIRECTION is driven here rather than spun by the shader's clock: two slow sines send
+       * it back and forth across most of a turn instead of round and round. The depth is shortened and the
+       * lens widened so the swing reads as the arch it is. */
+      if (cruise || runT >= 0 || openT >= 0) {
+        o.bendFlow = 0;
+        o.bendDir = s.bendDir + 1.8 * Math.sin(0.55 * sec) + 0.9 * Math.sin(0.21 * sec + 2.0);
+
+        // The palette turns green over the flight: nothing at the arrival, the core's green by the exit.
+        const tint = seg((cruiseT + Math.max(0, runT) - TINT_START) / TINT_SEC, 0, 1);
+        if (tint > 0) {
+          o.discA = tintToward(s.discA, tint); o.discB = tintToward(s.discB, tint);
+          for (let i = 0; i < 6; i++) {
+            const p = 'L' + i;
+            for (const k of ['CloudA', 'CloudB', 'BoltA', 'BoltB', 'StrkA', 'StrkB']) o[p + k] = tintToward(s[p + k], tint);
+          }
+        }
+      }
+      const cruiseSpeed = CRAWL + (CRUISE_TOP - CRAWL) * (0.7 + 0.3 * seg(cruiseT / CRUISE_ACCEL_SEC, 0, 1));
+      if (cruise || runT >= 0) {
+        o.far = s.far * CRUISE_FAR;
+        o.fov = s.fov * CRUISE_FOV;
+        o.discTilt = FACE;
+        o.bend = BEND * seg((cruiseT - BEND_WAIT_SEC) / BEND_IN_SEC, 0, 1);
+        scaleShells(o, s, { speed: cruiseSpeed, warp: 1, amt: 1 });
+      }
+
+      /* The run. First the flow climbs to its top speed while the bend straightens; then the depth pulls in to
+       * EXIT_FAR and the walls thin and fade as it does, while the flow keeps climbing rather than easing off --
+       * the hole comes up to the eye and past it, and what cuts in under this is what is on the other side. */
+      if (runT >= 0) {
+        const p = clamp01(runT / RUN_SEC);
+        o.bend = BEND * (1 - seg(p, 0.00, 0.45));
+        const rush = seg(p, 0.10, 0.72);
+        o.far = s.far * CRUISE_FAR + (EXIT_FAR - s.far * CRUISE_FAR) * rush;
+        // And the hole swells as it is reached, so the eye goes into the shadow rather than past a small one.
+        o.mass = s.mass * (1 + 1.5 * seg(p, 0.45, 0.85));
+        o.exposure = s.exposure * (1 + 0.35 * rush);
+        scaleShells(o, s, { speed: cruiseSpeed + (RUN_SPEED - cruiseSpeed) * seg(p, 0.00, 0.90), warp: 1, amt: 1 - rush });
+      }
+
       if (dark) {
         o.exposure = 0;
         o.disc = 0;
@@ -212,4 +322,48 @@ function swellHole(o, s, k, open) {
   o.mass = mass;
   const tight = mass * RS_PER_MASS * DISC_RS;
   o.discOut = tight + (s.discOut - tight) * open;
+}
+
+// Reads a '#rrggbb' string as [hue 0..360, saturation 0..1, lightness 0..1].
+function hexToHsl(hex) {
+  const r = parseInt(hex.slice(1, 3), 16) / 255;
+  const g = parseInt(hex.slice(3, 5), 16) / 255;
+  const b = parseInt(hex.slice(5, 7), 16) / 255;
+  const max = Math.max(r, g, b), min = Math.min(r, g, b);
+  const l = (max + min) / 2;
+  if (max === min) return [0, 0, l];
+  const d = max - min;
+  const s = d / (1 - Math.abs(2 * l - 1));
+  let h;
+  if (max === r) h = ((g - b) / d) % 6;
+  else if (max === g) h = (b - r) / d + 2;
+  else h = (r - g) / d + 4;
+  h *= 60;
+  if (h < 0) h += 360;
+  return [h, s, l];
+}
+
+// Writes [hue 0..360, saturation 0..1, lightness 0..1] as a '#rrggbb' string.
+function hslToHex(h, s, l) {
+  const c = (1 - Math.abs(2 * l - 1)) * s;
+  const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
+  const m = l - c / 2;
+  let r, g, b;
+  if (h < 60) [r, g, b] = [c, x, 0];
+  else if (h < 120) [r, g, b] = [x, c, 0];
+  else if (h < 180) [r, g, b] = [0, c, x];
+  else if (h < 240) [r, g, b] = [0, x, c];
+  else if (h < 300) [r, g, b] = [x, 0, c];
+  else [r, g, b] = [c, 0, x];
+  const toHex = (v) => Math.round((v + m) * 255).toString(16).padStart(2, '0');
+  return '#' + toHex(r) + toHex(g) + toHex(b);
+}
+
+// Turns a hex colour's hue toward GREEN_HUE by k, keeping its saturation and lightness, so a warm palette
+// becomes the same palette in green rather than a different one.
+function tintToward(hex, k) {
+  const [h, s, l] = hexToHsl(hex);
+  // Shortest way round the wheel.
+  let d = ((GREEN_HUE - h + 540) % 360) - 180;
+  return hslToHex((h + d * k + 360) % 360, s, l);
 }

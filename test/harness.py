@@ -75,6 +75,12 @@ class Page:
         return json.loads(self.cdp.js(expr))
 
     def goto(self, path='index.html'):
+        # The home page's intro runs once per session. Marked seen before any document script runs, so every
+        # suite measures the page as a returning visitor sees it; suite_intro opens ?intro, which overrides this.
+        if not getattr(self, '_intro_off', False):
+            self.cdp.call('Page.addScriptToEvaluateOnNewDocument',
+                          {'source': "try{sessionStorage.setItem('intro-seen','1')}catch(e){}"})
+            self._intro_off = True
         self.cdp.call('Page.navigate', {'url': 'http://127.0.0.1:%d/%s' % (self.port, path)})
         self.settle()
 
@@ -199,7 +205,7 @@ class Page:
             time.sleep(spacing)
         time.sleep(pause)
 
-    VK = {'ArrowDown': 40, 'ArrowUp': 38, 'ArrowLeft': 37, 'ArrowRight': 39, ' ': 32}
+    VK = {'ArrowDown': 40, 'ArrowUp': 38, 'ArrowLeft': 37, 'ArrowRight': 39, ' ': 32, 'Enter': 13, 'Escape': 27}
 
     def key(self, name, pause=0.95):
         """A real key press.

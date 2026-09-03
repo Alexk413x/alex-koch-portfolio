@@ -137,10 +137,20 @@ export function runLoop({ draw, onTick, tickMs = 500, maxDt = 0.05 }) {
     }
   });
 
+  // Resumes a stopped loop with the clock advanced past the gap, the same way a hidden tab comes back.
+  const start = () => {
+    if (raf) return;
+    const now = performance.now();
+    t0 += now - (pausedAt || now); last = now; tickT = now; frames = 0;
+    raf = requestAnimationFrame(frame);
+  };
+
   raf = requestAnimationFrame(frame);
   return {
     get time() { return sec; },
-    stop() { if (raf) { cancelAnimationFrame(raf); raf = 0; } },
+    get running() { return !!raf; },
+    stop() { if (raf) { cancelAnimationFrame(raf); raf = 0; pausedAt = performance.now(); } },
+    start,
     renderNow(dt, at) { draw(dt == null ? 1 / 60 : dt, at == null ? sec : at); },
   };
 }
@@ -153,8 +163,10 @@ export function runLoop({ draw, onTick, tickMs = 500, maxDt = 0.05 }) {
  * rates that do not divide into each other. The name comes from document.title, so a lab says what it is in one
  * place rather than two.
  */
-export function mountLoader(stage = 'Compiling shaders') {
-  const el = document.querySelector('.kit-load');
+/* `el` names the sheet to fill; without it, the page's unowned one. An OWNED sheet ([data-owned]) belongs to
+ * whoever mounted it and is dismissed only by handing it back to labReady(el): runLoop's own labReady() call
+ * after its first frame must not take down a ring that is covering for something else on the page. */
+export function mountLoader(stage = 'Compiling shaders', el = document.querySelector('.kit-load:not([data-owned])')) {
   if (!el || el.firstElementChild) return el;
   const ring = (cls, r, w, extra) =>
     '<svg' + (cls ? ' class="' + cls + '"' : '') + ' viewBox="0 0 120 120"><circle cx="60" cy="60" r="' + r +
@@ -186,8 +198,7 @@ export function mountLoader(stage = 'Compiling shaders') {
  * REMOVED, not merely faded: an overlay left at opacity 0 is an invisible sheet across the whole instrument
  * that quietly eats every click.
  */
-export function labReady() {
-  const el = document.querySelector('.kit-load');
+export function labReady(el = document.querySelector('.kit-load:not([data-owned])')) {
   if (!el || el.classList.contains('done')) return;
   // The lab is up, so boot-guard's one retry is spent on nothing and is handed back for a later failure.
   try { sessionStorage.removeItem('kit-boot-retry'); } catch (e) {}
