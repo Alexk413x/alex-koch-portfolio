@@ -13,8 +13,8 @@
  * MEASURED: inverted polarity is the part that costs something. OpenCV's detector reads nothing from this
  * code as drawn, and reads it every time once the polarity is flipped — so the modules and the stamp are
  * sound and the inversion alone is what a strict decoder refuses. Phone cameras invert for themselves. To go
- * back to a code every decoder reads without leaving the palette, swap MODULE and GROUND: dark modules on an
- * amber ground decode as drawn, verified at 246px and 180px.
+ * back to a code every decoder reads without leaving the palette, paint an amber ground and dark modules: that
+ * polarity decodes as drawn, verified at 246px and 180px.
  */
 (function () {
   'use strict';
@@ -23,7 +23,9 @@
   // URL, the cards and the sitemap; a code encoding a host that serves something else scans to the wrong site.
   const SITE_URL = 'https://alexk413x.com';
   const MODULE = '#dd6a20';    // --accent, the same orange the mark is drawn in
-  const GROUND = '#0c0c0e';    // --ink
+  // No ground of its own: the quiet zone is the panel's glass, so the code sits on the dialog rather than on a
+  // black plate inside it. The glass is the panel color at three quarters over a near-black page, dark enough
+  // for a camera; the transparent pixels decode as black.
   const LEVEL = 'H';           // the recovery budget the center stamp spends
   const QUIET = 4;             // modules of margin the spec requires around the code
   const CSS_PX = 260;          // the size the code is asked to occupy, before rounding to whole modules
@@ -67,8 +69,6 @@
     canvas.width = canvas.height = px;
 
     const g = canvas.getContext('2d');
-    g.fillStyle = GROUND;
-    g.fillRect(0, 0, px, px);
     g.fillStyle = MODULE;
     for (let r = 0; r < size; r++) for (let c = 0; c < size; c++) {
       if (r >= lo && r <= hi && c >= lo && c <= hi) continue;
@@ -92,12 +92,14 @@
     lastFocus = document.activeElement;
     if (!drawn) { draw(); drawn = true; }
     dlg.hidden = false;
+    document.documentElement.classList.add('dialog-open');
     dlg.focus();
     document.addEventListener('keydown', onKey);
   }
 
   function close() {
     dlg.hidden = true;
+    document.documentElement.classList.remove('dialog-open');
     document.removeEventListener('keydown', onKey);
     if (lastFocus) lastFocus.focus();
   }
@@ -111,6 +113,12 @@
 
   // Redraws whole rather than stamping in place: draw() is cheap, and it needs no scale carried between calls.
   stamp.addEventListener('load', () => { if (drawn) draw(); });
+
+  // The page's scroll rig listens for wheel and touch on the window and glides to a beat after them, which
+  // html.dialog-open's overflow lock does not stop, since a glide is a programmatic scroll. Held here so they
+  // never reach it; not prevented, so nothing else changes.
+  ['wheel', 'touchstart', 'touchmove'].forEach((ev) =>
+    dlg.addEventListener(ev, (e) => e.stopPropagation(), { passive: true }));
 
   openBtns.forEach((btn) => btn.addEventListener('click', open));
   // Anywhere, panel included: there is no close control, so every part of the overlay is the close control.

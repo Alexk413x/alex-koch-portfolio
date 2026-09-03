@@ -167,7 +167,7 @@ def run(page, r):
     # The last section is the one a fixed reading line could never reach, which is why the line slides to 92%.
     page.scroll(maxy, pause=0.5)
     r.check('the last section lights at the bottom of the page',
-            page.js("(document.querySelector('#nav .links a[aria-current]')||{}).textContent"), 'CONTACT')
+            page.js("(document.querySelector('#nav .links a[aria-current]')||{}).textContent"), 'CONNECT')
 
     # ONE bar at every scroll position. A ground or a rule appearing partway down was tried and rejected: the
     # bar is meant to read the same over the document as it does over the stage.
@@ -427,7 +427,7 @@ def run(page, r):
     # The QR dialog has two triggers and one description. share.js binds every [data-qr-open], so a header
     # button that opens nothing means the binding went back to a single id.
     page.scroll(0)
-    page.click_at('#nav .tools button', pause=0.5)
+    page.click_at('#nav .tools button[data-qr-open]', pause=0.5)
     r.ok('the header QR mark opens the one dialog',
          page.js("!document.getElementById('qr-dialog').hidden"))
     # The overlay is its own close control; share.js binds the click to the dialog, not to a button.

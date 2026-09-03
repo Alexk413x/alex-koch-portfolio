@@ -133,6 +133,9 @@ function init() {
     renderScale: 1,
   };
 
+  // The state this scene starts in, kept whole so a director that has driven the core can put it back.
+  const HOME = { ...state };
+
   /* THE CAMERA IS THE STYLESHEET'S, NOT THIS FILE'S. On a portrait phone site.css stands the core in a band
    * between the name and the paragraph and sizes the buffer to 1.7x that band; at zoom 1 the shader draws the
    * core across about a third of whatever buffer it is given, so the camera has to come in to fill the band.
@@ -150,8 +153,12 @@ function init() {
 
   // Whether the shader has landed. One-way: a lost context rebuilds through onRestore, not through here.
   let lit = false;
+  /* TAKEN: a director owns the state. draw() still steps the sim and draws, but writes nothing of its own --
+     spin, tilt, angle and viscosity are the director's to set until it releases the core. The pointer and the
+     scroll keep being read so that the moment it lets go, the core is already where the hand is. */
+  let driven = false;
 
-  const sim = createSim();
+  let sim = createSim();
 
   /* Its own clock, advanced only while the hero is on screen — uTime drives the noise field, so a clock that ran
    * on through the scrolled-past minutes would hand the surface the whole gap in one frame on the way back. */
@@ -267,14 +274,16 @@ function init() {
     /* The idle drift is a RATE the sim integrates; the pointer's contribution is an ANGLE added on top of it, so
        the hand moves the face directly and never has to overcome a rotation already running. The scroll joins
        the RATE, which is why it keeps turning after the page has stopped instead of snapping back. */
-    state.coreSpin = SPIN_IDLE + churn;
-    state.coreSpinX = TILT_IDLE + churn * .35;
-    state.coreAngle = restY + faceY;
-    state.coreAngleX = restX + faceX;
-    /* And it roils on top of whatever the pointer is already asking for, never below it — a reader who is both
-       hovering and scrolling should not get a calmer core than one who is only hovering. */
-    const stir = Math.min(1, near + churn * SCROLL_STIR);
-    state.visc = VISC_REST + (VISC_LIVE - VISC_REST) * stir;
+    if (!driven) {
+      state.coreSpin = SPIN_IDLE + churn;
+      state.coreSpinX = TILT_IDLE + churn * .35;
+      state.coreAngle = restY + faceY;
+      state.coreAngleX = restX + faceX;
+      /* And it roils on top of whatever the pointer is already asking for, never below it — a reader who is
+         both hovering and scrolling should not get a calmer core than one who is only hovering. */
+      const stir = Math.min(1, near + churn * SCROLL_STIR);
+      state.visc = VISC_REST + (VISC_LIVE - VISC_REST) * stir;
+    }
     /* BEFORE THE UNIFORMS, because a switch lands on a program whose uniforms are all zero and it is the sends
        below that fill it in. Asking for 'core' every frame is a map lookup once it is current. */
     R.use(state.ringOn ? 'full' : 'core');
@@ -325,11 +334,30 @@ function init() {
      through here. */
   /* renderNow FORCES THE LINK. The frame loop is happy to wait for the shader and draw nothing meanwhile, but a
      synchronous frame has no next frame to be drawn on: whatever asked for it reads the buffer immediately. */
-  window.HERO = { state, sim, R,
+  /* `take` / `release` hand the state to a director and back -- the intro plays the reactor's whole
+     sequence on this canvas and ends in this scene's own state, so there is no handoff to see. `full` is
+     whether the ring's program is the one drawing, which only the loop's own use() can answer. `heroHex` is
+     the color this scene renders at rest, for a director tweening toward it. */
+  window.HERO = { state, get sim() { return sim; }, R,
                   renderNow: (dt) => { R.ready(true); return loop.renderNow(dt); },
                   stop: () => loop.stop(),
+                  start: () => loop.start(),
+                  start: () => loop.start(),
                   pulse: () => { sim.firePulse(state); },
                   pose: (y, x) => { aimY = faceY = y; aimX = faceX = x || 0; },
+                  take: () => { driven = true; },
+                  release: () => { driven = false; churn = 0; lastY = window.scrollY || 0; },
+                  // Everything back to this scene's own state, with a fresh sim: what a skipped intro lands on.
+                  home: () => { Object.assign(state, HOME); sim = createSim(); setZoom(); fit(true); },
+                  // Rebuilds the buffer at the current renderScale; a director lowering it for the ring pays here.
+                  refit: () => fit(true),
+                  // Puts the camera back at the stylesheet's zoom after a director has moved it.
+                  resetZoom: setZoom,
+                  get driven() { return driven; },
+                  get lit() { return lit; },
+                  get full() { return !!state.ringOn && R.use('full'); },
+                  heroHex: preTonemap(accent),
+                  rest: { SPIN_IDLE, TILT_IDLE, VISC_REST, ...PULSE, restY, restX, dropN: state.dropN },
                   get onScreen() { return onScreen; },
                   get near() { return near; }, set near(v) { target = near = clamp01(v); } };
 }

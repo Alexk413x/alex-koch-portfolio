@@ -1,3 +1,32 @@
+/* The intro's configuration: the shipped tube, off, waiting to be struck. The warp and the fault run at the
+ * lab's own length so the detail in them reads; the intro's beat is sized to let them finish before the power
+ * is cut. The type runs at a reading pace, since the boot text is the one thing the intro asks to be read. Render scale is capped: this frame shares a thread with two more.
+ */
+export function introPreset(gpu) {
+  return {
+    ...defaultPreset(gpu),
+    power: 0,
+    // The fitting starts dark; the director strikes it with the tube.
+    lightOn: 0,
+    type: 1.1,
+    // The warp outlasts the power: it is still pulling, gathered to the middle, as the picture collapses.
+    warpSec: 4.4, warpGather: 1,
+    surgeRate: 1.0,
+    // The fault's screen share is low so the picture never blacks out on its own before the power is cut, and
+    // the lamp's share high so its flash is the peak the cut lands on.
+    surgeScreen: 0.35, surgeLamp: 1.3,
+    // The room's light and the tube gutter harder here than in the lab: it is atmosphere, not a calibration.
+    flickHz: 7, fstr: 0.5, lflickA: 11, lflickB: 7, lfstrA: 0.75, lfstrB: 0.9, lfchaos: 0.7,
+    // The bare tube, filling the frame: the molding is the lab's, and here the screen is the whole screen. The
+    // glass edge is a wide vignette rather than a line, and the sides bend less so the curve lives in the corners.
+    frameOn: 0,
+    vig: 0.85, vigFall: 0.45,
+    bend: 3, corner: 20,
+    collapse: 0.75, ignite: 1.5,
+    renderScale: gpu && gpu.integrated ? 0.45 : 0.8,
+  };
+}
+
 // The shipped preset values, held apart from the scene so a second view can drive it from different starting values.
 // `gpu` is a parameter, not an import — this module has no renderer to ask before one exists.
 export function defaultPreset(gpu) {
@@ -13,6 +42,7 @@ export function defaultPreset(gpu) {
   // warpDrag has no falloff, so it alone leans the whole picture with the pole.
   warpDrag: 0.205, warpPull: 0.18, warpPinch: 0, warpSwirl: 0,
   warpSpring: 0.29,   // how much of the motion is the raster ringing back rather than following the field
+  warpGather: 0,      // how far the pole is drawn to the middle over the run's last part; the intro sets it
   // warpR is wide because the pole orbits: a wide field on a straight path reads as a global wave, but on an
   // orbit it reads as a large area being swung, like a coil held against the glass.
   warpR: 1.64,        // the pole's reach, in picture widths

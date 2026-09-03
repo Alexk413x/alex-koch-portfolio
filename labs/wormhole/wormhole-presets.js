@@ -125,4 +125,22 @@ export function defaultPreset(gpu) {
   };
 }
 
+/* The intro's configuration: the shipped scene with the values Alex dialled in the lab for it, baked so the
+ * intro is the same in every browser. The render scale is capped for a frame that shares its thread with two
+ * others. Everything the intro moves it moves through wormhole-moves, on top of these. */
+export function introPreset(gpu) {
+  return {
+    ...defaultPreset(gpu),
+    // The disc a hair past edge-on, as Alex set it in the lab on 2026-09-02. The bend and the walls are the
+    // moves' to bring in, so the shipped shells stay on and wormhole-moves holds their amount at zero until
+    // the tube forms.
+    discTilt: -90,
+    // An opaque dark wall behind the two lit shells, at their radius so it sorts behind them: the disc's wide
+    // wings then show only down the tube's opening, not through the nebula. Off in the lab.
+    L3On: 1, L3Rad: 2.40, L3Amt: 1.0, L3Cloud: 1.0, L3Bolts: 0, L3Streak: 0, L3Ring: 0,
+    L3CloudA: '#1a0a02', L3CloudB: '#000000', L3Fill: 1.0, L3Edge: 0.04, L3Oct: 1, L3Speed: 2.0, L3Warp: 0.15,
+    renderScale: 0.75,
+  };
+}
+
 export { MAXL };

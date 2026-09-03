@@ -49,6 +49,9 @@
 <link rel="stylesheet" href="../kit/lab.css">
 <style>
   #panel h1{font-size:12px}
+  /* The intro's frame shows the picture and nothing else. */
+  body.intro #mast, body.intro #hud { display: none }
+  body.intro:not(.panel) #panel, body.intro:not(.panel) #paneltgl { display: none }
 </style>
 <!-- Recovers a load whose module graph failed; a classic script because a module could not.
      See labs/kit/boot-guard.js. -->
@@ -76,17 +79,26 @@ import { persist, fitCanvas, runLoop, textOut, reportNoGL, escapeLeaves, mountLo
 
 import { FRAG, UNIFORMS, MAXL } from './wormhole-shader.js';
 import { ALL_SECTIONS, sectionsFor, FMT, LAYER_NAMES } from './wormhole-sidebar.js';
-import { defaultPreset } from './wormhole-presets.js';
+import { defaultPreset, introPreset } from './wormhole-presets.js';
 import { createMoves } from './wormhole-moves.js';
+/* ?intro: the home page's intro hosts this scene in a frame and drives it through window.WORMHOLE. No panel, no
+   readouts, no stored settings and no Escape -- the intro owns all four. The shipped preset applies, so what the
+   intro shows is the lab, not a visitor's saved configuration. */
+const INTRO = /[?&]intro\b/.test(location.search);
+const PANEL = INTRO && /[?&]panel\b/.test(location.search);
+if (INTRO) document.body.classList.add('intro');
+if (PANEL) document.body.classList.add('panel');
 mountLoader();
-escapeLeaves();
+if (!INTRO) escapeLeaves();
 
 const stage = document.getElementById('stage');
 /* ONE PROGRAM, NOT A VARIANT PER SETTING. The marched lab compiles a shader per layer set because a marched
  * layer costs whether or not its uniform is zero -- the loop pays for code it does not run, once per step. Here
  * a shell that is off is one `continue` per pixel, so the same trick would buy a compile for nothing. */
+// deferLink in the intro: this frame shares the main thread with the tube that is typing beside it, and a
+// synchronous link would freeze the type for as long as the driver took. The loop draws nothing until ready().
 const R = createQuad(document.getElementById('field'), {
-  frag: FRAG, uniforms: UNIFORMS, onRestore: () => fit(true),
+  frag: FRAG, uniforms: UNIFORMS, onRestore: () => fit(true), deferLink: INTRO,
 });
 if (!R) { reportNoGL(); throw new Error('WebGL unavailable'); }
 
@@ -98,7 +110,7 @@ const SWATCHES = ['discA', 'discB'].concat(
   Array.from({ length: MAXL }, (_, i) =>
     ['CloudA', 'CloudB', 'BoltA', 'BoltB', 'StrkA', 'StrkB'].map((n) => 'L' + i + n)).flat());
 const MASTERS = ALL_SECTIONS.map(([, , m]) => m).filter(Boolean);
-const state = defaultPreset(R.gpu);
+const state = INTRO ? introPreset(R.gpu) : defaultPreset(R.gpu);
 /* THE STORAGE KEY IS STILL `tunnel` AND IT MUST STAY THAT WAY, exactly as CRT Lab's is still `crtgl`. A key is
    an ADDRESS, not a label: renaming it to match the lab would orphan every configuration anybody has saved
    here, silently, and there is nothing a reader could do about it.
@@ -113,8 +125,11 @@ const state = defaultPreset(R.gpu);
    version 1 blob would restore SILENTLY and mean something else: a disc at 1.35 radians would come back as a
    disc at 1.35 degrees, nearly flat, with nothing to say it had moved. persist() rejects a blob whose v does
    not match, which turns a silent misreading into a one-time reset to the shipped defaults. */
-const store = persist({ key: 'tunnel', version: 2, state, sections: ALL_SECTIONS,
-                        extra: MASTERS.concat(SWATCHES) });
+// No store at all in the intro, not a store left unread: persist() flushes on pagehide and would write the
+// intro's scene over the visitor's own. The intro's values are introPreset's, the same in every browser.
+const store = INTRO ? { restore() {}, save() {}, queueSave() {} }
+                    : persist({ key: 'tunnel', version: 2, state, sections: ALL_SECTIONS,
+                                extra: MASTERS.concat(SWATCHES) });
 store.restore();
 
 const modeEl = document.getElementById('modename');
@@ -132,7 +147,15 @@ function syncMode() {
 /* THE ACTIONS ARE THE THREE MOVES, and ENGAGE carries a lamp because it is the only one with a state to be in
    -- BURST and STORM are events and are over before a lamp could mean anything. syncActions is called on the
    toggle so the lamp follows it. */
-const moves = createMoves();
+// The intro opens on black and dives in on cue; the lab opens engaged.
+const moves = createMoves({ engaged: !INTRO });
+
+/* THE PHASES ARE INTEGRATED HERE, NOT MULTIPLIED OUT IN THE SHADER. Each is the slider's rate times the clock
+   plus what the moves have added on top, integrated frame by frame: at rest that is exactly rate x time, so
+   renderNow(sec) reproduces a frame, and a move that changes a rate adds only its own difference instead of
+   multiplying the change by the whole elapsed clock, which is what made a burst lurch the walls. */
+const flowX = new Float64Array(MAXL), spinX = new Float64Array(MAXL);
+let bendX = 0;
 const syncActions = buildActions(document.getElementById('actions'), [
   ['◉ ENGAGE', () => moves.toggle(), () => moves.engaged],
   ['↯ BURST', () => moves.fireBurst()],
@@ -172,10 +195,10 @@ const hex = (h) => [1, 3, 5].map((i) => parseInt((h || '#ffffff').slice(i, i + 2
  * front-to-back and a ray crosses the small radius first, so the shells must arrive inner-first. Drag one shell's
  * RADIUS past another's and, unsorted, it would composite behind something it is now in front of -- which reads
  * as the near shell being transparent to the far one for no reason a viewer could name. */
-function packed(st) {
+function packed(st, sec) {
   const idx = Array.from({ length: MAXL }, (_, i) => i)
     .sort((a, b) => st['L' + a + 'Rad'] - st['L' + b + 'Rad']);
-  const geom = [], mix = [], shade = [], extra = [], ringP = [];
+  const geom = [], mix = [], shade = [], extra = [], ringP = [], flow = [];
   const cA = [], cB = [], bA = [], bB = [], sA = [], sB = [];
   for (let s = 0; s < MAXL; s++) {
     const i = idx[s];
@@ -192,20 +215,29 @@ function packed(st) {
     extra.push(g('Lanes'), g('On') ? 1 : 0, 1 - g('BoltFill'), g('BoltEdge'));
     // z is the plasma's ripple rate. uRingP had two spare slots and the other four vec4s are full.
     ringP.push(g('RingN'), g('RingFlow'), g('BoltRipple'), 0);
+    // The sliders' own rate times the clock, plus what the moves have added: the base reads from `state`, never
+    // from `st`, or a scaled rate would be multiplied by the whole elapsed clock again.
+    flow.push(state['L' + i + 'Speed'] * sec + flowX[i], state['L' + i + 'Spin'] * sec + spinX[i], 0, 0);
     cA.push(...hex(g('CloudA')), 0); cB.push(...hex(g('CloudB')), 0);
     bA.push(...hex(g('BoltA')), 0);  bB.push(...hex(g('BoltB')), 0);
     sA.push(...hex(g('StrkA')), 0);  sB.push(...hex(g('StrkB')), 0);
   }
-  return { geom, mix, shade, extra, ringP, cA, cB, bA, bB, sA, sB };
+  return { geom, mix, shade, extra, ringP, flow, cA, cB, bA, bB, sA, sB };
 }
 
 function draw(dt, sec) {
   if (R.lost) { textOut(glEl, 'GL CONTEXT LOST'); return; }
+  if (!R.ready()) return;   // only ever false under deferLink, while the driver is still linking
   textOut(glEl, '');
   /* THE MOVES ARE ADDED ON TOP OF THE SLIDERS, NEVER INTO THEM. step() hands back a copy while a move is
      running and the state object ITSELF when idle -- so the scene stays a pure function of (state, time)
      whenever nothing is playing, and renderNow(sec) still reproduces a frame exactly. */
   const s = moves.step(state, dt, sec);
+  for (let i = 0; i < MAXL; i++) {
+    flowX[i] += (s['L' + i + 'Speed'] - state['L' + i + 'Speed']) * dt;
+    spinX[i] += (s['L' + i + 'Spin'] - state['L' + i + 'Spin']) * dt;
+  }
+  bendX += (s.bendFlow - state.bendFlow) * 0.12 * dt;
 
   R.f2('uRes', R.w, R.h);
   R.f('uTime', sec);
@@ -213,7 +245,8 @@ function draw(dt, sec) {
   // from the number printed beside it; the conversion lives here because a formatter is display only.
   R.f('uFov', 0.5 / Math.tan(s.fov * Math.PI / 360));
   R.f('uFar', s.far);
-  R.f('uBend', s.bend); R.f('uBendFlow', s.bendFlow); R.f('uBendDir', s.bendDir);
+  // 0.12 was the shader's own constant on BEND FLOW; it moves here with the phase so the direction arrives whole.
+  R.f('uBend', s.bend); R.f('uBendDir', s.bendDir + state.bendFlow * 0.12 * sec + bendX);
   /* THE SECTION'S MASTER RIDES ON MASS, and on MASS alone, because MASS is now the only thing the hole's
      gravity comes from. Zero it and rs is zero, so lensShift returns zero, the tunnel un-bends and the march
      never starts -- switching the section off removes the lensing rather than just stopping the disc being
@@ -253,8 +286,9 @@ function draw(dt, sec) {
   R.f3('uDiscA', ...hex(s.discA)); R.f3('uDiscB', ...hex(s.discB));
   R.f('uFog', s.fog); R.f('uExposure', s.exposure);
 
-  const p = packed(s);
+  const p = packed(s, sec);
   R.fv4('uGeom', p.geom); R.fv4('uMix', p.mix); R.fv4('uShade', p.shade); R.fv4('uExtra', p.extra); R.fv4('uRingP', p.ringP);
+  R.fv4('uFlow', p.flow);
   R.fv4('uCloudA', p.cA); R.fv4('uCloudB', p.cB);
   R.fv4('uBoltA', p.bA);  R.fv4('uBoltB', p.bB);
   R.fv4('uStrkA', p.sA);  R.fv4('uStrkB', p.sB);
@@ -265,7 +299,7 @@ function draw(dt, sec) {
 const loop = runLoop({ draw, onTick: (fps) => textOut(fpsEl, fps + ' FPS') });
 syncMode();
 
-window.WORMHOLE = { state, R, fit, saveState: store.save, rebuildPanel,
+window.WORMHOLE = { state, R, fit, saveState: store.save, rebuildPanel, moves, loop,
                     renderNow: (sec) => loop.renderNow(1 / 60, sec),
                     get time() { return loop.time; } };
 </script>

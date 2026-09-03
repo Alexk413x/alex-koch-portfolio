@@ -16,6 +16,9 @@
   --cover-scrim-top: #0b1018;
   --cover-scrim: #101828;
   --ink-panel: #100b08;
+  /* The dialogs' glass: the panel color at three quarters, so the page reads through the edges of a sheet
+     laid over it rather than through a hole cut in it. */
+  --ink-glass: rgba(16, 11, 8, .75);
   --hairline: #1c2128;
   --on-accent: #180a03;
 
@@ -156,14 +159,57 @@ a:hover { color: var(--accent-hover) }
    them on.
    No min-width: 0 — the outer columns are 1fr (minmax(auto, 1fr)) and rely on that floor to stay off the center
    links; zeroing it once shrank this column to 55px around a 77px wordmark and overlapped ALEX by 2px. */
-#nav .brand { justify-self: start; display: flex; align-items: baseline; gap: 14px }
+#nav .brand { position: relative; justify-self: start; display: flex; align-items: baseline; gap: 14px }
 
-/* Same gray as the marks opposite it, so both ends of the bar weigh the same and only the lit section reads. */
+/* Same gray as the marks opposite it, so both ends of the bar weigh the same and only the lit section reads.
+   A button now, since it opens the menu below rather than navigating. */
 #nav .mark {
+  font: inherit; letter-spacing: inherit; background: none; border: 0; padding: 0; cursor: pointer;
   color: var(--text-faint); font-weight: 700;
   transition: color .2s var(--ease-settle);
 }
-#nav .mark:hover { color: var(--accent) }#nav .links { display: flex; justify-content: center; gap: 24px; align-items: center }
+#nav .mark:hover, #nav .mark[aria-expanded="true"] { color: var(--accent) }
+#nav .mark:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--amber-focus); border-radius: 3px }
+
+/* The mark's menu: one row on the dropdown plate. Hidden until nav.js opens it, since it holds nothing a
+   reader without JS could use. isolation clamps the plate's z-index -1 to the menu, so it sits behind the row
+   and not behind the bar. */
+#nav .brand-menu {
+  display: none; position: absolute; top: calc(100% + 10px); left: -4px; z-index: 5;
+  flex-direction: column; min-width: 180px; padding: 4px 2px; isolation: isolate;
+}
+#nav .brand-menu.is-open { display: flex }
+/* THE DROPDOWN PLATE, shared by every panel that opens under the bar. A blurred black layer behind the rows
+   rather than a background on the box: the blur is what gives the edges their falloff, and run on the panel
+   itself it would take the names with it. The backdrop blur softens the page through it, as the dialogs do,
+   and the layer's own blur feathers that too, so there is no hard edge to either. */
+#nav .brand-menu::before, #nav .links::before, #nav .tools::before {
+  position: absolute; z-index: -1; inset: -14px -24px;
+  background: rgba(0, 0, 0, .5);
+  -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+  /* A MASK FOR THE EDGE, not a blur filter: a filter softens the black but the backdrop blur's clip stays a
+     hard rectangle under it. The mask fades both together, opaque in the middle, clear over the last 18px on
+     every side. Two gradients, one per axis, intersected. */
+  -webkit-mask: linear-gradient(to right, transparent, #000 18px, #000 calc(100% - 18px), transparent),
+                linear-gradient(to bottom, transparent, #000 18px, #000 calc(100% - 18px), transparent);
+  -webkit-mask-composite: source-in;
+  mask: linear-gradient(to right, transparent, #000 18px, #000 calc(100% - 18px), transparent),
+        linear-gradient(to bottom, transparent, #000 18px, #000 calc(100% - 18px), transparent);
+  mask-composite: intersect;
+}
+/* content here and, for the other two, in the phone rules only: on a desktop those are rows in the bar. */
+#nav .brand-menu::before { content: '' }
+/* The row reads as the phone's LINKS rows do: an icon and a name, left set. */
+#nav .brand-menu button {
+  display: flex; align-items: center; gap: 12px;
+  font: inherit; letter-spacing: .1em; text-transform: uppercase; text-align: left; cursor: pointer;
+  background: none; border: 0; padding: 9px 12px; border-radius: 3px;
+  color: var(--text-muted); text-decoration: none; white-space: nowrap;
+  transition: color .18s var(--ease-settle), background .18s var(--ease-settle);
+}
+#nav .brand-menu svg, .lab-replay svg { width: 15px; height: 15px; flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round }
+#nav .brand-menu button:hover { color: var(--text-strong); background: rgba(255, 255, 255, .05) }
+#nav .brand-menu button:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--amber-focus) }#nav .links { display: flex; justify-content: center; gap: 24px; align-items: center }
 /* nowrap, or a two-word label breaks inside its own box and grows taller than its neighbors. */
 #nav .links a {
   position: relative; padding-bottom: 7px;
@@ -360,6 +406,57 @@ html:not(.core-lit) #hero-halo path {
 }
 /* Once the core has a program the dash drops entirely, leaving the halo the solid line it's designed as. */
 .core-lit #hero-halo path { stroke-dasharray: none; animation: none }
+
+/* ---------------- intro ---------------- */
+
+/* The sheet exists only while the intro is live. Its two frames carry the tube and the tunnel; the reactor leg
+   draws on #hero-core itself, under the sheet, which goes clear for it. Everything the intro moves it moves by
+   class, so the timings here are the crossfades and nothing else. */
+#intro { display: none }
+html.intro-live { overflow: hidden }
+/* The page under an open dialog does not scroll. No layout shift, since the page has no scrollbar to lose. */
+html.dialog-open { overflow: hidden }
+html.intro-live #intro { display: block; position: fixed; inset: 0; z-index: 200; background: #000 }
+/* Same specificity as the rule above, or the black never lifts for the reactor leg. */
+html.intro-live #intro.is-clear { background: transparent; pointer-events: none }
+#intro iframe {
+  position: absolute; inset: 0; width: 100%; height: 100%; border: 0; display: block; background: #000;
+  pointer-events: none; opacity: 0; transition: opacity .35s var(--ease-settle);
+}
+#intro iframe.is-on { opacity: 1 }
+/* Tuning mode: the frames take the pointer so the lab's own panel can be used. */
+#intro.is-panel iframe { pointer-events: auto }
+#intro-skip {
+  /* Above both frames, which stack at 1 and 2. */
+  position: absolute; right: 22px; bottom: 18px; z-index: 5; pointer-events: auto;
+  background: none; border: 1px solid rgba(255, 255, 255, .22); border-radius: var(--radius-cta); color: var(--text-muted);
+  font-family: var(--font-mono); font-size: 10.5px; letter-spacing: .2em; padding: 9px 12px; cursor: pointer;
+  transition: color .2s var(--ease-settle), border-color .2s var(--ease-settle);
+}
+#intro-skip kbd { font: inherit; opacity: .55; margin-left: 6px }
+#intro.is-going #intro-skip { opacity: 0; pointer-events: none; transition: opacity .4s var(--ease-settle) }
+/* The loading ring sits inside the sheet, under the skip control, in the site's own orange rather than the
+   labs' amber: the arc, the dashes and the name follow --panel-accent, the static rings and the ground are
+   restated because the kit writes those colors into the markup. */
+#intro .kit-load { position: absolute; z-index: 1; --panel-accent: var(--accent) }
+#intro .kit-ring::before { background: radial-gradient(circle, rgba(221, 106, 32, .12), rgba(221, 106, 32, .04) 46%, transparent 72%) }
+#intro .kit-ring > svg:first-child circle { stroke: rgba(221, 106, 32, .22) }
+#intro .kit-ring .kr-hair circle { stroke: rgba(240, 137, 79, .3) }
+#intro-skip:hover, #intro-skip:focus-visible { color: var(--text-strong); border-color: var(--accent-hover); outline: none }
+/* The page's own chrome waits under the sheet and arrives after the words: the nav a beat later, the halo and the
+   ground with the core's own reveal. */
+html.intro-live #nav, html.intro-live #hero-halo, html.intro-live #hero-shade { opacity: 0 }
+/* No mask while the intro drives the core: the ring's pieces have to be seen flying past the edge of the ring,
+   and the mask that hides the buffer's edge on the page would take them at 62% of the radius. */
+html.intro-live #hero-core { -webkit-mask-image: none; mask-image: none }
+/* And the whole viewport while it does: the core's own box is a square well inside the window, and the ring,
+   the vent and the pieces reach past it. The director compensates the camera at the end and refits the buffer
+   synchronously at the reveal, so the return to the square does not show. */
+html.intro-live #hero-core { width: 100vw; height: 100dvh }
+html.intro-done #nav { transition: opacity 1.2s var(--ease-settle) }
+html.intro-done #hero-halo, html.intro-done #hero-shade { transition: opacity 1.4s var(--ease-settle) .1s }
+/* The words on either side follow the nav and the ring's arcs by a beat. */
+html.intro-done .hero-grid, html.intro-done .hero-foot { transition-delay: 1.1s }
 
 /* ---------------- scene 01 ---------------- */
 
@@ -1787,10 +1884,10 @@ A record can carry more than one lede (e.g. a second paragraph on how the work w
    chip still earns its border. A rule, not a slab — a shaded panel would be a different vocabulary from the
    ruled outlines the rest of the case and page use, reading as a sticker rather than part of the box.
    The rule needs to run full width, so the panel's own padding is canceled and re-applied here off --pad, or it would stop short of the edge when the case resizes. */
-.b-spec { margin-top: 16px; margin-left: calc(var(--pad) * -1); margin-right: calc(var(--pad) * -1);
+.b-spec { margin-top: 8px; margin-left: calc(var(--pad) * -1); margin-right: calc(var(--pad) * -1);
   /* Off --pad like every other edge — flat 16/18px values once made the chips sit twice as close to the case's
      bottom as its sides. */
-  padding: calc(var(--pad) * .34) var(--pad) calc(var(--pad) * .62);
+  padding: calc(var(--pad) * .22) var(--pad) calc(var(--pad) * .5);
   border-top: 1px solid var(--rule-box) }
 .b-chips { display: flex; flex-wrap: wrap; gap: 4px }
 .b-chips span {
@@ -1867,6 +1964,19 @@ A record can carry more than one lede (e.g. a second paragraph on how the work w
    row stretches so all three come out the same height. */
 .lab-grid { display: grid; gap: 14px; grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: 40px }
 
+/* Under the grid, quiet: a sentence and the one control, in the contact row's voice. */
+.lab-replay {
+  margin: 18px 0 0; font-family: var(--font-mono); font-size: 13px; letter-spacing: .06em;
+  color: var(--text-muted); display: flex; gap: 18px; flex-wrap: wrap; align-items: baseline;
+}
+.lab-replay button {
+  display: inline-flex; align-items: center; gap: 8px; text-transform: uppercase;
+  font: inherit; letter-spacing: inherit; cursor: pointer; background: none; border: 0; padding: 0;
+  color: var(--accent); transition: color .18s var(--ease-settle);
+}
+.lab-replay button:hover { color: var(--accent-hover) }
+.lab-replay button:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--amber-focus); border-radius: 3px }
+
 .lab-card {
   display: flex; flex-direction: column; padding: 20px 22px; color: inherit;
   background: linear-gradient(180deg, rgba(22, 15, 10, .86), rgba(11, 9, 12, .86));
@@ -1942,11 +2052,25 @@ A record can carry more than one lede (e.g. a second paragraph on how the work w
 
 .contact-links a:hover, .contact-links button:hover { color: var(--accent-hover) }
 
+/* Under the links, centered and a size up: the row above is where to find Alex, this is the thing to do. */
+.contact-book {
+  margin-top: 26px; display: flex; gap: 28px; flex-wrap: wrap; justify-content: center;
+  font-family: var(--font-mono); font-size: 17px; letter-spacing: .08em;
+}
+.contact-book button {
+  font: inherit; letter-spacing: inherit; cursor: pointer;
+  background: none; border: 0; padding: 0; color: var(--accent);
+  transition: color .18s var(--ease-settle);
+}
+.contact-book button:hover { color: var(--accent-hover) }
+.contact-book button:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--amber-focus); border-radius: 3px }
+
 /* Blur is for floating chrome over live content, which is exactly what this is. */
 #qr-dialog {
   position: fixed; inset: 0; z-index: 120;
   display: flex; align-items: center; justify-content: center; padding: 24px; cursor: pointer;
-  background: rgba(6, 5, 9, .82); backdrop-filter: blur(6px);
+  /* A light scrim and the blur, not a black sheet: the page stays in view behind the glass. */
+  background: rgba(6, 5, 9, .3); backdrop-filter: blur(6px);
 }
 
 #qr-dialog:focus { outline: none }
@@ -1956,7 +2080,7 @@ A record can carry more than one lede (e.g. a second paragraph on how the work w
 .qr-panel {
   display: flex; flex-direction: column; align-items: center; gap: 16px;
   padding: 26px; max-width: 340px;
-  background: var(--ink-panel); border: 1px solid var(--hairline); border-radius: var(--radius-card);
+  background: var(--ink-glass); border: 1px solid var(--hairline); border-radius: var(--radius-card);
   box-shadow: 0 24px 60px -20px rgba(0, 0, 0, .5);
 }
 
@@ -1965,6 +2089,75 @@ A record can carry more than one lede (e.g. a second paragraph on how the work w
 #qr-image { display: block; border-radius: 4px; image-rendering: pixelated }
 
 .qr-url { font-family: var(--font-mono); font-size: 12px; letter-spacing: .1em; color: var(--text-muted) }
+
+/* ---------------- booking dialog ---------------- */
+
+/* The share dialog's overlay. The backdrop closes, as it does for the QR code; the strip's mark is the same
+   door for a phone, where the panel is the whole screen. */
+.book-dialog {
+  position: fixed; inset: 0; z-index: 120;
+  display: flex; align-items: center; justify-content: center; padding: 24px;
+  background: rgba(6, 5, 9, .3); backdrop-filter: blur(6px);
+}
+.book-dialog[hidden] { display: none }
+
+/* Wide enough for the booker to put the day's slots beside the calendar. A column: the strip, then the
+   scroller. */
+.book-panel {
+  position: relative; display: flex; flex-direction: column; width: min(1060px, 100%); max-height: 100%;
+  /* Glass at the strip; the booker itself is Cal.com's opaque page. */
+  background: var(--ink-glass); border: 1px solid var(--hairline); border-radius: var(--radius-card);
+  box-shadow: 0 24px 60px -20px rgba(0, 0, 0, .5); overflow: hidden;
+}
+.book-panel:focus { outline: none }
+
+/* The strip: a label and the mark, no rule under it, above the scroller so the mark never leaves the top. */
+.book-head {
+  flex: none; display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 6px 6px 6px 18px;
+}
+
+/* THE SCROLLER, not the iframe: the booker sizes its iframe to its content, the frame grows with it, and
+   this box scrolls it, in the page's own colors — a thumb and no track. book.js sets its height from the
+   first screen, so that screen has nothing to scroll for and the box does not jump when a later, longer
+   screen arrives; min-height: 0 lets a short window shrink it instead. */
+.book-scroll {
+  flex: 0 1 auto; min-height: 0; overflow: auto; overscroll-behavior: contain;
+  scrollbar-width: thin; scrollbar-color: var(--border-neutral) transparent;
+}
+.book-scroll[hidden] { display: none }
+.book-scroll::-webkit-scrollbar { width: 6px; height: 6px }
+.book-scroll::-webkit-scrollbar-track { background: transparent }
+.book-scroll::-webkit-scrollbar-thumb { background: var(--border-neutral); border-radius: 3px }
+.book-close {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 34px; height: 34px; padding: 0; border: 0; border-radius: 50%;
+  background: none; color: var(--text-muted); cursor: pointer;
+  transition: color .2s var(--ease-settle);
+}
+.book-close:hover { color: var(--text-strong) }
+.book-close:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--amber-focus) }
+.book-close svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round }
+
+/* The iframe's height is the booker's to set. min-height keeps the panel from collapsing to a line before
+   it has drawn. */
+.book-frame { position: relative; min-height: 420px; overflow: hidden; background: var(--ink-panel) }
+.book-frame iframe { display: block; width: 100%; border: 0 }
+/* The intro's ring over the frame, in the panel's color rather than the intro's black, until the booker has
+   drawn: an iframe's first paint is blank, and covering it is the only way to not show it. */
+.book-frame .kit-load { position: absolute; z-index: 1; background: var(--ink-panel); --panel-accent: var(--accent) }
+
+.book-failed { display: none; margin: 0; padding: 26px; font-size: 15px; line-height: 1.55; color: var(--text-body) }
+.book-failed a { color: var(--accent) }
+.book-dialog.is-failed .book-failed { display: block }
+.book-dialog.is-failed .book-frame { display: none }
+
+/* Edge to edge on a phone: the scheduler needs every pixel a 393px screen has. */
+@media (max-width: 600px) {
+  .book-dialog { padding: 0 }
+  .book-panel { height: 100%; max-height: none; border: 0; border-radius: 0 }
+  .book-scroll { flex: 1 1 auto; height: auto !important }
+}
 
 /* ---------------- the instruments, as objects ---------------- */
 
@@ -2310,14 +2503,22 @@ The hover swell lives on a wrapper, not the core — on the core it would fight 
      laid out and are lifted out of reach instead. visibility rather than display keeps them out of the tab
      order and off the pointer while closed, and it is held for the length of the slide so the panel is still
      there to animate on the way back up. */
+  /* THE PANEL ITSELF NEVER FADES. Its plate blurs the page through a backdrop-filter, and a backdrop-filter
+     inside an element whose opacity is below 1 samples only that element's own group, so the blur arrived a
+     beat late, when the fade ended. The fade is on the rows and the plate instead; the panel only slides. */
   #nav.js-nav .links, #nav.js-nav .tools {
-    visibility: hidden; opacity: 0; pointer-events: none;
-    transition: opacity .2s var(--ease-settle), transform .24s var(--ease-settle), visibility 0s .24s;
+    visibility: hidden; pointer-events: none;
+    transition: transform .24s var(--ease-settle), visibility 0s .24s;
   }
   #nav.js-nav .links.is-open, #nav.js-nav .tools.is-open {
-    visibility: visible; opacity: 1; pointer-events: auto;
-    transition: opacity .2s var(--ease-settle), transform .24s var(--ease-settle), visibility 0s;
+    visibility: visible; pointer-events: auto;
+    transition: transform .24s var(--ease-settle), visibility 0s;
   }
+  #nav.js-nav .links > *, #nav.js-nav .tools > *, #nav.js-nav .links::before, #nav.js-nav .tools::before {
+    opacity: 0; transition: opacity .2s var(--ease-settle);
+  }
+  #nav.js-nav .links.is-open > *, #nav.js-nav .tools.is-open > *,
+  #nav.js-nav .links.is-open::before, #nav.js-nav .tools.is-open::before { opacity: 1 }
 
   .nav-now, .nav-more {
     position: relative; align-items: center; gap: 7px;
@@ -2350,12 +2551,19 @@ The hover swell lives on a wrapper, not the core — on the core it would fight 
     isolation: isolate;
   }
 
-  /* THE PLATE, on both panels. A blurred layer behind rather than a background on the box: the blur is what
-     gives the edges their falloff, and run on the panel itself it would take the names with it. */
-  #nav .links::before, #nav .tools::before {
-    content: ''; position: absolute; z-index: -1;
-    background: rgba(0, 0, 0, .5); border-radius: 18px; filter: blur(11px);
+  /* THE PLATE, on both panels: the same layer the mark's menu uses at every size (see .brand-menu::before),
+     with its edge falloff and the page blurred through it. */
+  #nav .links::before, #nav .tools::before { content: '' }
+
+  /* One link, no menu (the demo page): stays in the bar instead of opening below it, which is what nav.js's
+     dropdown above is for. width undoes the per-item rule below, which sizes .links to its own content --
+     without it, justify-content has no track width left to push the link against. */
+  #nav.bare .links {
+    position: static; flex-direction: row; justify-content: end; width: auto; padding: 0;
+    background: none; border: 0; box-shadow: none; transform: none;
   }
+  #nav.bare .links::before { display: none }
+  #nav.bare { grid-template-columns: auto 1fr }
 
   /* THE CHAPTERS CARRY NO PANEL. No plate, no border: the list is centered under the name it belongs to and
      reads as that name opening out. Both axes live in one transform, since translateX is what centers it and
@@ -2373,7 +2581,7 @@ The hover swell lives on a wrapper, not the core — on the core it would fight 
     transform: translate(-50%, -12px);
   }
   #nav .links.is-open { transform: translate(-50%, 0) }
-  #nav .links::before { inset: -2px -10px }
+  #nav .links::before { inset: -16px -30px }   /* room for the mask's 18px feather on every side */
 
   /* With no plate under them the names sit straight on whatever section is passing, and the top rows landed
      inside a paragraph unreadable. A shadow is the one way to buy contrast without the panel the list is
@@ -2413,7 +2621,7 @@ The hover swell lives on a wrapper, not the core — on the core it would fight 
     transform: translateY(-12px);
   }
   #nav .tools.is-open { transform: translateY(0) }
-  #nav .tools::before { inset: -4px -16px }
+  #nav .tools::before { inset: -16px -32px }
   /* Faint is right for four marks in a bar; in a list over live content it is not readable. */
   #nav .tools a, #nav .tools button {
     color: var(--text-muted);

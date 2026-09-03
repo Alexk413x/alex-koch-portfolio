@@ -59,7 +59,10 @@ export function createMagnet() {
       // A time warp, not a second oscillator: the pole never reverses, it covers some of the circle faster.
       const tw   = t + Math.min(0.4, s.wwig * 0.13) * Math.sin(t * TAU);
       const ang  = spin * TAU * laps * tw + seed;
-      const rad  = 0.30 + 0.20 * Math.sin(t * TAU * 1.3 + seed * 2.1);
+      /* GATHER draws the pole to the middle over the last part of the run, so a warp that is meant to end with the
+         picture pulled to its center can; 0, the lab's value, keeps the orbit to the end. */
+      const gather = (s.warpGather || 0) * Math.min(1, Math.max(0, (t - 0.55) / 0.35));
+      const rad  = (0.30 + 0.20 * Math.sin(t * TAU * 1.3 + seed * 2.1)) * (1 - gather);
       // The x radius carries the aspect, or a circular orbit in suv is an ellipse on a 16:9 tube.
       const asp  = Math.max(0.2, env.aspect);
       const px   = 0.5 + rad * Math.cos(ang) * Math.min(1.6, asp * 0.85);

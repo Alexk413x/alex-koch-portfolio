@@ -83,6 +83,9 @@
   .phos .sw::-webkit-color-swatch-wrapper{padding:0;border:none;border-radius:3px}
   .phos .sw::-webkit-color-swatch{border:none;border-radius:3px}
   .phos .sw::-moz-color-swatch{border:none;border-radius:3px}
+  /* The intro's frame shows the tube and nothing else; &panel keeps the controls. */
+  body.intro #mast, body.intro #hud, body.intro #cal { display: none }
+  body.intro:not(.panel) #panel, body.intro:not(.panel) #paneltgl { display: none }
 </style>
 <!-- Recovers a load whose module graph failed; a classic script because a module could not. See labs/kit/boot-guard.js. -->
 <script src="../kit/boot-guard.js"></script>
@@ -121,15 +124,22 @@ import { createPower } from './crt-power.js';
 import { createMagnet } from './crt-magnet.js';
 import { createSurge } from './crt-surge.js';
 import { createRenderer, buildFaceLUT, buildOutlineLUT, toLinear } from './crt-gl.js';
-import { defaultPreset } from './crt-presets.js';
+import { defaultPreset, introPreset } from './crt-presets.js';
 import { makeFmt, SECTIONS } from './crt-sidebar.js';
 // The one thing this lab takes from the shared kit: Escape leaves, the way the back button does.
 import { escapeLeaves, labReady, mountLoader, persist } from '../kit/lab.js';
 import { createPanel, buildActions, mountPanelToggle } from '../kit/panel.js';
 
 let shownOnce = false;
+/* ?intro: the home page's intro hosts this tube in a frame and drives it through window.CRTGL. No readouts, no
+   stored settings and no Escape -- the intro owns them. &panel keeps the control panel, for tuning the intro's
+   values live and copying them into introPreset. */
+const INTRO = /[?&]intro\b/.test(location.search);
+const PANEL = INTRO && /[?&]panel\b/.test(location.search);
+if (INTRO) document.body.classList.add('intro');
+if (PANEL) document.body.classList.add('panel');
 mountLoader();
-escapeLeaves();
+if (!INTRO) escapeLeaves();
 
 const canvas = document.getElementById('tube');
 // A FACTORY, because it holds machine phase -- two instruments on one page cannot share each other's state.
@@ -196,7 +206,7 @@ const bez = memo(
   };
 });
 
-const state = defaultPreset(R.gpu);
+const state = INTRO ? introPreset(R.gpu) : defaultPreset(R.gpu);
 
 /* SAVE_KEY stays `crtgl` -- an address, not a name. Renaming it silently orphans every visitor's saved settings
  * (the shipped defaults are themselves a real saved configuration, so the loss wouldn't even show on screen).
@@ -208,7 +218,10 @@ const SAVE_KEY = 'crtgl', SAVE_V = 11;   // an address, not a name — see the n
 /* Shared kit store, not a private one: clamps every restored value against SECTIONS so a stale blob can't put a
  * slider thumb somewhere the readout disagrees with. `extra` covers every key in state, since this lab has more
  * settings (phosphor name, swatch, frame color, per-section masters) than it has slider rows. */
-const store = persist({ key: SAVE_KEY, version: SAVE_V, state, sections: SECTIONS, extra: Object.keys(state) });
+// No store at all in the intro, not a store left unread: persist() flushes on pagehide and would write the
+// intro's tube over the visitor's own.
+const store = INTRO ? { restore() {}, save() {}, queueSave() {} }
+                    : persist({ key: SAVE_KEY, version: SAVE_V, state, sections: SECTIONS, extra: Object.keys(state) });
 store.restore();
 const queueSave = store.queueSave;
 
@@ -832,7 +845,13 @@ function frame(now) {
    * the counter banking the whole warm-up as owed time and dumping a dozen characters onto one frame. The
    * power guard is the lab's own: without it the boot kept running behind a dark screen, invisible only by luck. */
   if (!state.power || (typeAt && now < typeAt)) lastType = now;
-  else if (now - lastType > 60000 / (350 * 5 * state.type) && typed < FULL) { typed++; lastType = now; }
+  else {
+    // Catches up by the interval rather than one character per frame, so the rate is the setting's and not the
+    // frame rate's; capped, so a stalled frame does not dump a whole row at once.
+    const iv = 60000 / (350 * 5 * state.type);
+    for (let n = 0; n < 4 && now - lastType > iv && typed < FULL; n++) { typed++; lastType += iv; }
+    if (now - lastType > iv * 4) lastType = now;
+  }
   drawContent();   // no-ops unless the typed count or the caret phase moved
   syncLUT();
   syncCal();       // likewise: rebuilds only when a geometry control or the aspect moved
@@ -1083,7 +1102,10 @@ window.CRTGL = { state, get R() { return R; }, resize, textGrid, drawContent, re
   // Both samplers are pure, so a whole warp/surge event can be stepped through and read off without driving it.
   triggerWarp, warpAt, get warpT0() { return MAG.t0; },
   triggerSurge, surgeAt: surgeNow, get surgeT0() { return SRG.t0; },
-  surgeMs: () => FLK.surgeMs() };
+  surgeMs: () => FLK.surgeMs(),
+  // For a director: whether a frame has been drawn, and whether the boot text has finished typing.
+  get shown() { return shownOnce; },
+  get typedDone() { return FULL > 0 && typed >= FULL; } };
 </script>
 </body>
 </html>

@@ -40,12 +40,47 @@
   (function () {
     var el = document.documentElement;
     el.classList.add('booting');
+    /* WHETHER THE INTRO RUNS IS DECIDED HERE, before first paint, because the intro's black sheet has to be
+       true for the very first frame or the hero flashes under it. ONCE PER VISITOR: a browser that has seen it
+       (localStorage, or sessionStorage for the test harness) skips it, as do ?nointro, a hash, reduced motion
+       and no WebGL2. A replay is asked for through sessionStorage's one-shot 'intro-replay' flag, set by the
+       REPLAY INTRO controls, and ?intro forces it for tuning; intro.js strips ?intro on reveal so a refresh
+       does not run it again. site/intro/intro.js reads AK_INTRO and reveals the page itself when its last
+       frame is the hero's. */
+    var intro = false;
+    try {
+      var q = location.search;
+      var replay = sessionStorage.getItem('intro-replay') === '1';
+      if (replay) sessionStorage.removeItem('intro-replay');
+      var seen = !!(localStorage.getItem('intro-seen') || sessionStorage.getItem('intro-seen'));
+      intro = replay || /[?&]intro\b/.test(q) ||
+              (!/[?&]nointro\b/.test(q) && !location.hash && !!window.WebGL2RenderingContext &&
+               !matchMedia('(prefers-reduced-motion: reduce)').matches && !seen);
+    } catch (e) { intro = false; }
+    window.AK_INTRO = intro;
+    if (intro) el.classList.add('intro-live');
     // WAIT FOR THE TYPE, NOT JUST THE DOM. display-lockup.js measures each line's real ink edges and retracks
     // the shorter one, which it can only do once the webfont has arrived — measured, that moves the lockup 30px.
     // Revealing on DOMContentLoaded alone put that move inside the fade on a slow font, so the name appeared to
     // slide into place. Behind fonts.ready it happens while the hero is still at zero opacity.
     var done = false;
     var reveal = function () { if (done) return; done = true; el.classList.remove('booting'); };
+    window.AK_REVEAL = reveal;
+    if (intro) {
+      // A replay must open on the hero. Restoration would put the page back where the reader last was, under
+      // the sheet, and the reveal would land them there.
+      try { history.scrollRestoration = 'manual'; } catch (e) {}
+      // The director reveals, and its own timeouts bound every beat. This covers the director never arriving:
+      // a module that fails to fetch must not leave the page under a black sheet.
+      setTimeout(function () {
+        if (window.AK_INTRO_RUNNING) return;
+        var sheet = document.getElementById('intro');
+        if (sheet) sheet.remove();
+        el.classList.remove('intro-live');
+        reveal();
+      }, 6000);
+      return;
+    }
     var ready = document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve();
     ready.then(function () {
       // One more frame after the fonts land, so the retrack has been laid out before anything becomes visible.
@@ -57,6 +92,8 @@
 </script>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="site/site.css">
+<!-- The intro's loading ring is the labs' own; the sheet carries it while the tube's shaders compile. -->
+<link rel="stylesheet" href="labs/kit/loading.css">
 </head>
 <body>
 
@@ -65,11 +102,29 @@
      disagree about how tall a screen is. See #screen-probe in site.css for why it is svh and not dvh. -->
 <i id="screen-probe" aria-hidden="true"></i>
 
+<!-- The intro's sheet. Shown only while <html> carries intro-live, which the head script sets before first
+     paint; site/intro/intro.js fills it and removes it. Removed, not faded: a sheet left at opacity 0 eats
+     every click on the page under it. -->
+<div id="intro" aria-hidden="true">
+  <!-- The labs' loading ring, written out rather than mounted: the module that would mount it runs behind the
+       font stylesheet and every classic script, which left the sheet black for most of a second. This is what
+       mountLoader() in labs/kit/lab.js builds, and suite_intro asserts the two are the same markup. -->
+  <div class="kit-load" data-owned role="status" aria-live="polite">
+    <div class="kit-ring" aria-hidden="true"><svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="56" fill="none" stroke="rgba(255,180,84,.13)" stroke-width="1"/><circle cx="60" cy="60" r="52" fill="none" stroke="rgba(255,180,84,.15)" stroke-width="2.5"/><circle cx="60" cy="60" r="33" fill="none" stroke="rgba(255,180,84,.17)" stroke-width="1" stroke-dasharray="1 14"/></svg><svg class="kr-dash" viewBox="0 0 120 120"><circle cx="60" cy="60" r="46" fill="none" stroke-width="1.5" stroke="var(--panel-accent, #ffb454)" stroke-dasharray="2 11" opacity=".55"/></svg><svg class="kr-hair" viewBox="0 0 120 120"><circle cx="60" cy="60" r="41" fill="none" stroke-width="1" stroke="rgba(255,217,160,.24)" stroke-dasharray="1 8"/></svg><svg class="kr-arc" viewBox="0 0 120 120"><circle cx="60" cy="60" r="52" fill="none" stroke-width="2.5" stroke="var(--panel-accent, #ffb454)" stroke-linecap="round" stroke-dasharray="70 257" transform="rotate(-90 60 60)"/></svg></div><div class="kit-load-name">ALEXK413X</div><div class="kit-load-stage">Warming up</div>
+  </div>
+  <button id="intro-skip" type="button">SKIP <kbd>ESC</kbd></button>
+</div>
+
 <!-- Three zones on one row: the mark, the sections, the marks. The middle zone is centerd against the viewport
      rather than against whatever the two sides weigh, so the links hold still when either side changes width. -->
 <nav id="nav">
+  <!-- The mark opens a one-row menu rather than jumping: the only way back to the intro once a browser has
+       seen it. -->
   <div class="brand">
-    <a class="mark" href="#alex">ALEXK413X</a>
+    <button class="mark" type="button" aria-expanded="false" aria-controls="brand-menu">ALEXK413X</button>
+    <div class="brand-menu" id="brand-menu">
+      <button type="button" data-replay-intro><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5a7 7 0 1 1-6.3 4"/><path d="M5 4v5h5"/></svg><span>Replay the intro</span></button>
+    </div>
   </div>
   <!-- THE CHAPTER METER, COLLAPSED. Six labels do not fit across a 393px bar, so on a phone this button is the
        list's face: nav.js writes the name from the same --k the bars run on, and the rule under it is the whole
@@ -85,7 +140,7 @@
     <a href="#app">CALCULATOR</a>
     <a href="#experience">EXPERIENCE</a>
     <a href="#labs">LABS</a>
-    <a href="#contact">CONTACT</a>
+    <a href="#contact">CONNECT</a>
   </div>
   <!-- Deliberately the quietest thing in the bar: all three are reachable again in CONTACT, so up here they are
        a shortcut rather than the route. -->
@@ -105,6 +160,10 @@
     <a class="tip" data-tip="github.com/Alexk413x" href="https://github.com/Alexk413x" target="_blank" rel="noopener" aria-label="GitHub">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 0 0-3.16 19.49c.5.09.68-.22.68-.48v-1.7c-2.78.6-3.37-1.34-3.37-1.34-.45-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.61.07-.61 1 .07 1.53 1.03 1.53 1.03.9 1.53 2.35 1.09 2.92.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.94 0-1.09.39-1.98 1.03-2.68-.1-.25-.45-1.27.1-2.64 0 0 .84-.27 2.75 1.02a9.5 9.5 0 0 1 5 0c1.91-1.29 2.75-1.02 2.75-1.02.55 1.37.2 2.39.1 2.64.64.7 1.03 1.59 1.03 2.68 0 3.84-2.34 4.68-4.57 4.93.36.31.68.92.68 1.86v2.75c0 .27.18.58.69.48A10 10 0 0 0 12 2"/></svg><span class="tool-name">GitHub</span>
     </a>
+    <!-- Same pattern as the QR mark below it: book.js binds every [data-open] to the dialog it names. -->
+    <button class="tip" data-tip="Connection Time!" type="button" data-open="cal-dialog" aria-label="Connection Time! Book a call on Cal.com">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 2h2v2h6V2h2v2h3a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h3zM5 9v11h14V9zm10.3 2.1 1.4 1.4-5.2 5.2-3.2-3.2 1.4-1.4 1.8 1.8z"/></svg><span class="tool-name">Connection Time!</span>
+    </button>
     <!-- One dialog, two triggers. share.js binds every [data-qr-open], so this and the contact button are two
          doors into the same drawn-once canvas rather than two descriptions of it. -->
     <button class="tip" data-tip="Show QR code" type="button" data-qr-open aria-label="Show QR code for this site">
@@ -419,8 +478,8 @@
       <div><b>Platforms</b>Android, iOS, Windows, Web</div>
       <!-- Same three rows as the .cat block's .keys. One is the no-JS fallback and one is the built view, so a
            reader sees exactly one; edit them together. -->
-      <div><b>Tools</b>Claude Code, Cursor, Codex, Copilot, Agentic Development, Antigravity, Android Studio,
-        Jetpack, Firebase, Azure, JUnit, Espresso, Xamarin, Git</div>
+      <div><b>Tools</b>AI Engineer, Claude Code, Cursor, Codex, Copilot, Agentic Development, Antigravity, Android Studio,
+        Jetpack, JIRA, Firebase, JUnit, Espresso, Xamarin, Git, Photoshop</div>
     </div>
 
     <!-- THE BACK CATALOG. The product leads and the employer is withheld until one is picked — the shelf is
@@ -603,22 +662,23 @@
           <div class="proof-at">
             <span class="pa-label">Built at</span>
             <h4 data-site="https://www.yahoo.com/" data-via="Mindlance" data-via-site="https://www.mindlance.com/">Yahoo!</h4>
-            <span class="pa-role">Agentic Engineer</span>
+            <span class="pa-role">Agentic Mobile Engineer</span>
             <time datetime="2025-09/2026-07">Sep 2025 &ndash; Jul 2026</time>
           </div>
           <p class="proof-more">App-, platform- and LLM-agnostic: one test case runs unchanged on iOS, Android and
-            Web. Saves executives, project managers, QA and developers across every app team hundreds of hours weekly.</p>
-          <p class="proof-lede">A multi-agent QA platform and dashboard. It turns a description of a test into a running end-to-end test, updating itself as the app changes.</p>
-          <p class="proof-lede">Created an agentic team to help with building and iterating on the QAAI engine and dashboard. Then distributed the team as a plugin for others to use in their work internally.</p>
+            Web from a simple prompt. Runs nightly in CI/CD with accurate bug detection, saving executives, project
+            managers, QA and developers across every app team hundreds of hours weekly.</p>
+          <p class="proof-lede">A multi-agent end-to-end QA platform for Android, iOS and Web. It turns a description of a test into a running test that generates, executes and self-heals as the app changes.</p>
+          <p class="proof-lede">Built the QAAI Dashboard on GCP, with real-time video and action playback, results and cost graphs, and a Claude Code plugin for building, testing and maintaining codebases, distributed across Yahoo!.</p>
           <ul class="proof-wins">
             <li><b>500+ tests</b> generated with <b>8 bugs</b> caught before a release</li>
-            <li><b>100s of hours</b> saved for each team from QA, devs, PMs and executives</li>
+            <li><b>100s of hours</b> saved weekly for QA, devs, PMs and executives</li>
             <li><b>1 test</b> for Android, iOS, and Web</li>
             <li>Cost savings with swappable or even <b>local LLMs</b></li>
             <li>Every run with recorded video and logs for review and <b>LLM training</b></li>
           </ul>
           <p class="proof-kit"><b>Features</b>Android 9&ndash;16</p>
-          <p class="proof-kit"><b>Tools</b>Claude Code, Cursor, Codex, Copilot, LLM Agents, Kotlin, Compose, Android Studio, Python, GCP</p>
+          <p class="proof-kit"><b>Tools</b>AI Engineer, Prompt Engineering, Agentic Development, Claude Code, Cursor, Codex, Copilot, LLM Agents, Kotlin, Compose, Android Studio, Python, GCP</p>
         </div>
 
         <div class="proof" id="pf-mail">
@@ -627,14 +687,15 @@
           <div class="proof-at">
             <span class="pa-label">Built at</span>
             <h4 data-site="https://www.yahoo.com/" data-via="Mindlance" data-via-site="https://www.mindlance.com/">Yahoo!</h4>
-            <span class="pa-role">Agentic Engineer</span>
+            <span class="pa-role">Agentic Mobile Engineer</span>
             <time datetime="2025-09/2026-07">Sep 2025 &ndash; Jul 2026</time>
           </div>
-          <p class="proof-more">Developed and maintained features on Yahoo! Mail alongside the agentic plugin work,
-            with a focus on accessibility.</p>
-          <p class="proof-lede">Developed an agentic workflow for exploring and fixing issues within the Yahoo! Mail app. Turned the workflow into a Claude Code plugin for internal distribution at Yahoo! Focusing on reproducible issues and fixes that the agentic team could produce before and after evidence for review to ensure proper fixes.</p>
+          <p class="proof-more">Developed Yahoo! Mail for Android features focused on accessibility and EAA compliance,
+            eliminating QA pain points and increasing performance through QAAI.</p>
+          <p class="proof-lede">Developed a multi-agent workflow for exploring and fixing issues in Yahoo! Mail, then shipped it as a Claude Code plugin for teams across Yahoo!. Every fix is reproducible, with before-and-after evidence for review.</p>
           <ul class="proof-wins">
             <li>Increased <b>EAA compliance to 100%</b> throughout the whole app</li>
+            <li>Eliminated <b>QA pain points</b> and increased performance through QAAI</li>
             <li>Maintained features by fixing bugs and removing <b>legacy code</b></li>
             <li>Streamlined <b>CI/CD</b> testing with nightly QAAI test runs</li>
           </ul>
@@ -643,7 +704,7 @@
             <a href="https://apps.apple.com/us/app/yahoo-mail-your-email-inbox/id577586159" data-store="ios" target="_blank" rel="noopener noreferrer">App Store</a>
           </p>
           <p class="proof-kit"><b>Features</b>Android 9&ndash;16</p>
-          <p class="proof-kit"><b>Tools</b>Claude Code, Cursor, Codex, Copilot, LLM Agents, Kotlin, Compose, Android Studio, Python, GCP</p>
+          <p class="proof-kit"><b>Tools</b>AI Engineer, Prompt Engineering, Agentic Development, Claude Code, Cursor, Codex, Copilot, LLM Agents, Kotlin, Compose, Android Studio, Python, GCP</p>
         </div>
 
         <div class="proof" id="pf-sc">
@@ -1000,8 +1061,8 @@
       <div class="keys">
         <div class="key-row"><b>Languages</b><p>Kotlin, Java, Python, XML, HTML5, JavaScript, TypeScript, CSS</p></div>
         <div class="key-row"><b>Platforms</b><p>Android, iOS, Windows, Web</p></div>
-        <div class="key-row"><b>Tools</b><p>Claude Code, Cursor, Codex, Copilot, Agentic Development, Antigravity, Android Studio,
-          Jetpack, Firebase, Azure, JUnit, Espresso, Xamarin, Git</p></div>
+        <div class="key-row"><b>Tools</b><p>AI Engineer, Claude Code, Cursor, Codex, Copilot, Agentic Development, Antigravity, Android Studio,
+          Jetpack, JIRA, Firebase, JUnit, Espresso, Xamarin, Git, Photoshop</p></div>
       </div>
 
       <!-- THE COMPANY BAR IS NAVIGATION, NOT A FILTER. Every employer stays listed whatever is showing — hiding
@@ -1068,6 +1129,9 @@
       hand-authored with no framework and no build step, built to make something physical <em>measurable</em>
       rather than merely to look like it.
     </p>
+    <!-- The intro is the fourth thing built here, and a browser sees it once; this is the way back to it. -->
+    <p class="lab-replay">The opening sequence runs once per browser.
+      <button type="button" data-replay-intro><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5a7 7 0 1 1-6.3 4"/><path d="M5 4v5h5"/></svg><span>Replay the intro</span></button></p>
     <div class="lab-grid">
       <a class="lab-card" href="labs/crt/CRT%20Lab.html">
         <div class="obj crt cold"><div class="obj-3d">
@@ -1081,6 +1145,13 @@
            ray-traced light fitting reflected in the glass, solved per pixel.</p>
         <div class="go">INSPECT →</div>
       </a>
+      <a class="lab-card" href="labs/wormhole/Wormhole.html">
+        <div class="obj wh"><div class="obj-3d"><div class="roll"></div></div></div>
+        <div class="tag">WEBGL2</div>
+        <div class="name">Wormhole Lab</div>
+        <p>A tunnel solved rather than marched, ending at a black hole traced along real light paths.</p>
+        <div class="go">INSPECT →</div>
+      </a>
       <a class="lab-card" href="labs/reactor/Reactor.html">
         <div class="obj rx cold"><div class="obj-3d">
           <div class="blob"><div class="core"><b></b><b></b><b></b></div></div>
@@ -1089,13 +1160,6 @@
         <div class="name">Reactor Lab</div>
         <p>A containment core, sphere-traced: a goo core with sub-cores torn out of it by a pulse, nine alloy
            ring fragments, and a shield that fails on a schedule.</p>
-        <div class="go">INSPECT →</div>
-      </a>
-      <a class="lab-card" href="labs/wormhole/Wormhole.html">
-        <div class="obj wh"><div class="obj-3d"><div class="roll"></div></div></div>
-        <div class="tag">WEBGL2</div>
-        <div class="name">Wormhole Lab</div>
-        <p>A tunnel solved rather than marched, ending at a black hole traced along real light paths.</p>
         <div class="go">INSPECT →</div>
       </a>
     </div>
@@ -1113,6 +1177,11 @@
       <a href="https://github.com/Alexk413x" target="_blank" rel="noopener">GITHUB ↗</a>
       <button id="qr-open" type="button" data-qr-open>SHOW QR CODE</button>
     </div>
+    <!-- The booking call on its own row under the links, larger: it is the one action here, the rest are
+         addresses. -->
+    <div class="contact-book">
+      <button id="cal-open" type="button" data-open="cal-dialog">CONNECTION TIME!</button>
+    </div>
   </div>
 </section>
 
@@ -1124,6 +1193,32 @@
   </div>
 </div>
 
+<!-- THE BOOKING DIALOG. Cal.com's booker is mounted inside .book-frame by book.js on the first open, not at
+     load: the embed script stays off the page until someone asks for the calendar. The plain link in the
+     failure text is the no-JS route. -->
+<div id="cal-dialog" class="book-dialog" data-provider="cal" role="dialog" aria-modal="true" aria-labelledby="cal-title" hidden>
+  <div class="book-panel" tabindex="-1">
+    <!-- A thin strip above the scroller, so the close mark never leaves the top. -->
+    <div class="book-head">
+      <div class="sec-label" id="cal-title">CONNECTION TIME!</div>
+      <button class="book-close" type="button" aria-label="Close">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19"/></svg>
+      </button>
+    </div>
+    <div class="book-scroll">
+    <div class="book-frame">
+      <!-- The intro's ring, same markup as mountLoader() builds, over the frame until Cal.com has drawn.
+           book.js removes it, as labReady() does, so it can never sit invisibly over the scheduler. -->
+      <div class="kit-load" data-owned role="status" aria-live="polite">
+        <div class="kit-ring" aria-hidden="true"><svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="56" fill="none" stroke="rgba(255,180,84,.13)" stroke-width="1"/><circle cx="60" cy="60" r="52" fill="none" stroke="rgba(255,180,84,.15)" stroke-width="2.5"/><circle cx="60" cy="60" r="33" fill="none" stroke="rgba(255,180,84,.17)" stroke-width="1" stroke-dasharray="1 14"/></svg><svg class="kr-dash" viewBox="0 0 120 120"><circle cx="60" cy="60" r="46" fill="none" stroke-width="1.5" stroke="var(--panel-accent, #ffb454)" stroke-dasharray="2 11" opacity=".55"/></svg><svg class="kr-hair" viewBox="0 0 120 120"><circle cx="60" cy="60" r="41" fill="none" stroke-width="1" stroke="rgba(255,217,160,.24)" stroke-dasharray="1 8"/></svg><svg class="kr-arc" viewBox="0 0 120 120"><circle cx="60" cy="60" r="52" fill="none" stroke-width="2.5" stroke="var(--panel-accent, #ffb454)" stroke-linecap="round" stroke-dasharray="70 257" transform="rotate(-90 60 60)"/></svg></div><div class="kit-load-name">CONNECTION TIME!</div><div class="kit-load-stage">Loading Cal.com</div>
+      </div>
+    </div>
+    </div>
+    <p class="book-failed">Cal.com did not load.
+      <a href="https://cal.com/alexk413x/connect" target="_blank" rel="noopener">Open the calendar in a new tab &#8599;</a></p>
+  </div>
+</div>
+
 <!-- First: everything below reaches for AKKIT as it initializes. -->
 <script src="site/kit.js"></script>
 <script src="site/display-lockup.js"></script>
@@ -1131,6 +1226,7 @@
 <script src="site/nav.js"></script>
 <script src="site/qr.js"></script>
 <script src="site/share.js"></script>
+<script src="site/book.js"></script>
 <script src="site/rpn.js"></script>
 <script src="site/rpn-demo.js"></script>
 <script src="site/lab-objects.js"></script>
@@ -1138,6 +1234,7 @@
 <script type="module" src="site/catalog.js"></script>
 <script src="site/timeline.js"></script>
 <script type="module" src="site/hero-core.js"></script>
+<script type="module" src="site/intro/intro.js"></script>
 
 <!-- WHAT THE PAGE ALREADY SAYS, IN THE FORM A MACHINE READS. Every claim below has a visible counterpart
      above it; nothing is asserted here that a reader cannot also find on the page. That is the whole line
@@ -1242,6 +1339,9 @@
         "Codex",
         "Copilot",
         "Antigravity",
+        "Prompt Engineering",
+        "JIRA",
+        "Photoshop",
         "End-to-End",
         "Accessibility",
         "Performance",
@@ -1716,7 +1816,7 @@
           "name": "What does Alex Koch work with?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Kotlin, Java, Python, XML, HTML5, JavaScript, TypeScript and CSS, across Android, iOS, Windows and Web, with Claude Code, Cursor, Codex, Copilot, Android Studio, Jetpack, Firebase, Azure, JUnit, Espresso, Xamarin and Git."
+            "text": "Kotlin, Java, Python, XML, HTML5, JavaScript, TypeScript and CSS, across Android, iOS, Windows and Web, with Claude Code, Cursor, Codex, Copilot, Antigravity, Android Studio, Jetpack, JIRA, Firebase, JUnit, Espresso, Xamarin, Git and Photoshop."
           }
         }
       ]

@@ -88,6 +88,7 @@
   const panels = [
     { btn: nav.querySelector('.nav-now'), panel: nav.querySelector('.links') },
     { btn: nav.querySelector('.nav-more'), panel: nav.querySelector('.tools') },
+    { btn: nav.querySelector('.mark'), panel: nav.querySelector('.brand-menu') },
   ].filter((p) => p.btn && p.panel);
 
   const nowName = nav.querySelector('.nav-now-name');
@@ -115,11 +116,19 @@
     // Anything outside a panel closes it, the anchor handler below included — a menu that survived the jump it
     // asked for would sit over the section it just named.
     document.addEventListener('click', (e) => {
-      if (!e.target.closest('#nav .links, #nav .tools')) closePanels();
+      if (!e.target.closest('#nav .links, #nav .tools, #nav .brand-menu')) closePanels();
       else if (e.target.closest('a, button')) closePanels();
     });
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closePanels(); });
   }
+
+  /* REPLAY THE INTRO. A one-shot flag the head script reads on the next document, then a load of the bare
+     path: no hash, so the reveal lands on the hero at the top, and no ?intro, so the refresh after it is an
+     ordinary visit. The flag rather than ?intro for that second reason. */
+  document.querySelectorAll('[data-replay-intro]').forEach((btn) => btn.addEventListener('click', () => {
+    try { sessionStorage.setItem('intro-replay', '1'); } catch (e) {}
+    location.assign(location.pathname);
+  }));
 
   /* Two pixels' worth of a bar, in k. See the current-item note in frame(). */
   const SETTLED = .002;

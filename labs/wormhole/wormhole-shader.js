@@ -16,12 +16,12 @@ export const MAXL = 6;
 
 export const UNIFORMS = [
   'uRes', 'uTime', 'uFov', 'uFar',
-  'uBend', 'uBendFlow', 'uBendDir',
+  'uBend', 'uBendDir',
   'uMass', 'uEndR',
   'uDisc', 'uDiscTilt', 'uDiscLean', 'uDiscOut', 'uDiscH', 'uDiscSpin', 'uDiscFlow',
   'uDiscA', 'uDiscB', 'uDoppler',
   'uFog', 'uExposure',
-  'uGeom', 'uMix', 'uShade', 'uExtra', 'uRingP',
+  'uGeom', 'uMix', 'uShade', 'uExtra', 'uRingP', 'uFlow',
   'uCloudA', 'uCloudB', 'uBoltA', 'uBoltB', 'uStrkA', 'uStrkB',
 ];
 
@@ -31,7 +31,7 @@ out vec4 fragColor;
 
 uniform vec2 uRes;
 uniform float uTime, uFov, uFar;
-uniform float uBend, uBendFlow, uBendDir;
+uniform float uBend, uBendDir;
 uniform float uMass, uEndR;
 uniform float uDisc, uDiscTilt, uDiscLean, uDiscOut, uDiscH, uDiscSpin, uDiscFlow, uDoppler;
 uniform float uFog, uExposure;
@@ -46,6 +46,9 @@ uniform vec4 uExtra[${MAXL}];
 // Per-shell (not a shared global pair) so each shell's ring pitch and flow can differ -- that mismatch is the
 // depth cue the shells exist to give.
 uniform vec4 uRingP[${MAXL}];
+// flow: wall phase, spin phase, two spare. The HOST integrates these rather than the shader multiplying a rate by
+// uTime, so a move that changes a rate adds only its own difference instead of scaling the whole elapsed clock.
+uniform vec4 uFlow[${MAXL}];
 
 // Two colors per effect per shell: each effect blends its own A-to-B across its own gradient (cloud by density,
 // bolts by strength, streaks per lane), so effects sharing a shell don't have to share a color. A march can't do
@@ -114,8 +117,10 @@ float gSwing;
 float gSlope;
 
 // Caches this frame's bend direction and saturated swing amplitude for bendAt/bendD/wallGap.
+// uBendDir arrives already carrying BEND FLOW's integrated phase, so a move that changes the rate cannot
+// multiply the change by the whole elapsed clock and swing the arch round.
 void setupBend(){
-  float a = uBendDir + uTime * uBendFlow * 0.12;
+  float a = uBendDir;
   gBendDir = vec2(cos(a), sin(a));
   gSwing = MAX_SWING * tanh(uBend / MAX_SWING) * TUBE_R;
 }
@@ -296,8 +301,9 @@ float solveShell(vec3 rd, float R, float tStart, out vec2 rel, out float zz, out
 
 // A streak is a lane down the tube, so its angle picks the lane and its depth picks how far the head has
 // travelled -- one floor() and a hash, where the marched build needs capsules and a per-shell candidate search.
-// Takes its own count/speed/color so streaks inherit their own shell's depth, like every other effect.
-float streakAt(float ang, float z, float count, float speed, out float lr){
+// Takes its own count/flow/color so streaks inherit their own shell's depth, like every other effect. flow is the
+// shell's integrated wall phase, not its speed, so heads travel with the wall instead of jumping when a move scales it.
+float streakAt(float ang, float z, float count, float flow, out float lr){
   // Lane count is rounded to a whole number and wrapped with mod(): atan's (-PI,PI] branch cut jumps by exactly
   // count, and a bare floor() there hashes the two sides differently, drawing a seam down the tube. A
   // fractional count can't tile the circle either, so it can't be trusted straight from the panel.
@@ -305,7 +311,7 @@ float streakAt(float ang, float z, float count, float speed, out float lr){
   float slot = (ang + TAU) / TAU * lanes;
   float lane = mod(floor(slot), lanes);
   lr = h31(vec3(lane, 3.7, 1.9));
-  float head = fract(lr * 7.3 - uTime * speed * (0.06 + lr * 0.11));
+  float head = fract(lr * 7.3 - flow * (0.06 + lr * 0.11));
   float along = fract(z * 0.045 - head);
   float across = fract(slot) - 0.5;
   return step(0.55, lr) * exp(-along * 16.0) * exp(-across * across * 70.0);
@@ -333,7 +339,7 @@ void main(){
   for (int s = 0; s < ${MAXL}; s++){
     if (uExtra[s].y < 0.5) continue;
 
-    vec4 g = uGeom[s], m = uMix[s], sh = uShade[s];
+    vec4 g = uGeom[s], m = uMix[s], sh = uShade[s], fl = uFlow[s];
     vec2 rel; float z, graze;
     float t = solveShell(rd, max(g.x, 0.02), tPrev, rel, z, graze);
     // Advance on ANY hit, including one past DEPTH: the next shell's is further still either way.
@@ -346,11 +352,14 @@ void main(){
     // end (where the taper is already clamped), and the throat read as that extrapolated fill running out
     // rather than as the tube's actual end -- which is what welds the tube's end to the hole at DEPTH.
     if (t <= 0.0 || z > uFar || depth <= 0.002) continue;
-    float ang = atan(rel.y, rel.x) + sh.w * uTime;
+    // fl.y is SPIN's integrated phase, not SPIN times uTime: a move that scales SPIN adds its own difference here
+    // rather than rotating the whole shell by the change times the elapsed clock.
+    float ang = atan(rel.y, rel.x) + fl.y;
 
-    // The tunnel's own coordinates: angle round the tube, distance along it (scaled by WIND via g.w).
+    // The tunnel's own coordinates: angle round the tube, distance along it (scaled by WIND via g.w). fl.x is
+    // SPEED's integrated phase, for the same reason -- multiplying a changing rate by uTime lurched the wall.
     vec3 tc = vec3(cos(ang), sin(ang), 0.0) * 1.9
-            + vec3(0.0, 0.0, z * g.w + uTime * g.z * g.w);
+            + vec3(0.0, 0.0, z * g.w + fl.x * g.w);
 
     float d = 0.0;
     vec3 emit = vec3(0.0);
@@ -384,7 +393,7 @@ void main(){
     // STREAKS — lanes down the tube, at this shell's own radius, speed and color, so they inherit its depth.
     if (m.z > 0.001){
       float lr;
-      float st = streakAt(ang, z, max(uExtra[s].x, 4.0), g.z, lr) * 2.0;
+      float st = streakAt(ang, z, max(uExtra[s].x, 4.0), fl.x, lr) * 2.0;
       d += m.z * st;
       emit += mix(uStrkA[s].rgb, uStrkB[s].rgb, lr) * m.z * st;
     }
