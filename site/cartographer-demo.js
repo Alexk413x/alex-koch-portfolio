@@ -10,11 +10,11 @@ const STEPS = [
   { s: 2.904,  e: 3.128,  verb: 'tap',     target: 'Clear all' },
   { s: 3.134,  e: 4.504,  verb: 'tap',     target: 'Toggle Menu' },
   { s: 4.508,  e: 5.622,  verb: 'tap',     target: 'Settings' },
-  { s: 5.635,  e: 7.032,  verb: 'tap run', target: 'Light Dark', count: 2 },
+  { s: 5.635,  e: 7.032,  verb: 'tap',     target: 'Light Dark', count: 2 },
   { s: 7.046,  e: 8.599,  verb: 'tap',     target: 'Back' },
-  { s: 8.700,  e: 12.270, verb: 'tap run', target: '1234567890 Enter 400 Enter 13 Add', count: 18 },
+  { s: 8.700,  e: 12.270, verb: 'tap',     target: '1234567890 Enter 400 Enter 13 Add', count: 18 },
   { s: 12.283, e: 15.503, verb: 'drag',    target: '413 above 1234567890' },
-  { s: 15.522, e: 16.745, verb: 'tap run', target: 'Undo Undo Undo', count: 3 },
+  { s: 15.522, e: 16.745, verb: 'tap',     target: 'Undo Undo Undo', count: 3 },
 ];
 
 const HOLD_S = 5;

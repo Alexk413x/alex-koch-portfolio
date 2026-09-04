@@ -13,8 +13,8 @@ const STORM_SEC = 7.0;     // long enough to arrive, sit, and leave
 const DIVE_SEC = 3.2;      // the hole alone: huge, seen from over the top, turning down as it shrinks
 const SETTLE_SEC = 3.6;    // the tunnel forms around it and the flow eases up to the slider
 const COLLAPSE_SEC = 4.6;  // shutting down: straighten, the tunnel stops, the hole comes back, out
-const OPEN_SEC = 4.7;      // the intro's arrival: the depth brings the hole in, a slow tilt, the walls come up and it backs off
-const RUN_SEC = 3.6;       // the intro's exit: the tube straightens and its end comes up to the eye
+const OPEN_SEC = 2.3;      // the intro's arrival: the depth brings the hole in, a slow tilt, the walls come up and it backs off
+const RUN_SEC = 2.0;       // the intro's exit: the tube straightens and its end comes up to the eye
 // The cruise's depth and lens, as fractions of the sliders: shorter and wider so the bend reads as the arch it is.
 // The arrival lands on these, so the hand-off to the cruise does not step.
 // Shorter and wider still than the lab's: the same swing over less depth is a sharper arch.
@@ -27,21 +27,23 @@ const NEAR_FAR = 15;
 const START_FAR = 1.8;   // times the slider's depth: where the arrival begins, so the hole opens small
 const EXIT_FAR = 2;       // close enough that the shadow grows past the frame's edges
 const BEND = 20;
-const BEND_IN_SEC = 3.5;   // the cruise's bend comes up over this, from nothing
-const BEND_WAIT_SEC = 0.4;   // the flight is moving before it starts to turn
+const BEND_IN_SEC = 2.5;   // the cruise's bend comes up over this, from nothing; at full swing before the exit
 /* The flow through the intro, as multiples of the slider's speed. The walls rise through the arrival's back-off
  * to seven tenths of CRUISE_TOP, then on to CRUISE_TOP over CRUISE_ACCEL_SEC of flight; the exit climbs to RUN_SPEED
  * before the depth pulls in. Bursts ride on top of this. */
 const CRAWL = 0.3;
 const CRUISE_TOP = 2.4;
 const CRUISE_ACCEL_SEC = 3.0;
+// The flight's acceleration starts this long before the arrival's back-off lands, so the flow is already
+// picking up as the depth settles rather than sitting flat for a beat between the two eases.
+const CRUISE_LEAD_SEC = 0.1;
 const RUN_SPEED = 3.6;
 
 // The reactor's STABLE green, in hue degrees. The palette starts turning to it TINT_START seconds into the
 // flight and is there TINT_SEC later, which runs on into the exit.
 const GREEN_HUE = 118;
-const TINT_START = 2.0;
-const TINT_SEC = 3.5;
+const TINT_START = 1.0;
+const TINT_SEC = 3.0;
 
 /* The hole both moves open and close on. DISC_RS is in Schwarzschild radii, not
  * the panel's world units -- tied to the hole's own mass, the disc keeps a
@@ -110,7 +112,7 @@ export function createMoves(opts) {
         if (moveT > (closing ? COLLAPSE_SEC : DIVE_SEC + SETTLE_SEC)) moveT = -1;
       }
       if (openT >= 0) { openT += d; if (openT > OPEN_SEC) { openT = -1; cruise = true; } }
-      if (cruise && runT < 0) cruiseT += d;
+      if ((cruise || (openT >= 0 && openT >= OPEN_SEC - CRUISE_LEAD_SEC)) && runT < 0) cruiseT += d;
       // The run holds at its last frame rather than retiring: what follows it is a cut, and the cut decides
       // when this scene is done.
       if (runT >= 0 && runT < RUN_SEC) runT = Math.min(RUN_SEC, runT + d);
@@ -120,6 +122,9 @@ export function createMoves(opts) {
       if (!api.busy && !dark) return s;
 
       const o = { ...s };
+      // Ease-out, not smoothstep: it has to leave the arrival's speed with slope, or the hand-off reads as a stall.
+      const accel = 1 - Math.pow(1 - clamp01(cruiseT / CRUISE_ACCEL_SEC), 2);
+      const cruiseSpeed = CRAWL + (CRUISE_TOP - CRAWL) * (0.7 + 0.3 * accel);
 
       /* The dive opens already on the hole, full size, and backs off onto the
        * tunnel's axis. There's no camera in this shader -- TILT stands in for a
@@ -208,9 +213,10 @@ export function createMoves(opts) {
         o.far = inFar + (s.far * CRUISE_FAR - inFar) * out;
         o.fov = s.fov * (1 + (CRUISE_FOV - 1) * out);
         o.discTilt = s.discTilt + (FACE - s.discTilt) * seg(p, 0.27, 0.48);
-        o.bend = 0;
+        // The turn begins with the flight's acceleration, CRUISE_LEAD_SEC before the back-off lands.
+        o.bend = BEND * seg(cruiseT / BEND_IN_SEC, 0, 1);
         o.exposure = s.exposure * (1 + 0.2 * form);
-        scaleShells(o, s, { speed: CRAWL + (CRUISE_TOP - CRAWL) * 0.7 * out, warp: 1, amt: form, rad: 0.12 + 0.88 * form });
+        scaleShells(o, s, { speed: cruiseT > 0 ? cruiseSpeed : CRAWL + (CRUISE_TOP - CRAWL) * 0.7 * out, warp: 1, amt: form, rad: 0.12 + 0.88 * form });
       }
 
       /* The cruise, and the run over it. The bend ramps in over the first seconds of the flight, from nothing
@@ -231,12 +237,11 @@ export function createMoves(opts) {
           }
         }
       }
-      const cruiseSpeed = CRAWL + (CRUISE_TOP - CRAWL) * (0.7 + 0.3 * seg(cruiseT / CRUISE_ACCEL_SEC, 0, 1));
       if (cruise || runT >= 0) {
         o.far = s.far * CRUISE_FAR;
         o.fov = s.fov * CRUISE_FOV;
         o.discTilt = FACE;
-        o.bend = BEND * seg((cruiseT - BEND_WAIT_SEC) / BEND_IN_SEC, 0, 1);
+        o.bend = BEND * seg(cruiseT / BEND_IN_SEC, 0, 1);
         scaleShells(o, s, { speed: cruiseSpeed, warp: 1, amt: 1 });
       }
 
@@ -245,13 +250,15 @@ export function createMoves(opts) {
        * the hole comes up to the eye and past it, and what cuts in under this is what is on the other side. */
       if (runT >= 0) {
         const p = clamp01(runT / RUN_SEC);
-        o.bend = BEND * (1 - seg(p, 0.00, 0.45));
-        const rush = seg(p, 0.10, 0.72);
+        // The cut over this begins halfway in, so the end is reached and the hole is past the eye by then: the
+        // depth is in by the half and the swell is most of the way; the last half is the shadow, under the fade.
+        o.bend = BEND * (1 - seg(p, 0.00, 0.35));
+        const rush = seg(p, 0.05, 0.50);
         o.far = s.far * CRUISE_FAR + (EXIT_FAR - s.far * CRUISE_FAR) * rush;
         // And the hole swells as it is reached, so the eye goes into the shadow rather than past a small one.
-        o.mass = s.mass * (1 + 1.5 * seg(p, 0.45, 0.85));
+        o.mass = s.mass * (1 + 1.5 * seg(p, 0.28, 0.60));
         o.exposure = s.exposure * (1 + 0.35 * rush);
-        scaleShells(o, s, { speed: cruiseSpeed + (RUN_SPEED - cruiseSpeed) * seg(p, 0.00, 0.90), warp: 1, amt: 1 - rush });
+        scaleShells(o, s, { speed: cruiseSpeed + (RUN_SPEED - cruiseSpeed) * seg(p, 0.00, 0.65), warp: 1, amt: 1 - rush });
       }
 
       if (dark) {
