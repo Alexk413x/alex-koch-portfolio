@@ -8,10 +8,12 @@ export function introPreset(gpu) {
     power: 0,
     // The fitting starts dark; the director strikes it with the tube.
     lightOn: 0,
-    type: 1.1,
+    type: 1.2,
     // The warp outlasts the power: it is still pulling, gathered to the middle, as the picture collapses.
-    warpSec: 4.4, warpGather: 1,
-    surgeRate: 1.0,
+    warpSec: 3.5, warpGather: 1,
+    // Paced so the fault's flash and its cut (2700-2900ms on the timeline) land at 2.33 to 2.5s: the lamp is out
+    // exactly where the intro's surge beat ends and the power is pulled.
+    surgeRate: 1.16,
     // The fault's screen share is low so the picture never blacks out on its own before the power is cut, and
     // the lamp's share high so its flash is the peak the cut lands on.
     surgeScreen: 0.35, surgeLamp: 1.3,
@@ -22,7 +24,9 @@ export function introPreset(gpu) {
     frameOn: 0,
     vig: 0.85, vigFall: 0.45,
     bend: 3, corner: 20,
-    collapse: 0.75, ignite: 1.5,
+    // The collapse begins under the fault's cut, 0.2s before the intro's surge beat ends, so its hold covers the
+    // flash and the picture closes to a line in the off beat's half second.
+    collapse: 0.7, ignite: 1.5,
     renderScale: gpu && gpu.integrated ? 0.45 : 0.8,
   };
 }

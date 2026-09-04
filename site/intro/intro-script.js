@@ -13,17 +13,18 @@ import { PRESETS } from '../../labs/reactor/reactor-presets.js';
 // Lengths, in seconds. The cut is here.
 export const LENGTH = {
   autoAdvance: 20,  // idle at the prompt before it advances by itself
-  surge: 2.9,       // the fault's flash peaks at 2.7 to 2.83s; the light dies on it and the power is cut on its end
-  off: 0.85,        // the collapse, at the tube's own pace; the tunnel is already opening under it
-  open: 4.7,        // wormhole-moves' OPEN_SEC: the depth brings the hole in, a slow tilt, the walls come up and it backs off
-  cruise: 5.5,      // the flight, bend at full swing; elastic, holds until the ring's program has linked
-  run: 3.6,         // wormhole-moves' RUN_SEC: straighten, then the tube's end comes up to the eye
+  surge: 2.5,       // the fault's flash peaks at 2.33 to 2.44s and is cut by 2.5 (surgeRate in the CRT's introPreset); the power is cut on its end
+  off: 0.5,         // the collapse, at the tube's own pace; the tunnel is already opening under it
+  open: 2.3,        // wormhole-moves' OPEN_SEC: the depth brings the hole in, a slow tilt, the walls come up and it backs off
+  cruise: 3.0,      // the flight, bend at full swing; elastic, holds until the ring's program has linked
+  run: 2.0,         // wormhole-moves' RUN_SEC: straighten, then the tube's end comes up to the eye
   cross: 1.0,       // the tunnel fades over the reactor once its end is reached, the core coming in after
-  stage: 4.0,       // each of the three states: STABLE, CRITICAL, MELTDOWN
-  meltdown: 2.2,    // the last stage runs short: the vent fires at once and its boom is at 2.0s
-  toStage: 1.4,     // how long a state takes to become the next
+  stable: 3.0,      // the first state holds longest: it is the one the core arrives in
+  critical: 2.0,
+  meltdown: 2.0,    // the vent fires at once and its boom is at 1.9s
+  toStage: 1.5,     // how long a state takes to become the next
   break: 1.0,       // the ring flies apart, the camera pulling back to keep the pieces in frame
-  stabilize: 1.0,   // red to the hero's orange, STABLE motion, ring off, the camera home; 2.0s from the boom
+  stabilize: 1.0,   // red to the hero's orange, STABLE motion, ring off, the camera home; 2.1s from the boom
 };
 
 // Cheap smoothstep, the same curve wormhole-moves uses for a beat.
@@ -73,7 +74,7 @@ const ZOOM = { close: 9, home: 1.0, broken: 0.72 };
 const CAM_TAU = 0.45;    // seconds; the pull-out's time constant. Small leaves the core faster.
 // Exponential out of the core, then blended onto home over the leg's last third so it lands exactly.
 const camAt = (sec) => {
-  const T = LENGTH.cross + 2 * LENGTH.stage + LENGTH.meltdown;
+  const T = LENGTH.cross + LENGTH.stable + LENGTH.critical + LENGTH.meltdown;
   const z = ZOOM.home + (ZOOM.close - ZOOM.home) * Math.exp(-sec / CAM_TAU);
   return lerp(z, ZOOM.home, seg(sec, T * 0.66, T));
 };
@@ -85,8 +86,8 @@ const camAt = (sec) => {
 const LEAD_KEYS = ['orbit', 'orbitX', 'orbitZ'];
 
 // A stage beat: becomes `preset` over LENGTH.toStage, pulses when told, carries the camera's curve at its
-// place in the leg, `n` stages in, and, given `next`, leads the ring and the color into it.
-function stage(id, preset, n, pulses, extra, len = LENGTH.stage, next = null) {
+// place in the leg, `offset` seconds after the crossfade begins, and, given `next`, leads the ring and the color into it.
+function stage(id, preset, offset, pulses, extra, len, next = null) {
   let from = null;
   return {
     id, scene: 'hero',
@@ -94,13 +95,14 @@ function stage(id, preset, n, pulses, extra, len = LENGTH.stage, next = null) {
     tick: (c, t) => {
       const k = seg(t, 0, LENGTH.toStage);
       const state = blend(from, preset, k);
-      const lead = next ? seg(t, len / 2, len) : 0;
+      // Never before the tween has landed: the lead overrides the ring keys, so starting it mid-tween pops them.
+      const lead = next ? seg(t, Math.max(len / 2, LENGTH.toStage), len) : 0;
       if (lead > 0) {
         for (const key of LEAD_KEYS) state[key] = lerp(preset[key], next[key], lead);
         state.coreHex = mixHex(preset.coreHex, next.coreHex, lead);
       }
       c.hero.set(state);
-      c.hero.set({ zoom: camAt(LENGTH.cross + n * LENGTH.stage + t) });
+      c.hero.set({ zoom: camAt(LENGTH.cross + offset + t) });
       for (const [at, amp] of pulses) if (c.once(id + at, t >= at)) c.hero.pulse(amp);
       if (extra) extra(c, t);
     },
@@ -150,6 +152,9 @@ export const SCRIPTS = {
         const drop = 1 - 0.45 * seg(t, LENGTH.surge - 0.15, LENGTH.surge);
         c.crt.set({ bright: (0.7 + 1.5 * k) * drop, glare: 1.2 * k * drop,
                     phos: (0.07 + 0.55 * k) * drop, glow: (1 + 2.5 * k) * drop });
+        // The tube's collapse (introPreset's 0.7s) starts here so its opening hold sits under the fault's cut and
+        // the picture is closing to a line as the off beat begins. Half a second alone is too short for it to read.
+        if (c.once('poweroff', t >= LENGTH.surge - 0.2)) c.crt.powerOff();
       },
       done: (c, t) => t >= LENGTH.surge },
 
@@ -157,8 +162,8 @@ export const SCRIPTS = {
       // The tunnel opens under the tube as it collapses. The tube fades as its picture closes to a line, so the
       // line it leaves is the disc's edge coming up under it.
       // The room's light goes out with the power, so the collapse is the only thing moving.
-      enter: (c) => { c.crt.set({ bright: 0.7, glare: 0, phos: 0.07, glow: 1 }); c.crt.light(false); c.crt.powerOff(); c.worm.show(); c.worm.open(); c.hero.stop(); },
-      tick: (c, t) => { if (c.once('crtfade', t >= 0.55)) c.crt.drop(0.3); },
+      enter: (c) => { c.crt.set({ bright: 0.7, glare: 0, phos: 0.07, glow: 1 }); c.crt.light(false); c.worm.show(); c.worm.open(); c.hero.stop(); },
+      tick: (c, t) => { if (c.once('crtfade', t >= 0.3)) c.crt.drop(0.2); },
       done: (c, t) => t >= LENGTH.off },
 
     { id: 'open', scene: 'worm',
@@ -168,7 +173,7 @@ export const SCRIPTS = {
       // Elastic: holds until the ring's program has linked, so the core can arrive with its ring.
       // The lab's own burst, once, as the push that carries the flight.
       tick: (c, t) => {
-        if (c.once('burst1', t >= 1.6)) c.worm.burst();
+        if (c.once('burst1', t >= 0.9)) c.worm.burst();
       },
       done: (c, t) => t >= LENGTH.cruise && c.hero.full(), max: 45 },
 
@@ -181,19 +186,19 @@ export const SCRIPTS = {
       },
       done: (c, t) => t >= LENGTH.run },
 
-    stage('stable', STABLE, 0, [[0.6, 8], [2.4, 12]], null, LENGTH.stage, CRITICAL),
-    stage('critical', CRITICAL, 1, [[1.6, 15], [3.4, 15]], null, LENGTH.stage, MELTDOWN),
-    // The vent fires at once, held at a shorter DURATION than MELTDOWN's so the boom lands at 2.0s. Its two
+    stage('stable', STABLE, 0, [[0.45, 8], [1.8, 12]], null, LENGTH.stable, CRITICAL),
+    stage('critical', CRITICAL, LENGTH.stable, [[0.8, 15], [1.7, 15]], null, LENGTH.critical, MELTDOWN),
+    // The vent fires at once, held at a shorter DURATION than MELTDOWN's so the boom lands at 1.9s. Its two
     // building pulses each stretch the ring further, with a hard core pulse on each so they read as the
     // explosions; the boom is the shatter. The stretch stays near half because the sim scatters on ring stress,
     // not only on the break.
-    stage('meltdown', MELTDOWN, 2, [[0.1, 12], [0.75, 14], [2.0, 26]],
+    stage('meltdown', MELTDOWN, LENGTH.stable + LENGTH.critical, [[0.1, 12], [0.7, 14], [1.9, 26]],
           (c, t) => {
-            c.hero.set({ ventDur: 3.2 });
+            c.hero.set({ ventDur: 3.0 });
             if (c.once('vent', t >= 0.1)) c.hero.vent();
-            const stretch = 0.25 * seg(t, 0.1, 0.6) + 0.18 * seg(t, 0.75, 1.4) + 0.10 * seg(t, 1.5, 1.95);
-            c.hero.set({ ringBreak: t < 2.0 ? stretch : 1 });
-            if (c.once('shatter', t >= 2.0)) c.hero.set({ breakSpd: 1 });
+            const stretch = 0.25 * seg(t, 0.1, 0.55) + 0.18 * seg(t, 0.7, 1.3) + 0.10 * seg(t, 1.4, 1.85);
+            c.hero.set({ ringBreak: t < 1.9 ? stretch : 1 });
+            if (c.once('shatter', t >= 1.9)) c.hero.set({ breakSpd: 1 });
           }, LENGTH.meltdown),
 
     { id: 'break', scene: 'hero',
