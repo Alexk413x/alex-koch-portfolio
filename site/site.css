@@ -2052,18 +2052,25 @@ A record can carry more than one lede (e.g. a second paragraph on how the work w
 
 .contact-links a:hover, .contact-links button:hover { color: var(--accent-hover) }
 
-/* Under the links, centered and a size up: the row above is where to find Alex, this is the thing to do. */
+/* Under the links, centered and a size up: the row above is where to find Alex, this is the thing to do.
+   Outlined, not filled: a border says "press me" where the bare orange text above it says "this is an address",
+   and a solid fill would outshout the hero's own CTA. */
 .contact-book {
   margin-top: 26px; display: flex; gap: 28px; flex-wrap: wrap; justify-content: center;
   font-family: var(--font-mono); font-size: 17px; letter-spacing: .08em;
 }
 .contact-book button {
   font: inherit; letter-spacing: inherit; cursor: pointer;
-  background: none; border: 0; padding: 0; color: var(--accent);
-  transition: color .18s var(--ease-settle);
+  background: none; color: var(--accent);
+  border: 1px solid var(--accent); border-radius: var(--radius-cta);
+  padding: 12px 26px;
+  transition: color .18s var(--ease-settle), border-color .18s var(--ease-settle), background .18s var(--ease-settle);
 }
-.contact-book button:hover { color: var(--accent-hover) }
-.contact-book button:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--amber-focus); border-radius: 3px }
+.contact-book button:hover {
+  color: var(--accent-hover); border-color: var(--accent-hover);
+  background: rgba(221, 106, 32, .08);
+}
+.contact-book button:focus-visible { outline: none; border-color: var(--accent-hover); box-shadow: 0 0 0 2px var(--amber-focus) }
 
 /* Blur is for floating chrome over live content, which is exactly what this is. */
 #qr-dialog {
