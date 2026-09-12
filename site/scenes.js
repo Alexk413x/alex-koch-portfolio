@@ -471,11 +471,24 @@
   // Places each snap target in pixels off the same numbers the scrubs run on (not vh, which would disagree
   // with the rig the first time dvh and vh differed), and disables snapping on whichever beat is stood down.
   function placeSnap() {
+    const root = document.documentElement;
+    let rearmed = false;
     for (const t of beats()) {
       if (!t.el) continue;
       const live = t.at !== null;
       t.el.style.top = live ? (t.at - t.base) + 'px' : '';
-      t.el.style.scrollSnapAlign = live && !(snapOff >= 0 && Math.abs(t.at - snapOff) < 1) ? '' : 'none';
+      const align = live && !(snapOff >= 0 && Math.abs(t.at - snapOff) < 1) ? '' : 'none';
+      if (align === '' && t.el.style.scrollSnapAlign === 'none') rearmed = true;
+      t.el.style.scrollSnapAlign = align;
+    }
+    // Safari re-snaps to the last target it snapped to when that target's alignment comes back, so re-arming the
+    // reactor's beat from Cartographer threw the reader back up to it. Re-arming with snapping off, flushing
+    // layout, then restoring it makes Safari pick the nearest target instead; Chrome and Firefox are unaffected.
+    if (rearmed) {
+      const prev = root.style.scrollSnapType;
+      root.style.scrollSnapType = 'none';
+      root.getBoundingClientRect();
+      root.style.scrollSnapType = prev;
     }
   }
 
