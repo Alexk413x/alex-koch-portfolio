@@ -230,8 +230,10 @@ export function escapeLeaves(fallback = '../../index.html') {
 }
 
 // Puts the reason on screen when a renderer could not be built, so the page is not merely black.
+// Lifts the loading sheet too: the message sits under it, and boot-guard would otherwise reload a page that cannot recover.
 export function reportNoGL(msg = 'NO WEBGL') {
   const el = document.getElementById('glstate');
   if (el) el.textContent = msg;
+  labReady();
   return false;
 }

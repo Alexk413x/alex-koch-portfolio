@@ -947,7 +947,8 @@ export function createRenderer(canvas) {
     powerPreference: 'high-performance',
   });
   if (!gl) return null;
-  if (!gl.getExtension('EXT_color_buffer_half_float')) return null;
+  // Firefox exposes only EXT_color_buffer_float in WebGL2, which also makes RGBA16F renderable.
+  if (!gl.getExtension('EXT_color_buffer_half_float') && !gl.getExtension('EXT_color_buffer_float')) return null;
 
   const main = program(gl, FRAG);
   const fixp = program(gl, FIXTURE_FRAG);

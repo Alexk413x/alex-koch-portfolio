@@ -146,7 +146,11 @@ const canvas = document.getElementById('tube');
 const FLK = createFlicker();
 // NOT const: the renderer is rebuilt from scratch after a lost context. See the handlers beside resize().
 let R = createRenderer(canvas);
-if (!R) { document.getElementById('hud').textContent = 'needs WebGL2 + EXT_color_buffer_half_float'; throw 0; }
+// CRTGL_FAILED lets the intro skip the tube rather than wait out its boot beat on a black sheet.
+if (!R) {
+  document.getElementById('hud').textContent = 'needs WebGL2 + a float color buffer';
+  window.CRTGL_FAILED = true; labReady(); throw 0;
+}
 
 /* The active phosphor: crt-phosphor.PH carries amber/green/white presets (plus a custom swatch), each with its
  * own fg/hi/glow. The shader takes them as uniforms and bootLines colors its two-tone text from the same pair. */
@@ -688,7 +692,8 @@ const inFullscreen = () => !!(document.fullscreenElement || document.webkitFulls
 function toggleFullscreen() {
   const el = document.documentElement;
   if (inFullscreen()) (document.exitFullscreen || document.webkitExitFullscreen).call(document);
-  else (el.requestFullscreen || el.webkitRequestFullscreen).call(el).catch(() => {});
+  // Safari before 16.4 has only webkitRequestFullscreen, which returns undefined rather than a promise.
+  else Promise.resolve((el.requestFullscreen || el.webkitRequestFullscreen).call(el)).catch(() => {});
 }
 
 const ACTIONS = [

@@ -53,6 +53,8 @@
 .row input[type=range]:focus { outline: none }
 .row input[type=range]:focus::-webkit-slider-thumb { box-shadow: 0 0 0 3px var(--panel-accent-soft),
   0 0 10px rgba(255, 180, 84, .9) }
+.row input[type=range]:focus::-moz-range-thumb { box-shadow: 0 0 0 3px var(--panel-accent-soft),
+  0 0 10px rgba(255, 180, 84, .9) }
 .row label { flex: 0 0 88px; min-width: 0; color: var(--panel-label); letter-spacing: .03em; font-size: 10px;
              overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
 /* min-width:0 IS THE FIX, and without it the value column was pushed off the panel entirely.
@@ -63,6 +65,10 @@
 .row input[type=range] { flex: 1 1 0; min-width: 0; -webkit-appearance: none; appearance: none; height: 3px;
   border-radius: 3px; background: var(--panel-track); outline: none }
 .row input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 11px; height: 11px;
+  border-radius: 50%; background: var(--panel-accent); cursor: pointer;
+  box-shadow: 0 0 8px rgba(255, 180, 84, .8) }
+/* Firefox's thumb; it drops a rule whose selector list names a -webkit- pseudo-element, so this cannot merge. */
+.row input[type=range]::-moz-range-thumb { width: 11px; height: 11px; border: none;
   border-radius: 50%; background: var(--panel-accent); cursor: pointer;
   box-shadow: 0 0 8px rgba(255, 180, 84, .8) }
 /* THE STEPPERS, as the reference has them: a nudge either side of the readout, so a value can be set exactly
