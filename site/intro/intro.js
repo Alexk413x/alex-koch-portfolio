@@ -84,6 +84,7 @@ function run(script) {
     show() { crtF.show(); lift(); },
     G() { const w = crtF.win; return w && w.CRTGL ? w.CRTGL : null; },
     ready() { const g = this.G(); return !!(g && g.shown); },
+    failed() { const w = crtF.win; return !!(w && w.CRTGL_FAILED); },
     typedDone() { const g = this.G(); return !!(g && g.typedDone); },
     // The tube's own clock: its triggers stamp its window's performance.now(), not this one's.
     now() { return crtF.win.performance.now(); },

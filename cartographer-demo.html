@@ -33,7 +33,7 @@
   .phone-frame button {
     position: absolute; inset: 0; margin: auto; width: 72px; height: 72px; border-radius: 50%;
     border: 1.5px solid rgba(255, 255, 255, .25); background: rgba(12, 12, 14, .7); color: var(--text-strong);
-    display: grid; place-items: center; cursor: pointer; backdrop-filter: blur(6px);
+    display: grid; place-items: center; cursor: pointer; -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
   }
   .phone-frame button[hidden] { display: none }
   .phone-frame button svg { width: 26px; height: 26px; fill: currentColor; margin-left: 4px }

@@ -2077,7 +2077,7 @@ A record can carry more than one lede (e.g. a second paragraph on how the work w
   position: fixed; inset: 0; z-index: 120;
   display: flex; align-items: center; justify-content: center; padding: 24px; cursor: pointer;
   /* A light scrim and the blur, not a black sheet: the page stays in view behind the glass. */
-  background: rgba(6, 5, 9, .3); backdrop-filter: blur(6px);
+  background: rgba(6, 5, 9, .3); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
 }
 
 #qr-dialog:focus { outline: none }
@@ -2104,7 +2104,7 @@ A record can carry more than one lede (e.g. a second paragraph on how the work w
 .book-dialog {
   position: fixed; inset: 0; z-index: 120;
   display: flex; align-items: center; justify-content: center; padding: 24px;
-  background: rgba(6, 5, 9, .3); backdrop-filter: blur(6px);
+  background: rgba(6, 5, 9, .3); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
 }
 .book-dialog[hidden] { display: none }
 

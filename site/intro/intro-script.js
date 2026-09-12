@@ -114,7 +114,7 @@ export const SCRIPTS = {
   v1: [
     { id: 'boot', scene: 'crt',
       enter: (c) => { c.crt.mount(); },
-      done: (c) => c.crt.ready(), max: 40,
+      done: (c) => c.crt.ready() || c.crt.failed(), max: 40,
       exit: (c) => { c.crt.show(); c.crt.powerOn(); } },
 
     { id: 'strike', scene: 'crt',
