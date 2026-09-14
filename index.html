@@ -140,15 +140,17 @@ html.css-pending body{visibility:hidden}
 <!-- The intro's sheet. Shown only while <html> carries intro-live, which the head script sets before first
      paint; site/intro/intro.js fills it and removes it. Removed, not faded: a sheet left at opacity 0 eats
      every click on the page under it. -->
-<div id="intro" aria-hidden="true">
+<div id="intro">
   <!-- The labs' loading ring, written out rather than mounted: the module that would mount it runs behind the
        font stylesheet and every classic script, which left the sheet black for most of a second. This is what
        mountLoader() in labs/kit/lab.js builds, and suite_intro asserts the two are the same markup. -->
   <div class="kit-load" data-owned role="status" aria-live="polite">
     <div class="kit-ring" aria-hidden="true"><svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="56" fill="none" stroke="rgba(255,180,84,.13)" stroke-width="1"/><circle cx="60" cy="60" r="52" fill="none" stroke="rgba(255,180,84,.15)" stroke-width="2.5"/><circle cx="60" cy="60" r="33" fill="none" stroke="rgba(255,180,84,.17)" stroke-width="1" stroke-dasharray="1 14"/></svg><svg class="kr-dash" viewBox="0 0 120 120"><circle cx="60" cy="60" r="46" fill="none" stroke-width="1.5" stroke="var(--panel-accent, #ffb454)" stroke-dasharray="2 11" opacity=".55"/></svg><svg class="kr-hair" viewBox="0 0 120 120"><circle cx="60" cy="60" r="41" fill="none" stroke-width="1" stroke="rgba(255,217,160,.24)" stroke-dasharray="1 8"/></svg><svg class="kr-arc" viewBox="0 0 120 120"><circle cx="60" cy="60" r="52" fill="none" stroke-width="2.5" stroke="var(--panel-accent, #ffb454)" stroke-linecap="round" stroke-dasharray="70 257" transform="rotate(-90 60 60)"/></svg></div><div class="kit-load-name">ALEXK413X</div><div class="kit-load-stage">Warming up</div>
   </div>
-  <button id="intro-skip" type="button">SKIP <kbd>ESC</kbd></button>
+  <button id="intro-skip" type="button" aria-label="Skip intro">SKIP <kbd>ESC</kbd></button>
 </div>
+
+<a class="skip-link" href="#main">Skip to main content</a>
 
 <!-- Three zones on one row: the mark, the sections, the marks. The middle zone is centerd against the viewport
      rather than against whatever the two sides weigh, so the links hold still when either side changes width. -->
@@ -206,6 +208,8 @@ html.css-pending body{visibility:hidden}
     </button>
   </div>
 </nav>
+
+<main id="main" tabindex="-1">
 
 <!-- data-range: scene 01 is absolutely positioned inside a sticky stage, so #alex's own offset is not a page
      position at all. The scroll range it occupies is this container. -->
@@ -1113,7 +1117,7 @@ html.css-pending body{visibility:hidden}
         <!-- THE ACT LEADS THE CRATE. It says what you are about to look at rather than captioning what you have
              already looked at, and it keeps the plinth under the boxes as the shelf they stand on. -->
         <div class="reel-act" id="reel-act"></div>
-        <div class="reel" id="reel" role="listbox" aria-label="Shipped products, newest first"></div>
+        <div class="reel" id="reel" role="group" aria-label="Shipped products, newest first"></div>
       </div>
     </div>
 
@@ -1219,6 +1223,8 @@ html.css-pending body{visibility:hidden}
     </div>
   </div>
 </section>
+
+</main>
 
 <div id="qr-dialog" role="dialog" aria-modal="true" aria-labelledby="qr-title" tabindex="-1" hidden>
   <div class="qr-panel">
