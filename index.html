@@ -6,6 +6,10 @@
 <title>Alex Koch, Agentic Mobile Engineer</title>
 <meta name="description" content="Alex Koch, agentic mobile engineer. 14 years shipping mobile at scale with Yahoo!, Target, Kohl's and Vacasa. Now building QAAI, a multi-agent QA platform.">
 <meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#0c0c0e">
+<!-- Inline, ahead of every stylesheet: site.css and the font CSS block rendering, and until they land the
+     browser shows its own light ground. Same value as --ink. -->
+<style>html{background:#0c0c0e}</style>
 <link rel="canonical" href="https://alexk413x.com/">
 
 <!-- Absolute URLs, because a scraper resolves these against nothing. og:image must be a raster format and at
@@ -82,12 +86,19 @@
       return;
     }
     var ready = document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve();
-    ready.then(function () {
-      // One more frame after the fonts land, so the retrack has been laid out before anything becomes visible.
-      requestAnimationFrame(function () { requestAnimationFrame(reveal); });
+    // The words and the nav follow the core: hero-core.js sets core-lit on its first drawn frame.
+    var lit = new Promise(function (done) {
+      if (!window.WebGL2RenderingContext || !window.MutationObserver) return done();
+      new MutationObserver(function (_, watch) {
+        if (el.classList.contains('core-lit')) { watch.disconnect(); done(); }
+      }).observe(el, { attributes: true, attributeFilter: ['class'] });
     });
-    // A font that never arrives must not cost the reader the page.
-    setTimeout(reveal, 2500);
+    Promise.all([ready, lit]).then(function () {
+      // One more frame after the fonts land, so the retrack has been laid out before anything becomes visible.
+      requestAnimationFrame(function () { requestAnimationFrame(function () { setTimeout(reveal, 350); }); });
+    });
+    // A font that never arrives, or a core that never lights, must not cost the reader the page.
+    setTimeout(reveal, 3500);
   })();
 </script>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700;800&display=swap" rel="stylesheet">

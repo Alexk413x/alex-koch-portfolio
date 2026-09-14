@@ -462,15 +462,16 @@ html.intro-done .hero-grid, html.intro-done .hero-foot { transition-delay: 1.1s 
 
 .hero { flex: 1; display: flex; align-items: center; padding: 0 var(--pad-page); position: relative; z-index: 3 }
 
-/* The hero fades up once, on first load only. Keyed on `booting`, set by an inline script before first paint and
-   cleared on DOMContentLoaded — keyed on the document, not the core shader, so a cold visitor isn't left staring
-   at an empty hero while the shader links; the words are ready long before the picture. */
+/* The hero's words and the nav fade up once, on first load only, after the core lights. Keyed on `booting`, which
+   the inline script in index.html clears; its timeout caps the wait so a slow shader link cannot hide the page. */
 .hero-grid, .hero-foot { transition: opacity 3s var(--ease-settle) }
 .booting .hero-grid, .booting .hero-foot { opacity: 0 }
+#nav { transition: opacity 1.2s var(--ease-settle) }
+.booting #nav { opacity: 0 }
 /* A reader who asked for less motion gets the page, not a three-second fade to it. */
 @media (prefers-reduced-motion: reduce) {
-  .hero-grid, .hero-foot { transition: none }
-  .booting .hero-grid, .booting .hero-foot { opacity: 1 }
+  .hero-grid, .hero-foot, #nav { transition: none }
+  .booting .hero-grid, .booting .hero-foot, .booting #nav { opacity: 1 }
   #hero-halo path { animation: none; stroke-dasharray: none }
 }
 
