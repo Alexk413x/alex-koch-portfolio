@@ -2,6 +2,7 @@
 import urllib.request
 
 NAME = 'layout'
+GL = True
 
 # 830 is the last width before the 820px rule hides every link but the external one, so it is where a nav that
 # has grown an item too many wraps first. Anything narrower is testing the collapsed nav, not this one.
