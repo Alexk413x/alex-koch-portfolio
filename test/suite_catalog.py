@@ -5,13 +5,13 @@
 # rather than against a list of its own. A list here would be an eighteenth copy of the catalog, and it would
 # pass while the page showed something else.
 #
-# Nothing reaches into catalog.js's internals: the contract is the DOM it builds -- aria-selected on the picked
+# Nothing reaches into catalog.js's internals: the contract is the DOM it builds -- aria-pressed on the picked
 # box, the flip button's own label, the cover art each box carries -- which is also what a screen reader gets.
 NAME = 'catalog'
 
-PICKED = "document.querySelector('#reel .box[aria-selected=\"true\"]')"
+PICKED = "document.querySelector('#reel .box[aria-pressed=\"true\"]')"
 AT = ("[...document.querySelectorAll('#reel .box')]"
-      ".findIndex(b=>b.getAttribute('aria-selected')==='true')")
+      ".findIndex(b=>b.getAttribute('aria-pressed')==='true')")
 
 
 def _at(page):
@@ -142,14 +142,14 @@ def run(page, r):
                   {'features': [{'name': 'prefers-reduced-motion', 'value': 'reduce'}]})
     try:
         _open_section(page)
-        # aria-selected lands on the press whether or not the tween runs, so the observable is the box's
+        # aria-pressed lands on the press whether or not the tween runs, so the observable is the box's
         # POSITION: under reduced motion it must already be where it ends up.
         before = _at(page)
         want = before + 3
         page.js("document.querySelectorAll('#reel .box')[%d].click();1" % want)
         page.settle(0.10)
         r.check('reduced motion steps the rack immediately', _at(page), want)
-        # Addressed by index, not by aria-selected: the point is where THAT box is, over time.
+        # Addressed by index, not by aria-pressed: the point is where THAT box is, over time.
         box = "document.querySelectorAll('#reel .box')[%d]" % want
         # Sampled twice across a window that sits INSIDE the tween's own duration: if the glide were running the
         # box would still be moving between the two reads. Deliberately not a comparison against the resting

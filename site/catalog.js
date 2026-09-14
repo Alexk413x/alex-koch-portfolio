@@ -194,7 +194,6 @@ import { coverArt } from './cover-art/index.js';
     const b = el('button', 'box');
     b.type = 'button';
     b.dataset.id = p.id;
-    b.setAttribute('role', 'option');
     b.setAttribute('aria-label', p.name + ', ' + p.at);
     // The stage case's own wireframe, at rack size — a bordered div can't follow curved corners or turn in 3D.
     const wire = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
@@ -354,7 +353,7 @@ import { coverArt } from './cover-art/index.js';
       b._print.style.pointerEvents = shown ? 'auto' : 'none';
       b.classList.toggle('picked', i === at);
       b.classList.toggle('blade', i !== at);
-      b.setAttribute('aria-selected', i === at ? 'true' : 'false');
+      b.setAttribute('aria-pressed', i === at ? 'true' : 'false');
     });
 
     /* The correction closes whatever hw() under-reports — a spine face projects past the print (42px vs 36px).

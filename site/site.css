@@ -434,7 +434,21 @@ html.intro-live #intro.is-clear { background: transparent; pointer-events: none 
   transition: color .2s var(--ease-settle), border-color .2s var(--ease-settle);
 }
 #intro-skip kbd { font: inherit; opacity: .55; margin-left: 6px }
-#intro.is-going #intro-skip { opacity: 0; pointer-events: none; transition: opacity .4s var(--ease-settle) }
+/* visibility as well as opacity, so the faded control also leaves the tab order; Escape still skips. */
+#intro.is-going #intro-skip {
+  opacity: 0; visibility: hidden; pointer-events: none;
+  transition: opacity .4s var(--ease-settle), visibility 0s .4s;
+}
+
+.skip-link {
+  position: fixed; top: 12px; left: 12px; z-index: 210;
+  padding: 10px 14px; border-radius: var(--radius-cta);
+  background: var(--ink-deep); color: var(--text-strong);
+  font-family: var(--font-mono); font-size: 12px; letter-spacing: .08em;
+  transform: translateY(-200%);
+}
+.skip-link:focus-visible { transform: none; outline: none; box-shadow: 0 0 0 2px var(--amber-focus) }
+#main:focus { outline: none }
 /* The loading ring sits inside the sheet, under the skip control, in the site's own orange rather than the
    labs' amber: the arc, the dashes and the name follow --panel-accent, the static rings and the ground are
    restated because the kit writes those colors into the markup. */

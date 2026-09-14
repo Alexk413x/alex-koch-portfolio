@@ -488,6 +488,13 @@
     if (!hash || hash.length < 2) return;
     const target = document.querySelector(hash);
     if (!target) return;
+    // The skip link moves focus only. Through the glide below it would scroll to the top of <main>, which is
+    // the top of the page, from wherever the reader is.
+    if (a.classList.contains('skip-link')) {
+      e.preventDefault();
+      target.focus({ preventScroll: true });
+      return;
+    }
     const range = target.closest('[data-range]');
 
     e.preventDefault();
