@@ -31,6 +31,15 @@ import suite_seo          # noqa: E402
 SUITES = [suite_rpn, suite_morph, suite_qr, suite_book, suite_hero, suite_layout, suite_seo, suite_labs, suite_intro, suite_catalog]
 
 
+def _run(suite, page):
+    r = harness.Result(suite.NAME)
+    try:
+        suite.run(page, r)
+    except Exception as exc:                      # a crashed suite is a failure, not a stack trace
+        r.failures.append('suite raised: %s: %s' % (type(exc).__name__, exc))
+    return r
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--only', nargs='*', default=None, help='suite names to run')
@@ -45,14 +54,26 @@ def main():
 
     started = time.time()
     results = []
-    with harness.Session(port=a.port, headless=not a.show) as page:
+    notes = []
+    session = harness.Session(port=a.port, headless=not a.show)
+    with session as page:
         for suite in chosen:
-            r = harness.Result(suite.NAME)
             print('  %-10s ...' % suite.NAME, end='', flush=True)
-            try:
-                suite.run(page, r)
-            except Exception as exc:                      # a crashed suite is a failure, not a stack trace
-                r.failures.append('suite raised: %s: %s' % (type(exc).__name__, exc))
+            # A suite that draws cannot pass or fail honestly in a browser without WebGL, so it gets a new browser
+            # before it starts, and one rerun if WebGL went missing while it ran.
+            gl = getattr(suite, 'GL', False)
+            if gl and not page.webgl2():
+                notes.append('[%s] WebGL2 was missing before the suite; relaunched the browser' % suite.NAME)
+                page = session.relaunch()
+            if gl and not page.webgl2():
+                r = harness.Result(suite.NAME)
+                r.failures.append('not run: WebGL2 is unavailable in the test browser, even after a relaunch')
+            else:
+                r = _run(suite, page)
+                if gl and not page.webgl2():
+                    notes.append('[%s] WebGL2 was lost during the suite; rerun on a fresh browser' % suite.NAME)
+                    page = session.relaunch()
+                    r = _run(suite, page)
             results.append(r)
             print('\r  %-10s %d passed%s%s' % (
                 suite.NAME, r.passed,
@@ -72,6 +93,8 @@ def main():
     total = sum(r.passed for r in results)
     skipped = sum(len(r.skipped) for r in results)
 
+    for line in notes:
+        print('  NOTE  %s' % line)
     for r in results:
         for line in r.skipped:
             print('  SKIP  [%s] %s' % (r.name, line))

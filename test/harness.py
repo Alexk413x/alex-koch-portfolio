@@ -90,6 +90,15 @@ class Page:
         self.cdp.call('Page.reload', {'ignoreCache': True})
         self.settle()
 
+    def webgl2(self):
+        # The probe context is released at once: Chrome caps live contexts per page and evicts the oldest, which
+        # would be the page's own.
+        try:
+            return self.js("(()=>{const g=document.createElement('canvas').getContext('webgl2');if(!g)return false;"
+                           "const x=g.getExtension('WEBGL_lose_context');if(x)x.loseContext();return true})()")
+        except Exception:
+            return False
+
     def settle(self, extra=0.0):
         """Waits for the document, then for fonts. Text metrics before fonts.ready measure a fallback face."""
         for _ in range(80):
@@ -246,7 +255,7 @@ class Page:
 
 
 def _free_port():
-    s =socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.bind(('127.0.0.1', 0))
     port = s.getsockname()[1]
     s.close()
@@ -268,13 +277,25 @@ class Session:
 
     def __enter__(self):
         self.httpd = bench.serve(self.port)
-        if self.debug_port is None:
-            self.debug_port = _free_port()
+        try:
+            return self._launch()
+        except Exception:
+            self.__exit__(None, None, None)
+            raise
+
+    def relaunch(self):
+        """A fresh browser on the same server. A browser that has lost WebGL stays without it across navigations,
+        so a GL suite that finds it gone needs a new browser, not a reload."""
+        self._close_browser()
+        return self._launch()
+
+    def _launch(self):
+        port = self.debug_port or _free_port()
         self.profile = tempfile.mkdtemp(prefix='ak-site-test-')
         args = [
             bench.chrome_binary(), '--user-data-dir=' + self.profile,
             '--no-first-run', '--no-default-browser-check', '--disable-extensions',
-            '--remote-debugging-port=%d' % self.debug_port, '--remote-allow-origins=*',
+            '--remote-debugging-port=%d' % port, '--remote-allow-origins=*',
             # The three that stop Chrome halting rendering when the window is not front-most. Without them a
             # scroll-driven page reports zero animation frames and every envelope reads as flat.
             '--disable-backgrounding-occluded-windows', '--disable-renderer-backgrounding',
@@ -292,7 +313,7 @@ class Session:
         for _ in range(80):
             try:
                 listing = json.loads(urllib.request.urlopen(
-                    'http://127.0.0.1:%d/json/list' % self.debug_port, timeout=2).read())
+                    'http://127.0.0.1:%d/json/list' % port, timeout=2).read())
                 for tab in listing:
                     if tab.get('type') == 'page' and 'index.html' in tab.get('url', ''):
                         ws = tab['webSocketDebuggerUrl']
@@ -302,8 +323,7 @@ class Session:
                 pass
             time.sleep(0.5)
         if not ws:
-            self.__exit__(None, None, None)
-            raise RuntimeError('no debuggable page on port %d' % self.debug_port)
+            raise RuntimeError('no debuggable page on port %d' % port)
 
         cdp = bench.CDP(ws)
         cdp.call('Page.enable')
@@ -314,20 +334,22 @@ class Session:
         self.page.reload()
         return self.page
 
-    def __exit__(self, *exc):
+    def _close_browser(self):
         if self.proc:
             bench._shut(self.proc)
             self.proc = None
-        close = getattr(getattr(self.page, 'cdp', None), 'close', None)
-        if close:
-            close()
-        self.page = None
-        if self.httpd:
-            self.httpd.shutdown()
-            self.httpd.server_close()
-            self.httpd = None
+        if self.page:
+            self.page.cdp.close()
+            self.page = None
         if self.profile:
             # After _shut, not before: on Windows a running Chrome holds the profile's files open.
             shutil.rmtree(self.profile, ignore_errors=True)
             self.profile = None
+
+    def __exit__(self, *exc):
+        self._close_browser()
+        if self.httpd:
+            self.httpd.shutdown()
+            self.httpd.server_close()
+            self.httpd = None
         return False

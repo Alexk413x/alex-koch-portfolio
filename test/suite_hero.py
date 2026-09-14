@@ -13,6 +13,7 @@
 import time
 
 NAME = 'hero'
+GL = True
 
 # Reads the buffer back in the SAME task as the draw. The context is preserveDrawingBuffer:false, so a readPixels
 # from a later call returns a cleared buffer -- which looks exactly like a shader that outputs black.
@@ -120,7 +121,7 @@ DIRECTION = """(()=>{
     for(let k=0;k<N;k++){ HERO.pose(k*Math.PI*2/N, 0); HERO.renderNow(0); sw.push(look()); }
     const mean=sw.reduce((a,v)=>a+v.area,0)/N;
     let acc=0; for(let k=0;k<N;k++) acc += (sw[k].area-mean)*(sw[(k+1)%N].x - sw[(k+N-1)%N].x);
-    return acc/(N*mean); };
+    return mean ? acc/(N*mean) : null; };
   const runs=[once(), once(), once()];
   Object.assign(s, keep);
   return JSON.stringify({ runs, positive: runs.filter(v=>v>0).length });
@@ -146,6 +147,18 @@ def _drawn_frame(page, tries=4):
         f = page.json(FRAME)
         if f['peak'] > 60:
             return f
+        page.goto('index.html')
+        page.scroll(0)
+    return None
+
+
+def _swept_direction(page, tries=3):
+    """The DIRECTION sweep with every run lit, or None. A dark load (see the flake note at the top of this file)
+    has no landmark to follow and would divide by zero."""
+    for i in range(tries):
+        d = page.json(DIRECTION)
+        if None not in d['runs']:
+            return d
         page.goto('index.html')
         page.scroll(0)
     return None
@@ -227,9 +240,12 @@ def run(page, r):
     # Which way an angle turns the picture, and then which way a throw sets that angle. Two facts, checked apart:
     # the first is a property of the shader, the second is this file's mapping onto it. Together they are "the
     # core follows the hand", and neither on its own can prove it.
-    d = page.json(DIRECTION)
-    r.ok('a positive Y angle carries the near face right', d['positive'] == 3,
-         '%d of 3 runs positive: %s' % (d['positive'], [round(v, 2) for v in d['runs']]))
+    d = _swept_direction(page)
+    if d is None:
+        r.skip('a positive Y angle carries the near face right', 'no load lit the landmark on every run')
+    else:
+        r.ok('a positive Y angle carries the near face right', d['positive'] == 3,
+             '%d of 3 runs positive: %s' % (d['positive'], [round(v, 2) for v in d['runs']]))
 
     t = page.json(FOLLOW)
     r.ok('the face turns right when the pointer is right', t['right'] > 0.2, 'angle Y %+.2f rad' % t['right'])

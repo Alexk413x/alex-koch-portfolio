@@ -14,6 +14,7 @@ import json
 import os
 
 NAME = 'labs'
+GL = True
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 

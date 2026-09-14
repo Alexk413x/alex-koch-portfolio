@@ -4,6 +4,7 @@
 import time
 
 NAME = 'intro'
+GL = True
 
 # The director's HUD names the beat; ?intro&hud puts it up.
 BEAT = "(()=>{const h=document.getElementById('intro-hud');return h?h.textContent.split(/\\s+/)[1]:''})()"
