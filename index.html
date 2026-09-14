@@ -150,7 +150,9 @@ html.css-pending body{visibility:hidden}
   <button id="intro-skip" type="button" aria-label="Skip intro">SKIP <kbd>ESC</kbd></button>
 </div>
 
-<a class="skip-link" href="#main">Skip to main content</a>
+<!-- tabindex="0" on in-page links: Safari leaves links out of the Tab order by default, and a skip link that
+     needs Option+Tab is not one. -->
+<a class="skip-link" href="#main" tabindex="0">Skip to main content</a>
 
 <!-- Three zones on one row: the mark, the sections, the marks. The middle zone is centerd against the viewport
      rather than against whatever the two sides weigh, so the links hold still when either side changes width. -->
@@ -268,7 +270,7 @@ html.css-pending body{visibility:hidden}
 
     <div class="hero-foot">
       <div class="inner">
-        <div class="cue" aria-hidden="true"><span>↓</span></div>
+        <a class="cue" href="#cartographer" tabindex="0" aria-label="Scroll to Cartographer"><span aria-hidden="true">↓</span></a>
       </div>
     </div>
   </section>

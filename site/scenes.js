@@ -355,6 +355,7 @@
     stage.style.setProperty('--b1', (BLUR * e).toFixed(2) + 'px');
     stage.style.setProperty('--e1', e > .5 ? 'none' : 'auto');
     stage.style.setProperty('--cue-o', (1 - ease(e / CUE_OUT)).toFixed(3));
+    stage.style.setProperty('--cue-v', e < CUE_OUT ? 'visible' : 'hidden');
 
     const r = ease((y - (hold + exit * RING_START) * vh) / (RING_SPAN * vh));
     stage.style.setProperty('--core-s', (1 - CORE_SHRINK * r).toFixed(4));
@@ -378,7 +379,7 @@
 
   // Hands both stages back to the stylesheet's static end states, which is what the reduced-motion rules expect.
   function clear() {
-    for (const p of ['--o1', '--y1', '--b1', '--e1', '--cue-o', '--core-s', '--halo-x', '--ring-o']) {
+    for (const p of ['--o1', '--y1', '--b1', '--e1', '--cue-o', '--cue-v', '--core-s', '--halo-x', '--ring-o']) {
       stage.style.removeProperty(p);
     }
     loopFinal();

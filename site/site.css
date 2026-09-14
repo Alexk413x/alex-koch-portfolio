@@ -448,7 +448,7 @@ html.intro-live #intro.is-clear { background: transparent; pointer-events: none 
   transform: translateY(-200%);
 }
 .skip-link:focus-visible { transform: none; outline: none; box-shadow: 0 0 0 2px var(--amber-focus) }
-#main:focus { outline: none }
+#main:focus, #cartographer:focus { outline: none }
 /* The loading ring sits inside the sheet, under the skip control, in the site's own orange rather than the
    labs' amber: the arc, the dashes and the name follow --panel-accent, the static rings and the ground are
    restated because the kit writes those colors into the markup. */
@@ -552,7 +552,15 @@ html.intro-done .hero-grid, html.intro-done .hero-foot { transition-delay: 1.1s 
 
 /* Never stops bouncing — ambience shouldn't demand attention. Leaves on its own curve, well before the words,
    so a scroll cue still riding up under a blur doesn't compete with the instrument at the wrong moment. */
-.cue { font-size: 18px; line-height: 1; color: var(--text-muted); opacity: var(--cue-o, 1) }
+/* The padding widens the target and the matching negative margin keeps the arrow where it sat. --cue-v hides it
+   once faded, so an invisible arrow neither takes clicks meant for the scene behind it nor a Tab stop. */
+.cue {
+  display: inline-block; padding: 10px 14px; margin: -10px -14px; border-radius: var(--radius-cta);
+  font-size: 18px; line-height: 1; color: var(--text-muted);
+  opacity: var(--cue-o, 1); visibility: var(--cue-v, visible);
+}
+.cue:hover { color: var(--text-strong) }
+.cue:focus-visible { outline: none; color: var(--text-strong); box-shadow: 0 0 0 2px var(--amber-focus) }
 
 .cue span { display: inline-block; animation: ak-bounce 1.6s ease-in-out infinite }
 

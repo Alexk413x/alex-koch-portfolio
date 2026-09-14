@@ -526,5 +526,11 @@
 
     glideTo(Math.max(0, Math.min(maxScroll(), y)));
     if (history.replaceState) history.replaceState(null, '', hash);
+    // The cue hides as the page moves, and a focused element that hides sends the next Tab back to the top of
+    // the document. Focus goes into the section it points at instead.
+    if (a.classList.contains('cue')) {
+      target.setAttribute('tabindex', '-1');
+      target.focus({ preventScroll: true });
+    }
   }, true);
 })();
