@@ -464,7 +464,9 @@ html.intro-done .hero-grid, html.intro-done .hero-foot { transition-delay: 1.1s 
 
 /* The hero's words and the nav fade up once, on first load only, after the core lights. Keyed on `booting`, which
    the inline script in index.html clears; its timeout caps the wait so a slow shader link cannot hide the page. */
-.hero-grid, .hero-foot { transition: opacity 3s var(--ease-settle) }
+/* The delay is the stagger: the nav starts first and the words follow it, so the order reads halo, core, nav,
+   words. html.intro-done below sets its own, larger delay for the intro's ending. */
+.hero-grid, .hero-foot { transition: opacity 3s var(--ease-settle) .8s }
 .booting .hero-grid, .booting .hero-foot { opacity: 0 }
 #nav { transition: opacity 1.2s var(--ease-settle) }
 .booting #nav { opacity: 0 }

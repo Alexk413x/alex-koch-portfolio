@@ -7,9 +7,20 @@
 <meta name="description" content="Alex Koch, agentic mobile engineer. 14 years shipping mobile at scale with Yahoo!, Target, Kohl's and Vacasa. Now building QAAI, a multi-agent QA platform.">
 <meta name="color-scheme" content="dark">
 <meta name="theme-color" content="#0c0c0e">
-<!-- Inline, ahead of every stylesheet: site.css and the font CSS block rendering, and until they land the
-     browser shows its own light ground. Same value as --ink. -->
-<style>html{background:#0c0c0e}</style>
+<!-- Inline, ahead of every stylesheet: a render-blocking stylesheet holds the FIRST PAINT, and until it lands
+     the browser shows its own ground, which is light grey in a light-themed browser. This block is the whole
+     critical style: the ground (same value as --ink) and a gate that hides the body until site.css applies, so
+     the early paint is the ground alone rather than unstyled markup. The stylesheets below are therefore loaded
+     non-blocking, and each clears the gate on arrival. Measured: first paint 1840ms -> 756ms on a 3G profile. -->
+<style>
+html{background:#0c0c0e}
+html.css-pending body{visibility:hidden}
+/* The hidden half of site.css's reveal, restated because it has to be in force BEFORE site.css lands. Without
+   it the words and nav apply at opacity 1, and site.css's own 3s transition then animates them DOWN to 0 —
+   a fade-out before the fade-in. Plain .booting, not html.booting: same specificity as site.css's copy, so the
+   reduced-motion override there still wins on document order. */
+.booting .hero-grid, .booting .hero-foot, .booting #nav{opacity:0}
+</style>
 <link rel="canonical" href="https://alexk413x.com/">
 
 <!-- Absolute URLs, because a scraper resolves these against nothing. og:image must be a raster format and at
@@ -44,6 +55,11 @@
   (function () {
     var el = document.documentElement;
     el.classList.add('booting');
+    // Cleared by site.css's own onload below; the timeout covers a stylesheet that never arrives, which must
+    // cost the reader the styling, not the page.
+    el.classList.add('css-pending');
+    window.AK_CSS_IN = function () { el.classList.remove('css-pending'); };
+    setTimeout(window.AK_CSS_IN, 3000);
     /* WHETHER THE INTRO RUNS IS DECIDED HERE, before first paint, because the intro's black sheet has to be
        true for the very first frame or the hero flashes under it. ONCE PER VISITOR: a browser that has seen it
        (localStorage, or sessionStorage for the test harness) skips it, as do ?nointro, a hash, reduced motion
@@ -95,16 +111,24 @@
     });
     Promise.all([ready, lit]).then(function () {
       // One more frame after the fonts land, so the retrack has been laid out before anything becomes visible.
-      requestAnimationFrame(function () { requestAnimationFrame(function () { setTimeout(reveal, 350); }); });
+      // The core's own fade is .9s; the wait lets it arrive before the nav starts, rather than beside it.
+      requestAnimationFrame(function () { requestAnimationFrame(function () { setTimeout(reveal, 700); }); });
     });
     // A font that never arrives, or a core that never lights, must not cost the reader the page.
     setTimeout(reveal, 3500);
   })();
 </script>
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="site/site.css">
+<!-- media="print" is what makes these non-blocking; the onload puts each back in force the moment it arrives.
+     The <noscript> copies are render-blocking, for a reader whose browser will never run the swap. -->
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<link rel="stylesheet" href="site/site.css" media="print" onload="this.media='all';window.AK_CSS_IN&&window.AK_CSS_IN()">
 <!-- The intro's loading ring is the labs' own; the sheet carries it while the tube's shaders compile. -->
-<link rel="stylesheet" href="labs/kit/loading.css">
+<link rel="stylesheet" href="labs/kit/loading.css" media="print" onload="this.media='all'">
+<noscript>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="site/site.css">
+  <link rel="stylesheet" href="labs/kit/loading.css">
+</noscript>
 </head>
 <body>
 
