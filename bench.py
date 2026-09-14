@@ -52,7 +52,7 @@ WHY IT EXISTS, and why the obvious approach fails:
 Close other tabs and applications before trusting the number.
 """
 import argparse, base64, json, os, socket, struct, subprocess, sys, tempfile, threading, time
-import http.server, socketserver, urllib.parse, urllib.request
+import http.server, urllib.parse, urllib.request
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 TARGET_MS = 1000.0 / 60
@@ -75,6 +75,19 @@ PAGES = {
 
 
 # ---------------------------------------------------------------- server
+# Threaded: Chrome fetches modules in parallel, and a serial server stalls them until Chrome drops the connection,
+# which leaves a module graph unloaded with no error on the page.
+class _Server(http.server.ThreadingHTTPServer):
+    allow_reuse_address = True
+    daemon_threads = True
+
+    def handle_error(self, request, client_address):
+        exc = sys.exc_info()[1]
+        if isinstance(exc, (ConnectionResetError, ConnectionAbortedError, BrokenPipeError)):
+            return
+        super().handle_error(request, client_address)
+
+
 def serve(port):
     os.chdir(ROOT)
 
@@ -86,8 +99,7 @@ def serve(port):
         def log_message(self, *a):
             pass
 
-    socketserver.TCPServer.allow_reuse_address = True
-    httpd = socketserver.TCPServer(('127.0.0.1', port), H)
+    httpd = _Server(('127.0.0.1', port), H)
     threading.Thread(target=httpd.serve_forever, daemon=True).start()
     return httpd
 
@@ -153,6 +165,12 @@ class CDP:
         if r.get('exceptionDetails'):
             raise RuntimeError(json.dumps(r['exceptionDetails'])[:400])
         return r.get('result', {}).get('value')
+
+    def close(self):
+        try:
+            self.sock.close()
+        except Exception:
+            pass
 
 
 def chrome_binary():

@@ -13,6 +13,8 @@
 import base64
 import json
 import os
+import shutil
+import socket
 import subprocess
 import sys
 import tempfile
@@ -243,22 +245,34 @@ class Page:
         })""" % (scroll_id, stage_id, samples, samples))
 
 
+def _free_port():
+    s =socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.bind(('127.0.0.1', 0))
+    port = s.getsockname()[1]
+    s.close()
+    return port
+
+
 class Session:
     """Serves the repo and drives one browser for every suite in a run."""
 
-    def __init__(self, port=8129, debug_port=9410, headless=True, width=1500, height=1000):
+    def __init__(self, port=8129, debug_port=None, headless=True, width=1500, height=1000):
         self.port = port
         self.debug_port = debug_port
         self.headless = headless
         self.size = (width, height)
         self.proc = None
         self.httpd = None
+        self.profile = None
+        self.page = None
 
     def __enter__(self):
         self.httpd = bench.serve(self.port)
-        profile = os.path.join(tempfile.gettempdir(), 'ak-site-test')
+        if self.debug_port is None:
+            self.debug_port = _free_port()
+        self.profile = tempfile.mkdtemp(prefix='ak-site-test-')
         args = [
-            bench.chrome_binary(), '--user-data-dir=' + profile,
+            bench.chrome_binary(), '--user-data-dir=' + self.profile,
             '--no-first-run', '--no-default-browser-check', '--disable-extensions',
             '--remote-debugging-port=%d' % self.debug_port, '--remote-allow-origins=*',
             # The three that stop Chrome halting rendering when the window is not front-most. Without them a
@@ -302,7 +316,18 @@ class Session:
 
     def __exit__(self, *exc):
         if self.proc:
-            self.proc.kill()
+            bench._shut(self.proc)
+            self.proc = None
+        close = getattr(getattr(self.page, 'cdp', None), 'close', None)
+        if close:
+            close()
+        self.page = None
         if self.httpd:
             self.httpd.shutdown()
+            self.httpd.server_close()
+            self.httpd = None
+        if self.profile:
+            # After _shut, not before: on Windows a running Chrome holds the profile's files open.
+            shutil.rmtree(self.profile, ignore_errors=True)
+            self.profile = None
         return False
