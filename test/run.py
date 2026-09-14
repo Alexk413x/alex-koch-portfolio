@@ -59,6 +59,7 @@ def main():
     with session as page:
         for suite in chosen:
             print('  %-10s ...' % suite.NAME, end='', flush=True)
+            began = time.time()
             # A suite that draws cannot pass or fail honestly in a browser without WebGL, so it gets a new browser
             # before it starts, and one rerun if WebGL went missing while it ran.
             gl = getattr(suite, 'GL', False)
@@ -75,8 +76,8 @@ def main():
                     page = session.relaunch()
                     r = _run(suite, page)
             results.append(r)
-            print('\r  %-10s %d passed%s%s' % (
-                suite.NAME, r.passed,
+            print('\r  %-10s %4.0fs  %d passed%s%s' % (
+                suite.NAME, time.time() - began, r.passed,
                 ', %d FAILED' % len(r.failures) if r.failures else '',
                 ', %d skipped' % len(r.skipped) if r.skipped else ''))
 
