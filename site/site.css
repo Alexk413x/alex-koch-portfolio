@@ -2682,37 +2682,28 @@ The hover swell lives on a wrapper, not the core — on the core it would fight 
   }
 }
 
-/* THE BEATS ARE OFF ON A PHONE, at the source rather than per target: one declaration cannot fall out of step
-   with the seven-target list the way clearing each alignment could, and it covers a reader with no JS.
+/* THE BEATS ARE OFF ON A PHONE AND ON EVERY TOUCH-FIRST SCREEN, at the source rather than per target: one
+   declaration cannot fall out of step with the seven-target list the way clearing each alignment could, and it
+   covers a reader with no JS.
    A barrier is for arresting a gesture that would cross a beat, which assumes the beat is a place the whole of
-   fits on screen; here the content is taller than the screen, so a target under the reader arrests a flick they
-   meant to carry. scenes.js stands the rail down on this same pair — the 820/500 the labs use. */
-@media (max-width: 820px), (max-height: 500px) {
+   fits on screen; on a phone the content is taller than the screen, so a target under the reader arrests a flick
+   they meant to carry. On a tablet the fault is iOS's: snapping there cancels momentum (WebKit 243582) and
+   re-snaps to the last beat when snapping is restored after a glide, which sent iPad nav taps to the wrong
+   section. Keyed on the primary input, not the size, so an iPad in landscape is caught and a touchscreen laptop
+   is not. scenes.js stands the rail down on this same query; the two must match. */
+@media (max-width: 820px), (max-height: 500px), (hover: none) and (pointer: coarse) {
   html { scroll-snap-type: none }
 }
 
-/* ---------------- portrait phone ----------------
-   One axis of room and no pointer. Everything here is a POSITION, not a restyle: the pinned scenes were drawn
-   against a landscape stage and place their parts side by side, which on a 393x852 screen puts content off the
-   bottom of a pin or leaves a third of a section empty. */
-@media (max-width: 820px) and (orientation: portrait) {
+/* ---------------- stacked hero ----------------
+   The name over the core and the paragraph under it, wherever the screen is at least as tall as it is wide —
+   phones, portrait tablets and unfolded foldables at any width — and on any one-column screen tall enough to
+   stack. Three columns across a portrait screen put the name over the core's ring. */
+@media (max-aspect-ratio: 1/1), (max-width: 820px) and (min-height: 501px) {
 
   /* The core's lane, declared once — #hero-core is sized from it and .hero-grid reserves it as a row, so the
      picture and the hole left for it cannot disagree. */
   :root { --hero-lane: min(78vw, 38vh) }
-
-  /* WHERE EVERY SECTION PUTS ITS FIRST LINE. One figure, used as the top padding of each section that has a
-     title, so arriving at any of them looks the same — they were landing at 64 / 102 / 156 / 168, which read as
-     four different pages. 104 clears the bar's 82px box with air to spare.
-     scroll-margin-top goes to 0 with it: the padding IS the clearance now, and the 84 the stylesheet declares
-     for a desktop anchor would apply it a second time. */
-  :root { --title-top: 104px }
-  section[id] { scroll-margin-top: 0 }
-  /* The padding alone decides where the first line sits. .sec-title carries a 12px top margin for the rhythm
-     BETWEEN blocks, and as a section's first child that margin was adding to the padding — #app and #labs
-     landed at 116 against Cartographer's and Experience's 104. Exactly the fault .loop-say already zeroes for
-     its own first child; this is the same rule for the rest. */
-  .inner > :first-child, .cat-left > :first-child, .app-copy > :first-child { margin-top: 0 }
 
   /* THE NAME OVER THE CORE, THE PARAGRAPH UNDER IT.
      #hero-core is absolutely positioned outside .scene and must stay there — inside it, it would inherit the
@@ -2735,6 +2726,7 @@ The hover swell lives on a wrapper, not the core — on the core it would fight 
   .hero { align-items: stretch }
   .hero-grid {
     height: 100%;
+    grid-template-columns: minmax(0, 1fr);
     grid-template-rows: 1fr var(--hero-lane) 1fr;
     row-gap: 0;
     justify-items: center; text-align: center;
@@ -2746,7 +2738,31 @@ The hover swell lives on a wrapper, not the core — on the core it would fight 
     display: grid; justify-items: center;
   }
   /* Row 3 explicitly: auto-placement would drop the paragraph into the core's lane. */
-  .aside { grid-row: 3; align-self: start; margin-top: 18px; max-width: 34ch }
+  .aside { grid-row: 3; grid-column: auto; align-self: start; margin-top: 18px; max-width: 34ch }
+  /* Height caps, not replacements: on a portrait screen the width clamp still governs, and on a square one the
+     width-sized name would not leave room above the lane. */
+  .kicker { font-size: min(clamp(20px, 3.2vw, 44px), 3.6vh) }
+  .lockup { font-size: min(clamp(64px, 13vw, 176px), 11vh) }
+}
+
+/* ---------------- portrait phone ----------------
+   One axis of room and no pointer. Everything here is a POSITION, not a restyle: the pinned scenes were drawn
+   against a landscape stage and place their parts side by side, which on a 393x852 screen puts content off the
+   bottom of a pin or leaves a third of a section empty. */
+@media (max-width: 820px) and (orientation: portrait) {
+
+  /* WHERE EVERY SECTION PUTS ITS FIRST LINE. One figure, used as the top padding of each section that has a
+     title, so arriving at any of them looks the same — they were landing at 64 / 102 / 156 / 168, which read as
+     four different pages. 104 clears the bar's 82px box with air to spare.
+     scroll-margin-top goes to 0 with it: the padding IS the clearance now, and the 84 the stylesheet declares
+     for a desktop anchor would apply it a second time. */
+  :root { --title-top: 104px }
+  section[id] { scroll-margin-top: 0 }
+  /* The padding alone decides where the first line sits. .sec-title carries a 12px top margin for the rhythm
+     BETWEEN blocks, and as a section's first child that margin was adding to the padding — #app and #labs
+     landed at 116 against Cartographer's and Experience's 104. Exactly the fault .loop-say already zeroes for
+     its own first child; this is the same rule for the rest. */
+  .inner > :first-child, .cat-left > :first-child, .app-copy > :first-child { margin-top: 0 }
 
   /* THE PIN ENGAGES WHERE THE READER STOPS NEEDING THE TITLE.
      #app measures 1096px at --m 1 against an 852px screen, so something above the phone has to leave. Not the
@@ -2823,7 +2839,9 @@ The hover swell lives on a wrapper, not the core — on the core it would fight 
    query scenes.js checks, or the page could pin a scene the script has stopped driving. */
 @media (max-height: 620px) {
   #app-scroll { height: auto }
-  #app-stage { position: static; height: auto; display: block; overflow: visible }
+  /* clip on x, as on a portrait phone: a retracting key cap's inverse scale reaches 25x, and released sideways it
+     widens a landscape phone's layout to ~1000px and zooms the whole page out. */
+  #app-stage { position: static; height: auto; display: block; overflow-x: clip; overflow-y: visible }
   #app { padding: 90px var(--pad-page) }
 }
 
@@ -2858,9 +2876,16 @@ The hover swell lives on a wrapper, not the core — on the core it would fight 
 @media (max-height: 500px) {
   .scene { padding-top: 54px }
   .kicker { font-size: min(clamp(20px, 3.2vw, 44px), 7vh) }
-  .lockup { font-size: min(clamp(64px, 13vw, 176px), 21vh); letter-spacing: -2px }
+  .lockup { font-size: min(clamp(64px, 13vw, 176px), 21vh, 9vw); letter-spacing: -2px }
   .aside { font-size: 12.5px; line-height: 1.5 }
   .hero-foot { padding-bottom: 14px }
+}
+
+/* THREE COLUMNS ON EVERY LANDSCAPE PHONE, not only the ones wider than 820px: stacked, the name and the
+   paragraph cover the core. The 9vw cap above keeps the name inside its third on a 667px screen. */
+@media (max-height: 500px) and (min-aspect-ratio: 1001/1000) {
+  .hero-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: none; height: auto }
+  .aside { grid-row: auto; grid-column: 3; max-width: none; margin-top: 0; align-self: center }
 }
 
 
@@ -2920,7 +2945,7 @@ The hover swell lives on a wrapper, not the core — on the core it would fight 
   #scroll { height: auto }
   #stage { position: static; height: auto; min-height: 100vh }
   #app-scroll { height: auto }
-  #app-stage { position: static; height: auto; display: block; overflow: visible }
+  #app-stage { position: static; height: auto; display: block; overflow-x: clip; overflow-y: visible }
   #loop-scroll { height: auto }
   #loop-stage { position: static; height: auto; display: block; overflow: visible }
   .tn { transition: none }
