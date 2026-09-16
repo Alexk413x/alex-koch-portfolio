@@ -404,11 +404,10 @@
   // section exactly when the stylesheet stops pinning it.
   const shortLoop = window.matchMedia('(max-height: 760px), (max-width: 1080px) and (max-height: 900px)');
 
-  // The rail is off on a phone: scrolling is the reader's own gesture there and the content needs more of the
-  // screen than a beat leaves it, so a glide they didn't ask for takes the page off them mid-read. Every scrub
-  // and pin above this stays running. The stylesheet drops scroll-snap-type on the same pair — 820/500, the one
-  // the labs use — so the barriers go with it.
-  const phone = window.matchMedia('(max-width: 820px), (max-height: 500px)');
+  // The rail is off on a phone and on every touch-first screen: scrolling is the reader's own gesture there, so a
+  // glide they didn't ask for takes the page off them mid-read. Every scrub and pin above this stays running. The
+  // stylesheet drops scroll-snap-type on the same query, so the barriers go with it; the two must match.
+  const touchScroll = window.matchMedia('(max-width: 820px), (max-height: 500px), (hover: none) and (pointer: coarse)');
 
   // The position to aim at when showing Cartographer: the pin's midpoint, where the graph is whole, rather than
   // the top where nothing is drawn yet. Falls back to the section top once the scene has given its pin back.
@@ -590,14 +589,16 @@
   // Fires HOLD_WAIT after the last scroll input; re-arms snapping and glides to the rail target.
   function holdSettle() {
     holdWait = 0;
-    snapArm();
-    if (reduced.matches || short.matches || phone.matches) return;
     // nav.js is moving the page itself (a keyboard step or anchor jump): re-armed rather than dropped, so the
     // rail still tidies up once the press lands instead of leaving two glides racing for the same position.
+    // Checked BEFORE snapArm: a tap's touchstart stands the origin beat down, and re-arming it mid-glide lets
+    // Safari re-snap to it the moment the glide restores snapping, throwing an iPad reader back from the link.
     if (K.glideOwner() === 'nav') {
       holdWait = setTimeout(holdSettle, HOLD_WAIT);
       return;
     }
+    snapArm();
+    if (reduced.matches || short.matches || touchScroll.matches) return;
     const y = K.scrollY();
     const to = railTarget(y);
     if (to === null) return;
@@ -649,7 +650,7 @@
 
   apply();
   // addListener is the pre-2021 Safari spelling; without it the fallback is simply that the rig never re-arms.
-  for (const q of [reduced, short, shortLoop, phone]) {
+  for (const q of [reduced, short, shortLoop, touchScroll]) {
     if (q.addEventListener) q.addEventListener('change', apply);
     else if (q.addListener) q.addListener(apply);
   }
