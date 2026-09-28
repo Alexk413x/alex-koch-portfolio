@@ -30,7 +30,6 @@
     const cs = getComputedStyle(document.documentElement);
     hold = parseFloat(cs.getPropertyValue('--scene-hold')) || 0;
     exit = parseFloat(cs.getPropertyValue('--scene-exit')) || 1;
-    trip = parseFloat(cs.getPropertyValue('--morph-trip')) || .5;
     // Not `|| .9`: 0 is a legitimate --loop-run (no stationary scroll at all), and `||` would treat it as absent.
     const run = parseFloat(cs.getPropertyValue('--loop-run'));
     loopRun = Number.isFinite(run) ? run : .9;
@@ -58,7 +57,6 @@
    * on one and behind it on the other. Zero on anything but a portrait phone, where the stylesheet's own
    * fallback (0px) is already the desktop behavior.
    */
-  const APP_TRIP_AFTER = 40;    // px past the pin at which the morph commits, so it fires pinned and not before
   const portrait = window.matchMedia('(max-width: 820px) and (orientation: portrait)');
   let appLiftPx = 0;
 
@@ -127,33 +125,38 @@
   const morphStage = document.getElementById('app-stage');
   const morphScroll = document.getElementById('app-scroll');
 
-  // Crossing the trigger commits the morph to a direction; it then runs to completion on its own clock so it
-  // always lands on a pure state instead of being held part-played. Back is faster than forward because leaving
-  // upward only has the space to the pin's top to finish in — at 900ms it was still turning when the section
-  // slid off screen.
-  const MORPH_MS = 900;
-  const MORPH_BACK_MS = 460;
-  const RELEASE = .57;    // fraction of the commit point where scrolling back up releases it (two-line hysteresis
-                          // so a reader parked on the trigger can't flap it back and forth)
-  let trip = .14;         // read from the stylesheet in measure(); nav.js reads the same declaration
+  /* THE SCROLL DRIVES THE TURN, AND A STOP PART-WAY FINISHES IT.
+   *
+   * --m is the scroll position through the turn, so the calculator moves exactly as fast as the page does. When
+   * scrolling stops with the turn part-played, the page itself glides on in the direction it was last going
+   * until the turn lands, and the scrub follows the glide. A part-played calculator is never left at rest: its
+   * keypad only takes input at either end.
+   *
+   * Only a gesture that began at or inside the pin gets carried on. One that began outside it and coasted in,
+   * a fling's momentum carrying up out of Experience, settles back to the end it entered by, so arriving from
+   * either side always lands on that side's calculator first.
+   *
+   * This glide runs on touch screens too, where the rail is off. It stays inside the pin.
+   */
+  const MORPH_MS = 900;     // glide time for a whole turn; a part-turn gets its share
+  const MORPH_WAIT = 120;   // ms of stillness that counts as the reader letting go
+  const MORPH_SCRUB = .7;   // viewport heights the turn spans on a portrait phone, under its 644px pin
 
-  let mValue = 0, mTarget = 0, mFrom = 0, mStart = 0, mAnim = 0, mSettle = 0;
+  let mValue = 0, morphDir = 1, morphLastY = 0, morphWait = 0, morphTouch = false;
+  let morphRestY = 0;       // where the page last came to rest, which says where the current gesture began
 
-  // Lands the morph even if requestAnimationFrame stalls (Chrome runs zero rAF frames in a background tab),
-  // since a frozen part-played morph leaves the keypad pointer-events: none. A normal run clears this timer.
-  function settleSoon() {
-    clearTimeout(mSettle);
-    mSettle = setTimeout(() => {
-      mSettle = 0;
-      if (mValue === mTarget) return;
-      if (mAnim) { cancelAnimationFrame(mAnim); mAnim = 0; }
-      mValue = mFrom = mTarget;
-      writeMorph(mValue);
-    }, MORPH_MS + 250);
+  // A finger resting on the screen is holding the page, not letting go of it, so no glide until it lifts.
+  window.addEventListener('touchstart', () => { morphTouch = true; }, { passive: true });
+  for (const ev of ['touchend', 'touchcancel']) {
+    window.addEventListener(ev, () => {
+      morphTouch = false;
+      if (!morphWait) morphWait = setTimeout(morphSettle, MORPH_WAIT);
+    }, { passive: true });
   }
 
   // Writes the morph scalar and the resting-state classes that make each calculator clickable at its own end.
   function writeMorph(v) {
+    mValue = v;
     morphStage.style.setProperty('--m', v.toFixed(4));
     morphStage.classList.toggle('is-new', v > .5);
     const atOld = v < .04, atApp = v > .96;
@@ -162,91 +165,63 @@
     morphStage.classList.toggle('is-app', atApp);
   }
 
-  // Drives the morph scalar from mFrom to mTarget over MORPH_MS/MORPH_BACK_MS, one rAF at a time.
-  function tick(ts) {
-    if (!mStart) mStart = ts;
-    const p = clamp((ts - mStart) / (mTarget ? MORPH_MS : MORPH_BACK_MS));
-    mValue = mFrom + (mTarget - mFrom) * ease(p);
-    writeMorph(mValue);
-    if (p < 1) { mAnim = requestAnimationFrame(tick); return; }
-    mAnim = 0;
-    clearTimeout(mSettle); mSettle = 0;
+  // Where the turn runs, in page pixels. The whole pin on a desktop, so its two rail beats are its two ends. A
+  // portrait phone pins LOW (see appLift), so there the turn starts where the pin catches and spans MORPH_SCRUB.
+  function morphSpan() {
+    if (appLiftPx > 0) {
+      return { from: appTop + appLiftPx, len: Math.max(1, Math.min(vh * MORPH_SCRUB, appRun - appLiftPx)) };
+    }
+    return { from: appTop, len: Math.max(1, appRun) };
   }
 
-  // Retargets the morph. Rebased from the current value rather than resumed, so a reader who reverses mid-flight
-  // gets it running back from where it actually is instead of jumping to where it would have been.
-  function setMorph(target) {
-    if (target === mTarget) return;
-    mTarget = target;
-    mFrom = mValue;
-    mStart = 0;
-    settleSoon();
-    if (!mAnim) mAnim = requestAnimationFrame(tick);
-  }
+  const morphAtY = (y) => { const s = morphSpan(); return clamp((y - s.from) / s.len); };
 
-  // How far through the pin a scroll position is; the rail's calculator beats are read off this same measurement.
-  const morphAt = (y) => (appRun > 0 ? (y - appTop) / appRun : 1);
-
-  /* Where the morph commits, as a fraction of the pin's runway.
-   *
-   * The stylesheet's --morph-trip is a fraction of a runway that assumes the stage pins with its top at the
-   * viewport's top. On a portrait phone it does not: it pins LOW, at appLiftPx into the section, so a fraction
-   * chosen against the old geometry fires the morph while the reader is still scrolling the title past. The
-   * trigger is therefore derived from the pin itself — just past where it catches — rather than restated.
-   */
-  const tripAt = () =>
-    (appLiftPx > 0 && appRun > 0 ? Math.min(.9, (appLiftPx + APP_TRIP_AFTER) / appRun) : trip);
-
-  /* Viewport heights of pinned scroll the turn is spread over, where it is scrubbed. Under the 644px the pin
-     holds for on a 393x852 phone, so it lands with travel to spare. */
-  const MORPH_SCRUB = .7;
-
-  // Whether the reader drives the turn directly. Only where the pin is long enough to be worth scrubbing, which
-  // is the portrait phone that measures a lift; everywhere else appLiftPx is 0.
-  const scrubbing = () => appLiftPx > 0;
-
-  // --m straight off the scroll: 0 until the pin catches, then the turn over MORPH_SCRUB of pinned travel.
-  const scrubAt = (y) => clamp((y - appTop - appLiftPx) / Math.max(1, vh * MORPH_SCRUB));
-
-  /* Commits the morph to a direction once the scroll crosses the trigger — or, where the pin is long enough,
-   * hands the turn to the scroll outright.
-   *
-   * THE THRESHOLD AND ITS 900ms CLOCK EXIST FOR A SHORT PIN. Committing and playing out guarantees a pure end
-   * state on a runway too short to hold a part-played one, which is what the desktop's .7 gives. A portrait
-   * phone now pins for 644px, and over that distance a fixed clock is the wrong instrument: it fires at a line
-   * the reader cannot see and then ignores them for 900ms, so scrolling back mid-turn does nothing and the two
-   * states are a switch rather than the two ends of a gesture.
-   */
   function morph(y) {
     if (!morphStage || !morphScroll) return;
-    if (scrubbing()) {
-      // The tween and its safety timer are the other mode's; left running they would fight the scrub for --m.
-      if (mAnim) { cancelAnimationFrame(mAnim); mAnim = 0; }
-      if (mSettle) { clearTimeout(mSettle); mSettle = 0; }
-      const m = scrubAt(y);
-      mValue = mTarget = mFrom = m;
-      writeMorph(m);
-      return;
-    }
-    const p = morphAt(y), t = tripAt();
-    if (p >= t) setMorph(1);
-    else if (p <= t * RELEASE) setMorph(0);
+    if (Math.abs(y - morphLastY) >= 1) { morphDir = y > morphLastY ? 1 : -1; morphLastY = y; }
+    writeMorph(morphAtY(y));
+    if (K.glideOwner() === 'morph') return;
+    clearTimeout(morphWait);
+    morphWait = setTimeout(morphSettle, MORPH_WAIT);
   }
 
-  // Sets the pad's resting state from the actual scroll position on load — without this, a page loaded past
-  // the trigger showed the app layout until crossing the trigger snapped it back to the faceplate first.
+  function morphSettle() {
+    morphWait = 0;
+    if (morphTouch) return;
+    // Someone else is already moving the page; their glide ends somewhere this will be asked about again.
+    if (K.busy()) { morphWait = setTimeout(morphSettle, MORPH_WAIT); return; }
+    const y = K.scrollY();
+    const m = morphAtY(y);
+    if (m <= 0 || m >= 1) { morphRestY = y; return; }
+    const s = morphSpan(), end = s.from + s.len;
+    let down = morphDir > 0;
+    if (morphRestY < s.from - HOLD_NEAR) down = false;
+    else if (morphRestY > end + HOLD_NEAR) down = true;
+    const to = Math.round(down ? end : s.from);
+    K.glideTo(to, {
+      ms: Math.max(180, MORPH_MS * (down ? 1 - m : m)),
+      owner: 'morph',
+      // Lands on a rail beat on a desktop, so the rail treats it as parked there rather than correcting it.
+      onArrive: (at) => { morphRestY = at; anchorY = at; snapArm(); snapRest(at); },
+    });
+  }
+
+  function morphStop() {
+    clearTimeout(morphWait); morphWait = 0;
+    if (K.glideOwner() === 'morph') K.stopGlide();
+  }
+
+  // Sets the pad's resting state from the actual scroll position on load.
   function morphInit(y) {
     if (!morphStage || !morphScroll) return;
-    mValue = mTarget = mFrom = scrubbing() ? scrubAt(y) : (morphAt(y) >= tripAt() ? 1 : 0);
-    writeMorph(mValue);
+    morphLastY = morphRestY = y;
+    writeMorph(morphAtY(y));
   }
 
-  // Everything reaches its shipped state and stays there: no pin, no trigger.
+  // Everything reaches its shipped state and stays there: no pin, no scrub.
   function morphFinal() {
     if (!morphStage) return;
-    clearTimeout(mSettle); mSettle = 0;
-    if (mAnim) { cancelAnimationFrame(mAnim); mAnim = 0; }
-    mValue = mTarget = mFrom = 1;
+    morphStop();
     writeMorph(1);
   }
 
@@ -509,6 +484,18 @@
     placeSnap();
   }
 
+  /* Resting on either end of the calculator's pin keeps that end stood down; the far end stays armed.
+   * Standing it down on input is too late there: Chrome settles a wheel gesture against the snap targets it had
+   * when the gesture began, so a notch away from an armed end is pulled back onto it and the turn reverses
+   * against the reader. Every other beat still re-arms at rest.
+   */
+  function snapRest(y) {
+    if (appRun <= 0 || snapOff >= 0) return;
+    for (const at of [appTop, appTop + appRun]) {
+      if (Math.abs(y - at) < HOLD_NEAR) { snapOff = at; placeSnap(); return; }
+    }
+  }
+
   // ---- and the reader is walked between them ----
   // The snap targets above are barriers, arresting a gesture that would cross a beat; this rail closes whatever
   // gap is left once scrolling stops. It commits rather than rounds: past RAIL_COMMIT of the way to the next
@@ -518,6 +505,9 @@
   const HOLD_WAIT = 500;    // ms of stillness before the rail acts, so several flicks count as one gesture
   const HOLD_NEAR = 8;      // px; closer than this there's nothing to correct and a glide is only a jitter
   const RAIL_COMMIT = .35;  // of the gap to the next beat: past this, the reader is taken the rest of the way
+  // Leaving the calculator by either end commits almost at once. Its turn already carries on in the direction of
+  // travel, so a rail that pulled the next notch back would be the one place the page disagreed with itself.
+  const RAIL_EXIT = .05;
   const RAIL_PAST = .5;     // viewport heights past the last beat the rail still holds the reader on it
   // Widest gap the rail will carry a reader across, in viewport heights — beyond this two beats are two places
   // with reading between them, not a hand-off. Every gap on a roomy window is under one screen.
@@ -557,8 +547,10 @@
     const lo = s[i], hi = s[i + 1];
     if (hi - lo > screenH() * RAIL_REACH) return null;
     const f = (y - lo) / Math.max(1, hi - lo);
-    if (atBeat(anchorY, lo)) return f < RAIL_COMMIT ? lo : hi;
-    if (atBeat(anchorY, hi)) return f > 1 - RAIL_COMMIT ? hi : lo;
+    // Off the calculator's app end going down, or off its faceplate going up, is leaving it.
+    const offApp = appRun > 0 && atBeat(lo, appTop + appRun), offFace = appRun > 0 && atBeat(hi, appTop);
+    if (atBeat(anchorY, lo)) return f < (offApp ? RAIL_EXIT : RAIL_COMMIT) ? lo : hi;
+    if (atBeat(anchorY, hi)) return f > 1 - (offFace ? RAIL_EXIT : RAIL_COMMIT) ? hi : lo;
     // No anchor to hold against (a nav anchor jump, or a reload part-way down): nearest, since there's no
     // gesture direction to honor.
     return f < .5 ? lo : hi;
@@ -593,11 +585,12 @@
     // rail still tidies up once the press lands instead of leaving two glides racing for the same position.
     // Checked BEFORE snapArm: a tap's touchstart stands the origin beat down, and re-arming it mid-glide lets
     // Safari re-snap to it the moment the glide restores snapping, throwing an iPad reader back from the link.
-    if (K.glideOwner() === 'nav') {
+    if (K.glideOwner() === 'nav' || K.glideOwner() === 'morph') {
       holdWait = setTimeout(holdSettle, HOLD_WAIT);
       return;
     }
     snapArm();
+    snapRest(K.scrollY());
     if (reduced.matches || short.matches || touchScroll.matches) return;
     const y = K.scrollY();
     const to = railTarget(y);
@@ -613,6 +606,7 @@
   }
 
   function holdRelease() {
+    morphStop();
     snapFree(K.scrollY());
     holdStop();
     holdWait = setTimeout(holdSettle, HOLD_WAIT);
