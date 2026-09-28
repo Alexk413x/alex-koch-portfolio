@@ -232,12 +232,13 @@ import { coverArt } from './cover-art/index.js';
   let shiftFix = 0;
 
   // Eases `pos` toward `target`, then settles the case and arms the auto-flip once the rack stops moving.
-  function slideTo(target) {
+  // `quiet` returns a let-go swipe to its own box without arming the auto-turn, which is for a new cover.
+  function slideTo(target, quiet) {
     cancelAnimationFrame(glide);
     const from = pos, delta = target - pos;
     if (!delta || reduced.matches) {
       glide = 0; pos = target;
-      place(); settleCase(); armAutoTurn();
+      place(); settleCase(); if (!quiet) armAutoTurn();
       return;
     }
     const ms = Math.min(620, 240 + Math.abs(delta) * 80);
@@ -251,7 +252,7 @@ import { coverArt } from './cover-art/index.js';
       glide = 0; pos = target; place();
       // Counted from settling, not the keypress, or a cross-rack glide (up to 620ms) would arm mid-move.
       settleCase();
-      armAutoTurn();
+      if (!quiet) armAutoTurn();
     };
     glide = requestAnimationFrame(step);
   }
@@ -528,13 +529,23 @@ import { coverArt } from './cover-art/index.js';
     const body = document.getElementById('case-body');
     if (!body || !back) return;
     body.style.removeProperty('--case-min-h');
+    back.style.removeProperty('--air');
     const over = back.scrollHeight - back.clientHeight;
     // The bottom padding the back's own rule leaves off, so the last line does not sit on the case's edge.
     const pad = parseFloat(getComputedStyle(back).paddingTop) || 0;
     if (over > 1) {
       body.style.setProperty('--case-min-h',
         Math.ceil(body.getBoundingClientRect().height + over + pad) + 'px');
+      return;
     }
+    // A short record hands part of its empty foot to the spacing above, so it fills the case instead of
+    // leaving one gap over the badges. offsetTop, not rects: the back is 3D-turned and rects are projected.
+    const wins = back.querySelector('.b-wins');
+    const get = back.querySelector('.b-get');
+    if (!wins || !get) return;
+    const free = get.offsetTop - (wins.offsetTop + wins.offsetHeight);
+    const shares = 2 + (wins.children.length - 1) * 0.5;   // must match the --air multipliers in site.css
+    if (free > 0) back.style.setProperty('--air', Math.min(free * 0.6 / shares, pad * 0.6).toFixed(1) + 'px');
   }
 
   function paint() {
@@ -798,26 +809,28 @@ import { coverArt } from './cover-art/index.js';
 
   let grab = null;
 
-  /* TWO AXES, EARNED SEPARATELY.
+  /* A FINGER SWIPES, TAPS OR HOLDS; A MOUSE TURNS.
    *
-   * The case used to take `touch-action: none`, so every swipe that crossed it was swallowed and the page did
-   * not scroll. Now it takes `pan-y`: a horizontal drag is the browser's to hand over and turns the object
-   * immediately, while a vertical one stays the page's and scrolls past.
-   *
-   * Pitch is the axis that conflicts, so it is the one that has to be asked for. HOLD_MS of a finger down
-   * without a real move promotes the grab: the element goes to `touch-action: none` for the rest of the
-   * gesture and dy starts driving tilt. A mouse has no such conflict and is promoted on contact.
+   * The case takes `touch-action: pan-y`, so a vertical drag stays the page's and scrolls past. On touch a
+   * sideways swipe moves the carousel, sliding the case with the finger the way a glide would, and a tap turns
+   * it over. HOLD_MS of a finger down without a real move promotes the grab to the mouse's behavior: the element
+   * goes to `touch-action: none` for the rest of the gesture and the finger turns and tilts the case directly.
    */
+  const SWIPE_COMMIT = 40;   // px of sideways swipe that moves to the next box rather than springing back
   const HOLD_MS = 320;    // press before the case takes the vertical axis; under ~250 it fires on a scroll flick
   const HOLD_SLOP = 8;    // px of travel that cancels the promotion — a moving finger is a gesture, not a hold
 
   caseBody.addEventListener('pointerdown', (e) => {
     // Skips the grab on a link target — setPointerCapture below would retarget its click to the case body.
     if (e.target.closest && e.target.closest('a')) return;
-    grab = { x: e.clientX, y: e.clientY, moved: 0, pitch: e.pointerType !== 'touch', hold: 0 };
-    if (!grab.pitch) {
+    const touch = e.pointerType === 'touch';
+    grab = { x: e.clientX, y: e.clientY, moved: 0, pitch: !touch, swipe: touch, sliding: false, hold: 0 };
+    lastX = e.clientX; lastY = e.clientY;
+    if (touch) {
       grab.hold = setTimeout(() => {
-        if (grab) { grab.pitch = true; grab.y = lastY; }   // rebased, or the held frame jumps by the drift
+        if (!grab || grab.sliding) return;
+        // Rebased, or the held frame jumps by the drift.
+        grab.pitch = true; grab.swipe = false; grab.x = lastX; grab.y = lastY; turnAtGrab = turn;
       }, HOLD_MS);
     }
     turnAtGrab = turn;
@@ -828,14 +841,26 @@ import { coverArt } from './cover-art/index.js';
     caseBody.setPointerCapture(e.pointerId);
   });
 
-  let lastY = 0;
+  let lastX = 0, lastY = 0;
 
   caseBody.addEventListener('pointermove', (e) => {
     if (!grab) return;
-    lastY = e.clientY;
+    lastX = e.clientX; lastY = e.clientY;
     const dx = e.clientX - grab.x, dy = e.clientY - grab.y;
     grab.moved = Math.max(grab.moved, Math.abs(dx), Math.abs(dy));
     if (grab.hold && grab.moved > HOLD_SLOP) { clearTimeout(grab.hold); grab.hold = 0; }
+    if (grab.swipe) {
+      if (!grab.sliding && Math.abs(dx) > HOLD_SLOP && Math.abs(dx) > Math.abs(dy)) grab.sliding = true;
+      if (!grab.sliding) return;
+      cancelAnimationFrame(glide); glide = 0;
+      // Past either end the rack gives a third as much, so the edge reads as an edge.
+      const last = items.length - 1;
+      let p = at - dx / (CASE_TRAVEL * (caseW || 260));
+      if (p < 0) p /= 3; else if (p > last) p = last + (p - last) / 3;
+      pos = p;
+      place();
+      return;
+    }
     // Straight to the angle, no tween: a hand on the case is the clock, and easing under it is lag.
     if (grab.pitch) tilt = 2 + -dy * TILT_PER_PX;
     turn = turnAtGrab + dx * TURN_PER_PX;
@@ -845,8 +870,22 @@ import { coverArt } from './cover-art/index.js';
   const drop = (e) => {
     if (!grab) return;
     if (grab.hold) clearTimeout(grab.hold);
+    const g = grab;
     grab = null;
     caseBody.classList.remove('held');
+    if (g.swipe) {
+      if (e && e.pointerId != null && caseBody.hasPointerCapture(e.pointerId)) {
+        caseBody.releasePointerCapture(e.pointerId);
+      }
+      const dx = lastX - g.x;
+      if (g.sliding) {
+        if (Math.abs(dx) > SWIPE_COMMIT) go(at + (dx < 0 ? 1 : -1));
+        else slideTo(at, true);
+      } else if (e && e.type === 'pointerup' && g.moved <= HOLD_SLOP) {
+        flip();
+      }
+      return;
+    }
     caseBody.classList.add('springing');
     // Snaps to whichever face is closer, not the front, so releasing past halfway keeps the back you turned to.
     turnTo(Math.round((turn - REST) / 180), 620, EASE_SPRING);
@@ -856,6 +895,13 @@ import { coverArt } from './cover-art/index.js';
     // Spring easing is only for the way home — left on, the next manual flip would overshoot too.
     setTimeout(() => caseBody.classList.remove('springing'), 640);
   };
+  // A single press-and-drag is a turn, so it must not select; a double or triple click still selects a word or
+  // a line for copying. Selected text would otherwise start a native drag on the next grab, and the
+  // pointercancel that follows leaves the case refusing to move — hence the dragstart block too.
+  caseBody.addEventListener('mousedown', (e) => {
+    if (e.detail < 2 && !(e.target.closest && e.target.closest('a'))) e.preventDefault();
+  });
+  caseBody.addEventListener('dragstart', (e) => e.preventDefault());
   caseBody.addEventListener('pointerup', drop);
   caseBody.addEventListener('pointercancel', drop);
   caseBody.addEventListener('lostpointercapture', drop);

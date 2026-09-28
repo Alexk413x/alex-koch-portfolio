@@ -1281,7 +1281,7 @@ Barely dimmed: depth here is carried by size (2.4x the distance), and dimming a 
 
 #experience { position: relative; padding: 110px var(--pad-page); background: var(--ink) }.expertise { margin-top: 34px; display: grid; gap: 10px; max-width: 92ch }
 
-.expertise div { font-size: 14px; line-height: 1.6; color: var(--text-body) }
+.expertise div { font-size: 14px; line-height: 1.6; color: var(--text-strong) }
 
 .expertise b {
   display: inline-block; min-width: 92px;
@@ -1374,10 +1374,10 @@ min-width: 0 is load-bearing: a grid item's automatic minimum is its content, so
   font-family: var(--font-mono); font-size: 10.5px; font-weight: 500; letter-spacing: .14em;
   text-transform: uppercase; color: var(--text-muted);
 }
-/* These three lists are the section's plain prose, so they take .sec-lede's size and color rather than a pair
-   of custom numbers — a near-white of its own would make them brighter than the lede under any other title. */
+/* .sec-lede's size, but full white rather than its --text-body: these are the section's keywords and are meant
+   to read above its prose. */
 .key-row > p {
-  margin: 0; font-size: clamp(14px, 1.5vw, 17px); line-height: 1.65; color: var(--text-body);
+  margin: 0; font-size: clamp(14px, 1.5vw, 17px); line-height: 1.65; color: var(--text-strong);
 }
 
 /* ---- the company bar ---- */
@@ -1810,9 +1810,9 @@ Rules drawn in dimmed --scenery, not --hairline: --hairline's blue gray is right
   --ink-copy: #c3c5cb;
   --pad: clamp(22px, calc(var(--case-w, 400px) * .0847), 52px);
   --t-label: clamp(9px, calc(var(--case-w, 400px) * .0233), 15px);
-  /* Smaller than the rest of the panel: up to twenty chips at label size made this block taller than the record
-     above it — a spec table is scanned, not read. */
-  --t-chip: clamp(8px, calc(var(--case-w, 400px) * .0186), 12px);
+  /* Sized for at most about nine chips a record. A record carrying twenty at this size makes this block taller
+     than the write-up above it. */
+  --t-chip: clamp(10px, calc(var(--case-w, 400px) * .025), 15px);
   /* The panel's reading size — lede and outcomes match, or the list reads as a footnote to claims it's actually
      making. */
   --t-body: clamp(11.5px, calc(var(--case-w, 400px) * .0275), 18px);
@@ -1825,20 +1825,24 @@ Rules drawn in dimmed --scenery, not --hairline: --hairline's blue gray is right
 }
 /* What it is, then what it did — the lede is one paragraph, brighter than the list under it, since it's the
    sentence a reader who stops after one sentence gets.
-A record can carry more than one lede (e.g. a second paragraph on how the work was handed off); both set the same, reading as one voice. */
+A record can carry more than one lede (e.g. a second paragraph on how the work was handed off); both set the same, reading as one voice.
+   --air is set by catalog.js's fitBack() on a short record; its multipliers here and there must agree. */
 .b-lede + .b-lede { margin-top: 10px }
 .b-lede {
-  margin: 14px 0 0; font-size: var(--t-body);
-  line-height: 1.5; color: var(--ink-copy);
+  margin: calc(var(--pad) * .55 + var(--air, 0px)) 0 0; font-size: var(--t-body);
+  line-height: 1.55; color: var(--ink-copy);
 }
 /* Outcomes marked with a CSS-drawn chevron rather than a glyph — a character depends on the face carrying it
    (how the store chips once rendered tofu) — staying in the object's straight-line vocabulary while pointing to
    carry a list of outcomes better than a static mark would. */
-.b-wins { margin: 12px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 7px }
+.b-wins {
+  margin: calc(var(--pad) * .5 + var(--air, 0px)) 0 0; padding: 0; list-style: none;
+  display: flex; flex-direction: column; gap: calc(var(--pad) * .3 + var(--air, 0px) * .5);
+}
 .b-wins li {
   position: relative; padding-left: 15px;
   font-size: var(--t-body);
-  line-height: 1.45; color: var(--ink-copy);
+  line-height: 1.5; color: var(--ink-copy);
 }
 .b-wins li::before {
   content: ''; position: absolute; left: 0; top: .22em;
@@ -1853,10 +1857,10 @@ A record can carry more than one lede (e.g. a second paragraph on how the work w
 .b-lede b, .b-wins b { font-weight: 700; color: var(--text-strong) }
 /* The headline slot, carrying the role at the same size/weight/place a product name once used — line-height up
    from 1.05, since a multi-word job title wraps where a product name rarely would. */
-.c3-back .b-lead { font-family: var(--font-display); font-weight: 900; font-size: clamp(20px, calc(var(--case-w, 400px) * .0593), 40px); line-height: 1.12; letter-spacing: -.5px; color: var(--text-strong) }
+.c3-back .b-lead { font-family: var(--font-display); font-weight: 900; font-size: clamp(20px, calc(var(--case-w, 400px) * .0593), 40px); line-height: 1.12; letter-spacing: -.5px; color: var(--accent) }
 /* The role gets its own row rather than sharing one wrapped line with employer and dates, where it would become
    a middle phrase nobody's eye catches. flex-basis: 100% on the role is what breaks the row. */
-.c3-back .b-at { margin-top: 10px; display: flex; flex-wrap: wrap; align-items: baseline; gap: 5px 12px; font-family: var(--font-mono); font-size: var(--t-meta); letter-spacing: .1em; color: var(--ink-meta) }
+.c3-back .b-at { margin-top: calc(var(--pad) * .35); display: flex; flex-wrap: wrap; align-items: baseline; gap: 5px 12px; font-family: var(--font-mono); font-size: var(--t-meta); letter-spacing: .1em; color: var(--ink-meta) }
 .c3-back .b-at .product {
   flex: 0 0 100%;
   font-size: calc(var(--t-meta) * 1.22); font-weight: 700; letter-spacing: .04em;
@@ -1909,14 +1913,14 @@ A record can carry more than one lede (e.g. a second paragraph on how the work w
    chip still earns its border. A rule, not a slab — a shaded panel would be a different vocabulary from the
    ruled outlines the rest of the case and page use, reading as a sticker rather than part of the box.
    The rule needs to run full width, so the panel's own padding is canceled and re-applied here off --pad, or it would stop short of the edge when the case resizes. */
-.b-spec { margin-top: 8px; margin-left: calc(var(--pad) * -1); margin-right: calc(var(--pad) * -1);
+.b-spec { margin-top: calc(var(--pad) * .4); margin-left: calc(var(--pad) * -1); margin-right: calc(var(--pad) * -1);
   /* Off --pad like every other edge — flat 16/18px values once made the chips sit twice as close to the case's
      bottom as its sides. */
   padding: calc(var(--pad) * .22) var(--pad) calc(var(--pad) * .5);
   border-top: 1px solid var(--rule-box) }
-.b-chips { display: flex; flex-wrap: wrap; gap: 4px }
+.b-chips { display: flex; flex-wrap: wrap; gap: 6px }
 .b-chips span {
-  font-family: var(--font-mono); font-size: var(--t-chip); letter-spacing: .06em; padding: 2.5px 6px;
+  font-family: var(--font-mono); font-size: var(--t-chip); letter-spacing: .06em; padding: 3px 8px;
   /* --text-body, not --text-muted — these chips are the most concrete thing on the panel, and muted (45% white,
      the dimmest token) read too faint against the blurb above. */
   border: 1px solid var(--rule-box); border-radius: var(--radius-chip); color: var(--ink-copy);
