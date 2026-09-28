@@ -790,6 +790,12 @@ html.intro-done .hero-grid, html.intro-done .hero-foot { transition-delay: 1.1s 
   color: #3c4144; white-space: nowrap;
 }
 
+/* Registered so each is resolved once per element to a number. Unregistered, every var(--e) pastes in the whole
+   --p expression as text, and the keys' transforms use --e fourteen times: it doubled the morph's frame cost. */
+@property --p { syntax: '<number>'; inherits: true; initial-value: 0; }
+@property --e { syntax: '<number>'; inherits: true; initial-value: 0; }
+@property --mixed { syntax: '<percentage>'; inherits: true; initial-value: 0%; }
+
 /* Height, not just opacity: collapsing the upper stack levels turns the readout back into the HP's one-line
    display. The IN row never collapses — it's the current line in both machines.
    The stack levels unfold upward off the IN line on their own clocks: hinged at the bottom edge and swinging up,
