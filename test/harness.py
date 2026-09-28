@@ -189,8 +189,8 @@ class Page:
     def until_morphed(self, timeout=4.0):
         """Waits for the calculator to reach a PURE state.
 
-        It runs on its own clock rather than tracking the scroll, so a glide that crosses its trigger leaves it
-        animating after the page has come to rest. Reading --m before then reads a mechanism mid-flight."""
+        A stop part-way through the turn glides the page on to one end, and --m tracks that glide. Reading it
+        before the glide lands reads a mechanism mid-flight."""
         self.until("(m => m < 0.001 || m > 0.999)"
                    "(+(document.getElementById('app-stage').style.getPropertyValue('--m') || 0))",
                    timeout=timeout)
