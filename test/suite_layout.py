@@ -282,19 +282,25 @@ def run(page, r):
     r.near('a flick off the faceplate lands on the app', page.until_still(quiet=0.5), beats[4], 8)
     r.near('and the app beat is the other pure state', page.until_morphed(), 1.0, 0.001)
 
-    # Under a third of the way down the pin is not a decision to turn it, so the reader is put back AND the
-    # calculator is still the faceplate. Both halves: the rail's threshold sits below the morph's trigger by
-    # design, so a gesture the rail is about to undo can never have committed the mechanism.
+    # ANY MOVE INTO THE PIN IS A DECISION. The scroll drives the turn, and a stop part-way carries on in the
+    # direction the reader was going, so even a small nudge down lands on the app rather than being put back.
     page.scroll(beats[3], pause=0.9)
     page.wheel(160, pause=0)
-    r.near('a nudge inside the pin is put back on the faceplate', page.until_still(quiet=0.5), beats[3], 8)
-    r.near('and the calculator never started turning', page.until_morphed(), 0.0, 0.001)
+    r.near('a nudge inside the pin carries on to the app', page.until_still(quiet=0.5), beats[4], 8)
+    r.near('and the calculator finished turning', page.until_morphed(), 1.0, 0.001)
 
     # ...and it plays backwards the same way, which is the half that used to have nowhere to land.
     page.scroll(beats[4], pause=0.9)
     page.flick(-500, pause=0.4)
     r.near('back up from the app lands on the faceplate', page.until_still(quiet=0.5), beats[3], 8)
     r.near('and the calculator turned back', page.until_morphed(), 0.0, 0.001)
+
+    # LEAVING THE CALCULATOR COMMITS AT ONCE. Its turn carries on in the direction of travel, so one notch down
+    # off the app end is a decision to go on to Experience, not a nudge to undo.
+    page.scroll(beats[4], pause=1.2)
+    page.until_still(quiet=0.5)
+    page.wheel(100, pause=0)
+    r.near('one notch down off the app carries on to Experience', page.until_still(quiet=0.8), beats[5], 8)
 
     # LEAVING IS FREE, and this is the check that caught the worst version of it. `scroll-snap-stop: always`
     # under the reader does not merely refuse to carry them PAST a beat, it refuses to let them OFF it: Chrome

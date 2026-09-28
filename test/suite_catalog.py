@@ -7,6 +7,8 @@
 #
 # Nothing reaches into catalog.js's internals: the contract is the DOM it builds -- aria-pressed on the picked
 # box, the flip button's own label, the cover art each box carries -- which is also what a screen reader gets.
+import time
+
 NAME = 'catalog'
 
 PICKED = "document.querySelector('#reel .box[aria-pressed=\"true\"]')"
@@ -168,3 +170,53 @@ def run(page, r):
         r.check('and turns the case immediately', now, not was)
     finally:
         page.cdp.call('Emulation.setEmulatedMedia', {'features': []})
+
+    # ---- on touch the case swipes between products and a tap turns it ----
+    #
+    # A mouse drag turns the case; a finger's sideways swipe moves the carousel instead, because on a phone the
+    # case is the biggest target on screen. Real touch input: pointerType is what the case reads. Timed with
+    # time.sleep, not settle(): settle waits 0.6s at least, and a finger down that long is a hold, not a tap.
+    page.viewport(393, 852, mobile=True, dpr=2)
+    page.cdp.call('Emulation.setTouchEmulationEnabled', {'enabled': True, 'maxTouchPoints': 5})
+    try:
+        _open_section(page)
+
+        def touch(kind, pts):
+            page.cdp.call('Input.dispatchTouchEvent',
+                          {'type': kind, 'touchPoints': [{'x': x, 'y': y} for x, y in pts]})
+
+        def centre():
+            page.js("document.getElementById('case-body').scrollIntoView({block:'center',behavior:'instant'});1")
+            page.settle(0.3)
+            return page.json("(()=>{const q=document.getElementById('case-body').getBoundingClientRect();"
+                             "return JSON.stringify({x:q.left+q.width/2,y:q.top+q.height/2})})()")
+
+        def swipe(dx):
+            c = centre()
+            touch('touchStart', [(c['x'], c['y'])])
+            for i in range(1, 11):
+                touch('touchMove', [(c['x'] + dx * i / 10.0, c['y'] + 2)])
+                time.sleep(0.016)
+            touch('touchEnd', [])
+            time.sleep(1.0)
+
+        start = _at(page)
+        swipe(-120)
+        r.check('a swipe left moves to the next product', _at(page), start + 1)
+        swipe(120)
+        r.check('a swipe right moves back', _at(page), start)
+        swipe(-25)
+        r.check('a short swipe springs back', _at(page), start)
+
+        page.settle(1.0)
+        was = _flipped(page)
+        c = centre()
+        touch('touchStart', [(c['x'], c['y'])])
+        time.sleep(0.05)
+        touch('touchEnd', [])
+        turned = page.until('document.getElementById("case").classList.contains("flipped") === %s'
+                            % ('false' if was else 'true'))
+        r.ok('a tap turns the case over', turned)
+    finally:
+        page.cdp.call('Emulation.setTouchEmulationEnabled', {'enabled': False})
+        page.reset_viewport()
