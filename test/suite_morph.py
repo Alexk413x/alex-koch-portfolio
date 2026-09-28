@@ -91,6 +91,14 @@ def run(page, r):
     page.until_still()
     r.near('and the page glided to the top of the pin', y(), top, 8)
 
+    # A GESTURE THAT BEGAN OUTSIDE THE PIN IS NOT CARRIED ON. Coming up out of the section below, momentum that
+    # coasts part-way into the turn settles back to the app end it entered by, not on through to the faceplate.
+    page.scroll(top + run_px + int(vh * 0.4), pause=0.9)
+    page.wheel(-int(vh * 0.4 + run_px * 0.35), pause=0.08)
+    r.near('coasting up into the pin settles back to the app', page.until_morphed(), 1.0, 0.001)
+    page.until_still()
+    r.near('and the page rests on the end it entered by', y(), top + run_px, 8)
+
     impure = []
     for f in (0.05, 0.3, 0.55, 0.8, 1.0):
         m = at(f)

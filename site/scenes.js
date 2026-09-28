@@ -132,21 +132,25 @@
    * until the turn lands, and the scrub follows the glide. A part-played calculator is never left at rest: its
    * keypad only takes input at either end.
    *
-   * This glide runs on touch screens too, where the rail is off. It stays inside the pin and only continues a
-   * direction the reader already chose.
+   * Only a gesture that began at or inside the pin gets carried on. One that began outside it and coasted in,
+   * a fling's momentum carrying up out of Experience, settles back to the end it entered by, so arriving from
+   * either side always lands on that side's calculator first.
+   *
+   * This glide runs on touch screens too, where the rail is off. It stays inside the pin.
    */
   const MORPH_MS = 900;     // glide time for a whole turn; a part-turn gets its share
   const MORPH_WAIT = 120;   // ms of stillness that counts as the reader letting go
   const MORPH_SCRUB = .7;   // viewport heights the turn spans on a portrait phone, under its 644px pin
 
   let mValue = 0, morphDir = 1, morphLastY = 0, morphWait = 0, morphTouch = false;
+  let morphRestY = 0;       // where the page last came to rest, which says where the current gesture began
 
   // A finger resting on the screen is holding the page, not letting go of it, so no glide until it lifts.
   window.addEventListener('touchstart', () => { morphTouch = true; }, { passive: true });
   for (const ev of ['touchend', 'touchcancel']) {
     window.addEventListener(ev, () => {
       morphTouch = false;
-      if (!morphWait && mValue > 0 && mValue < 1) morphWait = setTimeout(morphSettle, MORPH_WAIT);
+      if (!morphWait) morphWait = setTimeout(morphSettle, MORPH_WAIT);
     }, { passive: true });
   }
 
@@ -178,7 +182,7 @@
     writeMorph(morphAtY(y));
     if (K.glideOwner() === 'morph') return;
     clearTimeout(morphWait);
-    morphWait = mValue > 0 && mValue < 1 ? setTimeout(morphSettle, MORPH_WAIT) : 0;
+    morphWait = setTimeout(morphSettle, MORPH_WAIT);
   }
 
   function morphSettle() {
@@ -188,14 +192,17 @@
     if (K.busy()) { morphWait = setTimeout(morphSettle, MORPH_WAIT); return; }
     const y = K.scrollY();
     const m = morphAtY(y);
-    if (m <= 0 || m >= 1) return;
-    const s = morphSpan();
-    const to = Math.round(morphDir > 0 ? s.from + s.len : s.from);
+    if (m <= 0 || m >= 1) { morphRestY = y; return; }
+    const s = morphSpan(), end = s.from + s.len;
+    let down = morphDir > 0;
+    if (morphRestY < s.from - HOLD_NEAR) down = false;
+    else if (morphRestY > end + HOLD_NEAR) down = true;
+    const to = Math.round(down ? end : s.from);
     K.glideTo(to, {
-      ms: Math.max(180, MORPH_MS * (morphDir > 0 ? 1 - m : m)),
+      ms: Math.max(180, MORPH_MS * (down ? 1 - m : m)),
       owner: 'morph',
       // Lands on a rail beat on a desktop, so the rail treats it as parked there rather than correcting it.
-      onArrive: (at) => { anchorY = at; snapArm(); snapRest(at); },
+      onArrive: (at) => { morphRestY = at; anchorY = at; snapArm(); snapRest(at); },
     });
   }
 
@@ -207,7 +214,7 @@
   // Sets the pad's resting state from the actual scroll position on load.
   function morphInit(y) {
     if (!morphStage || !morphScroll) return;
-    morphLastY = y;
+    morphLastY = morphRestY = y;
     writeMorph(morphAtY(y));
   }
 
@@ -498,6 +505,9 @@
   const HOLD_WAIT = 500;    // ms of stillness before the rail acts, so several flicks count as one gesture
   const HOLD_NEAR = 8;      // px; closer than this there's nothing to correct and a glide is only a jitter
   const RAIL_COMMIT = .35;  // of the gap to the next beat: past this, the reader is taken the rest of the way
+  // Leaving the calculator by either end commits almost at once. Its turn already carries on in the direction of
+  // travel, so a rail that pulled the next notch back would be the one place the page disagreed with itself.
+  const RAIL_EXIT = .05;
   const RAIL_PAST = .5;     // viewport heights past the last beat the rail still holds the reader on it
   // Widest gap the rail will carry a reader across, in viewport heights — beyond this two beats are two places
   // with reading between them, not a hand-off. Every gap on a roomy window is under one screen.
@@ -537,8 +547,10 @@
     const lo = s[i], hi = s[i + 1];
     if (hi - lo > screenH() * RAIL_REACH) return null;
     const f = (y - lo) / Math.max(1, hi - lo);
-    if (atBeat(anchorY, lo)) return f < RAIL_COMMIT ? lo : hi;
-    if (atBeat(anchorY, hi)) return f > 1 - RAIL_COMMIT ? hi : lo;
+    // Off the calculator's app end going down, or off its faceplate going up, is leaving it.
+    const offApp = appRun > 0 && atBeat(lo, appTop + appRun), offFace = appRun > 0 && atBeat(hi, appTop);
+    if (atBeat(anchorY, lo)) return f < (offApp ? RAIL_EXIT : RAIL_COMMIT) ? lo : hi;
+    if (atBeat(anchorY, hi)) return f > 1 - (offFace ? RAIL_EXIT : RAIL_COMMIT) ? hi : lo;
     // No anchor to hold against (a nav anchor jump, or a reload part-way down): nearest, since there's no
     // gesture direction to honor.
     return f < .5 ? lo : hi;

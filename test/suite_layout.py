@@ -295,6 +295,13 @@ def run(page, r):
     r.near('back up from the app lands on the faceplate', page.until_still(quiet=0.5), beats[3], 8)
     r.near('and the calculator turned back', page.until_morphed(), 0.0, 0.001)
 
+    # LEAVING THE CALCULATOR COMMITS AT ONCE. Its turn carries on in the direction of travel, so one notch down
+    # off the app end is a decision to go on to Experience, not a nudge to undo.
+    page.scroll(beats[4], pause=1.2)
+    page.until_still(quiet=0.5)
+    page.wheel(100, pause=0)
+    r.near('one notch down off the app carries on to Experience', page.until_still(quiet=0.8), beats[5], 8)
+
     # LEAVING IS FREE, and this is the check that caught the worst version of it. `scroll-snap-stop: always`
     # under the reader does not merely refuse to carry them PAST a beat, it refuses to let them OFF it: Chrome
     # answers each event of a trackpad's decaying stream as its own gesture and pulls every tick straight back
