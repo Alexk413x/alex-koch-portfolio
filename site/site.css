@@ -66,13 +66,9 @@
   --scene-hold: 0;
   --scene-exit: .7;
 
-  /* The calculator's pin, in viewport heights — the only declaration of it. scenes.js reads it back rather than
-     restating it. Not tracked to scroll: crossing the trigger commits the morph, which then runs to completion on
-     its own clock. */
+  /* The calculator's pin, in viewport heights — the only declaration of it. scenes.js measures the pin rather
+     than restating it, and scrubs the morph across the whole of it. */
   --morph-run: .7;
-  /* Fraction of the pin where the morph commits. Declared here, not in scenes.js, because the checks read it too.
-     Must stay above the rail's own .35 commit threshold, or the rail's glide could carry the reader across this line before the rail's own decision is made. */
-  --morph-trip: .5;
 
 }
 

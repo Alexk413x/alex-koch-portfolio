@@ -3,6 +3,7 @@
 # The invariants here are the ones that have broken before. A key whose start plus span exceeded 1 sat stranded
 # mid-flight in what is meant to be a still state, and it looked like a layout bug rather than a timing one.
 import json
+import time
 
 NAME = 'morph'
 
@@ -53,48 +54,43 @@ def run(page, r):
     def at(fraction, pause=0.15):
         """Scrolls, then waits for the morph to reach a PURE state.
 
-        It is no longer tracked to the scroll, so the value after a move is a function of TIME rather than of
-        where the move stopped -- and a fixed pause is a guess about the slowest machine that will ever run
-        this. Polling for the state the mechanism is guaranteed to reach is the same assertion without the
-        guess, and it returns as soon as it is true."""
+        A stop part-way through the turn glides the page on to one end, so the value right after a move is still
+        changing. Polling for the state the mechanism is guaranteed to reach returns as soon as it is true."""
         page.scroll(top + int(run_px * fraction), pause=pause)
         return page.until_morphed()
 
-    # The dead zones are gone with the scrub, and the runway shrank with them. 1.8 viewport heights, 40% of it
-    # moving nothing, is the thing this replaced.
+    def y():
+        return float(page.js('window.scrollY'))
+
     r.ok('the pin carries no dead runway', run_px < vh * 1.2, '%dpx against a %dpx viewport' % (run_px, vh))
 
     r.near('the faceplate is where the pin starts', at(0.0), 0.0, 0.001)
+    # A reader arrives and rests before scrolling on; resting is what stands the end they are on down.
+    time.sleep(0.7)
 
-    # ONE NUDGE PLAYS THE WHOLE THING. Barely past the trigger is enough; the morph owns its own clock from
-    # there, so how far the reader scrolled has no bearing on where it stops.
-    # THE TRIGGER IS READ, NOT RESTATED. --morph-trip is declared once in site.css because three files need it,
-    # and this is the fourth: a copy here went stale the moment the commit moved from .14 to halfway, and the
-    # nudge then landed SHORT of the trigger -- which reads as a morph that will not play rather than as a test
-    # measuring the wrong place.
-    trip = float(page.js("getComputedStyle(document.documentElement).getPropertyValue('--morph-trip')"))
-    r.ok('the trigger is declared in the stylesheet', 0 < trip < 1, '--morph-trip: %s' % trip)
-    nudge = int(run_px * trip) + 20
-    at(0.0)
-    page.scroll(top + nudge, pause=0.15)
-    r.near('one nudge past the trigger plays it to completion', page.until_morphed(), 1.0, 0.001)
-    # A fifth of a screen PAST the trigger, not a fifth of a screen of scrolling: the commit sits halfway down
-    # the pin by design, so what has to stay small is the distance the reader travels beyond it before the
-    # mechanism takes over.
-    r.ok('and the nudge really was small', nudge - run_px * trip < vh * 0.2,
-         '%dpx past a trigger at %dpx' % (nudge - run_px * trip, run_px * trip))
+    # THE SCROLL DRIVES IT. Real wheel input, not scrollTo: a programmatic scroll near an armed snap target is
+    # snapped straight back onto it, which a reader's gesture is not (the rig stands the origin beat down).
+    # Read inside the stillness window, before the settle glide starts.
+    TRACK = ("(()=>{const g=document.getElementById('app-stage');"
+             "return JSON.stringify({m:+(g.style.getPropertyValue('--m')||0),"
+             "p:(scrollY-%d)/%d})})()" % (top, run_px))
+    page.wheel(int(run_px * 0.4), pause=0.08)
+    t = page.json(TRACK)
+    r.ok('mid-scroll the turn is part-played', 0.001 < t['m'] < 0.999, 'm=%.3f' % t['m'])
+    r.near('and it sits where the scroll is', t['m'], min(1, max(0, t['p'])), 0.06)
 
-    # It is played, not jumped: a moment after the trigger it must be part way through.
-    at(0.0)
-    page.scroll(top + nudge, pause=0.2)
-    mid = float(page.js(M) or 0)
-    r.ok('the morph is animated, not switched', 0.001 < mid < 0.999, 'm=%.3f a fifth of a second in' % mid)
+    # A STOP PART-WAY FINISHES IN THE DIRECTION OF TRAVEL, by moving the page, not by a clock of its own.
+    r.near('stopping part-way down finishes the turn', page.until_morphed(), 1.0, 0.001)
+    page.until_still()
+    r.near('and the page glided to the end of the pin', y(), top + run_px, 8)
 
-    # Scrolling back releases it, to completion, the same way.
-    r.near('scrolling back releases it', at(0.0), 0.0, 0.001)
+    page.wheel(-int(run_px * 0.4), pause=0.08)
+    t = page.json(TRACK)
+    r.ok('scrolling back up reverses it', 0.001 < t['m'] < 0.999, 'm=%.3f' % t['m'])
+    r.near('stopping part-way up finishes it back to the faceplate', page.until_morphed(), 0.0, 0.001)
+    page.until_still()
+    r.near('and the page glided to the top of the pin', y(), top, 8)
 
-    # AND IT ALWAYS RESTS ON A PURE STATE. With the scrub gone there is no scroll position that means "halfway",
-    # so wherever the reader stops, the mechanism finishes what it started.
     impure = []
     for f in (0.05, 0.3, 0.55, 0.8, 1.0):
         m = at(f)
@@ -117,13 +113,13 @@ def run(page, r):
     r.check('app is 4 columns', app['cols'], 4)
     r.check('app is 7 rows', app['rows'], 7)
 
-    # Keys are inert while plates are in flight, live at both resting states. Mid-flight is no longer a scroll
-    # position, so it has to be caught in TIME: trigger the morph, then click while it is still running.
+    # Keys are inert while plates are in flight, live at both resting states. Caught inside the stillness
+    # window, before the settle glide lands it.
     at(1.0)
     page.click_at('#rpn .rpn-pad [data-key="CA"]')
     at(0.0)
     before = page.js("document.querySelector('#rpn .rpn-in .v').textContent")
-    page.scroll(top + nudge, pause=0.25)
+    page.scroll(top + int(run_px * 0.5), pause=0.02)
     page.click_at('#rpn .rpn-pad [data-key="7"]')
     r.check('a key mid-morph does nothing', page.js("document.querySelector('#rpn .rpn-in .v').textContent"), before)
 
