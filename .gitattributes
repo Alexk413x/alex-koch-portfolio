@@ -14,7 +14,7 @@
 .githooks/**  text eol=lf
 
 # The code graph is SQLite. diff=codegraph renders it as its JSON export in git diff for any clone
-# that has run sh .githooks/install.sh; without the driver it falls back to "binary".
+# whose .git/config sets diff.codegraph.textconv; without the driver it falls back to "binary".
 knowledge/code_graph.db binary diff=codegraph
 
 # Recorded runs on the demo page.

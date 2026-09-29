@@ -1,7 +1,5 @@
 {
   "enabledPlugins": {
-    "codebase-kg@codebase-kg": true,
-    "a11y@accessibility-tools": true,
-    "web-driver@accessibility-tools": true
+    "codebase-kg@codebase-kg": true
   }
 }
