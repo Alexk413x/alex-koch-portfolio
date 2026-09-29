@@ -22,3 +22,7 @@ desktop.ini
 
 # git worktrees created under the repo by tooling; each is its own checkout
 .claude/worktrees/
+
+# bench.py trace and A/B output; a trace runs to tens of MB
+trace_*.json
+ab_*.json
