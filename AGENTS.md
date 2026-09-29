@@ -6,6 +6,12 @@ A portfolio site and three WebGL instruments, hand-authored, with no build step.
 scroll-driven home page; `labs/` holds a CRT, a reactor core and a wormhole, each a fragment shader with a
 control panel and a measurement story. Live at **https://alexk413x.com**.
 
+Area notes live in `.claude/rules/`. Read the one that matches your task before you start it:
+
+- `.claude/rules/intro.md`: the once-per-session intro in `site/intro/`.
+- `.claude/rules/measuring.md`: frame-rate measurement with `bench.py`.
+- `.claude/rules/lab-quirks.md`: known, deliberate lab behavior that is not a bug, and unfinished lab work.
+
 ## The first rule: this is working code, not a draft to rewrite
 
 Every page under `labs/` is finished, measured, working software. **Do not convert one to JSX/Vite/a build step,
@@ -95,85 +101,6 @@ Two traps:
   `github-pages` into the same run and `deploy-pages` refuses to choose. Start a fresh run —
   `workflow_dispatch` is on the workflow for exactly this.
 
-## The intro
-
-`site/intro/` plays a once-per-session sequence over the home page: the CRT terminal, Enter, warp and surge,
-power-off with the wormhole already opening under it (`open`: a small ring comes to the viewer, the tube forms
-and backs off), a cruise with the bend's direction wandering, a `run` that straightens and brings the hole up
-close, a crossfade onto the reactor on the hero's own canvas with its ring in frame, then the lab's three
-presets in turn, STABLE, CRITICAL, MELTDOWN, tweened key by key with the camera pulling out, the vent, the
-break, and a cool-down to the hero's orange at STABLE motion. The last frame is the hero's idle frame; the
-director never draws.
-
-- **The CRT and the wormhole run in same-origin iframes of their own lab pages with `?intro`**, which strips the
-  chrome, skips the stored settings (no `persist()` at all, or its pagehide flush would overwrite the visitor's
-  own), and applies each lab's `introPreset`. The wormhole's carries the values Alex dialed in the lab, baked,
-  so the intro is the same in every browser; re-bake when the lab changes. `&panel` keeps the lab's panel for
-  tuning live. The reactor leg is `window.HERO` driven through `take()` / `release()`; while taken, `draw()`
-  writes none of its own state.
-- **The head script decides before first paint** (`AK_INTRO`, `html.intro-live`) so the sheet is true for the
-  first frame. `?intro` forces, `?nointro`, any hash, reduced motion or `sessionStorage['intro-seen']` skip.
-  If `intro.js` never runs, the head script drops the sheet after 6s.
-- **Beats are data in `intro-script.js`**; every length is a number there. Heavy legs end on readiness gates,
-  not timers: the reactor's full program is a 12s link on the UHD 630, so the settle beat holds for it.
-  `?intro&hud` shows the beat, gates and frame rate; `?intro&from=worm|hero` starts part-way in.
-- **The harness marks the intro seen before every navigation** (`Page.addScriptToEvaluateOnNewDocument`), so
-  the other suites see the page a returning visitor sees. `suite_intro` forces it and unmarks it deliberately.
-- Two traps, both fixed in place and commented: a rule on `#intro` loses to `html.intro-live #intro` on
-  specificity, so the sheet never went clear for the reactor leg; and the CRT typed at most one character per
-  frame, so a frame rate halved by a shader link beside it halved the typing.
-
-## Measuring frame rate
-
-### `python bench.py` — the whole measurement in one command
-
-```
-python bench.py                     # CRT Lab, 12 samples, verdict
-python bench.py --page reactor      # any lab: crt | reactor | wormhole | shell, or a literal path
-python bench.py --uncapped          # frame COST, not frame rate
-python bench.py --inject "<js>"     # pin a setting first, so two runs are comparable
-```
-
-It serves the repo, launches an isolated Chrome, warms the profile's cache, drives the page over CDP and prints
-the **distribution**, not a single number. It refuses a verdict when `median > 2.5 × min`, because at that point
-the minimum is finding gaps between interference rather than measuring the renderer.
-
-A run measures whatever state was restored, which on a fresh bench profile is the shipped default. **`--inject`
-is how you pin one**, and it is required for any before/after comparison:
-
-```
-python bench.py --page reactor --uncapped --inject "REACTOR.state.renderScale=0.62; REACTOR.fit(true); 1"
-```
-
-The first sampling window is excluded as a warm-up: uncapped with an idle compositor it returns well under
-1 ms where every later window sits at 4–6 ms, which made the tool refuse verdicts on runs whose remaining
-samples agreed to within 5%.
-
-### Chrome stops rendering occluded windows
-
-`document.visibilityState` reads **`hidden` while `document.hasFocus()` is `true`** whenever the Chrome window is
-occluded or minimized on Windows — and a hidden page gets **zero** animation frames, not slow ones. Every frame
-number quoted from a tab that was not front-most measured nothing, and a CDP screenshot forces a single frame,
-which moves the readout just enough to look alive.
-
-`bench.py` launches with the flags that fix it. **`--disable-features=CalculateNativeWinOcclusion` is the one
-that matters**; `--disable-backgrounding-occluded-windows` and `--disable-renderer-backgrounding` go with it.
-Without them the page reports `hidden` and 0 rAF callbacks per second; with them, `visible` and about 57 frames
-in the first second.
-
-**`renderNow()` is the way round it entirely** — it draws synchronously and needs no animation frame. Each lab
-pauses its loop on `visibilitychange` deliberately, so a frozen clock in a hidden tab is correct, not a fault.
-
-### Measure on an idle machine, in one tab
-
-Every lab tab holds a live WebGL context and its buffers whether or not it is rendering. An unchanged build
-measured 36 → 53 → 70 → 88ms within a single 60s run because a dozen lab instances had accumulated across tabs.
-A throwaway profile is the clean room, with one catch: its HTTP and GPU shader caches are both empty, so the
-first run recompiles every shader — about 4x pessimistic cold. `bench.py` warms it; `--warm` reuses it.
-
-Costs are reported in **ms per frame, not fps**. fps deltas are not additive and mislead near the target — a
-layer costing 2ms reads as "−25 fps" at 60 and "−3 fps" at 20, for identical work.
-
 ## What local testing is for
 
 The checks a small embedded preview cannot perform:
@@ -206,33 +133,3 @@ the distance between them, `target`/`near`, `churn`, `visc`, `--ring-o`, and cou
 `pointercancel` and `pointerleave`. It exists because a phone has no console attached: a real device answers in
 one look whether the finger is out of REACH, whether `touchmove` survives the scroll takeover, or whether the
 scene rig has faded the core out on schedule.
-
-## Known, deliberate, not bugs
-
-- **SQUIRCLE shapes the guide outline and the clip, not the picture's warp.** Known gap; wiring it to the frame
-  toggle is the fix if you want it.
-- **GLARE reaches the fixture only.** The stored default is `0`, so a reading of 0 is correct, not broken.
-- **The rim is unpinned** — the picture sits inside the glass and that gap is real.
-- **The corners are cut, not warped.** Settled; the picture ends on the squircle by clip.
-- **Reactor's ring pattern does not travel with a scattered fragment.** The nine pieces are displaced and tumbled
-  inside `ringSDF`, but the shading reads `ringSpace(hp)` — the unscattered frame — so a flown-off piece's
-  machined surface swims across it rather than riding on it. Fixing it means returning the per-piece transform
-  out of the SDF. The pieces are small on screen for most of a break, which is why it has not been worth that.
-- **The tunnel's grain rings are gone but the speckle is not.** The concentric banding was `graze`, differenced
-  over a bracket the refinement had already collapsed, and it is fixed. The remaining stipple along the nebula's
-  edges is the noise field genuinely outrunning the sample rate where the wall goes edge-on — a filtering
-  problem, not a bug.
-- **`fieldFolds`'s 2x threshold no longer bounds anything physical** but it still sets how deep FACE bends, and
-  every stored setting is calibrated against it. Change it knowingly or not at all.
-
-## Not yet done
-
-- **Reactor's `renderNow` is not reproducible**, because `sim.step` carries phase forward — so that lab has no
-  render fingerprint of the kind `render-probe.js` gives CRT Lab. Resetting the sim would be the way in.
-- **Mobile is a fold-away panel, not a layout.** Below 820px wide *or 500px tall* each lab hides its panel behind
-  a chevron and CRT Lab applies a small-display override table; the control density is still built for a large
-  window. **Both halves of that test are load-bearing** — a phone on its side is 852x393, wide enough to pass any
-  width test — and the pair lives in three places that must move together: `NARROW_W`/`SHORT_H` in CRT Lab, the
-  `breakpoint`/`shortSide` defaults in `labs/kit/panel.js`, and the `(max-width), (max-height)` queries in
-  `panel.css` and `lab.css`. A stylesheet cannot be read from the script; if they disagree the panel overlays the
-  stage while the script still believes it is in the flow.
