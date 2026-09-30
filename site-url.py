@@ -20,6 +20,7 @@ import sys
 FILES = [
     'README.md',
     'index.html',
+    'cartographer-demo.html',
     'robots.txt',
     'sitemap.xml',
     'site/share.js',
