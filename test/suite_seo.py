@@ -21,7 +21,7 @@ NAME = 'seo'
 SELF_HOST = re.compile(r'https?://[\w.-]*alexk413x[\w.-]*[^\s"\'<>)]*')
 
 # Every file that writes the address down. Kept in step with FILES in site-url.py by the first check in run().
-ADDRESSED = ['README.md', 'index.html', 'robots.txt', 'sitemap.xml', 'site/share.js',
+ADDRESSED = ['README.md', 'index.html', 'cartographer-demo.html', 'robots.txt', 'sitemap.xml', 'site/share.js',
              'labs/crt/CRT Lab.html', 'labs/reactor/Reactor.html', 'labs/wormhole/Wormhole.html']
 
 LABS = [
@@ -131,8 +131,8 @@ def strings_in(node):
 def run(page, r):
     page.goto('index.html')
 
-    # --- ONE ADDRESS, WRITTEN IN EIGHT FILES ----------------------------------------------------------
-    # The site renders at any base because its links and assets are relative; these eight are the places the
+    # --- ONE ADDRESS, WRITTEN IN NINE FILES -----------------------------------------------------------
+    # The site renders at any base because its links and assets are relative; these nine are the places the
     # address is written down and cannot be. site-url.py moves them together, and this is what proves it did.
     CANON = page.js("document.querySelector('link[rel=canonical]')?.href||''")
     r.ok('the home page declares a canonical base', CANON.startswith('http'), CANON)
@@ -248,7 +248,13 @@ def run(page, r):
     r.ok('the sitemap lists the home page', CANON in locs, locs)
     for loc in locs:
         r.ok('the sitemap URL is absolute: %s' % loc, loc.startswith(CANON))
-        r.check('the sitemap URL resolves: %s' % loc, fetch(page, loc[len(CANON):])[0], 200)
+        code, html = fetch(page, loc[len(CANON):])
+        r.check('the sitemap URL resolves: %s' % loc, code, 200)
+        canon = re.search(r'<link rel="canonical" href="([^"]+)">', html or '')
+        r.check('the sitemap URL is canonical at itself: %s' % loc, canon and canon.group(1), loc)
+        r.ok('the sitemap URL is indexable: %s' % loc,
+             not re.search(r'<meta name="robots" content="[^"]*noindex', html or ''))
+    r.ok('the sitemap lists the Cartographer demo', CANON + 'cartographer-demo.html' in locs, locs)
     r.check('every lab is listed', len([l for l in locs if '/labs/' in l]), len(LABS))
 
     # --- the labs describe themselves ----------------------------------------------------------------
