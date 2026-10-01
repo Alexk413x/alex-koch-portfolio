@@ -1,0 +1,2 @@
+overlay:popup
+  overlay:over desc="state=ba862d969a71 focus=android.widget.EditText"

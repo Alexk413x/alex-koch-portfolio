@@ -1,0 +1,25 @@
+FrameLayout
+  LinearLayout
+    FrameLayout
+      p00
+        View
+          View
+            View
+              View
+                View
+                  check desc="Dark" on
+                  check desc="Dynamic Color" on
+                  check desc="Finance" off
+                  check desc="Group" off
+                  check desc="Haptic Feedback" off
+                  check desc="Light" off
+                  check desc="None" on
+                  check desc="Scientific" off
+                  check desc="System" off
+                View
+                  View
+                    View clickable+focusable
+                      View desc="Back" clickable+focusable
+                      Button clickable+focusable
+                    View
+                      TextView text=<volatile>

@@ -1,0 +1,23 @@
+{
+ "app_version": "",
+ "axes": "appearance=dark;state=eb404d4f43dd",
+ "captured_at": "2026-10-01T21:00:20Z",
+ "observed": {},
+ "run_id": "20261001T205819903Z",
+ "shots": {
+  "dark": {
+   "app_version": "",
+   "captured_at": "2026-10-01T21:00:20Z",
+   "run_id": "20261001T205819903Z",
+   "source": "map_axis_sweep"
+  },
+  "light": {
+   "app_version": "",
+   "captured_at": "2026-10-01T21:08:46Z",
+   "run_id": "20261001T205819903Z",
+   "source": "map_axis_sweep"
+  }
+ },
+ "source": "map_axis_sweep",
+ "state_id": "add+change-sign+clear-all@state=eb404d4f43dd"
+}

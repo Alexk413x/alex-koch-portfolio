@@ -1,0 +1,14 @@
+{
+ "abi": "x86_64",
+ "avd": "Pixel_9_Pro",
+ "codename": "emu64xa16k",
+ "density": "480",
+ "emulator": "1",
+ "fingerprint": "google/sdk_gphone16k_x86_64/emu64xa16k:17/CE2A.260420.050/16231978:user/dev-keys",
+ "make": "Google",
+ "model": "sdk_gphone16k_x86_64",
+ "os": "17",
+ "platform": "android",
+ "resolution": "1280x2856",
+ "sdk": "37"
+}

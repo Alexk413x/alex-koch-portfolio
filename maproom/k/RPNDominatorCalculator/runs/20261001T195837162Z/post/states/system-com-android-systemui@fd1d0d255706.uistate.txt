@@ -1,0 +1,84 @@
+FrameLayout
+  View
+  View
+  View
+  View
+  FrameLayout
+  ViewGroup
+    ScrollView
+      FrameLayout
+        LinearLayout
+          FrameLayout
+            TextView text="Silent" clickable+focusable
+          ImageView desc="Clear all silent notifications" clickable+focusable
+      FrameLayout clickable+focusable+long-clickable
+        Button clickable+focusable+long-clickable
+        View clickable+focusable+long-clickable
+        View clickable+focusable+long-clickable
+        FrameLayout clickable+focusable+long-clickable
+          FrameLayout clickable+focusable+long-clickable
+            LinearLayout clickable+focusable+long-clickable
+              FrameLayout clickable+focusable+long-clickable
+                RelativeLayout clickable+focusable+long-clickable
+                  FrameLayout clickable+focusable+long-clickable
+                  ViewGroup clickable+focusable+long-clickable
+                    TextView text="Android System" clickable+focusable+long-clickable
+                    TextView text="•" clickable+focusable+long-clickable
+                    TextView text="19 minutes ago" clickable+focusable+long-clickable
+                  ImageView clickable+focusable+long-clickable
+                  Button desc="Collapse" clickable+focusable+long-clickable
+                    LinearLayout clickable+focusable+long-clickable
+                      ImageView clickable+focusable+long-clickable
+                LinearLayout clickable+focusable+long-clickable
+                  TextView text="Physical keyboards configured" clickable+focusable+long-clickable
+                  TextView text="Tap to view keyboards" clickable+focusable+long-clickable
+              FrameLayout clickable+focusable+long-clickable
+        FrameLayout clickable+focusable+long-clickable
+      FrameLayout
+        FrameLayout
+          ViewGroup
+            Button desc="Notification history" clickable+focusable
+            Button desc="Clear all notifications." text="Clear all" clickable+focusable
+            Button desc="Notification settings" clickable+focusable
+  FrameLayout
+    View
+    ViewGroup
+      FrameLayout
+        FrameLayout
+          ComposeView
+            View
+              View
+                View
+                  View
+                    View
+                      check desc="Bluetooth." on
+                      check desc="Mobile data" on
+                      check desc="Quick Share" off
+                      check desc="Wi-Fi,AndroidWifi" on
+      FrameLayout
+      ViewGroup focusable
+        TextView desc="1:13 PM" text="1:13" clickable+focusable
+        TextView text="Thu, Oct 1" focusable
+        LinearLayout focusable
+          LinearLayout clickable+focusable
+            LinearLayout clickable+focusable
+              TextView text="T-Mobile" clickable+focusable state:selected
+        FrameLayout focusable
+          LinearLayout focusable
+            LinearLayout focusable
+              FrameLayout desc="T-Mobile, signal full." focusable
+                LinearLayout focusable
+                  FrameLayout focusable
+                    ImageView focusable
+              FrameLayout focusable
+              FrameLayout focusable
+              FrameLayout focusable
+                LinearLayout focusable
+                  FrameLayout focusable
+                    ImageView desc="Wifi signal full." focusable
+            ComposeView focusable
+              View focusable
+                View focusable
+                  View desc="Battery 100 percent." focusable
+        FrameLayout focusable
+  LinearLayout
