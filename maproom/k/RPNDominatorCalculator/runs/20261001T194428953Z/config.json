@@ -1,0 +1,626 @@
+{
+ "axes": {
+  "night-mode": "off",
+  "rotation": "0"
+ },
+ "checked_against": {
+  "by": "replay-open",
+  "bytes": 3657728,
+  "modified_at": 1790883729.6963158,
+  "recorded_at": 1790883890.8992848,
+  "schema_version": "6",
+  "sha256": "f137e262d5aa836ca2790222b89b468c5bed4040ccd527e9a10be4b16ed2968a"
+ },
+ "cleared_app_data": true,
+ "close": {
+  "app": {
+   "managed": true,
+   "package": "com.gmail.alexk413x.RPN_Dominator_Calculator",
+   "stopped": false,
+   "why": "the lifecycle reset could not confirm the launcher"
+  },
+  "app_build": {
+   "apk_sha256": "8999623e5019eda757441aec29eb92cb0739426a6039468f97884ce0f7566424",
+   "apk_splits": [],
+   "build_time": null,
+   "build_time_source": "none: zip entry time 1981-01-01 01:01:02 is a fixed value the packager writes for reproducible builds; the manifest and META-INF carry no build time, and APK signature schemes v2 and v3 sign no timestamp",
+   "debuggable": false,
+   "first_install_time": {
+    "epoch_ms": 1790842741000,
+    "iso": "2026-10-01T08:19:01Z"
+   },
+   "installer": null,
+   "last_update_time": {
+    "epoch_ms": 1790842741000,
+    "iso": "2026-10-01T08:19:01Z"
+   },
+   "package": "com.gmail.alexk413x.RPN_Dominator_Calculator",
+   "version_code": 22,
+   "version_name": "3.1.0",
+   "why": null
+  },
+  "app_left_running": "engine is not open",
+  "crash_count": 0,
+  "crashes": [],
+  "device": "emulator-5554",
+  "device_snapshot": {
+   "captured_at": 1790884529.293692,
+   "elapsed_ms": 2949,
+   "phase": "close",
+   "raw": "~\\AppData\\Local\\Temp\\android-driver-session-l_k5htbi\\device-close.txt",
+   "sections": [
+    "accessibility",
+    "apk",
+    "battery",
+    "config",
+    "display",
+    "getprop",
+    "input_method",
+    "package",
+    "settings",
+    "thermalservice",
+    "uimode",
+    "window",
+    "wm_density",
+    "wm_size"
+   ],
+   "summary": {
+    "accessibility": {
+     "autoclick": false,
+     "binding_services": [],
+     "crashed_services": [],
+     "enabled": false,
+     "filter_key_events": null,
+     "magnification": false,
+     "send_motion_events": null,
+     "services": [],
+     "services_source": "none",
+     "timeouts_ms": {
+      "interactive_ui_ms": 0,
+      "non_interactive_ui_ms": 0,
+      "touch_and_hold_ms": 400
+     },
+     "touch_exploration": false,
+     "ui_automation": null
+    },
+    "app": {
+     "first_install_time": "2026-10-01 01:19:01",
+     "last_update_time": "2026-10-01 01:19:01",
+     "min_sdk": 23,
+     "package": "com.gmail.alexk413x.RPN_Dominator_Calculator",
+     "permissions_granted": [
+      "android.permission.ACCESS_ADSERVICES_AD_ID",
+      "android.permission.ACCESS_ADSERVICES_ATTRIBUTION",
+      "android.permission.ACCESS_NETWORK_STATE",
+      "android.permission.INTERNET",
+      "android.permission.VIBRATE",
+      "android.permission.WAKE_LOCK"
+     ],
+     "target_sdk": 37,
+     "version_code": 22,
+     "version_name": "3.1.0"
+    },
+    "app_build": {
+     "apk_sha256": "8999623e5019eda757441aec29eb92cb0739426a6039468f97884ce0f7566424",
+     "apk_splits": [],
+     "build_time": null,
+     "build_time_source": "none: zip entry time 1981-01-01 01:01:02 is a fixed value the packager writes for reproducible builds; the manifest and META-INF carry no build time, and APK signature schemes v2 and v3 sign no timestamp",
+     "debuggable": false,
+     "first_install_time": {
+      "epoch_ms": 1790842741000,
+      "iso": "2026-10-01T08:19:01Z"
+     },
+     "installer": null,
+     "last_update_time": {
+      "epoch_ms": 1790842741000,
+      "iso": "2026-10-01T08:19:01Z"
+     },
+     "package": "com.gmail.alexk413x.RPN_Dominator_Calculator",
+     "version_code": 22,
+     "version_name": "3.1.0",
+     "why": null
+    },
+    "axes": {
+     "animation_scale": {
+      "animator_duration_scale": null,
+      "transition_animation_scale": "1.0",
+      "window_animation_scale": "1.0"
+     },
+     "dark_mode": true,
+     "display_density": 480,
+     "display_size": "1280x2856",
+     "font_scale": 1.0,
+     "font_scale_setting": "1.0",
+     "night_mode": 2
+    },
+    "battery": {
+     "charging": false,
+     "health": 2,
+     "level": 100,
+     "plugged": null,
+     "powered_by": [],
+     "present": true,
+     "scale": 100,
+     "status": 4,
+     "status_name": "not_charging",
+     "technology": "Li-ion",
+     "temperature_c": 25.0,
+     "voltage": 5000
+    },
+    "display": {
+     "density": 480,
+     "height_px": 2856,
+     "rotation": 0,
+     "width_px": 1280
+    },
+    "input_method": {
+     "bound": true,
+     "id": "com.google.android.inputmethod.latin/com.android.inputmethod.latin.LatinIME",
+     "package": "com.google.android.inputmethod.latin",
+     "showing": false,
+     "soft_input_mode": "STATE_UNSPECIFIED|ADJUST_NOTHING"
+    },
+    "thermal": {
+     "override": false,
+     "sensors": [
+      {
+       "name": "battery",
+       "status": 0,
+       "type": 2,
+       "value_c": 30.2
+      },
+      {
+       "name": "skin",
+       "status": 0,
+       "type": 3,
+       "value_c": 30.1
+      },
+      {
+       "name": "skin",
+       "status": 0,
+       "type": 3,
+       "value_c": 30.1
+      },
+      {
+       "name": "battery",
+       "status": 0,
+       "type": 2,
+       "value_c": 30.2
+      }
+     ],
+     "status": null,
+     "status_name": null,
+     "throttling": null
+    },
+    "window": {
+     "count": 10,
+     "focused": {
+      "activity": "com.google.android.apps.nexuslauncher.NexusLauncherActivity",
+      "package": "com.google.android.apps.nexuslauncher"
+     },
+     "keyboard_visible": false,
+     "keyboard_window_visible": false,
+     "system_bar_insets": {
+      "displayCutout": [
+       0,
+       0,
+       1280,
+       156
+      ],
+      "mandatorySystemGestures": [
+       0,
+       0,
+       1280,
+       192
+      ],
+      "navigationBars": [
+       0,
+       2784,
+       1280,
+       2856
+      ],
+      "statusBars": [
+       0,
+       0,
+       1280,
+       156
+      ],
+      "systemGestures": [
+       0,
+       0,
+       90,
+       2856
+      ],
+      "tappableElement": [
+       0,
+       0,
+       1280,
+       156
+      ]
+     }
+    }
+   }
+  },
+  "device_snapshot_before_restore": {
+   "captured_at": 1790884382.4605014,
+   "elapsed_ms": 3730,
+   "phase": "close_before_restore",
+   "raw": "~\\AppData\\Local\\Temp\\android-driver-session-l_k5htbi\\device-close_before_restore.txt",
+   "sections": [
+    "accessibility",
+    "apk",
+    "battery",
+    "config",
+    "display",
+    "getprop",
+    "input_method",
+    "package",
+    "settings",
+    "thermalservice",
+    "uimode",
+    "window",
+    "wm_density",
+    "wm_size"
+   ],
+   "summary": {
+    "accessibility": {
+     "autoclick": false,
+     "binding_services": [],
+     "crashed_services": [],
+     "enabled": true,
+     "filter_key_events": null,
+     "magnification": false,
+     "send_motion_events": null,
+     "services": [],
+     "services_source": "none",
+     "timeouts_ms": {
+      "interactive_ui_ms": 0,
+      "non_interactive_ui_ms": 0,
+      "touch_and_hold_ms": 400
+     },
+     "touch_exploration": false,
+     "ui_automation": null
+    },
+    "app": {
+     "first_install_time": "2026-10-01 01:19:01",
+     "last_update_time": "2026-10-01 01:19:01",
+     "min_sdk": 23,
+     "package": "com.gmail.alexk413x.RPN_Dominator_Calculator",
+     "permissions_granted": [
+      "android.permission.ACCESS_ADSERVICES_AD_ID",
+      "android.permission.ACCESS_ADSERVICES_ATTRIBUTION",
+      "android.permission.ACCESS_NETWORK_STATE",
+      "android.permission.INTERNET",
+      "android.permission.VIBRATE",
+      "android.permission.WAKE_LOCK"
+     ],
+     "target_sdk": 37,
+     "version_code": 22,
+     "version_name": "3.1.0"
+    },
+    "app_build": {
+     "apk_sha256": "8999623e5019eda757441aec29eb92cb0739426a6039468f97884ce0f7566424",
+     "apk_splits": [],
+     "build_time": null,
+     "build_time_source": "none: zip entry time 1981-01-01 01:01:02 is a fixed value the packager writes for reproducible builds; the manifest and META-INF carry no build time, and APK signature schemes v2 and v3 sign no timestamp",
+     "debuggable": false,
+     "first_install_time": {
+      "epoch_ms": 1790842741000,
+      "iso": "2026-10-01T08:19:01Z"
+     },
+     "installer": null,
+     "last_update_time": {
+      "epoch_ms": 1790842741000,
+      "iso": "2026-10-01T08:19:01Z"
+     },
+     "package": "com.gmail.alexk413x.RPN_Dominator_Calculator",
+     "version_code": 22,
+     "version_name": "3.1.0",
+     "why": null
+    },
+    "axes": {
+     "animation_scale": {
+      "animator_duration_scale": null,
+      "transition_animation_scale": "1.0",
+      "window_animation_scale": "1.0"
+     },
+     "dark_mode": false,
+     "display_density": 480,
+     "display_size": "1280x2856",
+     "font_scale": 1.0,
+     "font_scale_setting": "1.0",
+     "night_mode": 1
+    },
+    "battery": {
+     "charging": false,
+     "health": 2,
+     "level": 100,
+     "plugged": null,
+     "powered_by": [],
+     "present": true,
+     "scale": 100,
+     "status": 4,
+     "status_name": "not_charging",
+     "technology": "Li-ion",
+     "temperature_c": 25.0,
+     "voltage": 5000
+    },
+    "display": {
+     "density": 480,
+     "height_px": 2856,
+     "rotation": 0,
+     "width_px": 1280
+    },
+    "input_method": {
+     "bound": true,
+     "id": "com.google.android.inputmethod.latin/com.android.inputmethod.latin.LatinIME",
+     "package": "com.google.android.inputmethod.latin",
+     "showing": false,
+     "soft_input_mode": "STATE_UNSPECIFIED|ADJUST_NOTHING"
+    },
+    "thermal": {
+     "override": false,
+     "sensors": [
+      {
+       "name": "battery",
+       "status": 0,
+       "type": 2,
+       "value_c": 30.2
+      },
+      {
+       "name": "skin",
+       "status": 0,
+       "type": 3,
+       "value_c": 30.1
+      },
+      {
+       "name": "skin",
+       "status": 0,
+       "type": 3,
+       "value_c": 30.1
+      },
+      {
+       "name": "battery",
+       "status": 0,
+       "type": 2,
+       "value_c": 30.2
+      }
+     ],
+     "status": null,
+     "status_name": null,
+     "throttling": null
+    },
+    "window": {
+     "count": 12,
+     "focused": {
+      "activity": "com.gmail.alexk413x.rpndominatorcalculator.ui.main.MainActivity",
+      "package": "com.gmail.alexk413x.RPN_Dominator_Calculator"
+     },
+     "keyboard_visible": false,
+     "keyboard_window_visible": false,
+     "system_bar_insets": {
+      "displayCutout": [
+       0,
+       0,
+       1280,
+       156
+      ],
+      "mandatorySystemGestures": [
+       0,
+       0,
+       1280,
+       192
+      ],
+      "navigationBars": [
+       0,
+       2784,
+       1280,
+       2856
+      ],
+      "statusBars": [
+       0,
+       0,
+       1280,
+       156
+      ],
+      "systemGestures": [
+       0,
+       0,
+       90,
+       2856
+      ],
+      "tappableElement": [
+       0,
+       0,
+       1280,
+       156
+      ]
+     }
+    }
+   }
+  },
+  "driver_restored": [],
+  "driver_shot_failures": [],
+  "driver_unrestored": [],
+  "ended_processes": [],
+  "events": {
+   "backpressure_events": 0,
+   "backpressure_max_ms": 0,
+   "backpressure_ms": 0,
+   "delivered": 890,
+   "error": "librarian said: 'OK 88727 1790884443258 %5B%5D'",
+   "missed_seqs": 0,
+   "out_of_order": 0,
+   "pending": 0,
+   "queue_peak": 11,
+   "received": 893
+  },
+  "events_accounted": {
+   "change_rows": 0,
+   "delivered": 890,
+   "dropped_in_flight": 3,
+   "event_rows": 890,
+   "pending": 0,
+   "received": 893,
+   "received_unaccounted": 0,
+   "unaccounted": 0,
+   "unfiled_changes": 0
+  },
+  "files": {
+   "logcat": "logcat.txt",
+   "trace": "trace.pftrace",
+   "video": "video.mp4",
+   "videos": [
+    "video.mp4"
+   ]
+  },
+  "foreign_window": null,
+  "launcher_in_focus": true,
+  "message": null,
+  "ok": true,
+  "outcome": "closed",
+  "restored": [],
+  "run_id": null,
+  "settings": {
+   "message": "Every toggle the run changed is back on the value it found.",
+   "recorded": [],
+   "restored": [],
+   "unrestored": [],
+   "why": "close drives no setting back; a setting the app persists outlives the run"
+  },
+  "shot_failures": [],
+  "shot_stream_error": null,
+  "trace_report": {
+   "bounds": {
+    "max_duration_ms": 5400000,
+    "max_file_bytes": 536870912
+   },
+   "bytes": 109740486,
+   "file": "trace.pftrace",
+   "mode": "lite",
+   "on": true,
+   "remote": "/data/misc/perfetto-traces/a11y-android-driver-session-l_k5htbi.pftrace",
+   "remote_deleted": true,
+   "sources": [
+    "linux.ftrace",
+    "android.surfaceflinger.frametimeline",
+    "linux.process_stats",
+    "linux.sys_stats",
+    "android.gpu.memory",
+    "android.cpu_per_uid"
+   ],
+   "sources_data_unknown": [
+    "linux.ftrace",
+    "android.surfaceflinger.frametimeline",
+    "linux.process_stats",
+    "linux.sys_stats",
+    "android.gpu.memory",
+    "android.cpu_per_uid"
+   ],
+   "sources_missing": [],
+   "start_ms": 949,
+   "started_at": 1790883849.2181637,
+   "stop": {
+    "forced": false,
+    "pids": {
+     "9749": "exited"
+    },
+    "running": false
+   },
+   "stopped_at": 1790884529.130529,
+   "tracing": {
+    "found": {
+     "atrace": "0",
+     "tracing_on": "0"
+    },
+    "left": {
+     "atrace": "0",
+     "tracing_on": "0"
+    },
+    "restored": [],
+    "unrestored": []
+   }
+  },
+  "unfiled_changes": [],
+  "unrestored": [],
+  "video_report": {
+   "files": [
+    "video.mp4"
+   ],
+   "on": true,
+   "rotation": 0,
+   "segments": [
+    {
+     "ended_at": 1790884532.53694,
+     "file": "video.mp4",
+     "rotation": 0,
+     "size": [
+      1280,
+      2856
+     ],
+     "started_at": 1790883848.9673028
+    }
+   ],
+   "size": [
+    1280,
+    2856
+   ],
+   "started_at": 1790883848.9673028,
+   "transport": "emu"
+  },
+  "video_source": "emulator-screenrecord"
+ },
+ "declared_gestures": [],
+ "device": "emulator-5554",
+ "driver_api_version": 2,
+ "ended_at": 1790884615.1200075,
+ "foreign_window": null,
+ "label": "path replay skeleton:1 light",
+ "librarian": {
+  "built_from": "~\\.claude\\plugins\\cache\\accessibility-tools\\android-driver\\0.15.1\\scripts\\librarian-dex.jar",
+  "found_md5": "7a9b1c4a9c07497af81c968182c49272",
+  "local_md5": "7a9b1c4a9c07497af81c968182c49272",
+  "md5": "7a9b1c4a9c07497af81c968182c49272",
+  "path": "/data/local/tmp/librarian-dex.jar",
+  "server": "started",
+  "server_md5": "7a9b1c4a9c07497af81c968182c49272",
+  "source": "on-device"
+ },
+ "librarian_deployed": false,
+ "package": "com.gmail.alexk413x.RPN_Dominator_Calculator",
+ "parent_run": "",
+ "perf": {
+  "bounds": {
+   "max_duration_ms": 5400000,
+   "max_file_bytes": 536870912
+  },
+  "mode": "lite",
+  "on": true,
+  "sources": [
+   "linux.ftrace",
+   "android.surfaceflinger.frametimeline",
+   "linux.process_stats",
+   "linux.sys_stats",
+   "android.gpu.memory",
+   "android.cpu_per_uid"
+  ],
+  "sources_data_unknown": [
+   "linux.ftrace",
+   "android.surfaceflinger.frametimeline",
+   "linux.process_stats",
+   "linux.sys_stats",
+   "android.gpu.memory",
+   "android.cpu_per_uid"
+  ],
+  "sources_missing": [],
+  "start_ms": 949,
+  "started_at": 1790883849.2181637
+ },
+ "run_id": "20261001T194428953Z",
+ "scope": {
+  "appearance": "light",
+  "orientation": "portrait",
+  "path_test": "skeleton:1"
+ },
+ "started_at": 1790883868.969564
+}

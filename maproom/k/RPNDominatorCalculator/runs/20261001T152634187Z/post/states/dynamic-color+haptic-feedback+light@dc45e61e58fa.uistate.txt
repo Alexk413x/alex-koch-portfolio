@@ -1,0 +1,15 @@
+FrameLayout
+  LinearLayout
+    FrameLayout
+      p00
+        View
+          View
+            View
+              View
+                View
+                  check desc="" off
+                  check desc="" on
+                  check desc="Dynamic Color" on
+                  check desc="Haptic Feedback" off
+                  check desc="Light" off
+                View

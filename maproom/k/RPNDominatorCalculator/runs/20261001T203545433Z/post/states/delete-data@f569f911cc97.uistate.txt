@@ -1,0 +1,17 @@
+FrameLayout
+  FrameLayout
+    FrameLayout
+      ViewGroup
+        View
+          View
+            View
+              View
+                ImageView desc="Warning"
+                TextView text=<volatile>
+                TextView text=<volatile>
+                View clickable+focusable
+                  TextView text="Delete" clickable+focusable
+                  Button clickable+focusable
+                View clickable+focusable
+                  TextView text="Cancel" clickable+focusable
+                  Button clickable+focusable

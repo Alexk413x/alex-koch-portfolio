@@ -1,0 +1,41 @@
+[
+ {
+  "action": "tap",
+  "after_step": 206,
+  "at": 1790844818.7186904,
+  "control_key": "android.view.View:Dismiss",
+  "detail": "{\"screen_identity\": \"666fbbfdfa76\", \"screen_name\": \"alert\"}",
+  "id": 1,
+  "interaction": "tap",
+  "message": "map_drive: 'android.view.View:Dismiss' was on a surface that expires by itself, and it is gone. It cannot be routed back to. Call map_drive again for it with after_step=206 (activate-focused-element on android.view.View:Factorial), which raises the surface and drives it inside the one call. Two calls cannot reach it: the turn between them outlasts the surface. If that summons a different surface, try the step before it: the driver reports a surface one step after it appears, so the step named here is where it was first SEEN, which is not always where it was raised.",
+  "mode": "",
+  "outcome": "refused",
+  "params": "{}"
+ },
+ {
+  "action": "tap",
+  "after_step": 224,
+  "at": 1790844914.7362008,
+  "control_key": "android.view.View:Dismiss",
+  "detail": "{\"screen_identity\": \"3f9b2f387ea5\", \"screen_name\": \"alert\"}",
+  "id": 2,
+  "interaction": "tap",
+  "message": "map_drive: 'android.view.View:Dismiss' was on a surface that expires by itself, and it is gone. It cannot be routed back to. Call map_drive again for it with after_step=224 (tap-at-coordinates), which raises the surface and drives it inside the one call. Two calls cannot reach it: the turn between them outlasts the surface. If that summons a different surface, try the step before it: the driver reports a surface one step after it appears, so the step named here is where it was first SEEN, which is not always where it was raised.",
+  "mode": "",
+  "outcome": "refused",
+  "params": "{}"
+ },
+ {
+  "action": "tap",
+  "after_step": 231,
+  "at": 1790844976.9280722,
+  "control_key": "android.view.View:IN",
+  "detail": "{\"screen_identity\": \"b0d7f61ccdf5\", \"screen_name\": \"clear-all+clear-entry+delete-last-digit\"}",
+  "id": 3,
+  "interaction": "tap",
+  "message": "map_drive: no control 'android.view.View:IN' on this screen. On screen (30): ['android.view.View:Toggle Menu', 'android.view.View:IN - IN -', 'android.view.View:Clear all', 'android.view.View:Clear entry', 'android.view.View:Delete last digit', 'android.view.View:Undo', 'android.view.View:Memory in', 'android.view.View:Memory out', 'android.view.View:Degrees', 'android.view.View:Show More Functions', 'android.view.View:Pi', 'android.view.View:Reciprocal, one divided by X', 'android.view.View:Factorial', 'android.view.View:Divide', 'android.view.View:7', 'android.view.View:8', 'android.view.View:9', 'android.view.View:Multiply', 'android.view.View:4', 'android.view.View:5'] and 10 more; `on_screen` lists every key.",
+  "mode": "",
+  "outcome": "refused",
+  "params": "{}"
+ }
+]

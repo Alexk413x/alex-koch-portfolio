@@ -1,0 +1,46 @@
+[
+ {
+  "action": "activate-focused-element",
+  "control_key": "android.view.View:Clear all",
+  "interaction": "",
+  "outcome": "no_change",
+  "state": "add+change-sign+clear-all@state=07112d3a7333",
+  "step": 93
+ },
+ {
+  "action": "activate-focused-element",
+  "control_key": "android.view.View:Delete last digit",
+  "interaction": "",
+  "outcome": "no_change",
+  "state": "add+change-sign+clear-all@state=07112d3a7333",
+  "step": 102
+ },
+ {
+  "action": "activate-focused-element",
+  "control_key": "android.view.View:Clear entry",
+  "interaction": "",
+  "outcome": "no_change",
+  "state": "add+change-sign+clear-all@state=07112d3a7333",
+  "step": 103
+ },
+ {
+  "explained_by_change": null,
+  "from_digest": "f73a51c156f1db51",
+  "last_seen_digest": "15691f351a9f0c56",
+  "last_seen_step": 1,
+  "step": 2,
+  "warning": "from-digest-mismatch"
+ },
+ {
+  "expired_surface": [
+   "Nothing left to undo.",
+   "Dismiss"
+  ],
+  "explained_by_change": null,
+  "from_digest": "6cf7135857ebdd92",
+  "last_seen_digest": "407492470c4a5dd3",
+  "last_seen_step": 67,
+  "step": 68,
+  "warning": "surface-expired"
+ }
+]

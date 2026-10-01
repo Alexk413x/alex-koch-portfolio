@@ -1,0 +1,3414 @@
+{
+ "ok": true,
+ "run": "20261001T202148735Z",
+ "map": "runs/20261001T202148735Z/post/map.db",
+ "captures": {
+  "add+change-sign+clear-all.snackbar@state=db0e1176ec71": {
+   "step": 17,
+   "capture": "own",
+   "screen": "runs/20261001T202148735Z/screens/0017-20261001T202308356Z.png",
+   "tree": "runs/20261001T202148735Z/screenstates/0017-20261001T202308356Z.xml",
+   "uistate": "runs/20261001T202148735Z/post/states/add+change-sign+clear-all.snackbar@db0e1176ec71.uistate.txt",
+   "orientation": "portrait",
+   "appearance": "light"
+  },
+  "add+change-sign+clear-all@state=07112d3a7333": {
+   "step": 6,
+   "capture": "own",
+   "screen": "runs/20261001T202148735Z/screens/0006-20261001T202157205Z.png",
+   "tree": "runs/20261001T202148735Z/screenstates/0006-20261001T202157205Z.xml",
+   "uistate": "runs/20261001T202148735Z/post/states/add+change-sign+clear-all@07112d3a7333.uistate.txt",
+   "orientation": "portrait",
+   "appearance": "light"
+  },
+  "add+change-sign+clear-all@state=274e406927ae": {
+   "step": 33,
+   "capture": "own",
+   "screen": "runs/20261001T202148735Z/screens/0033-20261001T202417257Z.png",
+   "tree": "runs/20261001T202148735Z/screenstates/0033-20261001T202417257Z.xml",
+   "uistate": "runs/20261001T202148735Z/post/states/add+change-sign+clear-all@274e406927ae.uistate.txt",
+   "orientation": "portrait",
+   "appearance": "light"
+  },
+  "add+change-sign+clear-all@state=c5a495e7b84c": {
+   "step": 12,
+   "capture": "own",
+   "screen": "runs/20261001T202148735Z/screens/0012-20261001T202239266Z.png",
+   "tree": "runs/20261001T202148735Z/screenstates/0012-20261001T202239266Z.xml",
+   "uistate": "runs/20261001T202148735Z/post/states/add+change-sign+clear-all@c5a495e7b84c.uistate.txt",
+   "orientation": "portrait",
+   "appearance": "light"
+  },
+  "add+change-sign+clear-all@state=d5edfc50e047": {
+   "step": 7,
+   "capture": "own",
+   "screen": "runs/20261001T202148735Z/screens/0007-20261001T202159616Z.png",
+   "tree": "runs/20261001T202148735Z/screenstates/0007-20261001T202159616Z.xml",
+   "uistate": "runs/20261001T202148735Z/post/states/add+change-sign+clear-all@d5edfc50e047.uistate.txt",
+   "orientation": "portrait",
+   "appearance": "light"
+  },
+  "system-com-google-android-apps-nexuslauncher@state=c752de886c28": {
+   "step": 0,
+   "capture": "own",
+   "screen": "runs/20261001T202148735Z/screens/0000-20261001T202142981Z.png",
+   "tree": "runs/20261001T202148735Z/screenstates/0000-20261001T202142981Z.xml",
+   "uistate": "runs/20261001T202148735Z/post/states/system-com-google-android-apps-nexuslauncher@c752de886c28.uistate.txt",
+   "orientation": "portrait",
+   "appearance": "light"
+  }
+ },
+ "basis": {
+  "checked": {
+   "by": "replay-open",
+   "bytes": 4247552,
+   "modified_at": 1790884669.020987,
+   "recorded_at": 1790886111.1904411,
+   "schema_version": "6",
+   "sha256": "0f3dc041ab9621ad91970800544dc2f5c46c1ad39f05aca972abd04c67212cf7"
+  },
+  "today": {
+   "sha256": "93f6e126feb7d60088a2b2c50a70af81ef8230de5cba8344e360e5226487b317",
+   "bytes": 4386816,
+   "modified_at": 1790888277.5652418,
+   "schema_version": "6"
+  },
+  "kind": "recorded",
+  "note": "Compared with the baseline as it was when this run was checked (0f3dc041ab96). Today's baseline (93f6e126feb7) differs."
+ },
+ "alignment": {
+  "baseline": {
+   "bytes": 4247552,
+   "modified_at": 1790884669.020987,
+   "schema_version": "6",
+   "sha256": "0f3dc041ab9621ad91970800544dc2f5c46c1ad39f05aca972abd04c67212cf7"
+  },
+  "counts": {
+   "edges": {
+    "changed": 0,
+    "match": 28,
+    "missing": 265,
+    "new": 4
+   },
+   "screens": {
+    "changed": 1,
+    "match": 2,
+    "missing": 7,
+    "new": 0
+   },
+   "states": {
+    "changed": 1,
+    "match": 5,
+    "missing": 41,
+    "new": 0
+   }
+  },
+  "edges": [
+   {
+    "action": "activate-focused-element:android.view.View:Clear all",
+    "dst": "add+change-sign+clear-all@state=07112d3a7333",
+    "requires": "nav=touch",
+    "src": "add+change-sign+clear-all.snackbar@state=db0e1176ec71",
+    "status": "match"
+   },
+   {
+    "action": "activate-focused-element:android.view.View:Enter",
+    "dst": "add+change-sign+clear-all@state=07112d3a7333",
+    "requires": "nav=touch",
+    "src": "add+change-sign+clear-all.snackbar@state=db0e1176ec71",
+    "status": "match"
+   },
+   {
+    "action": "activate-focused-element:android.view.View:Undo",
+    "dst": "add+change-sign+clear-all@state=07112d3a7333",
+    "requires": "nav=touch",
+    "src": "add+change-sign+clear-all.snackbar@state=db0e1176ec71",
+    "status": "match"
+   },
+   {
+    "action": "dismiss-transient-view:android.view.View:Input is empty.",
+    "dst": "add+change-sign+clear-all@state=07112d3a7333",
+    "requires": "nav=touch",
+    "src": "add+change-sign+clear-all.snackbar@state=db0e1176ec71",
+    "status": "match"
+   },
+   {
+    "action": "activate-focused-element:android.view.View:Add",
+    "dst": "add+change-sign+clear-all.snackbar@state=db0e1176ec71",
+    "requires": "nav=touch",
+    "src": "add+change-sign+clear-all@state=07112d3a7333",
+    "status": "match"
+   },
+   {
+    "action": "activate-focused-element:android.view.View:Divide",
+    "dst": "add+change-sign+clear-all.snackbar@state=db0e1176ec71",
+    "requires": "nav=touch",
+    "src": "add+change-sign+clear-all@state=07112d3a7333",
+    "status": "match"
+   },
+   {
+    "action": "activate-focused-element:android.view.View:Enter",
+    "dst": "add+change-sign+clear-all.snackbar@state=db0e1176ec71",
+    "requires": "nav=touch",
+    "src": "add+change-sign+clear-all@state=07112d3a7333",
+    "status": "match"
+   },
+   {
+    "action": "activate-focused-element:android.view.View:Memory in",
+    "dst": "add+change-sign+clear-all.snackbar@state=db0e1176ec71",
+    "requires": "nav=touch",
+    "src": "add+change-sign+clear-all@state=07112d3a7333",
+    "status": "match"
+   },
+   {
+    "action": "activate-focused-element:android.view.View:Undo",
+    "dst": "add+change-sign+clear-all.snackbar@state=db0e1176ec71",
+    "requires": "nav=touch",
+    "src": "add+change-sign+clear-all@state=07112d3a7333",
+    "status": "match"
+   },
+   {
+    "action": "activate-focused-element(late):android.view.View:Clear all",
+    "dst": "add+change-sign+clear-all@state=07112d3a7333",
+    "requires": "nav=touch",
+    "src": "add+change-sign+clear-all@state=07112d3a7333",
+    "status": "match"
+   },
+   {
+    "action": "activate-focused-element:android.view.View:0",
+    "dst": "add+change-sign+clear-all@state=07112d3a7333",
+    "requires": "nav=touch",
+    "src": "add+change-sign+clear-all@state=07112d3a7333",
+    "status": "match"
+   },
+   {
+    "action": "activate-focused-element:android.view.View:1",
+    "dst": "add+change-sign+clear-all@state=07112d3a7333",
+    "requires": "nav=touch",
+    "src": "add+change-sign+clear-all@state=07112d3a7333",
+    "status": "match"
+   },
+   {
+    "action": "activate-focused-element:android.view.View:2",
+    "dst": "add+change-sign+clear-all@state=07112d3a7333",
+    "requires": "nav=touch",
+    "src": "add+change-sign+clear-all@state=07112d3a7333",
+    "status": "match"
+   },
+   {
+    "action": "activate-focused-element:android.view.View:3",
+    "dst": "add+change-sign+clear-all@state=07112d3a7333",
+    "requires": "nav=touch",
+    "src": "add+change-sign+clear-all@state=07112d3a7333",
+    "status": "match"
+   },
+   {
+    "action": "activate-focused-element:android.view.View:5",
+    "dst": "add+change-sign+clear-all@state=07112d3a7333",
+    "requires": "nav=touch",
+    "src": "add+change-sign+clear-all@state=07112d3a7333",
+    "status": "match"
+   },
+   {
+    "action": "activate-focused-element:android.view.View:7",
+    "dst": "add+change-sign+clear-all@state=07112d3a7333",
+    "requires": "nav=touch",
+    "src": "add+change-sign+clear-all@state=07112d3a7333",
+    "status": "match"
+   },
+   {
+    "action": "activate-focused-element:android.view.View:Clear entry",
+    "dst": "add+change-sign+clear-all@state=07112d3a7333",
+    "requires": "nav=touch",
+    "src": "add+change-sign+clear-all@state=07112d3a7333",
+    "status": "match"
+   },
+   {
+    "action": "activate-focused-element:android.view.View:Delete last digit",
+    "dst": "add+change-sign+clear-all@state=07112d3a7333",
+    "requires": "nav=touch",
+    "src": "add+change-sign+clear-all@state=07112d3a7333",
+    "status": "match"
+   },
+   {
+    "action": "activate-focused-element:android.view.View:Jump to end of number",
+    "dst": "add+change-sign+clear-all@state=07112d3a7333",
+    "requires": "nav=touch",
+    "src": "add+change-sign+clear-all@state=07112d3a7333",
+    "status": "match"
+   },
+   {
+    "action": "activate-focused-element:android.view.View:Jump to start of number",
+    "dst": "add+change-sign+clear-all@state=07112d3a7333",
+    "requires": "nav=touch",
+    "src": "add+change-sign+clear-all@state=07112d3a7333",
+    "status": "match"
+   },
+   {
+    "action": "activate-focused-element:android.view.View:Memory out",
+    "dst": "add+change-sign+clear-all@state=07112d3a7333",
+    "requires": "nav=touch",
+    "src": "add+change-sign+clear-all@state=07112d3a7333",
+    "status": "match"
+   },
+   {
+    "action": "activate-focused-element:android.view.View:Pi",
+    "dst": "add+change-sign+clear-all@state=07112d3a7333",
+    "requires": "nav=touch",
+    "src": "add+change-sign+clear-all@state=07112d3a7333",
+    "status": "match"
+   },
+   {
+    "action": "dismiss-transient-view:android.view.View:Unable to divide numbers.",
+    "dst": "add+change-sign+clear-all@state=07112d3a7333",
+    "requires": "nav=touch",
+    "src": "add+change-sign+clear-all@state=07112d3a7333",
+    "status": "match"
+   },
+   {
+    "action": "activate-focused-element:android.view.View:Toggle Menu",
+    "dst": "add+change-sign+clear-all@state=274e406927ae",
+    "requires": "nav=touch",
+    "src": "add+change-sign+clear-all@state=07112d3a7333",
+    "status": "match"
+   },
+   {
+    "action": "activate-focused-element:android.view.View:1 5 1 5",
+    "dst": "add+change-sign+clear-all@state=c5a495e7b84c",
+    "requires": "nav=touch",
+    "src": "add+change-sign+clear-all@state=07112d3a7333",
+    "status": "new"
+   },
+   {
+    "action": "activate-focused-element:android.view.View:IN 7 IN 7",
+    "dst": "add+change-sign+clear-all@state=c5a495e7b84c",
+    "requires": "nav=touch",
+    "src": "add+change-sign+clear-all@state=07112d3a7333",
+    "status": "new"
+   },
+   {
+    "action": "activate-focused-element:android.view.View:IN",
+    "dst": "add+change-sign+clear-all@state=d5edfc50e047",
+    "requires": "nav=touch",
+    "src": "add+change-sign+clear-all@state=07112d3a7333",
+    "status": "new"
+   },
+   {
+    "action": "activate-focused-element:android.view.View:Memory: 7",
+    "dst": "add+change-sign+clear-all@state=07112d3a7333",
+    "requires": "nav=touch",
+    "src": "add+change-sign+clear-all@state=274e406927ae",
+    "status": "match"
+   },
+   {
+    "action": "activate-focused-element:android.view.View:Toggle Menu",
+    "dst": "add+change-sign+clear-all@state=07112d3a7333",
+    "requires": "nav=touch",
+    "src": "add+change-sign+clear-all@state=274e406927ae",
+    "status": "match"
+   },
+   {
+    "action": "back",
+    "as": "add+change-sign+clear-all@state=274e406927ae -[back]-> add+change-sign+clear-all@state=07112d3a7333 [nav=touch]",
+    "dst": "add+change-sign+clear-all@state=07112d3a7333",
+    "requires": "nav=touch",
+    "src": "add+change-sign+clear-all@state=274e406927ae",
+    "status": "match"
+   },
+   {
+    "action": "activate-focused-element:android.view.View:7",
+    "dst": "add+change-sign+clear-all@state=07112d3a7333",
+    "requires": "nav=touch",
+    "src": "add+change-sign+clear-all@state=d5edfc50e047",
+    "status": "new"
+   },
+   {
+    "action": "launch-app-by-package-activity(late)",
+    "as": "system-com-google-android-apps-nexuslauncher -[launch-app-by-package-activity]-> add+change-sign+clear-all@state=07112d3a7333 [nav=touch]",
+    "dst": "add+change-sign+clear-all@state=07112d3a7333",
+    "requires": "nav=touch",
+    "src": "system-com-google-android-apps-nexuslauncher@state=c752de886c28",
+    "status": "match"
+   }
+  ],
+  "map_sha256": "258ded99b411338f65dbfe1fc7552a68cd35ae8a943053145d783b5f0fdc0b9d",
+  "missing": {
+   "edges": [
+    {
+     "action": "activate-focused-element[tap]:android.view.View:1 3 1 3",
+     "dst": "add+change-sign+clear-all@state=c16e2b278de7",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all.snackbar@state=db0e1176ec71"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Change sign",
+     "dst": "add+change-sign+clear-all@state=07112d3a7333",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all.snackbar@state=db0e1176ec71"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Clear all",
+     "dst": "add+change-sign+clear-all@state=07112d3a7333",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all.snackbar@state=db0e1176ec71"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Clear all",
+     "dst": "add+change-sign+clear-all@state=6cfc5095a80f",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all.snackbar@state=db0e1176ec71"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Clear all",
+     "dst": "add+change-sign+clear-all@state=b2baf56e7a25",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all.snackbar@state=db0e1176ec71"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Clear entry",
+     "dst": "add+change-sign+clear-all@state=07112d3a7333",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all.snackbar@state=db0e1176ec71"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Clear entry",
+     "dst": "add+change-sign+clear-all@state=b2baf56e7a25",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all.snackbar@state=db0e1176ec71"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Dismiss",
+     "dst": "add+change-sign+clear-all@state=07112d3a7333",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all.snackbar@state=db0e1176ec71"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Dismiss",
+     "dst": "add+change-sign+clear-all@state=c16e2b278de7",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all.snackbar@state=db0e1176ec71"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Factorial",
+     "dst": "add+change-sign+clear-all.snackbar@state=db0e1176ec71",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all.snackbar@state=db0e1176ec71"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Toggle Menu",
+     "dst": "add+change-sign+clear-all@state=274e406927ae",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all.snackbar@state=db0e1176ec71"
+    },
+    {
+     "action": "dismiss-transient-view[dismiss]:android.view.View:Input is empty.",
+     "dst": "add+change-sign+clear-all@state=07112d3a7333",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all.snackbar@state=db0e1176ec71"
+    },
+    {
+     "action": "dismiss-transient-view[dismiss]:android.view.View:Unable to calculate number is too large.",
+     "dst": "add+change-sign+clear-all@state=07112d3a7333",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all.snackbar@state=db0e1176ec71"
+    },
+    {
+     "action": "open-notifications",
+     "dst": "system-com-android-systemui",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all.snackbar@state=db0e1176ec71"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:0",
+     "dst": "add+change-sign+clear-all@state=07112d3a7333",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:1 $1,234.00 1 $ 1 , 2 3 4 . 0 0",
+     "dst": "add+change-sign+clear-all@state=c16e2b278de7",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:1 1,234 1 1 , 2 3 4",
+     "dst": "add+change-sign+clear-all@state=c16e2b278de7",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:1 1234 1 1 2 3 4",
+     "dst": "add+change-sign+clear-all@state=c16e2b278de7",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:1 3 1 3",
+     "dst": "add+change-sign+clear-all@state=c16e2b278de7",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:1 3 1 3",
+     "dst": "add+change-sign+clear-all@state=c5a495e7b84c",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:1 5 1 5",
+     "dst": "add+change-sign+clear-all@state=c16e2b278de7",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:1",
+     "dst": "add+change-sign+clear-all@state=07112d3a7333",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:2 2 2 2",
+     "dst": "add+change-sign+clear-all@state=c16e2b278de7",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:2 9 2 9",
+     "dst": "add+change-sign+clear-all@state=c5a495e7b84c",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:2",
+     "dst": "add+change-sign+clear-all@state=07112d3a7333",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:3 1234567.8 3 1 2 3 4 5 6 7 . 8",
+     "dst": "add+change-sign+clear-all@state=c5a495e7b84c",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:3",
+     "dst": "add+change-sign+clear-all@state=07112d3a7333",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:4",
+     "dst": "add+change-sign+clear-all@state=07112d3a7333",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:5",
+     "dst": "add+change-sign+clear-all@state=07112d3a7333",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:6",
+     "dst": "add+change-sign+clear-all@state=07112d3a7333",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:7",
+     "dst": "add+change-sign+clear-all@state=07112d3a7333",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:8",
+     "dst": "add+change-sign+clear-all@state=07112d3a7333",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:9",
+     "dst": "add+change-sign+clear-all@state=07112d3a7333",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Add",
+     "dst": "add+change-sign+clear-all@state=07112d3a7333",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Change sign",
+     "dst": "add+change-sign+clear-all@state=07112d3a7333",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Clear all",
+     "dst": "add+change-sign+clear-all@state=07112d3a7333",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Clear entry",
+     "dst": "add+change-sign+clear-all@state=07112d3a7333",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Decimal point",
+     "dst": "add+change-sign+clear-all.snackbar@state=db0e1176ec71",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Degrees",
+     "dst": "add+change-sign+clear-all@state=a522a769e24a",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Delete last digit",
+     "dst": "add+change-sign+clear-all@state=07112d3a7333",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Divide",
+     "dst": "add+change-sign+clear-all@state=07112d3a7333",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Enter",
+     "dst": "add+change-sign+clear-all.snackbar@state=db0e1176ec71",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Factorial",
+     "dst": "add+change-sign+clear-all.snackbar@state=db0e1176ec71",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:IN - IN -",
+     "dst": "add+change-sign+clear-all@state=c16e2b278de7",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:IN 7 IN 7",
+     "dst": "add+change-sign+clear-all@state=c16e2b278de7",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:IN",
+     "dst": "add+change-sign+clear-all@state=8fb593c85cb4",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Jump to end of number",
+     "dst": "add+change-sign+clear-all@state=07112d3a7333",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Jump to start of number",
+     "dst": "add+change-sign+clear-all@state=07112d3a7333",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Memory in",
+     "dst": "add+change-sign+clear-all.snackbar@state=db0e1176ec71",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Memory out",
+     "dst": "add+change-sign+clear-all@state=07112d3a7333",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Multiply",
+     "dst": "add+change-sign+clear-all@state=07112d3a7333",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Pi",
+     "dst": "add+change-sign+clear-all@state=07112d3a7333",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Reciprocal, one divided by X",
+     "dst": "add+change-sign+clear-all@state=07112d3a7333",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Show More Functions",
+     "dst": "add+change-sign+clear-all@state=b2baf56e7a25",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Subtract",
+     "dst": "add+change-sign+clear-all@state=07112d3a7333",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Toggle Menu",
+     "dst": "add+change-sign+clear-all@state=274e406927ae",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Undo",
+     "dst": "add+change-sign+clear-all.snackbar@state=db0e1176ec71",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "action": "back",
+     "dst": "system-com-google-android-apps-nexuslauncher",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "action": "dismiss-transient-view[dismiss]:android.view.View:Unable to divide numbers.",
+     "dst": "add+change-sign+clear-all@state=07112d3a7333",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "action": "drag-by-coordinates[gesture:drag][up-long]",
+     "dst": "add+change-sign+clear-all@state=07112d3a7333",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "action": "drag-by-coordinates[gesture:reorder][down-short]",
+     "dst": "add+change-sign+clear-all@state=07112d3a7333",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "action": "drag-by-coordinates[gesture:reorder][up-long]",
+     "dst": "add+change-sign+clear-all@state=07112d3a7333",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "action": "open-notifications",
+     "dst": "system-com-android-systemui",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "action": "swipe-at-coordinates[gesture:drag][down-long]",
+     "dst": "add+change-sign+clear-all@state=07112d3a7333",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "action": "swipe-at-coordinates[gesture:drag][up-long]",
+     "dst": "add+change-sign+clear-all@state=07112d3a7333",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "action": "swipe-at-coordinates[gesture:drag][up-long]",
+     "dst": "add+change-sign+clear-all@state=b2baf56e7a25",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "action": "swipe-at-coordinates[gesture:swipe-to-dismiss][left-long]",
+     "dst": "add+change-sign+clear-all@state=07112d3a7333",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "action": "swipe-at-coordinates[gesture:swipe-to-dismiss][right-long]",
+     "dst": "add+change-sign+clear-all@state=07112d3a7333",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "action": "tap-at-coordinates",
+     "dst": "add+change-sign+clear-all@state=c5a495e7b84c",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Memory: 7",
+     "dst": "add+change-sign+clear-all@state=07112d3a7333",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=274e406927ae"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Settings",
+     "dst": "settings@state=062b2e1deb87",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=274e406927ae"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Settings",
+     "dst": "settings@state=705010093c80",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=274e406927ae"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Settings",
+     "dst": "settings@state=7e48981516a9",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=274e406927ae"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Settings",
+     "dst": "settings@state=8655582bf3e7",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=274e406927ae"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Toggle Menu",
+     "dst": "add+change-sign+clear-all@state=07112d3a7333",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=274e406927ae"
+    },
+    {
+     "action": "tap-at-coordinates",
+     "dst": "add+change-sign+clear-all@state=07112d3a7333",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=274e406927ae"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:0",
+     "dst": "add+change-sign+clear-all@state=6cfc5095a80f",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=6cfc5095a80f"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:10 to the power of X",
+     "dst": "add+change-sign+clear-all@state=6cfc5095a80f",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=6cfc5095a80f"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:1",
+     "dst": "add+change-sign+clear-all@state=6cfc5095a80f",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=6cfc5095a80f"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:2",
+     "dst": "add+change-sign+clear-all@state=6cfc5095a80f",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=6cfc5095a80f"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:3",
+     "dst": "add+change-sign+clear-all@state=6cfc5095a80f",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=6cfc5095a80f"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:5",
+     "dst": "add+change-sign+clear-all@state=6cfc5095a80f",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=6cfc5095a80f"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Clear all",
+     "dst": "add+change-sign+clear-all@state=6cfc5095a80f",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=6cfc5095a80f"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Decimal point",
+     "dst": "add+change-sign+clear-all@state=6cfc5095a80f",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=6cfc5095a80f"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Dismiss",
+     "dst": "add+change-sign+clear-all@state=6cfc5095a80f",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=6cfc5095a80f"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:E to the power of X",
+     "dst": "add+change-sign+clear-all@state=6cfc5095a80f",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=6cfc5095a80f"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Enter",
+     "dst": "add+change-sign+clear-all@state=6cfc5095a80f",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=6cfc5095a80f"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Inverse cosine",
+     "dst": "add+change-sign+clear-all@state=6cfc5095a80f",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=6cfc5095a80f"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Inverse sine",
+     "dst": "add+change-sign+clear-all.snackbar@state=db0e1176ec71",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=6cfc5095a80f"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Inverse tangent",
+     "dst": "add+change-sign+clear-all@state=6cfc5095a80f",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=6cfc5095a80f"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Standard functions",
+     "dst": "add+change-sign+clear-all@state=b2baf56e7a25",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=6cfc5095a80f"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:X squared",
+     "dst": "add+change-sign+clear-all@state=6cfc5095a80f",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=6cfc5095a80f"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Y to the power of X",
+     "dst": "add+change-sign+clear-all@state=6cfc5095a80f",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=6cfc5095a80f"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:7",
+     "dst": "add+change-sign+clear-all@state=07112d3a7333",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=8fb593c85cb4"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Paste",
+     "dst": "add+change-sign+clear-all@state=07112d3a7333",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=8fb593c85cb4"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:1 5 1 5",
+     "dst": "add+change-sign+clear-all@state=b2baf56e7a25",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=948d64207f14"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Radians",
+     "dst": "add+change-sign+clear-all@state=07112d3a7333",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=a522a769e24a"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:0",
+     "dst": "add+change-sign+clear-all@state=b2baf56e7a25",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=b2baf56e7a25"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:1 5 1 5",
+     "dst": "add+change-sign+clear-all@state=948d64207f14",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=b2baf56e7a25"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:1",
+     "dst": "add+change-sign+clear-all@state=b2baf56e7a25",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=b2baf56e7a25"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:2",
+     "dst": "add+change-sign+clear-all@state=b2baf56e7a25",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=b2baf56e7a25"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:3",
+     "dst": "add+change-sign+clear-all@state=b2baf56e7a25",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=b2baf56e7a25"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:4",
+     "dst": "add+change-sign+clear-all@state=b2baf56e7a25",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=b2baf56e7a25"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:5",
+     "dst": "add+change-sign+clear-all@state=b2baf56e7a25",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=b2baf56e7a25"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:6",
+     "dst": "add+change-sign+clear-all@state=b2baf56e7a25",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=b2baf56e7a25"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:7",
+     "dst": "add+change-sign+clear-all@state=b2baf56e7a25",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=b2baf56e7a25"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:8",
+     "dst": "add+change-sign+clear-all@state=b2baf56e7a25",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=b2baf56e7a25"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:9",
+     "dst": "add+change-sign+clear-all@state=b2baf56e7a25",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=b2baf56e7a25"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Add",
+     "dst": "add+change-sign+clear-all@state=b2baf56e7a25",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=b2baf56e7a25"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Change sign",
+     "dst": "add+change-sign+clear-all@state=b2baf56e7a25",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=b2baf56e7a25"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Clear all",
+     "dst": "add+change-sign+clear-all@state=b2baf56e7a25",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=b2baf56e7a25"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Cosine",
+     "dst": "add+change-sign+clear-all@state=b2baf56e7a25",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=b2baf56e7a25"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Decimal point",
+     "dst": "add+change-sign+clear-all@state=b2baf56e7a25",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=b2baf56e7a25"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Degrees",
+     "dst": "add+change-sign+clear-all@state=c1ea1ff69f7d",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=b2baf56e7a25"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Delete last digit",
+     "dst": "add+change-sign+clear-all@state=b2baf56e7a25",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=b2baf56e7a25"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Divide",
+     "dst": "add+change-sign+clear-all.snackbar@state=db0e1176ec71",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=b2baf56e7a25"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Enter",
+     "dst": "add+change-sign+clear-all@state=b2baf56e7a25",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=b2baf56e7a25"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Factorial",
+     "dst": "add+change-sign+clear-all@state=b2baf56e7a25",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=b2baf56e7a25"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Hide More Functions",
+     "dst": "add+change-sign+clear-all@state=07112d3a7333",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=b2baf56e7a25"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:IN",
+     "dst": "add+change-sign+clear-all@state=23e809f86901",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=b2baf56e7a25"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Inverse functions",
+     "dst": "add+change-sign+clear-all@state=6cfc5095a80f",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=b2baf56e7a25"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Jump to end of number",
+     "dst": "add+change-sign+clear-all@state=b2baf56e7a25",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=b2baf56e7a25"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Jump to start of number",
+     "dst": "add+change-sign+clear-all@state=b2baf56e7a25",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=b2baf56e7a25"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Logarithm base 10",
+     "dst": "add+change-sign+clear-all@state=b2baf56e7a25",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=b2baf56e7a25"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Memory in",
+     "dst": "add+change-sign+clear-all.snackbar@state=db0e1176ec71",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=b2baf56e7a25"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Memory out",
+     "dst": "add+change-sign+clear-all@state=b2baf56e7a25",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=b2baf56e7a25"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Multiply",
+     "dst": "add+change-sign+clear-all@state=b2baf56e7a25",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=b2baf56e7a25"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Natural logarithm",
+     "dst": "add+change-sign+clear-all@state=b2baf56e7a25",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=b2baf56e7a25"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Pi",
+     "dst": "add+change-sign+clear-all@state=b2baf56e7a25",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=b2baf56e7a25"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Reciprocal, one divided by X",
+     "dst": "add+change-sign+clear-all@state=b2baf56e7a25",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=b2baf56e7a25"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Sine",
+     "dst": "add+change-sign+clear-all@state=b2baf56e7a25",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=b2baf56e7a25"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Square root",
+     "dst": "add+change-sign+clear-all@state=b2baf56e7a25",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=b2baf56e7a25"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Subtract",
+     "dst": "add+change-sign+clear-all@state=b2baf56e7a25",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=b2baf56e7a25"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Tangent",
+     "dst": "add+change-sign+clear-all@state=b2baf56e7a25",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=b2baf56e7a25"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Toggle Menu",
+     "dst": "add+change-sign+clear-all@state=d96de36d79b9",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=b2baf56e7a25"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Undo",
+     "dst": "add+change-sign+clear-all@state=b2baf56e7a25",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=b2baf56e7a25"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Xth root of Y",
+     "dst": "add+change-sign+clear-all@state=b2baf56e7a25",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=b2baf56e7a25"
+    },
+    {
+     "action": "swipe-at-coordinates[gesture:drag][down-long]",
+     "dst": "add+change-sign+clear-all@state=07112d3a7333",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=b2baf56e7a25"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Settings",
+     "dst": "settings@state=8655582bf3e7",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=bb86d4a7a133"
+    },
+    {
+     "action": "activate-focused-element[tap](late):android.view.View:Clear all",
+     "dst": "add+change-sign+clear-all@state=07112d3a7333",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=c16e2b278de7"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Copy",
+     "dst": "add+change-sign+clear-all@state=07112d3a7333",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=c16e2b278de7"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Delete",
+     "dst": "add+change-sign+clear-all@state=07112d3a7333",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=c16e2b278de7"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:IN 1,234 IN 1 , 2 3 4",
+     "dst": "add+change-sign+clear-all@state=07112d3a7333",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=c16e2b278de7"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:IN 1234 IN 1 2 3 4",
+     "dst": "add+change-sign+clear-all@state=07112d3a7333",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=c16e2b278de7"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:IN IN",
+     "dst": "add+change-sign+clear-all@state=07112d3a7333",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=c16e2b278de7"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:IN",
+     "dst": "add+change-sign+clear-all@state=07112d3a7333",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=c16e2b278de7"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Toggle Menu",
+     "dst": "add+change-sign+clear-all@state=bb86d4a7a133",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=c16e2b278de7"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Cosine",
+     "dst": "add+change-sign+clear-all@state=c1ea1ff69f7d",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=c1ea1ff69f7d"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Inverse functions",
+     "dst": "add+change-sign+clear-all@state=fc2eb6fa63cd",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=c1ea1ff69f7d"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Pi",
+     "dst": "add+change-sign+clear-all@state=c1ea1ff69f7d",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=c1ea1ff69f7d"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Radians",
+     "dst": "add+change-sign+clear-all@state=b2baf56e7a25",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=c1ea1ff69f7d"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Clear entry",
+     "dst": "add+change-sign+clear-all@state=07112d3a7333",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=c5a495e7b84c"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Copy",
+     "dst": "add+change-sign+clear-all@state=07112d3a7333",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=c5a495e7b84c"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Delete",
+     "dst": "add+change-sign+clear-all@state=07112d3a7333",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=c5a495e7b84c"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Memory",
+     "dst": "add+change-sign+clear-all.snackbar@state=db0e1176ec71",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=c5a495e7b84c"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Paste",
+     "dst": "add+change-sign+clear-all.toast@state=fad60deab375",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=c5a495e7b84c"
+    },
+    {
+     "action": "tap-at-coordinates",
+     "dst": "add+change-sign+clear-all@state=07112d3a7333",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=c5a495e7b84c"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Settings",
+     "dst": "settings@state=8655582bf3e7",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=d96de36d79b9"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Toggle Menu",
+     "dst": "add+change-sign+clear-all@state=b2baf56e7a25",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=d96de36d79b9"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Standard functions",
+     "dst": "add+change-sign+clear-all@state=c1ea1ff69f7d",
+     "requires": "nav=touch",
+     "src": "add+change-sign+clear-all@state=fc2eb6fa63cd"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Cancel",
+     "dst": "settings@state=8655582bf3e7",
+     "requires": "nav=touch",
+     "src": "delete-data@state=f569f911cc97"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Cancel",
+     "dst": "settings@state=ba862d969a71",
+     "requires": "nav=touch",
+     "src": "delete-data@state=f569f911cc97"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Delete",
+     "dst": "settings.snackbar@state=a841134b7a30",
+     "requires": "nav=touch",
+     "src": "delete-data@state=f569f911cc97"
+    },
+    {
+     "action": "back",
+     "dst": "settings@state=8655582bf3e7",
+     "requires": "nav=touch",
+     "src": "delete-data@state=f569f911cc97"
+    },
+    {
+     "action": "back",
+     "dst": "settings@state=ba862d969a71",
+     "requires": "nav=touch",
+     "src": "delete-data@state=f569f911cc97"
+    },
+    {
+     "action": "tap-at-coordinates",
+     "dst": "settings.snackbar@state=a841134b7a30",
+     "requires": "nav=touch",
+     "src": "delete-data@state=f569f911cc97"
+    },
+    {
+     "action": "tap-at-coordinates",
+     "dst": "settings@state=8655582bf3e7",
+     "requires": "nav=touch",
+     "src": "delete-data@state=f569f911cc97"
+    },
+    {
+     "action": "tap-at-coordinates",
+     "dst": "settings@state=ba862d969a71",
+     "requires": "nav=touch",
+     "src": "delete-data@state=f569f911cc97"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Done",
+     "dst": "settings@state=8655582bf3e7",
+     "requires": "nav=touch",
+     "src": "select-rounding-mode@state=333060bdc56c"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Half Down - Round towards nearest neighbor, if equal round down.",
+     "dst": "select-rounding-mode@state=a0ae4390c9db",
+     "requires": "nav=touch",
+     "src": "select-rounding-mode@state=333060bdc56c"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Half Even - (Default) Round towards nearest neighbor, if equal even neighbor.",
+     "dst": "select-rounding-mode@state=b5c695c4489c",
+     "requires": "nav=touch",
+     "src": "select-rounding-mode@state=333060bdc56c"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Down - Round towards zero.",
+     "dst": "select-rounding-mode@state=853b3ce3474c",
+     "requires": "nav=touch",
+     "src": "select-rounding-mode@state=4e662ffe1cdb"
+    },
+    {
+     "action": "back",
+     "dst": "settings@state=8655582bf3e7",
+     "requires": "nav=touch",
+     "src": "select-rounding-mode@state=4e662ffe1cdb"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Ceiling - Round towards positive infinity.",
+     "dst": "select-rounding-mode@state=a9073c316d5a",
+     "requires": "nav=touch",
+     "src": "select-rounding-mode@state=853b3ce3474c"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Half Even - (Default) Round towards nearest neighbor, if equal even neighbor.",
+     "dst": "select-rounding-mode@state=b5c695c4489c",
+     "requires": "nav=touch",
+     "src": "select-rounding-mode@state=853b3ce3474c"
+    },
+    {
+     "action": "tap-at-coordinates",
+     "dst": "settings@state=8655582bf3e7",
+     "requires": "nav=touch",
+     "src": "select-rounding-mode@state=853b3ce3474c"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Done",
+     "dst": "settings@state=8655582bf3e7",
+     "requires": "nav=touch",
+     "src": "select-rounding-mode@state=a0ae4390c9db"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Up - Rounds away from zero",
+     "dst": "select-rounding-mode@state=4e662ffe1cdb",
+     "requires": "nav=touch",
+     "src": "select-rounding-mode@state=a0ae4390c9db"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Floor - Round towards negative infinity.",
+     "dst": "select-rounding-mode@state=c14bd69f91be",
+     "requires": "nav=touch",
+     "src": "select-rounding-mode@state=a9073c316d5a"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Done",
+     "dst": "settings@state=8655582bf3e7",
+     "requires": "nav=touch",
+     "src": "select-rounding-mode@state=b5c695c4489c"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Half Down - Round towards nearest neighbor, if equal round down.",
+     "dst": "select-rounding-mode@state=a0ae4390c9db",
+     "requires": "nav=touch",
+     "src": "select-rounding-mode@state=b5c695c4489c"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Half Up - Round towards nearest neighbor, if equal round up.",
+     "dst": "select-rounding-mode@state=333060bdc56c",
+     "requires": "nav=touch",
+     "src": "select-rounding-mode@state=b5c695c4489c"
+    },
+    {
+     "action": "back",
+     "dst": "settings@state=8655582bf3e7",
+     "requires": "nav=touch",
+     "src": "select-rounding-mode@state=b5c695c4489c"
+    },
+    {
+     "action": "tap-at-coordinates",
+     "dst": "select-rounding-mode@state=b5c695c4489c",
+     "requires": "nav=touch",
+     "src": "select-rounding-mode@state=b5c695c4489c"
+    },
+    {
+     "action": "tap-at-coordinates",
+     "dst": "settings@state=8655582bf3e7",
+     "requires": "nav=touch",
+     "src": "select-rounding-mode@state=b5c695c4489c"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Unnecessary - No rounding.",
+     "dst": "select-rounding-mode@state=ecf994e2155b",
+     "requires": "nav=touch",
+     "src": "select-rounding-mode@state=c14bd69f91be"
+    },
+    {
+     "action": "tap-at-coordinates",
+     "dst": "select-rounding-mode@state=b5c695c4489c",
+     "requires": "nav=touch",
+     "src": "select-rounding-mode@state=ecf994e2155b"
+    },
+    {
+     "action": "back",
+     "dst": "add+change-sign+clear-all@state=07112d3a7333",
+     "requires": "nav=touch",
+     "src": "settings.popup@state=00997052b11e"
+    },
+    {
+     "action": "back",
+     "dst": "settings.popup@state=05ee6e9491d7",
+     "requires": "nav=touch",
+     "src": "settings.popup@state=05ee6e9491d7"
+    },
+    {
+     "action": "clear-focus:android.widget.EditText@android:id/content#1",
+     "dst": "settings@state=8655582bf3e7",
+     "requires": "nav=touch",
+     "src": "settings.popup@state=05ee6e9491d7"
+    },
+    {
+     "action": "clear-focus:android.widget.EditText@android:id/content#1",
+     "dst": "settings@state=ba862d969a71",
+     "requires": "nav=touch",
+     "src": "settings.popup@state=05ee6e9491d7"
+    },
+    {
+     "action": "clear-focus:android.widget.EditText@android:id/content#2",
+     "dst": "settings@state=ba862d969a71",
+     "requires": "nav=touch",
+     "src": "settings.popup@state=05ee6e9491d7"
+    },
+    {
+     "action": "clear-focus:android.widget.EditText@android:id/content#3",
+     "dst": "settings@state=8655582bf3e7",
+     "requires": "nav=touch",
+     "src": "settings.popup@state=05ee6e9491d7"
+    },
+    {
+     "action": "clear-focus:android.widget.EditText@android:id/content#4",
+     "dst": "settings@state=8655582bf3e7",
+     "requires": "nav=touch",
+     "src": "settings.popup@state=05ee6e9491d7"
+    },
+    {
+     "action": "clear-focus:android.widget.EditText@android:id/content#5",
+     "dst": "settings@state=8655582bf3e7",
+     "requires": "nav=touch",
+     "src": "settings.popup@state=05ee6e9491d7"
+    },
+    {
+     "action": "replace-text",
+     "dst": "settings@state=8655582bf3e7",
+     "requires": "nav=touch",
+     "src": "settings.popup@state=05ee6e9491d7"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Delete",
+     "dst": "delete-data@state=f569f911cc97",
+     "requires": "nav=touch",
+     "src": "settings.snackbar@state=a841134b7a30"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Dismiss",
+     "dst": "settings@state=8655582bf3e7",
+     "requires": "nav=touch",
+     "src": "settings.snackbar@state=a841134b7a30"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Dismiss",
+     "dst": "settings@state=ba862d969a71",
+     "requires": "nav=touch",
+     "src": "settings.snackbar@state=a841134b7a30"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Back",
+     "dst": "add+change-sign+clear-all@state=07112d3a7333",
+     "requires": "nav=touch",
+     "src": "settings@state=062b2e1deb87"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Group",
+     "dst": "settings@state=7e48981516a9",
+     "requires": "nav=touch",
+     "src": "settings@state=062b2e1deb87"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Haptic Feedback",
+     "dst": "settings@state=8655582bf3e7",
+     "requires": "nav=touch",
+     "src": "settings@state=1da899bc6d1f"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:System",
+     "dst": "settings@state=8655582bf3e7",
+     "requires": "nav=touch",
+     "src": "settings@state=27ccf0222b34"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:System",
+     "dst": "settings@state=7e48981516a9",
+     "requires": "nav=touch",
+     "src": "settings@state=42a2bbbfbeee"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Dynamic Color",
+     "dst": "settings@state=8655582bf3e7",
+     "requires": "nav=touch",
+     "src": "settings@state=500ae583d551"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Dynamic Color",
+     "dst": "settings@state=6246338b9a33",
+     "requires": "nav=touch",
+     "src": "settings@state=54b657e2e683"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Haptic Feedback",
+     "dst": "settings@state=eea56d689a08",
+     "requires": "nav=touch",
+     "src": "settings@state=6246338b9a33"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Dark",
+     "dst": "settings@state=42a2bbbfbeee",
+     "requires": "nav=touch",
+     "src": "settings@state=6b50d6457565"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Back",
+     "dst": "add+change-sign+clear-all@state=07112d3a7333",
+     "requires": "nav=touch",
+     "src": "settings@state=705010093c80"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Scientific",
+     "dst": "settings@state=062b2e1deb87",
+     "requires": "nav=touch",
+     "src": "settings@state=705010093c80"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Back",
+     "dst": "add+change-sign+clear-all@state=07112d3a7333",
+     "requires": "nav=touch",
+     "src": "settings@state=7e48981516a9"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Haptic Feedback",
+     "dst": "settings@state=54b657e2e683",
+     "requires": "nav=touch",
+     "src": "settings@state=7e48981516a9"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Light",
+     "dst": "settings@state=6b50d6457565",
+     "requires": "nav=touch",
+     "src": "settings@state=7e48981516a9"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:None",
+     "dst": "settings@state=8655582bf3e7",
+     "requires": "nav=touch",
+     "src": "settings@state=7e48981516a9"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Back",
+     "dst": "add+change-sign+clear-all@state=07112d3a7333",
+     "requires": "nav=touch",
+     "src": "settings@state=8655582bf3e7"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Back",
+     "dst": "add+change-sign+clear-all@state=b2baf56e7a25",
+     "requires": "nav=touch",
+     "src": "settings@state=8655582bf3e7"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Dark",
+     "dst": "settings@state=89b8493e0c1a",
+     "requires": "nav=touch",
+     "src": "settings@state=8655582bf3e7"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Delete",
+     "dst": "delete-data@state=f569f911cc97",
+     "requires": "nav=touch",
+     "src": "settings@state=8655582bf3e7"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Down",
+     "dst": "select-rounding-mode@state=853b3ce3474c",
+     "requires": "nav=touch",
+     "src": "settings@state=8655582bf3e7"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Dynamic Color",
+     "dst": "settings@state=500ae583d551",
+     "requires": "nav=touch",
+     "src": "settings@state=8655582bf3e7"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Finance",
+     "dst": "settings@state=705010093c80",
+     "requires": "nav=touch",
+     "src": "settings@state=8655582bf3e7"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Half Down",
+     "dst": "select-rounding-mode@state=a0ae4390c9db",
+     "requires": "nav=touch",
+     "src": "settings@state=8655582bf3e7"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Half Even",
+     "dst": "select-rounding-mode@state=b5c695c4489c",
+     "requires": "nav=touch",
+     "src": "settings@state=8655582bf3e7"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Half Up",
+     "dst": "select-rounding-mode@state=333060bdc56c",
+     "requires": "nav=touch",
+     "src": "settings@state=8655582bf3e7"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Haptic Feedback",
+     "dst": "settings@state=1da899bc6d1f",
+     "requires": "nav=touch",
+     "src": "settings@state=8655582bf3e7"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Light",
+     "dst": "settings@state=27ccf0222b34",
+     "requires": "nav=touch",
+     "src": "settings@state=8655582bf3e7"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Up",
+     "dst": "select-rounding-mode@state=4e662ffe1cdb",
+     "requires": "nav=touch",
+     "src": "settings@state=8655582bf3e7"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.widget.EditText@android:id/content#1",
+     "dst": "settings.popup@state=05ee6e9491d7",
+     "requires": "nav=touch",
+     "src": "settings@state=8655582bf3e7"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.widget.EditText@android:id/content#2",
+     "dst": "settings@state=8655582bf3e7",
+     "requires": "nav=touch",
+     "src": "settings@state=8655582bf3e7"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.widget.EditText@android:id/content#3",
+     "dst": "settings.popup@state=05ee6e9491d7",
+     "requires": "nav=touch",
+     "src": "settings@state=8655582bf3e7"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.widget.EditText@android:id/content#4",
+     "dst": "settings.popup@state=05ee6e9491d7",
+     "requires": "nav=touch",
+     "src": "settings@state=8655582bf3e7"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.widget.EditText@android:id/content#5",
+     "dst": "settings.popup@state=05ee6e9491d7",
+     "requires": "nav=touch",
+     "src": "settings@state=8655582bf3e7"
+    },
+    {
+     "action": "back",
+     "dst": "add+change-sign+clear-all@state=07112d3a7333",
+     "requires": "nav=touch",
+     "src": "settings@state=8655582bf3e7"
+    },
+    {
+     "action": "back",
+     "dst": "settings.popup@state=05ee6e9491d7",
+     "requires": "nav=touch",
+     "src": "settings@state=8655582bf3e7"
+    },
+    {
+     "action": "ime-enter[ime-enter]:android.widget.EditText@android:id/content#1",
+     "dst": "settings@state=8655582bf3e7",
+     "requires": "nav=touch",
+     "src": "settings@state=8655582bf3e7"
+    },
+    {
+     "action": "ime-enter[ime-enter]:android.widget.EditText@android:id/content#2",
+     "dst": "settings@state=8655582bf3e7",
+     "requires": "nav=touch",
+     "src": "settings@state=8655582bf3e7"
+    },
+    {
+     "action": "ime-enter[ime-enter]:android.widget.EditText@android:id/content#3",
+     "dst": "settings@state=8655582bf3e7",
+     "requires": "nav=touch",
+     "src": "settings@state=8655582bf3e7"
+    },
+    {
+     "action": "ime-enter[ime-enter]:android.widget.EditText@android:id/content#4",
+     "dst": "settings@state=8655582bf3e7",
+     "requires": "nav=touch",
+     "src": "settings@state=8655582bf3e7"
+    },
+    {
+     "action": "ime-enter[ime-enter]:android.widget.EditText@android:id/content#5",
+     "dst": "settings@state=8655582bf3e7",
+     "requires": "nav=touch",
+     "src": "settings@state=8655582bf3e7"
+    },
+    {
+     "action": "long-press-focused-element[long-press]:android.widget.EditText@android:id/content#1",
+     "dst": "settings.popup@state=05ee6e9491d7",
+     "requires": "nav=touch",
+     "src": "settings@state=8655582bf3e7"
+    },
+    {
+     "action": "long-press-focused-element[long-press]:android.widget.EditText@android:id/content#2",
+     "dst": "settings.popup@state=00997052b11e",
+     "requires": "nav=touch",
+     "src": "settings@state=8655582bf3e7"
+    },
+    {
+     "action": "long-press-focused-element[long-press]:android.widget.EditText@android:id/content#3",
+     "dst": "settings.popup@state=05ee6e9491d7",
+     "requires": "nav=touch",
+     "src": "settings@state=8655582bf3e7"
+    },
+    {
+     "action": "long-press-focused-element[long-press]:android.widget.EditText@android:id/content#4",
+     "dst": "settings.popup@state=05ee6e9491d7",
+     "requires": "nav=touch",
+     "src": "settings@state=8655582bf3e7"
+    },
+    {
+     "action": "long-press-focused-element[long-press]:android.widget.EditText@android:id/content#5",
+     "dst": "settings.popup@state=05ee6e9491d7",
+     "requires": "nav=touch",
+     "src": "settings@state=8655582bf3e7"
+    },
+    {
+     "action": "replace-text",
+     "dst": "settings@state=8655582bf3e7",
+     "requires": "nav=touch",
+     "src": "settings@state=8655582bf3e7"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:System",
+     "dst": "settings@state=8655582bf3e7",
+     "requires": "nav=touch",
+     "src": "settings@state=89b8493e0c1a"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.widget.EditText@android:id/content#1",
+     "dst": "settings.popup@state=f2948e838de5",
+     "requires": "nav=touch",
+     "src": "settings@state=8e87834df6d4"
+    },
+    {
+     "action": "activate-focused-element[tap](late):android.widget.EditText@android:id/content#2",
+     "dst": "settings@state=ba862d969a71",
+     "requires": "nav=touch",
+     "src": "settings@state=8e87834df6d4"
+    },
+    {
+     "action": "ime-enter[ime-enter]:android.widget.EditText@android:id/content#1",
+     "dst": "settings@state=8e87834df6d4",
+     "requires": "nav=touch",
+     "src": "settings@state=8e87834df6d4"
+    },
+    {
+     "action": "replace-text",
+     "dst": "settings@state=8e87834df6d4",
+     "requires": "nav=touch",
+     "src": "settings@state=8e87834df6d4"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Back",
+     "dst": "add+change-sign+clear-all@state=07112d3a7333",
+     "requires": "nav=touch",
+     "src": "settings@state=ba862d969a71"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Delete",
+     "dst": "delete-data@state=f569f911cc97",
+     "requires": "nav=touch",
+     "src": "settings@state=ba862d969a71"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.widget.EditText@android:id/content#1",
+     "dst": "settings.popup@state=05ee6e9491d7",
+     "requires": "nav=touch",
+     "src": "settings@state=ba862d969a71"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.widget.EditText@android:id/content#2",
+     "dst": "settings.popup@state=05ee6e9491d7",
+     "requires": "nav=touch",
+     "src": "settings@state=ba862d969a71"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.widget.EditText@android:id/content#3",
+     "dst": "settings.popup@state=05ee6e9491d7",
+     "requires": "nav=touch",
+     "src": "settings@state=ba862d969a71"
+    },
+    {
+     "action": "back",
+     "dst": "settings.popup@state=05ee6e9491d7",
+     "requires": "nav=touch",
+     "src": "settings@state=ba862d969a71"
+    },
+    {
+     "action": "ime-enter[ime-enter]:android.widget.EditText@android:id/content#1",
+     "dst": "settings@state=ba862d969a71",
+     "requires": "nav=touch",
+     "src": "settings@state=ba862d969a71"
+    },
+    {
+     "action": "ime-enter[ime-enter](late):android.widget.EditText@android:id/content#2",
+     "dst": "settings@state=ba862d969a71",
+     "requires": "nav=touch",
+     "src": "settings@state=ba862d969a71"
+    },
+    {
+     "action": "ime-enter[ime-enter]:android.widget.EditText@android:id/content#3",
+     "dst": "settings@state=ba862d969a71",
+     "requires": "nav=touch",
+     "src": "settings@state=ba862d969a71"
+    },
+    {
+     "action": "long-press-focused-element[long-press]:android.widget.EditText@android:id/content#1",
+     "dst": "settings.popup@state=05ee6e9491d7",
+     "requires": "nav=touch",
+     "src": "settings@state=ba862d969a71"
+    },
+    {
+     "action": "replace-text",
+     "dst": "settings@state=ba862d969a71",
+     "requires": "nav=touch",
+     "src": "settings@state=ba862d969a71"
+    },
+    {
+     "action": "activate-focused-element[tap]:android.view.View:Dynamic Color",
+     "dst": "settings@state=7e48981516a9",
+     "requires": "nav=touch",
+     "src": "settings@state=eea56d689a08"
+    },
+    {
+     "action": "back",
+     "dst": "add+change-sign+clear-all.snackbar@state=db0e1176ec71",
+     "requires": "nav=touch",
+     "src": "system-com-android-systemui"
+    },
+    {
+     "action": "back",
+     "dst": "add+change-sign+clear-all@state=07112d3a7333",
+     "requires": "nav=touch",
+     "src": "system-com-android-systemui"
+    },
+    {
+     "action": "launch-app-by-package-activity",
+     "dst": "add+change-sign+clear-all@state=b2baf56e7a25",
+     "requires": "nav=touch",
+     "src": "system-com-google-android-apps-nexuslauncher"
+    }
+   ],
+   "screens": [
+    "add+change-sign+clear-all.toast",
+    "delete-data",
+    "select-rounding-mode",
+    "settings",
+    "settings.popup",
+    "settings.snackbar",
+    "system-com-android-systemui"
+   ],
+   "states": [
+    "add+change-sign+clear-all.toast@state=fad60deab375",
+    "add+change-sign+clear-all@state=23e809f86901",
+    "add+change-sign+clear-all@state=6cfc5095a80f",
+    "add+change-sign+clear-all@state=948d64207f14",
+    "add+change-sign+clear-all@state=a522a769e24a",
+    "add+change-sign+clear-all@state=b2baf56e7a25",
+    "add+change-sign+clear-all@state=bb86d4a7a133",
+    "add+change-sign+clear-all@state=c16e2b278de7",
+    "add+change-sign+clear-all@state=c1ea1ff69f7d",
+    "add+change-sign+clear-all@state=d96de36d79b9",
+    "add+change-sign+clear-all@state=eb404d4f43dd",
+    "add+change-sign+clear-all@state=fc2eb6fa63cd",
+    "delete-data@state=f569f911cc97",
+    "select-rounding-mode@state=333060bdc56c",
+    "select-rounding-mode@state=4e662ffe1cdb",
+    "select-rounding-mode@state=853b3ce3474c",
+    "select-rounding-mode@state=a0ae4390c9db",
+    "select-rounding-mode@state=a9073c316d5a",
+    "select-rounding-mode@state=b5c695c4489c",
+    "select-rounding-mode@state=c14bd69f91be",
+    "select-rounding-mode@state=ecf994e2155b",
+    "settings.popup@state=00997052b11e",
+    "settings.popup@state=05ee6e9491d7",
+    "settings.popup@state=f2948e838de5",
+    "settings.snackbar@state=a841134b7a30",
+    "settings@state=062b2e1deb87",
+    "settings@state=1da899bc6d1f",
+    "settings@state=27ccf0222b34",
+    "settings@state=42a2bbbfbeee",
+    "settings@state=500ae583d551",
+    "settings@state=54b657e2e683",
+    "settings@state=6246338b9a33",
+    "settings@state=6b50d6457565",
+    "settings@state=705010093c80",
+    "settings@state=7e48981516a9",
+    "settings@state=8655582bf3e7",
+    "settings@state=89b8493e0c1a",
+    "settings@state=8e87834df6d4",
+    "settings@state=ba862d969a71",
+    "settings@state=eea56d689a08",
+    "system-com-android-systemui"
+   ]
+  },
+  "replay": true,
+  "screens": {
+   "add+change-sign+clear-all": "changed",
+   "add+change-sign+clear-all.snackbar": "match",
+   "system-com-google-android-apps-nexuslauncher": "match"
+  },
+  "states": {
+   "add+change-sign+clear-all.snackbar@state=db0e1176ec71": {
+    "status": "match"
+   },
+   "add+change-sign+clear-all@state=07112d3a7333": {
+    "status": "match"
+   },
+   "add+change-sign+clear-all@state=274e406927ae": {
+    "status": "match"
+   },
+   "add+change-sign+clear-all@state=c5a495e7b84c": {
+    "status": "match"
+   },
+   "add+change-sign+clear-all@state=d5edfc50e047": {
+    "as": "add+change-sign+clear-all@state=8fb593c85cb4",
+    "status": "changed"
+   },
+   "system-com-google-android-apps-nexuslauncher@state=c752de886c28": {
+    "as": "system-com-google-android-apps-nexuslauncher",
+    "status": "match"
+   }
+  },
+  "written_at": 1790887987.8000321
+ },
+ "verdicts": {
+  "replay": {
+   "test": "explore:20261001T144150142Z",
+   "appearance": "light",
+   "orientation": "portrait",
+   "from_ord": 0,
+   "to_ord": 83,
+   "refused": null,
+   "passed": false,
+   "verdicts": {
+    "arrived": 53,
+    "elsewhere": 5,
+    "failed": 9,
+    "not-started": 17
+   },
+   "counts": {
+    "captured": 3,
+    "differs": 1,
+    "review": 0,
+    "not-captured": 6
+   },
+   "failures": [
+    {
+     "path_step": 1,
+     "source_step": 7,
+     "why": "the step reached screen add+change-sign+clear-all, not clear-all+clear-entry+delete-last-digit",
+     "expected": {
+      "screen": "clear-all+clear-entry+delete-last-digit",
+      "state": "add+change-sign+clear-all@state=8fb593c85cb4",
+      "from_state": "add+change-sign+clear-all@state=07112d3a7333"
+     },
+     "reached": {
+      "screen": "add+change-sign+clear-all",
+      "state": null
+     }
+    },
+    {
+     "path_step": 3,
+     "source_step": 9,
+     "why": "the step reached screen add+change-sign+clear-all, not clear-all+clear-entry+delete-last-digit",
+     "expected": {
+      "screen": "clear-all+clear-entry+delete-last-digit",
+      "state": "add+change-sign+clear-all@state=c16e2b278de7",
+      "from_state": "add+change-sign+clear-all@state=07112d3a7333"
+     },
+     "reached": {
+      "screen": "add+change-sign+clear-all",
+      "state": "add+change-sign+clear-all@state=c5a495e7b84c"
+     }
+    },
+    {
+     "path_step": 4,
+     "source_step": 10,
+     "why": "the screen is add+change-sign+clear-all@state=07112d3a7333, not its origin add+change-sign+clear-all@state=c16e2b278de7",
+     "expected": {
+      "screen": "clear-all+clear-entry+delete-last-digit",
+      "state": "add+change-sign+clear-all@state=07112d3a7333",
+      "from_state": "add+change-sign+clear-all@state=c16e2b278de7"
+     },
+     "reached": {
+      "screen": "add+change-sign+clear-all",
+      "state": "add+change-sign+clear-all@state=07112d3a7333"
+     }
+    },
+    {
+     "path_step": 7,
+     "source_step": 13,
+     "why": "the step reached screen add+change-sign+clear-all, not clear-all+clear-entry+delete-last-digit",
+     "expected": {
+      "screen": "clear-all+clear-entry+delete-last-digit",
+      "state": "add+change-sign+clear-all.snackbar@state=db0e1176ec71",
+      "from_state": "add+change-sign+clear-all@state=07112d3a7333"
+     },
+     "reached": {
+      "screen": "add+change-sign+clear-all",
+      "state": "add+change-sign+clear-all@state=07112d3a7333"
+     }
+    },
+    {
+     "path_step": 35,
+     "source_step": 41,
+     "why": "map_drive: swipe-at-coordinates moves along raw coordinates, and a raw stroke flings past rows. Scroll with a scroll-* action or map_read_list. For a gesture, name it: gesture= one of ['drag', 'draw', 'pull-to-refresh', 'reorder', 'swipe-to-dismiss'].",
+     "expected": {
+      "screen": "clear-all+clear-entry+delete-last-digit",
+      "state": "add+change-sign+clear-all@state=07112d3a7333",
+      "from_state": "add+change-sign+clear-all@state=07112d3a7333"
+     },
+     "reached": {
+      "screen": "add+change-sign+clear-all",
+      "state": "add+change-sign+clear-all@state=07112d3a7333"
+     }
+    },
+    {
+     "path_step": 37,
+     "source_step": 43,
+     "why": "map_drive: swipe-at-coordinates moves along raw coordinates, and a raw stroke flings past rows. Scroll with a scroll-* action or map_read_list. For a gesture, name it: gesture= one of ['drag', 'draw', 'pull-to-refresh', 'reorder', 'swipe-to-dismiss'].",
+     "expected": {
+      "screen": "clear-all+clear-entry+delete-last-digit",
+      "state": "add+change-sign+clear-all@state=07112d3a7333",
+      "from_state": "add+change-sign+clear-all@state=07112d3a7333"
+     },
+     "reached": {
+      "screen": "alert",
+      "state": "add+change-sign+clear-all.snackbar@state=db0e1176ec71"
+     }
+    },
+    {
+     "path_step": 41,
+     "source_step": 47,
+     "why": "map_drive: drag-by-coordinates moves along raw coordinates, and a raw stroke flings past rows. Scroll with a scroll-* action or map_read_list. For a gesture, name it: gesture= one of ['drag', 'draw', 'pull-to-refresh', 'reorder', 'swipe-to-dismiss'].",
+     "expected": {
+      "screen": "clear-all+clear-entry+delete-last-digit",
+      "state": "add+change-sign+clear-all@state=07112d3a7333",
+      "from_state": "add+change-sign+clear-all@state=07112d3a7333"
+     },
+     "reached": {
+      "screen": "alert",
+      "state": "add+change-sign+clear-all.snackbar@state=db0e1176ec71"
+     }
+    },
+    {
+     "path_step": 43,
+     "source_step": 49,
+     "why": "map_drive: drag-by-coordinates moves along raw coordinates, and a raw stroke flings past rows. Scroll with a scroll-* action or map_read_list. For a gesture, name it: gesture= one of ['drag', 'draw', 'pull-to-refresh', 'reorder', 'swipe-to-dismiss'].",
+     "expected": {
+      "screen": "clear-all+clear-entry+delete-last-digit",
+      "state": "add+change-sign+clear-all@state=07112d3a7333",
+      "from_state": "add+change-sign+clear-all@state=07112d3a7333"
+     },
+     "reached": {
+      "screen": "alert",
+      "state": "add+change-sign+clear-all.snackbar@state=db0e1176ec71"
+     }
+    },
+    {
+     "path_step": 45,
+     "source_step": 51,
+     "why": "the step reached screen alert, not clear-all+clear-entry+delete-last-digit",
+     "expected": {
+      "screen": "clear-all+clear-entry+delete-last-digit",
+      "state": "add+change-sign+clear-all@state=07112d3a7333",
+      "from_state": "add+change-sign+clear-all@state=07112d3a7333"
+     },
+     "reached": {
+      "screen": "alert",
+      "state": null
+     }
+    },
+    {
+     "path_step": 46,
+     "source_step": 52,
+     "why": "map_drive: swipe-at-coordinates moves along raw coordinates, and a raw stroke flings past rows. Scroll with a scroll-* action or map_read_list. For a gesture, name it: gesture= one of ['drag', 'draw', 'pull-to-refresh', 'reorder', 'swipe-to-dismiss'].",
+     "expected": {
+      "screen": "clear-all+clear-entry+delete-last-digit",
+      "state": "add+change-sign+clear-all@state=b2baf56e7a25",
+      "from_state": "add+change-sign+clear-all@state=07112d3a7333"
+     },
+     "reached": {
+      "screen": "add+change-sign+clear-all",
+      "state": "add+change-sign+clear-all@state=07112d3a7333"
+     }
+    },
+    {
+     "path_step": 47,
+     "source_step": 53,
+     "why": "the screen is add+change-sign+clear-all@state=07112d3a7333, not its origin add+change-sign+clear-all@state=b2baf56e7a25",
+     "expected": {
+      "screen": "clear-all+clear-entry+delete-last-digit",
+      "state": "add+change-sign+clear-all@state=07112d3a7333",
+      "from_state": "add+change-sign+clear-all@state=b2baf56e7a25"
+     },
+     "reached": {
+      "screen": "add+change-sign+clear-all",
+      "state": "add+change-sign+clear-all@state=07112d3a7333"
+     }
+    },
+    {
+     "path_step": 49,
+     "source_step": 55,
+     "why": "map_drive: swipe-at-coordinates moves along raw coordinates, and a raw stroke flings past rows. Scroll with a scroll-* action or map_read_list. For a gesture, name it: gesture= one of ['drag', 'draw', 'pull-to-refresh', 'reorder', 'swipe-to-dismiss'].",
+     "expected": {
+      "screen": "clear-all+clear-entry+delete-last-digit",
+      "state": "add+change-sign+clear-all@state=b2baf56e7a25",
+      "from_state": "add+change-sign+clear-all@state=07112d3a7333"
+     },
+     "reached": {
+      "screen": "add+change-sign+clear-all",
+      "state": "add+change-sign+clear-all@state=07112d3a7333"
+     }
+    },
+    {
+     "path_step": 50,
+     "source_step": 56,
+     "why": "the screen is add+change-sign+clear-all@state=07112d3a7333, not its origin add+change-sign+clear-all@state=b2baf56e7a25",
+     "expected": {
+      "screen": "clear-all+clear-entry+delete-last-digit",
+      "state": "add+change-sign+clear-all@state=c1ea1ff69f7d",
+      "from_state": "add+change-sign+clear-all@state=b2baf56e7a25"
+     },
+     "reached": {
+      "screen": "add+change-sign+clear-all",
+      "state": "add+change-sign+clear-all@state=07112d3a7333"
+     }
+    },
+    {
+     "path_step": 51,
+     "source_step": 57,
+     "why": "the screen is add+change-sign+clear-all@state=07112d3a7333, not its origin add+change-sign+clear-all@state=c1ea1ff69f7d",
+     "expected": {
+      "screen": "clear-all+clear-entry+delete-last-digit",
+      "state": "add+change-sign+clear-all@state=c1ea1ff69f7d",
+      "from_state": "add+change-sign+clear-all@state=c1ea1ff69f7d"
+     },
+     "reached": {
+      "screen": "add+change-sign+clear-all",
+      "state": "add+change-sign+clear-all@state=07112d3a7333"
+     }
+    },
+    {
+     "path_step": 52,
+     "source_step": 58,
+     "why": "the screen is add+change-sign+clear-all@state=07112d3a7333, not its origin add+change-sign+clear-all@state=c1ea1ff69f7d",
+     "expected": {
+      "screen": "clear-all+clear-entry+delete-last-digit",
+      "state": "add+change-sign+clear-all@state=c1ea1ff69f7d",
+      "from_state": "add+change-sign+clear-all@state=c1ea1ff69f7d"
+     },
+     "reached": {
+      "screen": "add+change-sign+clear-all",
+      "state": "add+change-sign+clear-all@state=07112d3a7333"
+     }
+    },
+    {
+     "path_step": 53,
+     "source_step": 59,
+     "why": "the screen is add+change-sign+clear-all@state=07112d3a7333, not its origin add+change-sign+clear-all@state=c1ea1ff69f7d",
+     "expected": {
+      "screen": "clear-all+clear-entry+delete-last-digit",
+      "state": "add+change-sign+clear-all@state=fc2eb6fa63cd",
+      "from_state": "add+change-sign+clear-all@state=c1ea1ff69f7d"
+     },
+     "reached": {
+      "screen": "add+change-sign+clear-all",
+      "state": "add+change-sign+clear-all@state=07112d3a7333"
+     }
+    },
+    {
+     "path_step": 54,
+     "source_step": 60,
+     "why": "the screen is add+change-sign+clear-all@state=07112d3a7333, not its origin add+change-sign+clear-all@state=fc2eb6fa63cd",
+     "expected": {
+      "screen": "clear-all+clear-entry+delete-last-digit",
+      "state": "add+change-sign+clear-all@state=c1ea1ff69f7d",
+      "from_state": "add+change-sign+clear-all@state=fc2eb6fa63cd"
+     },
+     "reached": {
+      "screen": "add+change-sign+clear-all",
+      "state": "add+change-sign+clear-all@state=07112d3a7333"
+     }
+    },
+    {
+     "path_step": 55,
+     "source_step": 61,
+     "why": "the screen is add+change-sign+clear-all@state=07112d3a7333, not its origin add+change-sign+clear-all@state=c1ea1ff69f7d",
+     "expected": {
+      "screen": "clear-all+clear-entry+delete-last-digit",
+      "state": "add+change-sign+clear-all@state=b2baf56e7a25",
+      "from_state": "add+change-sign+clear-all@state=c1ea1ff69f7d"
+     },
+     "reached": {
+      "screen": "add+change-sign+clear-all",
+      "state": "add+change-sign+clear-all@state=07112d3a7333"
+     }
+    },
+    {
+     "path_step": 56,
+     "source_step": 62,
+     "why": "the screen is add+change-sign+clear-all@state=07112d3a7333, not its origin add+change-sign+clear-all@state=b2baf56e7a25",
+     "expected": {
+      "screen": "clear-all+clear-entry+delete-last-digit",
+      "state": "add+change-sign+clear-all@state=07112d3a7333",
+      "from_state": "add+change-sign+clear-all@state=b2baf56e7a25"
+     },
+     "reached": {
+      "screen": "add+change-sign+clear-all",
+      "state": "add+change-sign+clear-all@state=07112d3a7333"
+     }
+    },
+    {
+     "path_step": 71,
+     "source_step": 77,
+     "why": "the step reached screen add+change-sign+clear-all, not clear-all+clear-entry+delete-last-digit",
+     "expected": {
+      "screen": "clear-all+clear-entry+delete-last-digit",
+      "state": "add+change-sign+clear-all@state=c16e2b278de7",
+      "from_state": "add+change-sign+clear-all@state=07112d3a7333"
+     },
+     "reached": {
+      "screen": "add+change-sign+clear-all",
+      "state": "add+change-sign+clear-all@state=c5a495e7b84c"
+     }
+    },
+    {
+     "path_step": 72,
+     "source_step": 78,
+     "why": "the screen is add+change-sign+clear-all@state=07112d3a7333, not its origin add+change-sign+clear-all@state=c16e2b278de7",
+     "expected": {
+      "screen": "clear-all+clear-entry+delete-last-digit",
+      "state": "add+change-sign+clear-all@state=07112d3a7333",
+      "from_state": "add+change-sign+clear-all@state=c16e2b278de7"
+     },
+     "reached": {
+      "screen": "add+change-sign+clear-all",
+      "state": "add+change-sign+clear-all@state=07112d3a7333"
+     }
+    },
+    {
+     "path_step": 73,
+     "source_step": 79,
+     "why": "activate-focused-element: cannot_run: step 1/1 (activate-focused-element): no node matches target '1 5 accepts=click' on the current screen",
+     "expected": {
+      "screen": "clear-all+clear-entry+delete-last-digit",
+      "state": "add+change-sign+clear-all@state=c16e2b278de7",
+      "from_state": "add+change-sign+clear-all@state=07112d3a7333"
+     },
+     "reached": {
+      "screen": "add+change-sign+clear-all",
+      "state": "add+change-sign+clear-all@state=07112d3a7333"
+     }
+    },
+    {
+     "path_step": 74,
+     "source_step": 80,
+     "why": "the screen is add+change-sign+clear-all@state=07112d3a7333, not its origin add+change-sign+clear-all@state=c16e2b278de7",
+     "expected": {
+      "screen": "clear-all+clear-entry+delete-last-digit",
+      "state": "add+change-sign+clear-all@state=07112d3a7333",
+      "from_state": "add+change-sign+clear-all@state=c16e2b278de7"
+     },
+     "reached": {
+      "screen": "add+change-sign+clear-all",
+      "state": "add+change-sign+clear-all@state=07112d3a7333"
+     }
+    },
+    {
+     "path_step": 76,
+     "source_step": 82,
+     "why": "activate-focused-element: cannot_run: step 1/1 (activate-focused-element): no node matches target '1 5 accepts=click' on the current screen",
+     "expected": {
+      "screen": "clear-all+clear-entry+delete-last-digit",
+      "state": "add+change-sign+clear-all@state=c16e2b278de7",
+      "from_state": "add+change-sign+clear-all@state=07112d3a7333"
+     },
+     "reached": {
+      "screen": "add+change-sign+clear-all",
+      "state": "add+change-sign+clear-all@state=07112d3a7333"
+     }
+    },
+    {
+     "path_step": 77,
+     "source_step": 83,
+     "why": "the screen is add+change-sign+clear-all@state=07112d3a7333, not its origin add+change-sign+clear-all@state=c16e2b278de7",
+     "expected": {
+      "screen": "clear-all+clear-entry+delete-last-digit",
+      "state": "add+change-sign+clear-all@state=07112d3a7333",
+      "from_state": "add+change-sign+clear-all@state=c16e2b278de7"
+     },
+     "reached": {
+      "screen": "add+change-sign+clear-all",
+      "state": "add+change-sign+clear-all@state=07112d3a7333"
+     }
+    },
+    {
+     "path_step": 78,
+     "source_step": 84,
+     "why": "map_drive: swipe-at-coordinates moves along raw coordinates, and a raw stroke flings past rows. Scroll with a scroll-* action or map_read_list. For a gesture, name it: gesture= one of ['drag', 'draw', 'pull-to-refresh', 'reorder', 'swipe-to-dismiss'].",
+     "expected": {
+      "screen": "clear-all+clear-entry+delete-last-digit",
+      "state": "add+change-sign+clear-all@state=b2baf56e7a25",
+      "from_state": "add+change-sign+clear-all@state=07112d3a7333"
+     },
+     "reached": {
+      "screen": "add+change-sign+clear-all",
+      "state": "add+change-sign+clear-all@state=07112d3a7333"
+     }
+    },
+    {
+     "path_step": 79,
+     "source_step": 85,
+     "why": "the screen is add+change-sign+clear-all@state=07112d3a7333, not its origin add+change-sign+clear-all@state=b2baf56e7a25",
+     "expected": {
+      "screen": "clear-all+clear-entry+delete-last-digit",
+      "state": "add+change-sign+clear-all@state=d96de36d79b9",
+      "from_state": "add+change-sign+clear-all@state=b2baf56e7a25"
+     },
+     "reached": {
+      "screen": "add+change-sign+clear-all",
+      "state": "add+change-sign+clear-all@state=07112d3a7333"
+     }
+    },
+    {
+     "path_step": 80,
+     "source_step": 86,
+     "why": "the screen is add+change-sign+clear-all@state=07112d3a7333, not its origin add+change-sign+clear-all@state=d96de36d79b9",
+     "expected": {
+      "screen": "clear-all+clear-entry+delete-last-digit",
+      "state": "add+change-sign+clear-all@state=b2baf56e7a25",
+      "from_state": "add+change-sign+clear-all@state=d96de36d79b9"
+     },
+     "reached": {
+      "screen": "add+change-sign+clear-all",
+      "state": "add+change-sign+clear-all@state=07112d3a7333"
+     }
+    },
+    {
+     "path_step": 81,
+     "source_step": 87,
+     "why": "the screen is add+change-sign+clear-all@state=07112d3a7333, not its origin add+change-sign+clear-all@state=b2baf56e7a25",
+     "expected": {
+      "screen": "clear-all+clear-entry+delete-last-digit",
+      "state": "add+change-sign+clear-all@state=948d64207f14",
+      "from_state": "add+change-sign+clear-all@state=b2baf56e7a25"
+     },
+     "reached": {
+      "screen": "add+change-sign+clear-all",
+      "state": "add+change-sign+clear-all@state=07112d3a7333"
+     }
+    },
+    {
+     "path_step": 82,
+     "source_step": 88,
+     "why": "the screen is add+change-sign+clear-all@state=07112d3a7333, not its origin add+change-sign+clear-all@state=948d64207f14",
+     "expected": {
+      "screen": "clear-all+clear-entry+delete-last-digit",
+      "state": "add+change-sign+clear-all@state=b2baf56e7a25",
+      "from_state": "add+change-sign+clear-all@state=948d64207f14"
+     },
+     "reached": {
+      "screen": "add+change-sign+clear-all",
+      "state": "add+change-sign+clear-all@state=07112d3a7333"
+     }
+    },
+    {
+     "path_step": 83,
+     "source_step": 89,
+     "why": "the screen is add+change-sign+clear-all@state=07112d3a7333, not its origin add+change-sign+clear-all@state=b2baf56e7a25",
+     "expected": {
+      "screen": "clear-all+clear-entry+delete-last-digit",
+      "state": "add+change-sign+clear-all@state=07112d3a7333",
+      "from_state": "add+change-sign+clear-all@state=b2baf56e7a25"
+     },
+     "reached": {
+      "screen": "add+change-sign+clear-all",
+      "state": "add+change-sign+clear-all@state=07112d3a7333"
+     }
+    }
+   ],
+   "steps": [
+    {
+     "ord": 0,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "system-com-google-android-apps-nexuslauncher",
+     "to_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "reached": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "ord": 1,
+     "kind": "edge",
+     "verdict": "elsewhere",
+     "why": "the step reached screen add+change-sign+clear-all, not clear-all+clear-entry+delete-last-digit",
+     "from_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "to_state": "add+change-sign+clear-all@state=8fb593c85cb4"
+    },
+    {
+     "ord": 2,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "add+change-sign+clear-all@state=8fb593c85cb4",
+     "to_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "reached": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "ord": 3,
+     "kind": "edge",
+     "verdict": "elsewhere",
+     "why": "the step reached screen add+change-sign+clear-all, not clear-all+clear-entry+delete-last-digit",
+     "from_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "to_state": "add+change-sign+clear-all@state=c16e2b278de7",
+     "reached": "add+change-sign+clear-all@state=c5a495e7b84c"
+    },
+    {
+     "ord": 4,
+     "kind": "edge",
+     "verdict": "not-started",
+     "why": "the screen is add+change-sign+clear-all@state=07112d3a7333, not its origin add+change-sign+clear-all@state=c16e2b278de7",
+     "from_state": "add+change-sign+clear-all@state=c16e2b278de7",
+     "to_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "reached": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "ord": 5,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "to_state": "add+change-sign+clear-all.snackbar@state=db0e1176ec71",
+     "reached": "add+change-sign+clear-all.snackbar@state=db0e1176ec71"
+    },
+    {
+     "ord": 6,
+     "kind": "observe",
+     "verdict": "arrived",
+     "from_state": "add+change-sign+clear-all.snackbar@state=db0e1176ec71",
+     "to_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "reached": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "ord": 7,
+     "kind": "edge",
+     "verdict": "elsewhere",
+     "why": "the step reached screen add+change-sign+clear-all, not clear-all+clear-entry+delete-last-digit",
+     "from_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "to_state": "add+change-sign+clear-all.snackbar@state=db0e1176ec71",
+     "reached": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "ord": 8,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "to_state": "add+change-sign+clear-all.snackbar@state=db0e1176ec71",
+     "reached": "add+change-sign+clear-all.snackbar@state=db0e1176ec71"
+    },
+    {
+     "ord": 9,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "add+change-sign+clear-all.snackbar@state=db0e1176ec71",
+     "to_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "reached": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "ord": 10,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "to_state": "add+change-sign+clear-all.snackbar@state=db0e1176ec71",
+     "reached": "add+change-sign+clear-all.snackbar@state=db0e1176ec71"
+    },
+    {
+     "ord": 11,
+     "kind": "action",
+     "verdict": "arrived",
+     "from_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "to_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "reached": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "ord": 12,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "to_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "reached": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "ord": 13,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "to_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "reached": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "ord": 14,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "to_state": "add+change-sign+clear-all.snackbar@state=db0e1176ec71",
+     "reached": "add+change-sign+clear-all.snackbar@state=db0e1176ec71"
+    },
+    {
+     "ord": 15,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "to_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "reached": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "ord": 16,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "to_state": "add+change-sign+clear-all.snackbar@state=db0e1176ec71",
+     "reached": "add+change-sign+clear-all.snackbar@state=db0e1176ec71"
+    },
+    {
+     "ord": 17,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "add+change-sign+clear-all.snackbar@state=db0e1176ec71",
+     "to_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "reached": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "ord": 18,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "to_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "reached": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "ord": 19,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "to_state": "add+change-sign+clear-all@state=274e406927ae",
+     "reached": "add+change-sign+clear-all@state=274e406927ae"
+    },
+    {
+     "ord": 20,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "add+change-sign+clear-all@state=274e406927ae",
+     "to_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "reached": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "ord": 21,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "to_state": "add+change-sign+clear-all@state=274e406927ae",
+     "reached": "add+change-sign+clear-all@state=274e406927ae"
+    },
+    {
+     "ord": 22,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "add+change-sign+clear-all@state=274e406927ae",
+     "to_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "reached": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "ord": 23,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "to_state": "add+change-sign+clear-all@state=274e406927ae",
+     "reached": "add+change-sign+clear-all@state=274e406927ae"
+    },
+    {
+     "ord": 24,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "add+change-sign+clear-all@state=274e406927ae",
+     "to_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "reached": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "ord": 25,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "to_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "reached": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "ord": 26,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "to_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "reached": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "ord": 27,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "to_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "reached": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "ord": 28,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "to_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "reached": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "ord": 29,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "to_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "reached": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "ord": 30,
+     "kind": "action",
+     "verdict": "arrived",
+     "from_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "to_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "reached": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "ord": 31,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "to_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "reached": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "ord": 32,
+     "kind": "action",
+     "verdict": "arrived",
+     "from_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "to_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "reached": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "ord": 33,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "to_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "reached": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "ord": 34,
+     "kind": "action",
+     "verdict": "arrived",
+     "from_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "to_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "reached": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "ord": 35,
+     "kind": "edge",
+     "verdict": "failed",
+     "why": "map_drive: swipe-at-coordinates moves along raw coordinates, and a raw stroke flings past rows. Scroll with a scroll-* action or map_read_list. For a gesture, name it: gesture= one of ['drag', 'draw', 'pull-to-refresh', 'reorder', 'swipe-to-dismiss'].",
+     "from_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "to_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "reached": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "ord": 36,
+     "kind": "action",
+     "verdict": "arrived",
+     "from_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "to_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "reached": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "ord": 37,
+     "kind": "edge",
+     "verdict": "failed",
+     "why": "map_drive: swipe-at-coordinates moves along raw coordinates, and a raw stroke flings past rows. Scroll with a scroll-* action or map_read_list. For a gesture, name it: gesture= one of ['drag', 'draw', 'pull-to-refresh', 'reorder', 'swipe-to-dismiss'].",
+     "from_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "to_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "reached": "add+change-sign+clear-all.snackbar@state=db0e1176ec71"
+    },
+    {
+     "ord": 38,
+     "kind": "action",
+     "verdict": "arrived",
+     "from_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "to_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "reached": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "ord": 39,
+     "kind": "action",
+     "verdict": "arrived",
+     "from_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "to_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "reached": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "ord": 40,
+     "kind": "action",
+     "verdict": "arrived",
+     "from_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "to_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "reached": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "ord": 41,
+     "kind": "edge",
+     "verdict": "failed",
+     "why": "map_drive: drag-by-coordinates moves along raw coordinates, and a raw stroke flings past rows. Scroll with a scroll-* action or map_read_list. For a gesture, name it: gesture= one of ['drag', 'draw', 'pull-to-refresh', 'reorder', 'swipe-to-dismiss'].",
+     "from_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "to_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "reached": "add+change-sign+clear-all.snackbar@state=db0e1176ec71"
+    },
+    {
+     "ord": 42,
+     "kind": "action",
+     "verdict": "arrived",
+     "from_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "to_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "reached": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "ord": 43,
+     "kind": "edge",
+     "verdict": "failed",
+     "why": "map_drive: drag-by-coordinates moves along raw coordinates, and a raw stroke flings past rows. Scroll with a scroll-* action or map_read_list. For a gesture, name it: gesture= one of ['drag', 'draw', 'pull-to-refresh', 'reorder', 'swipe-to-dismiss'].",
+     "from_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "to_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "reached": "add+change-sign+clear-all.snackbar@state=db0e1176ec71"
+    },
+    {
+     "ord": 44,
+     "kind": "action",
+     "verdict": "arrived",
+     "from_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "to_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "reached": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "ord": 45,
+     "kind": "action",
+     "verdict": "elsewhere",
+     "why": "the step reached screen alert, not clear-all+clear-entry+delete-last-digit",
+     "from_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "to_state": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "ord": 46,
+     "kind": "edge",
+     "verdict": "failed",
+     "why": "map_drive: swipe-at-coordinates moves along raw coordinates, and a raw stroke flings past rows. Scroll with a scroll-* action or map_read_list. For a gesture, name it: gesture= one of ['drag', 'draw', 'pull-to-refresh', 'reorder', 'swipe-to-dismiss'].",
+     "from_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "to_state": "add+change-sign+clear-all@state=b2baf56e7a25",
+     "reached": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "ord": 47,
+     "kind": "edge",
+     "verdict": "not-started",
+     "why": "the screen is add+change-sign+clear-all@state=07112d3a7333, not its origin add+change-sign+clear-all@state=b2baf56e7a25",
+     "from_state": "add+change-sign+clear-all@state=b2baf56e7a25",
+     "to_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "reached": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "ord": 48,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "to_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "reached": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "ord": 49,
+     "kind": "edge",
+     "verdict": "failed",
+     "why": "map_drive: swipe-at-coordinates moves along raw coordinates, and a raw stroke flings past rows. Scroll with a scroll-* action or map_read_list. For a gesture, name it: gesture= one of ['drag', 'draw', 'pull-to-refresh', 'reorder', 'swipe-to-dismiss'].",
+     "from_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "to_state": "add+change-sign+clear-all@state=b2baf56e7a25",
+     "reached": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "ord": 50,
+     "kind": "edge",
+     "verdict": "not-started",
+     "why": "the screen is add+change-sign+clear-all@state=07112d3a7333, not its origin add+change-sign+clear-all@state=b2baf56e7a25",
+     "from_state": "add+change-sign+clear-all@state=b2baf56e7a25",
+     "to_state": "add+change-sign+clear-all@state=c1ea1ff69f7d",
+     "reached": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "ord": 51,
+     "kind": "edge",
+     "verdict": "not-started",
+     "why": "the screen is add+change-sign+clear-all@state=07112d3a7333, not its origin add+change-sign+clear-all@state=c1ea1ff69f7d",
+     "from_state": "add+change-sign+clear-all@state=c1ea1ff69f7d",
+     "to_state": "add+change-sign+clear-all@state=c1ea1ff69f7d",
+     "reached": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "ord": 52,
+     "kind": "edge",
+     "verdict": "not-started",
+     "why": "the screen is add+change-sign+clear-all@state=07112d3a7333, not its origin add+change-sign+clear-all@state=c1ea1ff69f7d",
+     "from_state": "add+change-sign+clear-all@state=c1ea1ff69f7d",
+     "to_state": "add+change-sign+clear-all@state=c1ea1ff69f7d",
+     "reached": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "ord": 53,
+     "kind": "edge",
+     "verdict": "not-started",
+     "why": "the screen is add+change-sign+clear-all@state=07112d3a7333, not its origin add+change-sign+clear-all@state=c1ea1ff69f7d",
+     "from_state": "add+change-sign+clear-all@state=c1ea1ff69f7d",
+     "to_state": "add+change-sign+clear-all@state=fc2eb6fa63cd",
+     "reached": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "ord": 54,
+     "kind": "edge",
+     "verdict": "not-started",
+     "why": "the screen is add+change-sign+clear-all@state=07112d3a7333, not its origin add+change-sign+clear-all@state=fc2eb6fa63cd",
+     "from_state": "add+change-sign+clear-all@state=fc2eb6fa63cd",
+     "to_state": "add+change-sign+clear-all@state=c1ea1ff69f7d",
+     "reached": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "ord": 55,
+     "kind": "edge",
+     "verdict": "not-started",
+     "why": "the screen is add+change-sign+clear-all@state=07112d3a7333, not its origin add+change-sign+clear-all@state=c1ea1ff69f7d",
+     "from_state": "add+change-sign+clear-all@state=c1ea1ff69f7d",
+     "to_state": "add+change-sign+clear-all@state=b2baf56e7a25",
+     "reached": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "ord": 56,
+     "kind": "edge",
+     "verdict": "not-started",
+     "why": "the screen is add+change-sign+clear-all@state=07112d3a7333, not its origin add+change-sign+clear-all@state=b2baf56e7a25",
+     "from_state": "add+change-sign+clear-all@state=b2baf56e7a25",
+     "to_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "reached": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "ord": 57,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "to_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "reached": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "ord": 58,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "to_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "reached": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "ord": 59,
+     "kind": "action",
+     "verdict": "arrived",
+     "from_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "to_state": "add+change-sign+clear-all.snackbar@state=db0e1176ec71",
+     "reached": "add+change-sign+clear-all.snackbar@state=db0e1176ec71"
+    },
+    {
+     "ord": 60,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "to_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "reached": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "ord": 61,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "to_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "reached": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "ord": 62,
+     "kind": "action",
+     "verdict": "arrived",
+     "from_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "to_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "reached": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "ord": 63,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "to_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "reached": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "ord": 64,
+     "kind": "action",
+     "verdict": "arrived",
+     "from_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "to_state": "add+change-sign+clear-all.snackbar@state=db0e1176ec71",
+     "reached": "add+change-sign+clear-all.snackbar@state=db0e1176ec71"
+    },
+    {
+     "ord": 65,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "add+change-sign+clear-all.snackbar@state=db0e1176ec71",
+     "to_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "reached": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "ord": 66,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "to_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "reached": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "ord": 67,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "to_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "reached": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "ord": 68,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "to_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "reached": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "ord": 69,
+     "kind": "action",
+     "verdict": "arrived",
+     "from_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "to_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "reached": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "ord": 70,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "to_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "reached": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "ord": 71,
+     "kind": "edge",
+     "verdict": "elsewhere",
+     "why": "the step reached screen add+change-sign+clear-all, not clear-all+clear-entry+delete-last-digit",
+     "from_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "to_state": "add+change-sign+clear-all@state=c16e2b278de7",
+     "reached": "add+change-sign+clear-all@state=c5a495e7b84c"
+    },
+    {
+     "ord": 72,
+     "kind": "edge",
+     "verdict": "not-started",
+     "why": "the screen is add+change-sign+clear-all@state=07112d3a7333, not its origin add+change-sign+clear-all@state=c16e2b278de7",
+     "from_state": "add+change-sign+clear-all@state=c16e2b278de7",
+     "to_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "reached": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "ord": 73,
+     "kind": "edge",
+     "verdict": "failed",
+     "why": "activate-focused-element: cannot_run: step 1/1 (activate-focused-element): no node matches target '1 5 accepts=click' on the current screen",
+     "from_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "to_state": "add+change-sign+clear-all@state=c16e2b278de7",
+     "reached": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "ord": 74,
+     "kind": "edge",
+     "verdict": "not-started",
+     "why": "the screen is add+change-sign+clear-all@state=07112d3a7333, not its origin add+change-sign+clear-all@state=c16e2b278de7",
+     "from_state": "add+change-sign+clear-all@state=c16e2b278de7",
+     "to_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "reached": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "ord": 75,
+     "kind": "action",
+     "verdict": "arrived",
+     "from_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "to_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "reached": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "ord": 76,
+     "kind": "edge",
+     "verdict": "failed",
+     "why": "activate-focused-element: cannot_run: step 1/1 (activate-focused-element): no node matches target '1 5 accepts=click' on the current screen",
+     "from_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "to_state": "add+change-sign+clear-all@state=c16e2b278de7",
+     "reached": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "ord": 77,
+     "kind": "edge",
+     "verdict": "not-started",
+     "why": "the screen is add+change-sign+clear-all@state=07112d3a7333, not its origin add+change-sign+clear-all@state=c16e2b278de7",
+     "from_state": "add+change-sign+clear-all@state=c16e2b278de7",
+     "to_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "reached": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "ord": 78,
+     "kind": "edge",
+     "verdict": "failed",
+     "why": "map_drive: swipe-at-coordinates moves along raw coordinates, and a raw stroke flings past rows. Scroll with a scroll-* action or map_read_list. For a gesture, name it: gesture= one of ['drag', 'draw', 'pull-to-refresh', 'reorder', 'swipe-to-dismiss'].",
+     "from_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "to_state": "add+change-sign+clear-all@state=b2baf56e7a25",
+     "reached": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "ord": 79,
+     "kind": "edge",
+     "verdict": "not-started",
+     "why": "the screen is add+change-sign+clear-all@state=07112d3a7333, not its origin add+change-sign+clear-all@state=b2baf56e7a25",
+     "from_state": "add+change-sign+clear-all@state=b2baf56e7a25",
+     "to_state": "add+change-sign+clear-all@state=d96de36d79b9",
+     "reached": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "ord": 80,
+     "kind": "edge",
+     "verdict": "not-started",
+     "why": "the screen is add+change-sign+clear-all@state=07112d3a7333, not its origin add+change-sign+clear-all@state=d96de36d79b9",
+     "from_state": "add+change-sign+clear-all@state=d96de36d79b9",
+     "to_state": "add+change-sign+clear-all@state=b2baf56e7a25",
+     "reached": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "ord": 81,
+     "kind": "edge",
+     "verdict": "not-started",
+     "why": "the screen is add+change-sign+clear-all@state=07112d3a7333, not its origin add+change-sign+clear-all@state=b2baf56e7a25",
+     "from_state": "add+change-sign+clear-all@state=b2baf56e7a25",
+     "to_state": "add+change-sign+clear-all@state=948d64207f14",
+     "reached": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "ord": 82,
+     "kind": "edge",
+     "verdict": "not-started",
+     "why": "the screen is add+change-sign+clear-all@state=07112d3a7333, not its origin add+change-sign+clear-all@state=948d64207f14",
+     "from_state": "add+change-sign+clear-all@state=948d64207f14",
+     "to_state": "add+change-sign+clear-all@state=b2baf56e7a25",
+     "reached": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "ord": 83,
+     "kind": "edge",
+     "verdict": "not-started",
+     "why": "the screen is add+change-sign+clear-all@state=07112d3a7333, not its origin add+change-sign+clear-all@state=b2baf56e7a25",
+     "from_state": "add+change-sign+clear-all@state=b2baf56e7a25",
+     "to_state": "add+change-sign+clear-all@state=07112d3a7333",
+     "reached": "add+change-sign+clear-all@state=07112d3a7333"
+    }
+   ],
+   "captures": [
+    {
+     "state": "add+change-sign+clear-all@state=07112d3a7333",
+     "verdict": "captured",
+     "path_step": 0
+    },
+    {
+     "state": "add+change-sign+clear-all@state=8fb593c85cb4",
+     "verdict": "differs",
+     "why": "same screen and controls; the tree differs from the stored capture",
+     "path_step": 1
+    },
+    {
+     "state": "add+change-sign+clear-all@state=c16e2b278de7",
+     "verdict": "not-captured",
+     "why": "the step reached add+change-sign+clear-all@state=c5a495e7b84c, not add+change-sign+clear-all@state=c16e2b278de7",
+     "path_step": 3
+    },
+    {
+     "state": "add+change-sign+clear-all.snackbar@state=db0e1176ec71",
+     "verdict": "captured",
+     "path_step": 5
+    },
+    {
+     "state": "add+change-sign+clear-all@state=274e406927ae",
+     "verdict": "captured",
+     "path_step": 19
+    },
+    {
+     "state": "add+change-sign+clear-all@state=b2baf56e7a25",
+     "verdict": "not-captured",
+     "why": "map_drive: swipe-at-coordinates moves along raw coordinates, and a raw stroke flings past rows. Scroll with a scroll-* action or map_read_list. For a gesture, name it: gesture= one of ['drag', 'draw', 'pull-to-refresh', 'reorder', 'swipe-to-dismiss'].",
+     "path_step": 46
+    },
+    {
+     "state": "add+change-sign+clear-all@state=c1ea1ff69f7d",
+     "verdict": "not-captured",
+     "why": "the screen is add+change-sign+clear-all@state=07112d3a7333, not its origin add+change-sign+clear-all@state=b2baf56e7a25",
+     "path_step": 50
+    },
+    {
+     "state": "add+change-sign+clear-all@state=fc2eb6fa63cd",
+     "verdict": "not-captured",
+     "why": "the screen is add+change-sign+clear-all@state=07112d3a7333, not its origin add+change-sign+clear-all@state=c1ea1ff69f7d",
+     "path_step": 53
+    },
+    {
+     "state": "add+change-sign+clear-all@state=d96de36d79b9",
+     "verdict": "not-captured",
+     "why": "the screen is add+change-sign+clear-all@state=07112d3a7333, not its origin add+change-sign+clear-all@state=b2baf56e7a25",
+     "path_step": 79
+    },
+    {
+     "state": "add+change-sign+clear-all@state=948d64207f14",
+     "verdict": "not-captured",
+     "why": "the screen is add+change-sign+clear-all@state=07112d3a7333, not its origin add+change-sign+clear-all@state=b2baf56e7a25",
+     "path_step": 81
+    }
+   ]
+  },
+  "warnings": {
+   "built": true,
+   "kinds": {
+    "from-digest-mismatch": 1,
+    "surface-expired": 1
+   },
+   "no_change": [
+    {
+     "step": 93,
+     "control_key": "android.view.View:Clear all",
+     "state": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "step": 102,
+     "control_key": "android.view.View:Delete last digit",
+     "state": "add+change-sign+clear-all@state=07112d3a7333"
+    },
+    {
+     "step": 103,
+     "control_key": "android.view.View:Clear entry",
+     "state": "add+change-sign+clear-all@state=07112d3a7333"
+    }
+   ]
+  },
+  "refusals": [
+   {
+    "after_step": 14,
+    "action": "activate-focused-element",
+    "control_key": "",
+    "message": "step 1/1 (activate-focused-element): no node matches target 'IN 7 accepts=click' on the current screen"
+   },
+   {
+    "after_step": 48,
+    "action": "swipe-at-coordinates",
+    "control_key": "",
+    "message": "map_drive: swipe-at-coordinates moves along raw coordinates, and a raw stroke flings past rows. Scroll with a scroll-* action or map_read_list. For a gesture, name it: gesture= one of ['drag', 'draw', 'pull-to-refresh', 'reorder', 'swipe-to-dismiss']."
+   },
+   {
+    "after_step": 52,
+    "action": "swipe-at-coordinates",
+    "control_key": "",
+    "message": "map_drive: swipe-at-coordinates moves along raw coordinates, and a raw stroke flings past rows. Scroll with a scroll-* action or map_read_list. For a gesture, name it: gesture= one of ['drag', 'draw', 'pull-to-refresh', 'reorder', 'swipe-to-dismiss']."
+   },
+   {
+    "after_step": 58,
+    "action": "drag-by-coordinates",
+    "control_key": "",
+    "message": "map_drive: drag-by-coordinates moves along raw coordinates, and a raw stroke flings past rows. Scroll with a scroll-* action or map_read_list. For a gesture, name it: gesture= one of ['drag', 'draw', 'pull-to-refresh', 'reorder', 'swipe-to-dismiss']."
+   },
+   {
+    "after_step": 62,
+    "action": "drag-by-coordinates",
+    "control_key": "",
+    "message": "map_drive: drag-by-coordinates moves along raw coordinates, and a raw stroke flings past rows. Scroll with a scroll-* action or map_read_list. For a gesture, name it: gesture= one of ['drag', 'draw', 'pull-to-refresh', 'reorder', 'swipe-to-dismiss']."
+   },
+   {
+    "after_step": 69,
+    "action": "swipe-at-coordinates",
+    "control_key": "",
+    "message": "map_drive: swipe-at-coordinates moves along raw coordinates, and a raw stroke flings past rows. Scroll with a scroll-* action or map_read_list. For a gesture, name it: gesture= one of ['drag', 'draw', 'pull-to-refresh', 'reorder', 'swipe-to-dismiss']."
+   },
+   {
+    "after_step": 72,
+    "action": "swipe-at-coordinates",
+    "control_key": "",
+    "message": "map_drive: swipe-at-coordinates moves along raw coordinates, and a raw stroke flings past rows. Scroll with a scroll-* action or map_read_list. For a gesture, name it: gesture= one of ['drag', 'draw', 'pull-to-refresh', 'reorder', 'swipe-to-dismiss']."
+   },
+   {
+    "after_step": 75,
+    "action": "swipe-at-coordinates",
+    "control_key": "",
+    "message": "map_drive: swipe-at-coordinates moves along raw coordinates, and a raw stroke flings past rows. Scroll with a scroll-* action or map_read_list. For a gesture, name it: gesture= one of ['drag', 'draw', 'pull-to-refresh', 'reorder', 'swipe-to-dismiss']."
+   },
+   {
+    "after_step": 78,
+    "action": "swipe-at-coordinates",
+    "control_key": "",
+    "message": "map_drive: swipe-at-coordinates moves along raw coordinates, and a raw stroke flings past rows. Scroll with a scroll-* action or map_read_list. For a gesture, name it: gesture= one of ['drag', 'draw', 'pull-to-refresh', 'reorder', 'swipe-to-dismiss']."
+   },
+   {
+    "after_step": 80,
+    "action": "swipe-at-coordinates",
+    "control_key": "",
+    "message": "map_drive: swipe-at-coordinates moves along raw coordinates, and a raw stroke flings past rows. Scroll with a scroll-* action or map_read_list. For a gesture, name it: gesture= one of ['drag', 'draw', 'pull-to-refresh', 'reorder', 'swipe-to-dismiss']."
+   },
+   {
+    "after_step": 82,
+    "action": "swipe-at-coordinates",
+    "control_key": "",
+    "message": "map_drive: swipe-at-coordinates moves along raw coordinates, and a raw stroke flings past rows. Scroll with a scroll-* action or map_read_list. For a gesture, name it: gesture= one of ['drag', 'draw', 'pull-to-refresh', 'reorder', 'swipe-to-dismiss']."
+   },
+   {
+    "after_step": 84,
+    "action": "swipe-at-coordinates",
+    "control_key": "",
+    "message": "map_drive: swipe-at-coordinates moves along raw coordinates, and a raw stroke flings past rows. Scroll with a scroll-* action or map_read_list. For a gesture, name it: gesture= one of ['drag', 'draw', 'pull-to-refresh', 'reorder', 'swipe-to-dismiss']."
+   },
+   {
+    "after_step": 86,
+    "action": "swipe-at-coordinates",
+    "control_key": "",
+    "message": "map_drive: swipe-at-coordinates moves along raw coordinates, and a raw stroke flings past rows. Scroll with a scroll-* action or map_read_list. For a gesture, name it: gesture= one of ['drag', 'draw', 'pull-to-refresh', 'reorder', 'swipe-to-dismiss']."
+   },
+   {
+    "after_step": 88,
+    "action": "swipe-at-coordinates",
+    "control_key": "",
+    "message": "map_drive: swipe-at-coordinates moves along raw coordinates, and a raw stroke flings past rows. Scroll with a scroll-* action or map_read_list. For a gesture, name it: gesture= one of ['drag', 'draw', 'pull-to-refresh', 'reorder', 'swipe-to-dismiss']."
+   },
+   {
+    "after_step": 90,
+    "action": "swipe-at-coordinates",
+    "control_key": "",
+    "message": "map_drive: swipe-at-coordinates moves along raw coordinates, and a raw stroke flings past rows. Scroll with a scroll-* action or map_read_list. For a gesture, name it: gesture= one of ['drag', 'draw', 'pull-to-refresh', 'reorder', 'swipe-to-dismiss']."
+   },
+   {
+    "after_step": 109,
+    "action": "activate-focused-element",
+    "control_key": "",
+    "message": "step 1/1 (activate-focused-element): no node matches target 'IN 7 accepts=click' on the current screen"
+   },
+   {
+    "after_step": 111,
+    "action": "activate-focused-element",
+    "control_key": "",
+    "message": "step 1/1 (activate-focused-element): no node matches target '1 5 accepts=click' on the current screen"
+   },
+   {
+    "after_step": 114,
+    "action": "activate-focused-element",
+    "control_key": "",
+    "message": "step 1/1 (activate-focused-element): no node matches target 'IN 7 accepts=click' on the current screen"
+   },
+   {
+    "after_step": 117,
+    "action": "activate-focused-element",
+    "control_key": "",
+    "message": "step 1/1 (activate-focused-element): no node matches target '1 5 accepts=click' on the current screen"
+   },
+   {
+    "after_step": 120,
+    "action": "activate-focused-element",
+    "control_key": "",
+    "message": "step 1/1 (activate-focused-element): no node matches target 'IN 7 accepts=click' on the current screen"
+   },
+   {
+    "after_step": 122,
+    "action": "swipe-at-coordinates",
+    "control_key": "",
+    "message": "map_drive: swipe-at-coordinates moves along raw coordinates, and a raw stroke flings past rows. Scroll with a scroll-* action or map_read_list. For a gesture, name it: gesture= one of ['drag', 'draw', 'pull-to-refresh', 'reorder', 'swipe-to-dismiss']."
+   },
+   {
+    "after_step": 125,
+    "action": "swipe-at-coordinates",
+    "control_key": "",
+    "message": "map_drive: swipe-at-coordinates moves along raw coordinates, and a raw stroke flings past rows. Scroll with a scroll-* action or map_read_list. For a gesture, name it: gesture= one of ['drag', 'draw', 'pull-to-refresh', 'reorder', 'swipe-to-dismiss']."
+   },
+   {
+    "after_step": 127,
+    "action": "swipe-at-coordinates",
+    "control_key": "",
+    "message": "map_drive: swipe-at-coordinates moves along raw coordinates, and a raw stroke flings past rows. Scroll with a scroll-* action or map_read_list. For a gesture, name it: gesture= one of ['drag', 'draw', 'pull-to-refresh', 'reorder', 'swipe-to-dismiss']."
+   },
+   {
+    "after_step": 129,
+    "action": "swipe-at-coordinates",
+    "control_key": "",
+    "message": "map_drive: swipe-at-coordinates moves along raw coordinates, and a raw stroke flings past rows. Scroll with a scroll-* action or map_read_list. For a gesture, name it: gesture= one of ['drag', 'draw', 'pull-to-refresh', 'reorder', 'swipe-to-dismiss']."
+   },
+   {
+    "after_step": 131,
+    "action": "swipe-at-coordinates",
+    "control_key": "",
+    "message": "map_drive: swipe-at-coordinates moves along raw coordinates, and a raw stroke flings past rows. Scroll with a scroll-* action or map_read_list. For a gesture, name it: gesture= one of ['drag', 'draw', 'pull-to-refresh', 'reorder', 'swipe-to-dismiss']."
+   },
+   {
+    "after_step": 133,
+    "action": "swipe-at-coordinates",
+    "control_key": "",
+    "message": "map_drive: swipe-at-coordinates moves along raw coordinates, and a raw stroke flings past rows. Scroll with a scroll-* action or map_read_list. For a gesture, name it: gesture= one of ['drag', 'draw', 'pull-to-refresh', 'reorder', 'swipe-to-dismiss']."
+   }
+  ]
+ }
+}

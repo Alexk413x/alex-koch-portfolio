@@ -1,0 +1,589 @@
+{
+ "add+change-sign+clear-all.snackbar@state=db0e1176ec71": {
+  "capture": "own",
+  "screen_path": "screens/0007-20261001T083311579Z.png",
+  "shot_at": 1790843591.6806765,
+  "step": 7,
+  "tree_path": "screenstates/0007-20261001T083311579Z.xml",
+  "tree_read_at": 1790843591.5796764,
+  "trees": [
+   "screenstates/0007-20261001T083311579Z.xml",
+   "screenstates/0008-20261001T083317723Z.xml",
+   "screenstates/0012-20261001T083341144Z.xml",
+   "screenstates/0022-20261001T083503604Z.xml",
+   "screenstates/0032-20261001T083618763Z.xml",
+   "screenstates/0080-20261001T084049692Z.xml",
+   "screenstates/0206-20261001T085327289Z.xml"
+  ],
+  "uistate": "add+change-sign+clear-all.snackbar@db0e1176ec71.uistate.txt"
+ },
+ "add+change-sign+clear-all.toast@state=fad60deab375": {
+  "capture": "own",
+  "screen_path": "screens/0136-20261001T084639137Z.png",
+  "shot_at": 1790844399.2476764,
+  "step": 136,
+  "tree_path": "screenstates/0136-20261001T084639137Z.xml",
+  "tree_read_at": 1790844399.1376765,
+  "trees": [
+   "screenstates/0136-20261001T084639137Z.xml",
+   "screenstates/0144-20261001T084723542Z.xml",
+   "screenstates/0152-20261001T084754550Z.xml",
+   "screenstates/0160-20261001T084827339Z.xml"
+  ],
+  "uistate": "add+change-sign+clear-all.toast@fad60deab375.uistate.txt"
+ },
+ "add+change-sign+clear-all@state=07112d3a7333": {
+  "capture": "own",
+  "screen_path": "screens/0006-20261001T083253796Z.png",
+  "shot_at": 1790843573.9336765,
+  "step": 6,
+  "tree_path": "screenstates/0006-20261001T083253796Z.xml",
+  "tree_read_at": 1790843573.7966764,
+  "trees": [
+   "screenstates/0006-20261001T083253796Z.xml",
+   "screenstates/0007-20261001T083315722Z-change1.xml",
+   "screenstates/0008-20261001T083322368Z-change1.xml",
+   "screenstates/0009-20261001T083325665Z.xml",
+   "screenstates/0010-20261001T083329355Z.xml",
+   "screenstates/0011-20261001T083337211Z.xml",
+   "screenstates/0013-20261001T083346087Z.xml",
+   "screenstates/0014-20261001T083351137Z.xml",
+   "screenstates/0015-20261001T083406698Z.xml",
+   "screenstates/0016-20261001T083410347Z.xml",
+   "screenstates/0017-20261001T083413708Z.xml",
+   "screenstates/0018-20261001T083418697Z.xml",
+   "screenstates/0019-20261001T083423896Z.xml",
+   "screenstates/0020-20261001T083428024Z.xml",
+   "screenstates/0022-20261001T083508033Z-change1.xml",
+   "screenstates/0023-20261001T083524698Z.xml",
+   "screenstates/0024-20261001T083542532Z.xml",
+   "screenstates/0025-20261001T083546274Z.xml",
+   "screenstates/0026-20261001T083549461Z.xml",
+   "screenstates/0027-20261001T083552962Z.xml",
+   "screenstates/0028-20261001T083557153Z.xml",
+   "screenstates/0029-20261001T083600569Z.xml",
+   "screenstates/0030-20261001T083604232Z.xml",
+   "screenstates/0031-20261001T083614901Z.xml",
+   "screenstates/0033-20261001T083624669Z.xml",
+   "screenstates/0034-20261001T083628144Z.xml",
+   "screenstates/0035-20261001T083631484Z.xml",
+   "screenstates/0037-20261001T083645324Z.xml",
+   "screenstates/0038-20261001T083653456Z.xml",
+   "screenstates/0114-20261001T084426760Z.xml",
+   "screenstates/0115-20261001T084438382Z.xml",
+   "screenstates/0116-20261001T084441010Z.xml",
+   "screenstates/0117-20261001T084443928Z.xml",
+   "screenstates/0118-20261001T084446810Z.xml",
+   "screenstates/0119-20261001T084449274Z.xml",
+   "screenstates/0120-20261001T084451827Z.xml",
+   "screenstates/0121-20261001T084454579Z.xml",
+   "screenstates/0122-20261001T084457704Z.xml",
+   "screenstates/0123-20261001T084500651Z.xml",
+   "screenstates/0124-20261001T084504136Z.xml",
+   "screenstates/0125-20261001T084512267Z.xml",
+   "screenstates/0126-20261001T084515982Z.xml",
+   "screenstates/0127-20261001T084518920Z.xml",
+   "screenstates/0128-20261001T084521710Z.xml",
+   "screenstates/0132-20261001T084612598Z.xml",
+   "screenstates/0134-20261001T084631830Z.xml",
+   "screenstates/0136-20261001T084642825Z-change1.xml",
+   "screenstates/0140-20261001T084655237Z.xml",
+   "screenstates/0142-20261001T084717563Z.xml",
+   "screenstates/0144-20261001T084727434Z-change1.xml",
+   "screenstates/0148-20261001T084742684Z.xml",
+   "screenstates/0150-20261001T084748650Z.xml",
+   "screenstates/0152-20261001T084758302Z-change1.xml",
+   "screenstates/0156-20261001T084814766Z.xml",
+   "screenstates/0158-20261001T084821030Z.xml",
+   "screenstates/0160-20261001T084831056Z-change1.xml",
+   "screenstates/0203-20261001T085317104Z.xml",
+   "screenstates/0204-20261001T085320417Z.xml",
+   "screenstates/0205-20261001T085324030Z.xml",
+   "screenstates/0206-20261001T085331937Z-change1.xml",
+   "screenstates/0208-20261001T085343119Z.xml",
+   "screenstates/0210-20261001T085349422Z.xml",
+   "screenstates/0211-20261001T085358712Z.xml",
+   "screenstates/0213-20261001T085404281Z.xml",
+   "screenstates/0215-20261001T085410218Z.xml",
+   "screenstates/0216-20261001T085418331Z.xml",
+   "screenstates/0218-20261001T085429952Z.xml",
+   "screenstates/0220-20261001T085446285Z.xml",
+   "screenstates/0228-20261001T085542427Z.xml",
+   "screenstates/0230-20261001T085556325Z.xml",
+   "screenstates/0231-20261001T085615077Z.xml",
+   "screenstates/0232-20261001T085622656Z.xml"
+  ],
+  "uistate": "add+change-sign+clear-all@07112d3a7333.uistate.txt"
+ },
+ "add+change-sign+clear-all@state=1003de3819c2": {
+  "capture": "own",
+  "screen_path": "screens/0129-20261001T084529346Z.png",
+  "shot_at": 1790844329.4506764,
+  "step": 129,
+  "tree_path": "screenstates/0129-20261001T084529346Z.xml",
+  "tree_read_at": 1790844329.3466763,
+  "trees": [
+   "screenstates/0129-20261001T084529346Z.xml",
+   "screenstates/0137-20261001T084646915Z.xml",
+   "screenstates/0145-20261001T084733851Z.xml",
+   "screenstates/0153-20261001T084804855Z.xml",
+   "screenstates/0161-20261001T084837645Z.xml",
+   "screenstates/0217-20261001T085426653Z.xml",
+   "screenstates/0221-20261001T085457364Z.xml"
+  ],
+  "uistate": "add+change-sign+clear-all@1003de3819c2.uistate.txt"
+ },
+ "add+change-sign+clear-all@state=6cfc5095a80f": {
+  "capture": "own",
+  "screen_path": "screens/0078-20261001T084043367Z.png",
+  "shot_at": 1790844043.4716766,
+  "step": 78,
+  "tree_path": "screenstates/0078-20261001T084043367Z.xml",
+  "tree_read_at": 1790844043.3676765,
+  "trees": [
+   "screenstates/0078-20261001T084043367Z.xml",
+   "screenstates/0079-20261001T084046434Z.xml",
+   "screenstates/0081-20261001T084059828Z.xml",
+   "screenstates/0082-20261001T084103550Z.xml",
+   "screenstates/0083-20261001T084107528Z.xml",
+   "screenstates/0084-20261001T084110973Z.xml",
+   "screenstates/0085-20261001T084120070Z.xml",
+   "screenstates/0086-20261001T084133529Z.xml",
+   "screenstates/0087-20261001T084145237Z.xml",
+   "screenstates/0088-20261001T084147865Z.xml",
+   "screenstates/0089-20261001T084150924Z.xml",
+   "screenstates/0090-20261001T084154577Z.xml",
+   "screenstates/0091-20261001T084159169Z.xml",
+   "screenstates/0092-20261001T084205772Z.xml",
+   "screenstates/0093-20261001T084208827Z.xml",
+   "screenstates/0094-20261001T084214625Z.xml",
+   "screenstates/0095-20261001T084227380Z.xml",
+   "screenstates/0096-20261001T084257636Z.xml",
+   "screenstates/0097-20261001T084307715Z.xml",
+   "screenstates/0098-20261001T084310977Z.xml",
+   "screenstates/0099-20261001T084321335Z.xml",
+   "screenstates/0100-20261001T084324511Z.xml",
+   "screenstates/0101-20261001T084327837Z.xml",
+   "screenstates/0102-20261001T084331183Z.xml",
+   "screenstates/0103-20261001T084335201Z.xml",
+   "screenstates/0104-20261001T084339395Z.xml",
+   "screenstates/0105-20261001T084343689Z.xml",
+   "screenstates/0106-20261001T084347546Z.xml",
+   "screenstates/0107-20261001T084356098Z.xml",
+   "screenstates/0108-20261001T084359679Z.xml",
+   "screenstates/0109-20261001T084402850Z.xml",
+   "screenstates/0110-20261001T084406495Z.xml",
+   "screenstates/0111-20261001T084409931Z.xml",
+   "screenstates/0112-20261001T084414266Z.xml"
+  ],
+  "uistate": "add+change-sign+clear-all@6cfc5095a80f.uistate.txt"
+ },
+ "add+change-sign+clear-all@state=a522a769e24a": {
+  "capture": "own",
+  "screen_path": "screens/0036-20261001T083638773Z.png",
+  "shot_at": 1790843798.8716764,
+  "step": 36,
+  "tree_path": "screenstates/0036-20261001T083638773Z.xml",
+  "tree_read_at": 1790843798.7736764,
+  "trees": [
+   "screenstates/0036-20261001T083638773Z.xml"
+  ],
+  "uistate": "add+change-sign+clear-all@a522a769e24a.uistate.txt"
+ },
+ "add+change-sign+clear-all@state=b2baf56e7a25": {
+  "capture": "own",
+  "screen_path": "screens/0039-20261001T083657805Z.png",
+  "shot_at": 1790843817.8776765,
+  "step": 39,
+  "tree_path": "screenstates/0039-20261001T083657805Z.xml",
+  "tree_read_at": 1790843817.8056765,
+  "trees": [
+   "screenstates/0039-20261001T083657805Z.xml",
+   "screenstates/0040-20261001T083712502Z.xml",
+   "screenstates/0041-20261001T083715764Z.xml",
+   "screenstates/0042-20261001T083719071Z.xml",
+   "screenstates/0043-20261001T083734026Z.xml",
+   "screenstates/0044-20261001T083740143Z.xml",
+   "screenstates/0045-20261001T083743879Z.xml",
+   "screenstates/0046-20261001T083750579Z.xml",
+   "screenstates/0047-20261001T083754344Z.xml",
+   "screenstates/0048-20261001T083758169Z.xml",
+   "screenstates/0049-20261001T083801360Z.xml",
+   "screenstates/0050-20261001T083806182Z.xml",
+   "screenstates/0051-20261001T083809664Z.xml",
+   "screenstates/0052-20261001T083824600Z.xml",
+   "screenstates/0053-20261001T083828711Z.xml",
+   "screenstates/0054-20261001T083833095Z.xml",
+   "screenstates/0055-20261001T083838423Z.xml",
+   "screenstates/0056-20261001T083843861Z.xml",
+   "screenstates/0057-20261001T083847565Z.xml",
+   "screenstates/0058-20261001T083851516Z.xml",
+   "screenstates/0059-20261001T083855176Z.xml",
+   "screenstates/0060-20261001T083859378Z.xml",
+   "screenstates/0061-20261001T083902484Z.xml",
+   "screenstates/0062-20261001T083907124Z.xml",
+   "screenstates/0063-20261001T083910392Z.xml",
+   "screenstates/0064-20261001T083921207Z.xml",
+   "screenstates/0065-20261001T083924690Z.xml",
+   "screenstates/0066-20261001T083928059Z.xml",
+   "screenstates/0067-20261001T083931178Z.xml",
+   "screenstates/0068-20261001T083934709Z.xml",
+   "screenstates/0069-20261001T083938437Z.xml",
+   "screenstates/0070-20261001T083941729Z.xml",
+   "screenstates/0071-20261001T083945361Z.xml",
+   "screenstates/0072-20261001T083953741Z.xml",
+   "screenstates/0073-20261001T083957303Z.xml",
+   "screenstates/0074-20261001T084001084Z.xml",
+   "screenstates/0075-20261001T084004525Z.xml",
+   "screenstates/0076-20261001T084009553Z.xml",
+   "screenstates/0077-20261001T084032434Z.xml",
+   "screenstates/0113-20261001T084423136Z.xml"
+  ],
+  "uistate": "add+change-sign+clear-all@b2baf56e7a25.uistate.txt"
+ },
+ "add+change-sign+clear-all@state=c5a495e7b84c": {
+  "capture": "own",
+  "screen_path": "screens/0021-20261001T083445126Z.png",
+  "shot_at": 1790843685.2396762,
+  "step": 21,
+  "tree_path": "screenstates/0021-20261001T083445126Z.xml",
+  "tree_read_at": 1790843685.1266763,
+  "trees": [
+   "screenstates/0021-20261001T083445126Z.xml",
+   "screenstates/0133-20261001T084628791Z.xml",
+   "screenstates/0135-20261001T084635918Z.xml",
+   "screenstates/0141-20261001T084714498Z.xml",
+   "screenstates/0143-20261001T084720363Z.xml",
+   "screenstates/0149-20261001T084745660Z.xml",
+   "screenstates/0151-20261001T084751225Z.xml",
+   "screenstates/0157-20261001T084817837Z.xml",
+   "screenstates/0159-20261001T084823930Z.xml",
+   "screenstates/0207-20261001T085340460Z.xml",
+   "screenstates/0209-20261001T085346238Z.xml",
+   "screenstates/0212-20261001T085401595Z.xml",
+   "screenstates/0214-20261001T085406952Z.xml"
+  ],
+  "uistate": "add+change-sign+clear-all@c5a495e7b84c.uistate.txt"
+ },
+ "delete-data@state=f569f911cc97": {
+  "capture": "own",
+  "screen_path": "screens/0197-20261001T085247648Z.png",
+  "shot_at": 1790844767.7476764,
+  "step": 197,
+  "tree_path": "screenstates/0197-20261001T085247648Z.xml",
+  "tree_read_at": 1790844767.6486764,
+  "trees": [
+   "screenstates/0197-20261001T085247648Z.xml",
+   "screenstates/0199-20261001T085257736Z.xml",
+   "screenstates/0201-20261001T085302482Z.xml",
+   "screenstates/0223-20261001T085506428Z.xml",
+   "screenstates/0225-20261001T085530293Z.xml"
+  ],
+  "uistate": "delete-data@f569f911cc97.uistate.txt"
+ },
+ "select-rounding-mode@state=333060bdc56c": {
+  "capture": "own",
+  "screen_path": "screens/0188-20261001T085219214Z.png",
+  "shot_at": 1790844739.2956765,
+  "step": 188,
+  "tree_path": "screenstates/0188-20261001T085219214Z.xml",
+  "tree_read_at": 1790844739.2146764,
+  "trees": [
+   "screenstates/0188-20261001T085219214Z.xml"
+  ],
+  "uistate": "select-rounding-mode@333060bdc56c.uistate.txt"
+ },
+ "select-rounding-mode@state=4e662ffe1cdb": {
+  "capture": "own",
+  "screen_path": "screens/0190-20261001T085222983Z.png",
+  "shot_at": 1790844743.0706763,
+  "step": 190,
+  "tree_path": "screenstates/0190-20261001T085222983Z.xml",
+  "tree_read_at": 1790844742.9836764,
+  "trees": [
+   "screenstates/0190-20261001T085222983Z.xml"
+  ],
+  "uistate": "select-rounding-mode@4e662ffe1cdb.uistate.txt"
+ },
+ "select-rounding-mode@state=853b3ce3474c": {
+  "capture": "own",
+  "screen_path": "screens/0191-20261001T085224884Z.png",
+  "shot_at": 1790844744.9686766,
+  "step": 191,
+  "tree_path": "screenstates/0191-20261001T085224884Z.xml",
+  "tree_read_at": 1790844744.8846765,
+  "trees": [
+   "screenstates/0191-20261001T085224884Z.xml"
+  ],
+  "uistate": "select-rounding-mode@853b3ce3474c.uistate.txt"
+ },
+ "select-rounding-mode@state=a0ae4390c9db": {
+  "capture": "own",
+  "screen_path": "screens/0189-20261001T085221071Z.png",
+  "shot_at": 1790844741.1576765,
+  "step": 189,
+  "tree_path": "screenstates/0189-20261001T085221071Z.xml",
+  "tree_read_at": 1790844741.0716765,
+  "trees": [
+   "screenstates/0189-20261001T085221071Z.xml"
+  ],
+  "uistate": "select-rounding-mode@a0ae4390c9db.uistate.txt"
+ },
+ "select-rounding-mode@state=a9073c316d5a": {
+  "capture": "own",
+  "screen_path": "screens/0192-20261001T085226643Z.png",
+  "shot_at": 1790844746.7246764,
+  "step": 192,
+  "tree_path": "screenstates/0192-20261001T085226643Z.xml",
+  "tree_read_at": 1790844746.6436763,
+  "trees": [
+   "screenstates/0192-20261001T085226643Z.xml"
+  ],
+  "uistate": "select-rounding-mode@a9073c316d5a.uistate.txt"
+ },
+ "select-rounding-mode@state=b5c695c4489c": {
+  "capture": "own",
+  "screen_path": "screens/0183-20261001T085143870Z.png",
+  "shot_at": 1790844703.9436762,
+  "step": 183,
+  "tree_path": "screenstates/0183-20261001T085143870Z.xml",
+  "tree_read_at": 1790844703.8706763,
+  "trees": [
+   "screenstates/0183-20261001T085143870Z.xml",
+   "screenstates/0185-20261001T085158671Z.xml",
+   "screenstates/0187-20261001T085207418Z.xml",
+   "screenstates/0195-20261001T085236795Z.xml"
+  ],
+  "uistate": "select-rounding-mode@b5c695c4489c.uistate.txt"
+ },
+ "select-rounding-mode@state=c14bd69f91be": {
+  "capture": "own",
+  "screen_path": "screens/0193-20261001T085228353Z.png",
+  "shot_at": 1790844748.4496763,
+  "step": 193,
+  "tree_path": "screenstates/0193-20261001T085228353Z.xml",
+  "tree_read_at": 1790844748.3536763,
+  "trees": [
+   "screenstates/0193-20261001T085228353Z.xml"
+  ],
+  "uistate": "select-rounding-mode@c14bd69f91be.uistate.txt"
+ },
+ "select-rounding-mode@state=ecf994e2155b": {
+  "capture": "own",
+  "screen_path": "screens/0194-20261001T085230282Z.png",
+  "shot_at": 1790844750.3946764,
+  "step": 194,
+  "tree_path": "screenstates/0194-20261001T085230282Z.xml",
+  "tree_read_at": 1790844750.2826765,
+  "trees": [
+   "screenstates/0194-20261001T085230282Z.xml"
+  ],
+  "uistate": "select-rounding-mode@ecf994e2155b.uistate.txt"
+ },
+ "settings.popup@state=05ee6e9491d7": {
+  "capture": "own",
+  "screen_path": "screens/0171-20261001T084917039Z.png",
+  "shot_at": 1790844557.1686764,
+  "step": 171,
+  "tree_path": "screenstates/0171-20261001T084917039Z.xml",
+  "tree_read_at": 1790844557.0396764,
+  "trees": [
+   "screenstates/0171-20261001T084917039Z.xml",
+   "screenstates/0174-20261001T084948329Z.xml",
+   "screenstates/0180-20261001T085120539Z.xml",
+   "screenstates/0181-20261001T085128737Z.xml"
+  ],
+  "uistate": "settings.popup@05ee6e9491d7.uistate.txt"
+ },
+ "settings.snackbar@state=a841134b7a30": {
+  "capture": "own",
+  "screen_path": "screens/0224-20261001T085508696Z.png",
+  "shot_at": 1790844908.7666764,
+  "step": 224,
+  "tree_path": "screenstates/0224-20261001T085508696Z.xml",
+  "tree_read_at": 1790844908.6966765,
+  "trees": [
+   "screenstates/0224-20261001T085508696Z.xml",
+   "screenstates/0226-20261001T085532444Z.xml"
+  ],
+  "uistate": "settings.snackbar@a841134b7a30.uistate.txt"
+ },
+ "settings@state=062b2e1deb87": {
+  "capture": "own",
+  "screen_path": "screens/0147-20261001T084739784Z.png",
+  "shot_at": 1790844459.8936763,
+  "step": 147,
+  "tree_path": "screenstates/0147-20261001T084739784Z.xml",
+  "tree_read_at": 1790844459.7846763,
+  "trees": [
+   "screenstates/0147-20261001T084739784Z.xml",
+   "screenstates/0154-20261001T084808868Z.xml"
+  ],
+  "uistate": "settings@062b2e1deb87.uistate.txt"
+ },
+ "settings@state=42a2bbbfbeee": {
+  "capture": "own",
+  "screen_path": "screens/0168-20261001T084902890Z.png",
+  "shot_at": 1790844542.9956765,
+  "step": 168,
+  "tree_path": "screenstates/0168-20261001T084902890Z.xml",
+  "tree_read_at": 1790844542.8906765,
+  "trees": [
+   "screenstates/0168-20261001T084902890Z.xml"
+  ],
+  "uistate": "settings@42a2bbbfbeee.uistate.txt"
+ },
+ "settings@state=54b657e2e683": {
+  "capture": "own",
+  "screen_path": "screens/0163-20261001T084843503Z.png",
+  "shot_at": 1790844523.6116765,
+  "step": 163,
+  "tree_path": "screenstates/0163-20261001T084843503Z.xml",
+  "tree_read_at": 1790844523.5036764,
+  "trees": [
+   "screenstates/0163-20261001T084843503Z.xml"
+  ],
+  "uistate": "settings@54b657e2e683.uistate.txt"
+ },
+ "settings@state=6246338b9a33": {
+  "capture": "own",
+  "screen_path": "screens/0164-20261001T084846127Z.png",
+  "shot_at": 1790844526.2266765,
+  "step": 164,
+  "tree_path": "screenstates/0164-20261001T084846127Z.xml",
+  "tree_read_at": 1790844526.1276765,
+  "trees": [
+   "screenstates/0164-20261001T084846127Z.xml"
+  ],
+  "uistate": "settings@6246338b9a33.uistate.txt"
+ },
+ "settings@state=6b50d6457565": {
+  "capture": "own",
+  "screen_path": "screens/0167-20261001T084900510Z.png",
+  "shot_at": 1790844540.6246765,
+  "step": 167,
+  "tree_path": "screenstates/0167-20261001T084900510Z.xml",
+  "tree_read_at": 1790844540.5106764,
+  "trees": [
+   "screenstates/0167-20261001T084900510Z.xml"
+  ],
+  "uistate": "settings@6b50d6457565.uistate.txt"
+ },
+ "settings@state=705010093c80": {
+  "capture": "own",
+  "screen_path": "screens/0139-20261001T084652327Z.png",
+  "shot_at": 1790844412.4286764,
+  "step": 139,
+  "tree_path": "screenstates/0139-20261001T084652327Z.xml",
+  "tree_read_at": 1790844412.3276763,
+  "trees": [
+   "screenstates/0139-20261001T084652327Z.xml",
+   "screenstates/0146-20261001T084737312Z.xml"
+  ],
+  "uistate": "settings@705010093c80.uistate.txt"
+ },
+ "settings@state=7e48981516a9": {
+  "capture": "own",
+  "screen_path": "screens/0155-20261001T084811514Z.png",
+  "shot_at": 1790844491.6196764,
+  "step": 155,
+  "tree_path": "screenstates/0155-20261001T084811514Z.xml",
+  "tree_read_at": 1790844491.5146763,
+  "trees": [
+   "screenstates/0155-20261001T084811514Z.xml",
+   "screenstates/0162-20261001T084841001Z.xml",
+   "screenstates/0166-20261001T084857765Z.xml",
+   "screenstates/0169-20261001T084905393Z.xml"
+  ],
+  "uistate": "settings@7e48981516a9.uistate.txt"
+ },
+ "settings@state=8655582bf3e7": {
+  "capture": "own",
+  "screen_path": "screens/0130-20261001T084542933Z.png",
+  "shot_at": 1790844343.0016766,
+  "step": 130,
+  "tree_path": "screenstates/0130-20261001T084542933Z.xml",
+  "tree_read_at": 1790844342.9336765,
+  "trees": [
+   "screenstates/0130-20261001T084542933Z.xml",
+   "screenstates/0131-20261001T084601600Z.xml",
+   "screenstates/0138-20261001T084650071Z.xml",
+   "screenstates/0170-20261001T084913284Z.xml",
+   "screenstates/0171-20261001T084918875Z-change2.xml",
+   "screenstates/0172-20261001T084925741Z.xml",
+   "screenstates/0173-20261001T084932997Z.xml",
+   "screenstates/0174-20261001T084949047Z-change1.xml",
+   "screenstates/0175-20261001T084958533Z.xml",
+   "screenstates/0176-20261001T085007001Z.xml",
+   "screenstates/0177-20261001T085014497Z.xml",
+   "screenstates/0178-20261001T085102276Z.xml",
+   "screenstates/0179-20261001T085109293Z.xml",
+   "screenstates/0180-20261001T085120946Z-change3.xml",
+   "screenstates/0182-20261001T085136925Z.xml",
+   "screenstates/0184-20261001T085150591Z.xml",
+   "screenstates/0186-20261001T085200464Z.xml",
+   "screenstates/0196-20261001T085238725Z.xml",
+   "screenstates/0198-20261001T085254833Z.xml",
+   "screenstates/0200-20261001T085259629Z.xml",
+   "screenstates/0202-20261001T085308653Z.xml",
+   "screenstates/0222-20261001T085501708Z.xml",
+   "screenstates/0224-20261001T085512515Z-change1.xml",
+   "screenstates/0227-20261001T085535286Z.xml"
+  ],
+  "uistate": "settings@8655582bf3e7.uistate.txt"
+ },
+ "settings@state=eea56d689a08": {
+  "capture": "own",
+  "screen_path": "screens/0165-20261001T084855093Z.png",
+  "shot_at": 1790844535.1976764,
+  "step": 165,
+  "tree_path": "screenstates/0165-20261001T084855093Z.xml",
+  "tree_read_at": 1790844535.0936763,
+  "trees": [
+   "screenstates/0165-20261001T084855093Z.xml"
+  ],
+  "uistate": "settings@eea56d689a08.uistate.txt"
+ },
+ "system-com-android-systemui@state=26ed008c93c4": {
+  "capture": "own",
+  "screen_path": "screens/0219-20261001T085440026Z.png",
+  "shot_at": 1790844880.1266763,
+  "step": 219,
+  "tree_path": "screenstates/0219-20261001T085440026Z.xml",
+  "tree_read_at": 1790844880.0266764,
+  "trees": [
+   "screenstates/0219-20261001T085440026Z.xml"
+  ],
+  "uistate": "system-com-android-systemui@26ed008c93c4.uistate.txt"
+ },
+ "system-com-google-android-apps-nexuslauncher@state=147ca895c71d": {
+  "capture": "own",
+  "screen_path": "screens/0229-20261001T085546769Z.png",
+  "shot_at": 1790844946.8466763,
+  "step": 229,
+  "tree_path": "screenstates/0229-20261001T085546769Z.xml",
+  "tree_read_at": 1790844946.7696764,
+  "trees": [
+   "screenstates/0229-20261001T085546769Z.xml",
+   "screenstates/0233-20261001T085627374Z.xml"
+  ],
+  "uistate": "system-com-google-android-apps-nexuslauncher@147ca895c71d.uistate.txt"
+ },
+ "system-com-google-android-apps-nexuslauncher@state=590106ee6012": {
+  "capture": "own",
+  "screen_path": "screens/0000-20261001T083238328Z.png",
+  "shot_at": 1790843558.4256763,
+  "step": 0,
+  "tree_path": "screenstates/0000-20261001T083238328Z.xml",
+  "tree_read_at": 1790843558.3286765,
+  "trees": [
+   "screenstates/0000-20261001T083238328Z.xml",
+   "screenstates/0001-20261001T083240086Z.xml",
+   "screenstates/0002-20261001T083241012Z.xml",
+   "screenstates/0003-20261001T083241296Z.xml",
+   "screenstates/0004-20261001T083247769Z.xml",
+   "screenstates/0005-20261001T083248077Z.xml"
+  ],
+  "uistate": "system-com-google-android-apps-nexuslauncher@590106ee6012.uistate.txt"
+ }
+}

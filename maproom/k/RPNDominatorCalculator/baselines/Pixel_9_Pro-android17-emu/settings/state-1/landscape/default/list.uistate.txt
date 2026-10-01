@@ -1,0 +1,11 @@
+     0-168    android.view.View:Haptic Feedback
+   168-336    android.view.View:Dynamic Color
+   336-528    android.view.View:Theme
+   528-720    android.view.View:Format
+   720-936    android.view.View:Significant Figures 1 to 1000 figures.
+   936-1152   android.view.View:Rounding Precision Empty is unlimited.
+  1152-1368   android.view.View:Rounding Mode How rounding is handled.
+  1368-1584   android.view.View:Max Operation Input yˣ, 10ˣ, eˣ, and ! use this to avoid performance issues. May need to delete data/reinstall if app fails to load.
+  1584-1800   android.view.View:Stack Limit 3 – 1000 stack numbers.
+  1800-2016   android.view.View:Undo History Limit 100 – 2000 undo history rows.
+  2016-2232   android.view.View:Delete Data Stack, Undo History, Memory
