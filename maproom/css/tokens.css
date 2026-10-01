@@ -1,0 +1,99 @@
+/* Raw values only, copied from docs/report-design/Foundations.dc.html.
+   That artboard is the single source of these tokens; when it changes, this
+   file follows it rather than drifting its own palette. */
+
+:root {
+  --page: #04070a;
+  --plate: #090e13;
+  --panel: #10161c;
+  --raise: #1a222a;
+  --code: #020508;
+
+  --text: #eaf3f8;
+  --muted: #8fa1ac;
+  --rule: #5d6f7c;
+  --line: rgba(234, 243, 248, .08);
+  --line-2: rgba(234, 243, 248, .14);
+
+  /* ~4:1 on page, so the accent is for lines, borders and fills only.
+     Accent-coloured TEXT uses --accent-text, which clears 6.4:1 everywhere. */
+  --accent: #0e70c8;
+  --accent-ink: #04070a;
+  --accent-text: #5aa9ef;
+
+  --fail: #ff9384;
+  --warn: #ffb549;
+  --skip: #a7b7c0;
+  --pass: #00b375;
+
+  --display: "Red Hat Display", "Segoe UI Variable Display", system-ui, sans-serif;
+  --sans: "Red Hat Text", "Segoe UI Variable Text", system-ui, sans-serif;
+  --mono: "Red Hat Mono", ui-monospace, Consolas, monospace;
+
+  --r: 6px;
+  --shadow: 0 8px 24px rgba(0, 0, 0, .45), 0 0 0 1px rgba(234, 243, 248, .10);
+  color-scheme: dark;
+}
+
+/* The light palette. Foundations.dc.html declares none, so these follow its roles:
+   each ink clears 4.5:1 on --panel and --page. `.root` repeats the tokens in
+   app.css, so each block names it too. Auto, the default, follows the system. */
+:root[data-theme="light"],
+:root[data-theme="light"] .root {
+  --page: #f4f7f9;
+  --plate: #eaeff3;
+  --panel: #ffffff;
+  --raise: #e2e9ee;
+  --code: #e7edf1;
+
+  --text: #0b141b;
+  --muted: #4c5c67;
+  --rule: #8a99a3;
+  --line: rgba(4, 7, 10, .10);
+  --line-2: rgba(4, 7, 10, .18);
+
+  --accent: #0e70c8;
+  --accent-ink: #ffffff;
+  --accent-text: #0a5ca6;
+  --pulse-base: #0e70c880;
+  --pulse: #0e70c880;
+
+  --fail: #c0321e;
+  --warn: #8f5400;
+  --skip: #56656f;
+  --pass: #00744c;
+
+  --shadow: 0 8px 24px rgba(4, 7, 10, .14), 0 0 0 1px rgba(4, 7, 10, .10);
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme]),
+  :root:not([data-theme]) .root {
+    --page: #f4f7f9;
+    --plate: #eaeff3;
+    --panel: #ffffff;
+    --raise: #e2e9ee;
+    --code: #e7edf1;
+
+    --text: #0b141b;
+    --muted: #4c5c67;
+    --rule: #8a99a3;
+    --line: rgba(4, 7, 10, .10);
+    --line-2: rgba(4, 7, 10, .18);
+
+    --accent: #0e70c8;
+    --accent-ink: #ffffff;
+    --accent-text: #0a5ca6;
+    --pulse-base: #0e70c880;
+    --pulse: #0e70c880;
+
+    --fail: #c0321e;
+    --warn: #8f5400;
+    --skip: #56656f;
+    --pass: #00744c;
+
+    --shadow: 0 8px 24px rgba(4, 7, 10, .14), 0 0 0 1px rgba(4, 7, 10, .10);
+    color-scheme: light;
+  }
+}

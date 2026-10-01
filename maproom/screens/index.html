@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sources — cartographer</title>
+<!-- Suppresses the automatic /favicon.ico request, which is a 404 on every
+     static host and clutters the one log a reader is likely to be reading. -->
+<link rel="icon" href="data:,">
+<!-- The icon font is preloaded because every icon in the app is a ligature:
+     until it lands there is no mark to paint, and the stylesheet that asks
+     for it is itself a round trip away. Local, subset, 31 KB. -->
+<link rel="preload" href="../vendor/fonts/material-symbols-rounded.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../css/fonts.css">
+<link rel="stylesheet" href="../css/tokens.css">
+<link rel="stylesheet" href="../css/app.css">
+</head>
+<body>
+<div id="app"></div>
+<noscript>
+  <div class="noscript">
+    <h1>This page needs JavaScript.</h1>
+    <p>
+      It reads <code>baseline.db</code> in the browser with SQLite compiled to
+      WebAssembly, so there is no server-rendered version to fall back to. It
+      also has to be served over <code>http</code>: <code>fetch</code> cannot
+      read a database from a <code>file://</code> URL. Use
+      <code>python serve.py</code>.
+    </p>
+  </div>
+</noscript>
+<script type="module" src="../js/pages/index.js"></script>
+</body>
+</html>

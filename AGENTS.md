@@ -35,6 +35,11 @@ The same fault, one level up from the geometry. It has been caught three times:
 **The DOM/SVG CRT build is gone.** One renderer that is right beats two that must be kept in step; do not
 reintroduce a second build.
 
+**`maproom/` is the one deliberate copy, and it is generated.** It is a snapshot of cartographer's viewer and the
+RPN Dominator Calculator survey, which live in other repositories. `python maproom.py ui|data` writes all of it
+(see `README.md`). Never edit it by hand: the next refresh overwrites the edit, and a hand fix would make the
+snapshot disagree with the tool that wrote it.
+
 ## Plain HTML, and that direction is settled
 
 No framework, no CDN, no build step in any lab. A lab is a thin host page plus pure modules for its shader, its
@@ -82,8 +87,8 @@ cache disabled, or serve with `Cache-Control: no-store`.
 
 `.github/workflows/pages.yml` deploys the repo root to GitHub Pages on every push to `main`. It uses a workflow
 rather than the built-in branch deploy because the branch deploy wedged in `queued` for hours with no runner
-assigned. **The workflow strips the tooling** — `bench.py`, `site-url.py`, `test`, `.githooks`, `knowledge`,
-`.claude`, `CLAUDE.md`, `AGENTS.md` — from the artifact before upload. A branch deploy would not, and would
+assigned. **The workflow strips the tooling** — `bench.py`, `site-url.py`, `maproom.py`, `test`, `.githooks`,
+`knowledge`, `.claude`, `CLAUDE.md`, `AGENTS.md` — from the artifact before upload. A branch deploy would not, and would
 publish all of it. Anything else committed at the root is published.
 
 **Move the site's address with `python site-url.py https://<host>/`, never by hand.** Six things cannot be
