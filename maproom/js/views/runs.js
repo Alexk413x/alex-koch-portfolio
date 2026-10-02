@@ -43,10 +43,10 @@ function secs(v) {
 }
 
 /* How long ago a run started, from its id's timestamp.
-   The id is `<YYYYMMDD>T<HHMMSS>Z-<short>`, which is the only clock a run
-   folder carries before its database is opened. */
+   The id is `<YYYYMMDD>T<HHMMSS>[mmm]Z`, optionally with a `-<short>` suffix,
+   which is the only clock a run folder carries before its database is opened. */
 function ago(id) {
-  const m = /^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})Z/.exec(id);
+  const m = /^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})(?:\d{3})?Z/.exec(id);
   if (!m) return '';
   const t = Date.UTC(+m[1], +m[2] - 1, +m[3], +m[4], +m[5], +m[6]);
   const mins = (Date.now() - t) / 60000;
@@ -428,10 +428,10 @@ function flatten(obj, prefix = '') {
 }
 
 function table(caption, head, body) {
-  return el('table', { class: 'rtab' },
+  return el('div', { class: 'rscroll' }, el('table', { class: 'rtab' },
     el('caption', { class: 'sr', text: caption }),
     el('thead', {}, el('tr', {}, head.map(h => el('th', { scope: 'col', text: h })))),
-    el('tbody', {}, body));
+    el('tbody', {}, body)));
 }
 
 function fold(title, count, content, open = false) {

@@ -851,30 +851,95 @@ export function renderMap(state) {
     zoomAt(Math.exp(-e.deltaY * 0.01), w / 2, h / 2);
   }, { passive: false, capture: true });
 
+  /* A mouse pans from empty ground only, so a press on a box stays a click. A
+     finger pans from anywhere, because at phone width the boxes cover most of
+     the stage; two fingers pinch. A touch that moved past the slop swallows the
+     click that follows it, so a pan that started on a box does not select it.
+     Capture waits for that slop too: a captured pointer retargets its click to
+     the stage, which would stop a plain tap reaching the box. */
+  const pointers = new Map();
   let drag = null;
+  let pinch = null;
+  let swallowClick = false;
+  const SLOP = 6;
+  const pinchOf = () => {
+    const [a, b] = [...pointers.values()];
+    const r = stage.getBoundingClientRect();
+    return {
+      d: Math.hypot(a.x - b.x, a.y - b.y) || 1,
+      cx: (a.x + b.x) / 2 - r.left,
+      cy: (a.y + b.y) / 2 - r.top,
+    };
+  };
   stage.addEventListener('pointerdown', (e) => {
-    if (e.target.closest('.box, .cost, .card')) return;
-    drag = { x: e.clientX, y: e.clientY, moved: 0 };
+    const touch = e.pointerType !== 'mouse';
+    if (e.target.closest('.card')) return;
+    if (!touch && e.target.closest('.box, .cost')) return;
+    pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (pointers.size === 2) {
+      pinch = pinchOf();
+      drag = null;
+      swallowClick = true;
+      for (const id of pointers.keys()) stage.setPointerCapture(id);
+      return;
+    }
+    if (pointers.size > 2) return;
+    drag = { x: e.clientX, y: e.clientY, moved: 0, id: e.pointerId, captured: false };
+    swallowClick = false;
     stage.classList.add('drag');
-    stage.setPointerCapture(e.pointerId);
   });
   stage.addEventListener('pointermove', (e) => {
-    if (!drag) return;
+    const p = pointers.get(e.pointerId);
+    if (!p) return;
+    p.x = e.clientX;
+    p.y = e.clientY;
+    if (pinch && pointers.size === 2) {
+      const now = pinchOf();
+      ui.tx += now.cx - pinch.cx;
+      ui.ty += now.cy - pinch.cy;
+      zoomAt(now.d / pinch.d, now.cx, now.cy);
+      pinch = now;
+      return;
+    }
+    if (!drag || drag.id !== e.pointerId) return;
     ui.tx += e.clientX - drag.x;
     ui.ty += e.clientY - drag.y;
     drag.moved += Math.abs(e.clientX - drag.x) + Math.abs(e.clientY - drag.y);
     drag.x = e.clientX;
     drag.y = e.clientY;
+    if (drag.moved >= SLOP && !drag.captured) {
+      drag.captured = true;
+      swallowClick = true;
+      stage.setPointerCapture(e.pointerId);
+    }
     applyTransform();
   });
-  stage.addEventListener('pointerup', (e) => {
-    if (!drag) return;
-    const moved = drag.moved;
+  const release = (e) => {
+    if (!pointers.delete(e.pointerId)) return;
+    if (stage.hasPointerCapture(e.pointerId)) stage.releasePointerCapture(e.pointerId);
+    if (pinch) {
+      if (pointers.size >= 2) return;
+      pinch = null;
+      // The finger still down carries on as a pan, already past the slop.
+      const [rest] = [...pointers.entries()];
+      if (rest) drag = { x: rest[1].x, y: rest[1].y, moved: SLOP, id: rest[0], captured: true };
+      else stage.classList.remove('drag');
+      return;
+    }
+    if (!drag || drag.id !== e.pointerId) return;
+    const { moved } = drag;
     drag = null;
     stage.classList.remove('drag');
-    stage.releasePointerCapture(e.pointerId);
-    if (moved < 6 && ui.sel) select(null);
-  });
+    if (e.type === 'pointerup' && moved < SLOP && ui.sel && !e.target.closest('.box, .cost')) select(null);
+  };
+  stage.addEventListener('pointerup', release);
+  stage.addEventListener('pointercancel', release);
+  stage.addEventListener('click', (e) => {
+    if (!swallowClick) return;
+    swallowClick = false;
+    e.stopPropagation();
+    e.preventDefault();
+  }, true);
 
   const tallyCaptured = el('div', { style: '--c: var(--pass)', 'data-tip': 'Captured' });
   const tallyDraft = el('div', { style: '--c: var(--warn)', 'data-tip': 'Draft' });
