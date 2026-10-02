@@ -1,0 +1,108 @@
+FrameLayout
+  LinearLayout
+    FrameLayout
+      p00
+        View
+          View
+            View
+              View
+                View
+                View clickable+focusable
+                  View desc="Clear all" clickable+focusable
+                  Button clickable+focusable
+                View clickable+focusable
+                  View desc="Memory in" clickable+focusable
+                  Button clickable+focusable
+                View clickable+focusable
+                  TextView text="7" clickable+focusable
+                  Button clickable+focusable
+                View clickable+focusable
+                  TextView text="8" clickable+focusable
+                  Button clickable+focusable
+                View clickable+focusable
+                  TextView text="9" clickable+focusable
+                  Button clickable+focusable
+                View clickable+focusable
+                  View desc="Pi" clickable+focusable
+                  Button clickable+focusable
+                View clickable+focusable
+                  View desc="Multiply" clickable+focusable
+                  Button clickable+focusable
+                View clickable+focusable
+                  View desc="Clear entry" clickable+focusable
+                  Button clickable+focusable
+                View clickable+focusable
+                  View desc="Memory out" clickable+focusable
+                  Button clickable+focusable
+                View clickable+focusable
+                  TextView text="4" clickable+focusable
+                  Button clickable+focusable
+                View clickable+focusable
+                  TextView text="5" clickable+focusable
+                  Button clickable+focusable
+                View clickable+focusable
+                  TextView text="6" clickable+focusable
+                  Button clickable+focusable
+                View clickable+focusable
+                  View desc="Reciprocal, one divided by X" clickable+focusable
+                  Button clickable+focusable
+                View clickable+focusable
+                  View desc="Subtract" clickable+focusable
+                  Button clickable+focusable
+                View clickable+focusable
+                  View desc="Delete last digit" clickable+focusable
+                  Button clickable+focusable
+                View checkable+clickable+focusable state:checked
+                  View desc="Degrees" checkable+clickable+focusable
+                  CheckBox checkable+clickable+focusable
+                View clickable+focusable
+                  TextView text="1" clickable+focusable
+                  Button clickable+focusable
+                View clickable+focusable
+                  TextView text="2" clickable+focusable
+                  Button clickable+focusable
+                View clickable+focusable
+                  TextView text="3" clickable+focusable
+                  Button clickable+focusable
+                View clickable+focusable
+                  View desc="Factorial" clickable+focusable
+                  Button clickable+focusable
+                View clickable+focusable
+                  View desc="Add" clickable+focusable
+                  Button clickable+focusable
+                View clickable+focusable
+                  TextView text="Undo" clickable+focusable
+                  Button clickable+focusable
+                View checkable+clickable+focusable
+                  View desc="Show More Functions" checkable+clickable+focusable
+                  CheckBox checkable+clickable+focusable
+                View clickable+focusable
+                  TextView text="0" clickable+focusable
+                  Button clickable+focusable
+                View clickable+focusable
+                  View desc="Decimal point" clickable+focusable
+                  Button clickable+focusable
+                View clickable+focusable
+                  View desc="Change sign" clickable+focusable
+                  Button clickable+focusable
+                View clickable+focusable
+                  View desc="Divide" clickable+focusable
+                  Button clickable+focusable
+                View clickable+focusable
+                  TextView text="Enter" clickable+focusable
+                  Button clickable+focusable
+                View
+                  View clickable+focusable state:disabled
+                    View desc="Memory" clickable+focusable
+                    Button clickable+focusable
+                  View clickable+focusable state:disabled
+                    View desc="Copy" clickable+focusable
+                    Button clickable+focusable
+                  View clickable+focusable
+                    View desc="Paste" clickable+focusable
+                    Button clickable+focusable
+                  View clickable+focusable
+                    View desc="Delete" clickable+focusable
+                    Button clickable+focusable
+                View
+                  View desc="Toggle Menu" checkable+clickable+focusable

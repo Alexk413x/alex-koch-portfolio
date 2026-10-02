@@ -329,13 +329,13 @@
    "sha256": "2a00123badae4fc90612f58f796583fb2dd8ed0b8836e2fa5f96c3e1989d826c"
   },
   "today": {
-   "sha256": "93f6e126feb7d60088a2b2c50a70af81ef8230de5cba8344e360e5226487b317",
-   "bytes": 4386816,
-   "modified_at": 1790888277.5652418,
+   "sha256": "bf270d45a6cd6d55d1caed584a27862ece3c2ef70236108e1cb4ac8be5a55c82",
+   "bytes": 4505600,
+   "modified_at": 1790892741.77058,
    "schema_version": "6"
   },
   "kind": "today",
-  "note": "The baseline changed since this run was checked (2a00123badae), so it is compared with today's baseline (93f6e126feb7)."
+  "note": "The baseline changed since this run was checked (2a00123badae), so it is compared with today's baseline (bf270d45a6cd)."
  },
  "alignment": {
   "replay": false,
@@ -1755,29 +1755,47 @@
   ],
   "missing": {
    "screens": [
-    "add+change-sign+clear-all.toast"
+    "add+change-sign+clear-all.toast",
+    "alert.toast"
    ],
    "states": [
     "add+change-sign+clear-all.toast@state=fad60deab375",
     "add+change-sign+clear-all@state=07112d3a7333",
     "add+change-sign+clear-all@state=274e406927ae",
+    "add+change-sign+clear-all@state=5d5519cc18fe",
     "add+change-sign+clear-all@state=6cfc5095a80f",
+    "add+change-sign+clear-all@state=818f9bd458e5",
+    "add+change-sign+clear-all@state=83b8ccc38eaf",
     "add+change-sign+clear-all@state=8fb593c85cb4",
     "add+change-sign+clear-all@state=948d64207f14",
     "add+change-sign+clear-all@state=a522a769e24a",
     "add+change-sign+clear-all@state=b2baf56e7a25",
     "add+change-sign+clear-all@state=c16e2b278de7",
+    "add+change-sign+clear-all@state=c1dd90495a78",
     "add+change-sign+clear-all@state=c1ea1ff69f7d",
     "add+change-sign+clear-all@state=c5a495e7b84c",
     "add+change-sign+clear-all@state=d96de36d79b9",
+    "add+change-sign+clear-all@state=eb56c928bcb7",
     "add+change-sign+clear-all@state=fc2eb6fa63cd",
+    "add+change-sign+clear-all@state=ff8139a5a198",
+    "alert.toast@state=fad60deab375",
+    "select-rounding-mode@state=13ce909c90cf",
+    "select-rounding-mode@state=1e0036743b81",
+    "select-rounding-mode@state=23f62c438f73",
     "select-rounding-mode@state=333060bdc56c",
+    "select-rounding-mode@state=4a37077d4e6a",
     "select-rounding-mode@state=4e662ffe1cdb",
+    "select-rounding-mode@state=5b3e0c62e7e4",
+    "select-rounding-mode@state=5c177a8b6a6c",
     "select-rounding-mode@state=853b3ce3474c",
     "select-rounding-mode@state=a0ae4390c9db",
     "select-rounding-mode@state=a9073c316d5a",
     "select-rounding-mode@state=b5c695c4489c",
     "select-rounding-mode@state=c14bd69f91be",
+    "select-rounding-mode@state=c67ce09a72e3",
+    "select-rounding-mode@state=d803a38b16f7",
+    "select-rounding-mode@state=e474a6fae8b2",
+    "select-rounding-mode@state=ea1044493b2d",
     "select-rounding-mode@state=ecf994e2155b",
     "settings.popup@state=00997052b11e",
     "settings.popup@state=05ee6e9491d7",
@@ -2150,6 +2168,24 @@
     },
     {
      "src": "add+change-sign+clear-all@state=07112d3a7333",
+     "dst": "add+change-sign+clear-all@state=07112d3a7333",
+     "action": "jump-to-element-by-name:android.view.View:0",
+     "requires": "nav=touch"
+    },
+    {
+     "src": "add+change-sign+clear-all@state=07112d3a7333",
+     "dst": "add+change-sign+clear-all@state=07112d3a7333",
+     "action": "jump-to-element-by-name:android.view.View:3",
+     "requires": "nav=touch"
+    },
+    {
+     "src": "add+change-sign+clear-all@state=07112d3a7333",
+     "dst": "add+change-sign+clear-all.snackbar@state=db0e1176ec71",
+     "action": "jump-to-element-by-name:android.view.View:Enter",
+     "requires": "nav=touch"
+    },
+    {
+     "src": "add+change-sign+clear-all@state=07112d3a7333",
      "dst": "system-com-android-systemui",
      "action": "open-notifications",
      "requires": "nav=touch"
@@ -2182,6 +2218,18 @@
      "src": "add+change-sign+clear-all@state=07112d3a7333",
      "dst": "add+change-sign+clear-all@state=07112d3a7333",
      "action": "swipe-at-coordinates[gesture:swipe-to-dismiss][right-long]",
+     "requires": "nav=touch"
+    },
+    {
+     "src": "add+change-sign+clear-all@state=07112d3a7333",
+     "dst": "add+change-sign+clear-all@state=274e406927ae",
+     "action": "tap-at-coordinates",
+     "requires": "nav=touch"
+    },
+    {
+     "src": "add+change-sign+clear-all@state=07112d3a7333",
+     "dst": "add+change-sign+clear-all@state=c16e2b278de7",
+     "action": "tap-at-coordinates",
      "requires": "nav=touch"
     },
     {
@@ -2235,6 +2283,18 @@
     {
      "src": "add+change-sign+clear-all@state=274e406927ae",
      "dst": "add+change-sign+clear-all@state=07112d3a7333",
+     "action": "tap-at-coordinates",
+     "requires": "nav=touch"
+    },
+    {
+     "src": "add+change-sign+clear-all@state=274e406927ae",
+     "dst": "add+change-sign+clear-all@state=d96de36d79b9",
+     "action": "tap-at-coordinates",
+     "requires": "nav=touch"
+    },
+    {
+     "src": "add+change-sign+clear-all@state=5d5519cc18fe",
+     "dst": "add+change-sign+clear-all@state=b2baf56e7a25",
      "action": "tap-at-coordinates",
      "requires": "nav=touch"
     },
@@ -2341,6 +2401,24 @@
      "requires": "nav=touch"
     },
     {
+     "src": "add+change-sign+clear-all@state=6cfc5095a80f",
+     "dst": "add+change-sign+clear-all@state=eb56c928bcb7",
+     "action": "tap-at-coordinates",
+     "requires": "nav=touch"
+    },
+    {
+     "src": "add+change-sign+clear-all@state=818f9bd458e5",
+     "dst": "add+change-sign+clear-all@state=5d5519cc18fe",
+     "action": "tap-at-coordinates",
+     "requires": "nav=touch"
+    },
+    {
+     "src": "add+change-sign+clear-all@state=83b8ccc38eaf",
+     "dst": "add+change-sign+clear-all@state=c1dd90495a78",
+     "action": "tap-at-coordinates",
+     "requires": "nav=touch"
+    },
+    {
      "src": "add+change-sign+clear-all@state=8fb593c85cb4",
      "dst": "add+change-sign+clear-all@state=07112d3a7333",
      "action": "activate-focused-element[tap]:android.view.View:7",
@@ -2362,6 +2440,12 @@
      "src": "add+change-sign+clear-all@state=a522a769e24a",
      "dst": "add+change-sign+clear-all@state=07112d3a7333",
      "action": "activate-focused-element[tap]:android.view.View:Radians",
+     "requires": "nav=touch"
+    },
+    {
+     "src": "add+change-sign+clear-all@state=a522a769e24a",
+     "dst": "add+change-sign+clear-all@state=07112d3a7333",
+     "action": "tap-at-coordinates",
      "requires": "nav=touch"
     },
     {
@@ -2606,8 +2690,44 @@
     },
     {
      "src": "add+change-sign+clear-all@state=b2baf56e7a25",
+     "dst": "add+change-sign+clear-all@state=b2baf56e7a25",
+     "action": "jump-to-element-by-name:android.view.View:4",
+     "requires": "nav=touch"
+    },
+    {
+     "src": "add+change-sign+clear-all@state=b2baf56e7a25",
+     "dst": "add+change-sign+clear-all@state=5d5519cc18fe",
+     "action": "jump-to-element-by-name:android.widget.TextView:5",
+     "requires": "nav=touch"
+    },
+    {
+     "src": "add+change-sign+clear-all@state=b2baf56e7a25",
      "dst": "add+change-sign+clear-all@state=07112d3a7333",
      "action": "swipe-at-coordinates[gesture:drag][down-long]",
+     "requires": "nav=touch"
+    },
+    {
+     "src": "add+change-sign+clear-all@state=b2baf56e7a25",
+     "dst": "add+change-sign+clear-all@state=6cfc5095a80f",
+     "action": "tap-at-coordinates",
+     "requires": "nav=touch"
+    },
+    {
+     "src": "add+change-sign+clear-all@state=b2baf56e7a25",
+     "dst": "add+change-sign+clear-all@state=83b8ccc38eaf",
+     "action": "tap-at-coordinates",
+     "requires": "nav=touch"
+    },
+    {
+     "src": "add+change-sign+clear-all@state=b2baf56e7a25",
+     "dst": "add+change-sign+clear-all@state=b2baf56e7a25",
+     "action": "tap-at-coordinates",
+     "requires": "nav=touch"
+    },
+    {
+     "src": "add+change-sign+clear-all@state=bb86d4a7a133",
+     "dst": "add+change-sign+clear-all@state=818f9bd458e5",
+     "action": "tap-at-coordinates",
      "requires": "nav=touch"
     },
     {
@@ -2659,6 +2779,30 @@
      "requires": "nav=touch"
     },
     {
+     "src": "add+change-sign+clear-all@state=c16e2b278de7",
+     "dst": "add+change-sign+clear-all.snackbar@state=db0e1176ec71",
+     "action": "tap-at-coordinates",
+     "requires": "nav=touch"
+    },
+    {
+     "src": "add+change-sign+clear-all@state=c16e2b278de7",
+     "dst": "add+change-sign+clear-all@state=bb86d4a7a133",
+     "action": "tap-at-coordinates",
+     "requires": "nav=touch"
+    },
+    {
+     "src": "add+change-sign+clear-all@state=c1dd90495a78",
+     "dst": "add+change-sign+clear-all@state=ff8139a5a198",
+     "action": "tap-at-coordinates",
+     "requires": "nav=touch"
+    },
+    {
+     "src": "add+change-sign+clear-all@state=c1dd90495a78",
+     "dst": "alert.toast@state=fad60deab375",
+     "action": "tap-at-coordinates",
+     "requires": "nav=touch"
+    },
+    {
      "src": "add+change-sign+clear-all@state=c1ea1ff69f7d",
      "dst": "add+change-sign+clear-all@state=c1ea1ff69f7d",
      "action": "activate-focused-element[tap]:android.view.View:Cosine",
@@ -2680,6 +2824,12 @@
      "src": "add+change-sign+clear-all@state=c1ea1ff69f7d",
      "dst": "add+change-sign+clear-all@state=b2baf56e7a25",
      "action": "activate-focused-element[tap]:android.view.View:Radians",
+     "requires": "nav=touch"
+    },
+    {
+     "src": "add+change-sign+clear-all@state=c1ea1ff69f7d",
+     "dst": "add+change-sign+clear-all@state=a522a769e24a",
+     "action": "tap-at-coordinates",
      "requires": "nav=touch"
     },
     {
@@ -2731,9 +2881,27 @@
      "requires": "nav=touch"
     },
     {
+     "src": "add+change-sign+clear-all@state=d96de36d79b9",
+     "dst": "add+change-sign+clear-all@state=b2baf56e7a25",
+     "action": "tap-at-coordinates",
+     "requires": "nav=touch"
+    },
+    {
+     "src": "add+change-sign+clear-all@state=eb56c928bcb7",
+     "dst": "add+change-sign+clear-all@state=c1ea1ff69f7d",
+     "action": "tap-at-coordinates",
+     "requires": "nav=touch"
+    },
+    {
      "src": "add+change-sign+clear-all@state=fc2eb6fa63cd",
      "dst": "add+change-sign+clear-all@state=c1ea1ff69f7d",
      "action": "activate-focused-element[tap]:android.view.View:Standard functions",
+     "requires": "nav=touch"
+    },
+    {
+     "src": "add+change-sign+clear-all@state=ff8139a5a198",
+     "dst": "settings@state=8655582bf3e7",
+     "action": "tap-at-coordinates",
      "requires": "nav=touch"
     },
     {
@@ -2750,6 +2918,12 @@
     },
     {
      "src": "delete-data@state=f569f911cc97",
+     "dst": "settings@state=ba862d969a71",
+     "action": "jump-to-element-by-name:android.view.View:Cancel",
+     "requires": "nav=touch"
+    },
+    {
+     "src": "delete-data@state=f569f911cc97",
      "dst": "settings.snackbar@state=a841134b7a30",
      "action": "tap-at-coordinates",
      "requires": "nav=touch"
@@ -2757,6 +2931,12 @@
     {
      "src": "delete-data@state=f569f911cc97",
      "dst": "settings@state=8655582bf3e7",
+     "action": "tap-at-coordinates",
+     "requires": "nav=touch"
+    },
+    {
+     "src": "select-rounding-mode@state=23f62c438f73",
+     "dst": "select-rounding-mode@state=5c177a8b6a6c",
      "action": "tap-at-coordinates",
      "requires": "nav=touch"
     },
@@ -2779,6 +2959,12 @@
      "requires": "nav=touch"
     },
     {
+     "src": "select-rounding-mode@state=333060bdc56c",
+     "dst": "select-rounding-mode@state=13ce909c90cf",
+     "action": "tap-at-coordinates",
+     "requires": "nav=touch"
+    },
+    {
      "src": "select-rounding-mode@state=4e662ffe1cdb",
      "dst": "select-rounding-mode@state=853b3ce3474c",
      "action": "activate-focused-element[tap]:android.view.View:Down - Round towards zero.",
@@ -2788,6 +2974,18 @@
      "src": "select-rounding-mode@state=4e662ffe1cdb",
      "dst": "settings@state=8655582bf3e7",
      "action": "back",
+     "requires": "nav=touch"
+    },
+    {
+     "src": "select-rounding-mode@state=5b3e0c62e7e4",
+     "dst": "select-rounding-mode@state=b5c695c4489c",
+     "action": "tap-at-coordinates",
+     "requires": "nav=touch"
+    },
+    {
+     "src": "select-rounding-mode@state=5c177a8b6a6c",
+     "dst": "select-rounding-mode@state=c67ce09a72e3",
+     "action": "tap-at-coordinates",
      "requires": "nav=touch"
     },
     {
@@ -2852,6 +3050,18 @@
     },
     {
      "src": "select-rounding-mode@state=b5c695c4489c",
+     "dst": "settings@state=ba862d969a71",
+     "action": "jump-to-element-by-name:android.view.View:Done",
+     "requires": "nav=touch"
+    },
+    {
+     "src": "select-rounding-mode@state=b5c695c4489c",
+     "dst": "select-rounding-mode@state=333060bdc56c",
+     "action": "tap-at-coordinates",
+     "requires": "nav=touch"
+    },
+    {
+     "src": "select-rounding-mode@state=b5c695c4489c",
      "dst": "select-rounding-mode@state=b5c695c4489c",
      "action": "tap-at-coordinates",
      "requires": "nav=touch"
@@ -2866,6 +3076,24 @@
      "src": "select-rounding-mode@state=c14bd69f91be",
      "dst": "select-rounding-mode@state=ecf994e2155b",
      "action": "activate-focused-element[tap]:android.view.View:Unnecessary - No rounding.",
+     "requires": "nav=touch"
+    },
+    {
+     "src": "select-rounding-mode@state=d803a38b16f7",
+     "dst": "select-rounding-mode@state=e474a6fae8b2",
+     "action": "tap-at-coordinates",
+     "requires": "nav=touch"
+    },
+    {
+     "src": "select-rounding-mode@state=e474a6fae8b2",
+     "dst": "select-rounding-mode@state=1e0036743b81",
+     "action": "tap-at-coordinates",
+     "requires": "nav=touch"
+    },
+    {
+     "src": "select-rounding-mode@state=ea1044493b2d",
+     "dst": "select-rounding-mode@state=d803a38b16f7",
+     "action": "tap-at-coordinates",
      "requires": "nav=touch"
     },
     {
@@ -2929,6 +3157,12 @@
      "requires": "nav=touch"
     },
     {
+     "src": "settings.popup@state=05ee6e9491d7",
+     "dst": "settings@state=ba862d969a71",
+     "action": "replace-text",
+     "requires": "nav=touch"
+    },
+    {
      "src": "settings.snackbar@state=a841134b7a30",
      "dst": "settings@state=8655582bf3e7",
      "action": "activate-focused-element[tap]:android.view.View:Dismiss",
@@ -2941,9 +3175,33 @@
      "requires": "nav=touch"
     },
     {
+     "src": "settings@state=062b2e1deb87",
+     "dst": "settings@state=7e48981516a9",
+     "action": "tap-at-coordinates",
+     "requires": "nav=touch"
+    },
+    {
+     "src": "settings@state=1da899bc6d1f",
+     "dst": "settings@state=8655582bf3e7",
+     "action": "tap-at-coordinates",
+     "requires": "nav=touch"
+    },
+    {
+     "src": "settings@state=27ccf0222b34",
+     "dst": "settings@state=89b8493e0c1a",
+     "action": "tap-at-coordinates",
+     "requires": "nav=touch"
+    },
+    {
      "src": "settings@state=42a2bbbfbeee",
      "dst": "settings@state=7e48981516a9",
      "action": "activate-focused-element[tap]:android.view.View:System",
+     "requires": "nav=touch"
+    },
+    {
+     "src": "settings@state=500ae583d551",
+     "dst": "settings@state=8655582bf3e7",
+     "action": "tap-at-coordinates",
      "requires": "nav=touch"
     },
     {
@@ -2971,6 +3229,12 @@
      "requires": "nav=touch"
     },
     {
+     "src": "settings@state=705010093c80",
+     "dst": "settings@state=062b2e1deb87",
+     "action": "tap-at-coordinates",
+     "requires": "nav=touch"
+    },
+    {
      "src": "settings@state=7e48981516a9",
      "dst": "add+change-sign+clear-all@state=07112d3a7333",
      "action": "activate-focused-element[tap]:android.view.View:Back",
@@ -2986,6 +3250,12 @@
      "src": "settings@state=7e48981516a9",
      "dst": "settings@state=6b50d6457565",
      "action": "activate-focused-element[tap]:android.view.View:Light",
+     "requires": "nav=touch"
+    },
+    {
+     "src": "settings@state=7e48981516a9",
+     "dst": "settings@state=8655582bf3e7",
+     "action": "tap-at-coordinates",
      "requires": "nav=touch"
     },
     {
@@ -3145,6 +3415,36 @@
      "requires": "nav=touch"
     },
     {
+     "src": "settings@state=8655582bf3e7",
+     "dst": "settings@state=1da899bc6d1f",
+     "action": "tap-at-coordinates",
+     "requires": "nav=touch"
+    },
+    {
+     "src": "settings@state=8655582bf3e7",
+     "dst": "settings@state=27ccf0222b34",
+     "action": "tap-at-coordinates",
+     "requires": "nav=touch"
+    },
+    {
+     "src": "settings@state=8655582bf3e7",
+     "dst": "settings@state=500ae583d551",
+     "action": "tap-at-coordinates",
+     "requires": "nav=touch"
+    },
+    {
+     "src": "settings@state=8655582bf3e7",
+     "dst": "settings@state=705010093c80",
+     "action": "tap-at-coordinates",
+     "requires": "nav=touch"
+    },
+    {
+     "src": "settings@state=89b8493e0c1a",
+     "dst": "settings@state=8655582bf3e7",
+     "action": "tap-at-coordinates",
+     "requires": "nav=touch"
+    },
+    {
      "src": "settings@state=ba862d969a71",
      "dst": "add+change-sign+clear-all@state=07112d3a7333",
      "action": "activate-focused-element[tap]:android.view.View:Back",
@@ -3154,6 +3454,42 @@
      "src": "settings@state=ba862d969a71",
      "dst": "settings.popup@state=05ee6e9491d7",
      "action": "back",
+     "requires": "nav=touch"
+    },
+    {
+     "src": "settings@state=ba862d969a71",
+     "dst": "settings@state=ba862d969a71",
+     "action": "back",
+     "requires": "nav=touch"
+    },
+    {
+     "src": "settings@state=ba862d969a71",
+     "dst": "select-rounding-mode@state=b5c695c4489c",
+     "action": "jump-to-element-by-name:android.view.View:Half Even",
+     "requires": "nav=touch"
+    },
+    {
+     "src": "settings@state=ba862d969a71",
+     "dst": "settings.popup@state=05ee6e9491d7",
+     "action": "long-press-focused-element[long-press]:android.widget.EditText@android:id/content#2",
+     "requires": "nav=touch"
+    },
+    {
+     "src": "settings@state=ba862d969a71",
+     "dst": "delete-data@state=f569f911cc97",
+     "action": "tap-at-coordinates",
+     "requires": "nav=touch"
+    },
+    {
+     "src": "settings@state=ba862d969a71",
+     "dst": "settings.popup@state=05ee6e9491d7",
+     "action": "tap-at-coordinates",
+     "requires": "nav=touch"
+    },
+    {
+     "src": "settings@state=ba862d969a71",
+     "dst": "settings@state=ba862d969a71",
+     "action": "tap-at-coordinates(late)",
      "requires": "nav=touch"
     },
     {
@@ -3187,19 +3523,19 @@
     "match": 5,
     "new": 2,
     "changed": 4,
-    "missing": 1
+    "missing": 2
    },
    "states": {
     "match": 20,
     "new": 15,
     "changed": 0,
-    "missing": 28
+    "missing": 45
    },
    "edges": {
     "match": 35,
     "new": 144,
     "changed": 0,
-    "missing": 232
+    "missing": 285
    }
   }
  },

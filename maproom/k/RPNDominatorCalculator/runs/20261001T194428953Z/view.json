@@ -13,9 +13,9 @@
    "sha256": "f137e262d5aa836ca2790222b89b468c5bed4040ccd527e9a10be4b16ed2968a"
   },
   "today": {
-   "sha256": "93f6e126feb7d60088a2b2c50a70af81ef8230de5cba8344e360e5226487b317",
-   "bytes": 4386816,
-   "modified_at": 1790888277.5652418,
+   "sha256": "bf270d45a6cd6d55d1caed584a27862ece3c2ef70236108e1cb4ac8be5a55c82",
+   "bytes": 4505600,
+   "modified_at": 1790892741.77058,
    "schema_version": "6"
   },
   "kind": "unbuilt",

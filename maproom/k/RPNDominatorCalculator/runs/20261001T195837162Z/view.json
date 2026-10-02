@@ -140,13 +140,13 @@
    "sha256": "0f3dc041ab9621ad91970800544dc2f5c46c1ad39f05aca972abd04c67212cf7"
   },
   "today": {
-   "sha256": "93f6e126feb7d60088a2b2c50a70af81ef8230de5cba8344e360e5226487b317",
-   "bytes": 4386816,
-   "modified_at": 1790888277.5652418,
+   "sha256": "bf270d45a6cd6d55d1caed584a27862ece3c2ef70236108e1cb4ac8be5a55c82",
+   "bytes": 4505600,
+   "modified_at": 1790892741.77058,
    "schema_version": "6"
   },
   "kind": "recorded",
-  "note": "Compared with the baseline as it was when this run was checked (0f3dc041ab96). Today's baseline (93f6e126feb7) differs."
+  "note": "Compared with the baseline as it was when this run was checked (0f3dc041ab96). Today's baseline (bf270d45a6cd) differs."
  },
  "alignment": {
   "baseline": {
