@@ -1,0 +1,18 @@
+[
+ {
+  "action": "back",
+  "control_key": "",
+  "interaction": "",
+  "outcome": "no_change",
+  "state": "settings@state=ba862d969a71",
+  "step": 92
+ },
+ {
+  "explained_by_change": null,
+  "from_digest": "8f1ce600224f1252",
+  "last_seen_digest": "8c4a6d5ab3b09869",
+  "last_seen_step": 92,
+  "step": 93,
+  "warning": "from-digest-mismatch"
+ }
+]

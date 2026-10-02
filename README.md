@@ -31,6 +31,8 @@ hand: `maproom.py` writes all of it, in two modes.
 
 ```
 python maproom.py ui      copy the viewer from the newest installed cartographer plugin
+python maproom.py ui --checkout <repo>
+                          copy it from a cartographer repository at its current commit instead
 python maproom.py data    copy the baseline and runs, trim them, and regenerate the JSON
 ```
 

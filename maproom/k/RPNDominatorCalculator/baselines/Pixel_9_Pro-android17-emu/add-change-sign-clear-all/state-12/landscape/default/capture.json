@@ -52,6 +52,30 @@
    "captured_at": "2026-10-01T16:13:09Z",
    "run_id": "20261001T152634187Z",
    "source": "map_promote_run"
+  },
+  "light": {
+   "app_build": {
+    "apk_sha256": "8999623e5019eda757441aec29eb92cb0739426a6039468f97884ce0f7566424",
+    "apk_splits": [],
+    "build_time": null,
+    "build_time_iso": "",
+    "build_time_source": "none: zip entry time 1981-01-01 01:01:02 is a fixed value the packager writes for reproducible builds; the manifest and META-INF carry no build time, and APK signature schemes v2 and v3 sign no timestamp",
+    "debuggable": false,
+    "first_install_iso": "2026-10-01T08:19:01Z",
+    "first_install_time": 1790842741000,
+    "id": "22:8999623e5019eda757441aec29eb92cb0739426a6039468f97884ce0f7566424",
+    "installer": "",
+    "last_update_iso": "2026-10-01T08:19:01Z",
+    "last_update_time": 1790842741000,
+    "package": "com.gmail.alexk413x.RPN_Dominator_Calculator",
+    "partial": false,
+    "version_code": 22,
+    "version_name": "3.1.0"
+   },
+   "app_version": "3.1.0 (22)",
+   "captured_at": "2026-10-01T21:54:34Z",
+   "run_id": "20261001T215325951Z",
+   "source": "map_promote_run"
   }
  },
  "source": "map_promote_run",
