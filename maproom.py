@@ -1,6 +1,8 @@
 """maproom.py -- refreshes the static snapshot of cartographer's maproom viewer under maproom/.
 
     python maproom.py ui      copy the viewer from the newest installed cartographer plugin
+    python maproom.py ui --checkout <repo>
+                              copy it from a cartographer repository at its current commit instead
     python maproom.py data    copy the RPN Dominator Calculator baseline and runs, trim them, and
                               pre-generate the two JSON files serve.py answers dynamically
 
@@ -20,6 +22,7 @@ import os
 import re
 import shutil
 import sqlite3
+import subprocess
 import sys
 import time
 from pathlib import Path
@@ -80,8 +83,22 @@ def load_serve(plugin):
     return module
 
 
-def ui(_args):
-    plugin = plugin_dir()
+def checkout_viewer(repo):
+    repo = Path(repo).resolve()
+    git = ['git', '-C', str(repo)]
+    if subprocess.run(git + ['status', '--porcelain', '--', 'maproom'], capture_output=True, text=True, check=True).stdout:
+        sys.exit('%s has uncommitted changes under maproom/' % repo)
+    commit = subprocess.run(git + ['rev-parse', 'HEAD'], capture_output=True, text=True, check=True).stdout.strip()
+    version = json.loads((repo / '.claude-plugin' / 'plugin.json').read_text(encoding='utf-8'))['version']
+    return repo, version, commit
+
+
+def ui(args):
+    if args.checkout:
+        plugin, version, commit = checkout_viewer(args.checkout)
+    else:
+        plugin = plugin_dir()
+        version, commit = plugin.name, None
     src = plugin / 'maproom'
     DEST.mkdir(exist_ok=True)
     for name in UI_DIRS:
@@ -93,12 +110,14 @@ def ui(_args):
         if text.count(old) != 1:
             sys.exit('%s: expected one %r to patch, found %d' % (rel, old, text.count(old)))
         path.write_text(text.replace(old, new), encoding='utf-8', newline='\n')
-    sources = {'viewer': plugin.name, 'sources': [{
+    sources = {'viewer': version, 'sources': [{
         'id': SOURCE_ID, 'name': SOURCE_NAME,
         'path': '%s/knowledge/cartographer' % SOURCE_ID,
         'url': '../k/%s/' % SOURCE_ID, 'graph': 'baselines/baseline.db', 'has_graph': True}]}
+    if commit:
+        sources['viewer_commit'] = commit
     (DEST / 'sources.json').write_text(json.dumps(sources, indent=1) + '\n', encoding='utf-8', newline='\n')
-    print('viewer %s copied to %s' % (plugin.name, DEST.relative_to(ROOT)))
+    print('viewer %s%s copied to %s' % (version, ' at %s' % commit[:12] if commit else '', DEST.relative_to(ROOT)))
     return report()
 
 
@@ -338,7 +357,8 @@ def report():
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = parser.add_subparsers(dest='mode', required=True)
-    sub.add_parser('ui', help='copy the viewer from the newest installed cartographer plugin')
+    p = sub.add_parser('ui', help='copy the viewer from the newest installed cartographer plugin')
+    p.add_argument('--checkout', help='copy from this cartographer repository instead, at its current commit')
     p = sub.add_parser('data', help='copy, trim and index the baseline and runs')
     p.add_argument('--source', default=str(SOURCE), help='the knowledge/cartographer folder to snapshot')
     args = parser.parse_args()
