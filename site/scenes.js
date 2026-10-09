@@ -95,6 +95,7 @@
     // The plain sections don't animate; their beat is just the section top.
     if (expSec) expTop = expSec.offsetTop;
     if (labsSec) labsTop = labsSec.offsetTop;
+    if (libSec) libTop = libSec.offsetTop;
     if (contactSec) contactTop = contactSec.offsetTop;
   }
 
@@ -410,6 +411,8 @@
   const appAppSnap = document.getElementById('app-snap-app');
   const expSnap = document.getElementById('exp-snap');
   const labsSnap = document.getElementById('labs-snap');
+  const libSnap = document.getElementById('library-snap');
+  const libSec = document.getElementById('library');
   const expSec = document.getElementById('experience');
   const labsSec = document.getElementById('labs');
   const contactSnap = document.getElementById('contact-snap');
@@ -417,7 +420,7 @@
 
   const SNAP_FREE = .12;    // of a viewport: how near a beat still counts as being parked on it.
   let snapOff = -1;         // page position of the target stood down for this gesture, or -1 for none.
-  let expTop = 0, labsTop = 0, contactTop = 0;
+  let expTop = 0, labsTop = 0, libTop = 0, contactTop = 0;
 
   // The beats, in page order — the one description the rail and every barrier below read, so a stop and its
   // guarded position can't drift apart. `at: null` means the beat isn't there right now.
@@ -429,6 +432,7 @@
       { el: heroSnap, base: 0, at: dead ? null : heroAloneY(), sec: 'alex', fill: 1 },
       { el: loopSnap, base: loopTop, sec: 'cartographer', fill: 1,
         at: dead || shortLoop.matches || !loopScroll ? null : loopIdleY() },
+      { el: libSnap, base: libTop, at: dead ? null : libTop, sec: 'library', fill: 1 },
       // The calculator's pin carries exactly its two resting states (faceplate, shipped app) — nothing between
       // them is a place to be, so the turn happens on the way between.
       { el: appOldSnap, base: appTop, at: noApp ? null : appTop, sec: 'app', fill: .5 },
