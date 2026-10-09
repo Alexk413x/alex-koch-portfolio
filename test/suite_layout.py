@@ -268,41 +268,23 @@ def run(page, r):
     page.flick(-900, pause=0.4)
     r.near('all the way to the hero', page.until_still(quiet=0.5), beats[0], 8)
 
-    # THE CALCULATOR IS ITS PIN'S TWO ENDS, and both of them are PURE states of the morph: the faceplate the
-    # section arrives at, and the shipped app it leaves as. Nothing between them is a place to be -- the
-    # mechanism is either still or in flight -- so the rail stops on both, from both directions, and the turn
-    # happens on the way between. A reader could be left mid-morph before this, with half a keypad in each
-    # keyboard, which is the one frame of that scene nobody chose to look at.
+    # THE CALCULATOR IS ONE SCREEN WITH ONE BEAT, like the others. It turns on a timer and never holds the scroll, so a
+    # flick lands on it and the next flick carries on past it.
     page.scroll(beats[2], pause=0.9)
     page.flick(900, pause=0.4)
     r.near('a flick off Cartographer lands on The Library', page.until_still(quiet=0.5), beats[3], 8)
     page.flick(900, pause=0.4)
-    r.near('a flick off The Library lands on the faceplate', page.until_still(quiet=0.5), beats[4], 8)
-    r.near('and the faceplate beat is a pure state', page.until_morphed(), 0.0, 0.001)
+    r.near('a flick off The Library lands on the calculator', page.until_still(quiet=0.5), beats[4], 8)
+    page.flick(900, pause=0.4)
+    r.near('and the next flick carries past it to Experience', page.until_still(quiet=0.5), beats[5], 8)
 
-    page.flick(500, pause=0.4)
-    r.near('a flick off the faceplate lands on the app', page.until_still(quiet=0.5), beats[5], 8)
-    r.near('and the app beat is the other pure state', page.until_morphed(), 1.0, 0.001)
-
-    # ANY MOVE INTO THE PIN IS A DECISION. The scroll drives the turn, and a stop part-way carries on in the
-    # direction the reader was going, so even a small nudge down lands on the app rather than being put back.
+    # A nudge off the calculator is put back on it, as on every other beat, and a flick back up walks to it.
     page.scroll(beats[4], pause=0.9)
     page.wheel(160, pause=0)
-    r.near('a nudge inside the pin carries on to the app', page.until_still(quiet=0.5), beats[5], 8)
-    r.near('and the calculator finished turning', page.until_morphed(), 1.0, 0.001)
-
-    # ...and it plays backwards the same way, which is the half that used to have nowhere to land.
+    r.near('a nudge off the calculator is put back on it', page.until_still(quiet=0.5), beats[4], 8)
     page.scroll(beats[5], pause=0.9)
-    page.flick(-500, pause=0.4)
-    r.near('back up from the app lands on the faceplate', page.until_still(quiet=0.5), beats[4], 8)
-    r.near('and the calculator turned back', page.until_morphed(), 0.0, 0.001)
-
-    # LEAVING THE CALCULATOR COMMITS AT ONCE. Its turn carries on in the direction of travel, so one notch down
-    # off the app end is a decision to go on to Experience, not a nudge to undo.
-    page.scroll(beats[5], pause=1.2)
-    page.until_still(quiet=0.5)
-    page.wheel(100, pause=0)
-    r.near('one notch down off the app carries on to Experience', page.until_still(quiet=0.8), beats[6], 8)
+    page.flick(-900, pause=0.4)
+    r.near('back up from Experience lands on the calculator', page.until_still(quiet=0.5), beats[4], 8)
 
     # LEAVING IS FREE, and this is the check that caught the worst version of it. `scroll-snap-stop: always`
     # under the reader does not merely refuse to carry them PAST a beat, it refuses to let them OFF it: Chrome
@@ -418,11 +400,11 @@ def run(page, r):
     r.near('and the hero is showing when it lands',
            float(page.js("document.getElementById('stage').style.getPropertyValue('--o1') || '1'")), 1.0, 0.02)
 
-    # Same shape for the calculator: its range's top is the faceplate, its element's is somewhere mid-morph.
+    # Same shape for the calculator: the link lands on the section's top, where its beat is.
     page.scroll(6000, pause=0.4)
     page.click_at('#nav .links a[href="#app"]', pause=0.05)
-    page.until_still()
-    r.near('the APP link lands on the faceplate', page.until_morphed(), 0.0, 0.001)
+    r.near('the APP link lands on the calculator', page.until_still(),
+           page.js("Math.round(document.getElementById('app-scroll').getBoundingClientRect().top+scrollY)"), 8)
 
     # An arrow inside the calculator belongs to the calculator. The key is left un-prevented there, so the
     # browser's own 40px scroll happens and the page does NOT step -- which is the thing being asserted.
@@ -466,14 +448,13 @@ def run(page, r):
     r.ok('no stop lands between The Library and the calculator', not between, 'stops at %s' % between)
     r.ok('and The Library is itself a stop', any(abs(s - lib_top) <= 8 for s in all_stops), 'stops at %s' % all_stops)
 
-    # THE CALCULATOR IS THREE PRESSES: one seats it, one commits the morph, and the third leaves. A fourth was
-    # landing 890px into the section's exit, showing the same played-out calculator the press before it did.
+    # THE CALCULATOR IS ONE PRESS: it is one screen that turns on a timer, so its top is its only stop.
     exp_top = page.js("Math.round(document.getElementById('experience').getBoundingClientRect().top+scrollY)")
     inside = [s for s in all_stops if app_top <= s < exp_top]
-    r.check('the calculator is two stops, not three', len(inside), 2)
-    r.check('the first of them seats it', inside[0] if inside else -1, app_top)
+    r.check('the calculator is one stop', len(inside), 1)
+    r.check('and it seats the section', inside[0] if inside else -1, app_top)
     nxt = [s for s in all_stops if s >= exp_top]
-    r.check('and the press after the morph leaves the section', nxt[0] if nxt else -1, exp_top)
+    r.check('and the next press leaves the section', nxt[0] if nxt else -1, exp_top)
     ARRIVAL = ("(()=>{const s=getComputedStyle(document.getElementById('cartographer'));"
                "return JSON.stringify({o:parseFloat(s.opacity),t:s.transform})})()")
 
