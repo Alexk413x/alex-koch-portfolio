@@ -1,4 +1,5 @@
-# The calculator morph: its pin, its dead zones, and the two states it has to actually rest in.
+# The calculator morph: that it turns on a timer, that the page is never held by it, and the two states it has to
+# actually rest in.
 #
 # The invariants here are the ones that have broken before. A key whose start plus span exceeded 1 sat stranded
 # mid-flight in what is meant to be a still state, and it looked like a layout bug rather than a timing one.
@@ -42,108 +43,109 @@ GRID = """(() => {
   });
 })()"""
 
+M = "+(document.getElementById('app-stage').style.getPropertyValue('--m') || 0)"
+IN_V = "document.querySelector('#rpn .rpn-in .v').textContent"
+
 
 def run(page, r):
     page.goto('index.html')
-    pin = page.pin('app-scroll', 'app-stage')
-    top, run_px, vh = pin['top'], pin['run'], pin['vh']
-    r.ok('the scene pins', run_px > 0, 'run=%s' % run_px)
+    top = page.js("Math.round(document.getElementById('app-scroll').getBoundingClientRect().top+scrollY)")
+    vh = page.js('innerHeight')
 
-    M = "document.getElementById('app-stage').style.getPropertyValue('--m')"
+    # ONE SCREEN. The calculator used to be a pinned scene with a scroll runway; it is a plain section now.
+    height = page.js("document.getElementById('app-scroll').offsetHeight")
+    r.near('the section is one screen tall', height, vh, 4)
+    r.check('and nothing in it is sticky', page.js("getComputedStyle(document.getElementById('app-stage')).position"), 'relative')
 
-    def at(fraction, pause=0.15):
-        """Scrolls, then waits for the morph to reach a PURE state.
+    # IT TURNS BY ITSELF, from the faceplate to the app and back, with no scrolling to drive it.
+    page.scroll(top, pause=0.5)
+    r.ok('it starts on the faceplate', page.js(M) < 0.04, 'm=%s' % page.js(M))
+    r.ok('and turns to the app on its own', page.until('(%s) > 0.96' % M, timeout=9.0))
+    r.ok('and back to the faceplate', page.until('(%s) < 0.04' % M, timeout=9.0))
 
-        A stop part-way through the turn glides the page on to one end, so the value right after a move is still
-        changing. Polling for the state the mechanism is guaranteed to reach returns as soon as it is true."""
-        page.scroll(top + int(run_px * fraction), pause=pause)
-        return page.until_morphed()
+    # A LEFT OR RIGHT ARROW, OR A SIDEWAYS SWIPE, TURNS IT NOW rather than after the rest.
+    page.reload()
+    page.scroll(top, pause=0.5)
+    page.key('ArrowRight', pause=0.2)
+    r.ok('an arrow key turns it at once', page.until('(%s) > 0.96' % M, timeout=2.6))
+    SWIPE = ("(()=>{const s=document.getElementById('app-stage'),b=s.getBoundingClientRect();"
+             "const ev=(t,x)=>s.dispatchEvent(new PointerEvent(t,{pointerId:5,pointerType:'touch',clientX:x,clientY:b.top+b.height/2,bubbles:true}));"
+             "ev('pointerdown',b.left+b.width/2);ev('pointerup',b.left+b.width/2-90);return 1})()")
+    page.js(SWIPE)
+    r.ok('a swipe turns it back at once', page.until('(%s) < 0.04' % M, timeout=2.6))
 
-    def y():
-        return float(page.js('window.scrollY'))
+    # IT DOES NOT TURN WHILE A POINTER IS OVER IT: a reader at the keypad is not turned out from under their hand.
+    page.reload()
+    page.scroll(top, pause=0.5)
+    page.js("document.getElementById('rpn').dispatchEvent(new PointerEvent('pointerenter'));1")
+    time.sleep(7.0)
+    r.ok('it holds while the pointer is over it', page.js(M) < 0.04, 'm=%s' % page.js(M))
+    page.js("document.getElementById('rpn').dispatchEvent(new PointerEvent('pointerleave'));1")
+    r.ok('and turns again once the pointer leaves', page.until('(%s) > 0.96' % M, timeout=10.0))
 
-    r.ok('the pin carries no dead runway', run_px < vh * 1.2, '%dpx against a %dpx viewport' % (run_px, vh))
-
-    r.near('the faceplate is where the pin starts', at(0.0), 0.0, 0.001)
-    # A reader arrives and rests before scrolling on; resting is what stands the end they are on down.
-    time.sleep(0.7)
-
-    # THE SCROLL DRIVES IT. Real wheel input, not scrollTo: a programmatic scroll near an armed snap target is
-    # snapped straight back onto it, which a reader's gesture is not (the rig stands the origin beat down).
-    # Read inside the stillness window, before the settle glide starts.
-    TRACK = ("(()=>{const g=document.getElementById('app-stage');"
-             "return JSON.stringify({m:+(g.style.getPropertyValue('--m')||0),"
-             "p:(scrollY-%d)/%d})})()" % (top, run_px))
-    page.wheel(int(run_px * 0.4), pause=0.08)
-    t = page.json(TRACK)
-    r.ok('mid-scroll the turn is part-played', 0.001 < t['m'] < 0.999, 'm=%.3f' % t['m'])
-    r.near('and it sits where the scroll is', t['m'], min(1, max(0, t['p'])), 0.06)
-
-    # A STOP PART-WAY FINISHES IN THE DIRECTION OF TRAVEL, by moving the page, not by a clock of its own.
-    r.near('stopping part-way down finishes the turn', page.until_morphed(), 1.0, 0.001)
-    page.until_still()
-    r.near('and the page glided to the end of the pin', y(), top + run_px, 8)
-
-    page.wheel(-int(run_px * 0.4), pause=0.08)
-    t = page.json(TRACK)
-    r.ok('scrolling back up reverses it', 0.001 < t['m'] < 0.999, 'm=%.3f' % t['m'])
-    r.near('stopping part-way up finishes it back to the faceplate', page.until_morphed(), 0.0, 0.001)
-    page.until_still()
-    r.near('and the page glided to the top of the pin', y(), top, 8)
-
-    # A GESTURE THAT BEGAN OUTSIDE THE PIN IS NOT CARRIED ON. Coming up out of the section below, momentum that
-    # coasts part-way into the turn settles back to the app end it entered by, not on through to the faceplate.
-    page.scroll(top + run_px + int(vh * 0.4), pause=0.9)
-    page.wheel(-int(vh * 0.4 + run_px * 0.35), pause=0.08)
-    r.near('coasting up into the pin settles back to the app', page.until_morphed(), 1.0, 0.001)
-    page.until_still()
-    r.near('and the page rests on the end it entered by', y(), top + run_px, 8)
-
-    impure = []
-    for f in (0.05, 0.3, 0.55, 0.8, 1.0):
-        m = at(f)
-        if 0.001 < m < 0.999:
-            impure.append('%.2f->%.3f' % (f, m))
-    r.ok('it comes to rest on a pure state everywhere in the pin', not impure, ', '.join(impure))
+    # IT DOES NOT TURN OFF SCREEN: nothing runs where nobody can see it.
+    page.reload()
+    page.scroll(0, pause=0.5)
+    time.sleep(7.0)
+    r.ok('it holds while the section is off screen', page.js(M) < 0.04, 'm=%s' % page.js(M))
 
     # NO KEY MAY BE MID-FLIGHT AT REST. This is the failure that shipped once.
-    at(0.0)
+    page.scroll(top, pause=0.4)
+    page.js('AKSCENE.morphSet(0);1')
+    time.sleep(0.3)
     face = page.json(GRID)
     r.check('faceplate shows all 39 keys', face['visible'], 39)
     r.check('faceplate keys do not overlap', face['overlaps'], 0)
     r.check('faceplate is 10 columns', face['cols'], 10)
     r.check('faceplate is 4 rows', face['rows'], 4)
 
-    at(1.0)
+    page.js('AKSCENE.morphSet(1);1')
+    time.sleep(0.3)
     app = page.json(GRID)
     r.check('app shows all 28 keys', app['visible'], 28)
     r.check('app keys do not overlap', app['overlaps'], 0)
     r.check('app is 4 columns', app['cols'], 4)
     r.check('app is 7 rows', app['rows'], 7)
 
-    # Keys are inert while plates are in flight, live at both resting states. Caught inside the stillness
-    # window, before the settle glide lands it.
-    at(1.0)
+    # Keys are inert while plates are in flight, live at both resting states.
     page.click_at('#rpn .rpn-pad [data-key="CA"]')
-    at(0.0)
-    before = page.js("document.querySelector('#rpn .rpn-in .v').textContent")
-    page.scroll(top + int(run_px * 0.5), pause=0.02)
+    page.js('AKSCENE.morphSet(0);1')
+    time.sleep(0.3)
+    before = page.js(IN_V)
+    page.js('AKSCENE.morphSet(0.5);1')
+    time.sleep(0.2)
     page.click_at('#rpn .rpn-pad [data-key="7"]')
-    r.check('a key mid-morph does nothing', page.js("document.querySelector('#rpn .rpn-in .v').textContent"), before)
+    r.check('a key mid-morph does nothing', page.js(IN_V), before)
 
-    at(1.0)
+    page.js('AKSCENE.morphSet(1);1')
+    time.sleep(0.3)
     page.click_at('#rpn .rpn-pad [data-key="7"]')
-    r.check('the app keypad is live at rest', page.js("document.querySelector('#rpn .rpn-in .v').textContent"), '7')
+    r.check('the app keypad is live at rest', page.js(IN_V), '7')
 
     # The faceplate is a working calculator too, reached by a real click through the 3D transform. Cleared from
     # the app state first: the faceplate has no CA, and the app's is hidden while the faceplate is showing.
     page.click_at('#rpn .rpn-pad [data-key="CA"]')
-    at(0.0)
+    page.js('AKSCENE.morphSet(0);1')
+    time.sleep(0.3)
     for key in ('9', '√x'):
         page.click_at('#rpn .rpn-pad [data-key="%s"]' % key)
-    r.check('the faceplate is live at rest: 9 then sqrt', page.js("document.querySelector('#rpn .rpn-in .v').textContent"), '3')
+    r.check('the faceplate is live at rest: 9 then sqrt', page.js(IN_V), '3')
 
-    # A short viewport gets the finished calculator as a plain block, never a pinned scene it cannot hold.
+    # ON A PHONE THE SECTION DOES NOT CHANGE HEIGHT AS IT TURNS, or everything below it would be pushed down the page
+    # and back every few seconds.
+    page.viewport(393, 852, mobile=True, dpr=2)
+    page.js('window.dispatchEvent(new Event("resize"));1')
+    time.sleep(0.5)
+    HEIGHT = "document.getElementById('app-scroll').offsetHeight"
+    page.js('AKSCENE.morphSet(0);1')
+    time.sleep(0.2)
+    face_h = page.js(HEIGHT)
+    page.js('AKSCENE.morphSet(1);1')
+    time.sleep(0.2)
+    r.check('the phone section is the same height at both states', page.js(HEIGHT), face_h)
+    page.reset_viewport()
+
+    # A short viewport gets the finished calculator as a plain block, never a scene it cannot hold.
     page.viewport(852, 393, mobile=True, dpr=2)
     page.js('window.dispatchEvent(new Event("resize"));1')
     r.check('short viewport does not pin', page.js("getComputedStyle(document.getElementById('app-stage')).position"), 'static')

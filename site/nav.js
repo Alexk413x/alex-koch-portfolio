@@ -96,7 +96,15 @@
   // fall out of step with the list they both describe.
   nav.style.setProperty('--n', items.length);
 
+  /* THE MARK'S MENU OPENS ON HOVER with a mouse, and on a tap or a click everywhere. A click on a menu a hover opened
+     keeps it open (pinned) until a second click, Escape or a click outside; an unpinned hover menu closes a moment
+     after the pointer leaves both the mark and the menu. */
+  const markP = panels.find((p) => p.btn.classList.contains('mark'));
+  const canHover = window.matchMedia('(hover: hover) and (pointer: fine)');
+  let pinned = false, leaveTimer = 0;
+
   function openPanel(which) {
+    if (which !== markP) pinned = false;
     for (const p of panels) {
       const on = p === which;
       p.panel.classList.toggle('is-open', on);
@@ -108,8 +116,27 @@
   for (const p of panels) {
     p.btn.addEventListener('click', (e) => {
       e.stopPropagation();
-      openPanel(p.panel.classList.contains('is-open') ? null : p);
+      const open = p.panel.classList.contains('is-open');
+      if (p === markP && open && !pinned && canHover.matches) { pinned = true; return; }
+      openPanel(open ? null : p);
+      if (p === markP) pinned = !open;
     });
+  }
+  if (markP) {
+    const hoverOpen = (e) => {
+      if (e.pointerType !== 'mouse' || !canHover.matches) return;
+      clearTimeout(leaveTimer);
+      if (!markP.panel.classList.contains('is-open')) openPanel(markP);
+    };
+    const hoverClose = (e) => {
+      if (e.pointerType !== 'mouse' || !canHover.matches) return;
+      clearTimeout(leaveTimer);
+      leaveTimer = setTimeout(() => { if (!pinned) openPanel(null); }, 220);
+    };
+    for (const el of [markP.btn, markP.panel]) {
+      el.addEventListener('pointerenter', hoverOpen);
+      el.addEventListener('pointerleave', hoverClose);
+    }
   }
   if (panels.length) {
     nav.classList.add('js-nav');
@@ -222,20 +249,9 @@
     const lib = document.getElementById('library');
     if (lib) list.push(at(lib));
 
-    /* The calculator is two stops, not one, and they are the ENDS of its pin: the faceplate it arrives at and
-       the shipped app it leaves as. The same two positions scenes.js stops the scroll on, so a press and a
-       gesture land a reader on the same frame of one hand-off.
-       Not a stop just past the trigger: that is a position the morph has been COMMITTED at rather than one it
-       has finished turning at, so a press lands there and the calculator goes on moving for most of a second
-       afterwards. */
-    const appScroll = document.getElementById('app-scroll');
-    const appStage = document.getElementById('app-stage');
-    if (appScroll && appStage) {
-      const pinTop = at(appScroll);
-      const run = appScroll.offsetHeight - appStage.offsetHeight;
-      list.push(pinTop);
-      if (run > 0) list.push(Math.min(maxScroll(), pinTop + run));
-    }
+    /* The calculator is one screen that turns on a timer, so it is one stop: its top. */
+    const app = document.getElementById('app-scroll');
+    if (app) list.push(at(app));
 
     /* ONE STOP PER ROLE, back again and meaningful this time. The roles are beats of a pinned viewer now, so a
        press both moves the page and changes what is showing — which is what a stop is for. Placed mid-beat
@@ -473,6 +489,7 @@
     const side = e.key === 'ArrowLeft' || e.key === 'ArrowRight';
     if (side && window.AKCAT && window.AKCAT.sideways && window.AKCAT.sideways()) return;
     if (side && window.AKLIB && window.AKLIB.sideways && window.AKLIB.sideways()) return;
+    if (side && window.AKSCENE && window.AKSCENE.sideways && window.AKSCENE.sideways()) return;
     if (!roomy.matches || reduced.matches) return;
     e.preventDefault();
     stopGlide();
