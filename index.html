@@ -58,7 +58,8 @@ html.css-pending body{visibility:hidden}
     // Cleared by site.css's own onload below; the timeout covers a stylesheet that never arrives, which must
     // cost the reader the styling, not the page.
     el.classList.add('css-pending');
-    window.AK_CSS_IN = function () { el.classList.remove('css-pending'); };
+    // Also re-fits the display lockups: a pass that ran before the stylesheet applied measured unstyled text.
+    window.AK_CSS_IN = function () { el.classList.remove('css-pending'); if (window.akDisplayAlignAll) window.akDisplayAlignAll(); };
     setTimeout(window.AK_CSS_IN, 3000);
     /* WHETHER THE INTRO RUNS IS DECIDED HERE, before first paint, because the intro's black sheet has to be
        true for the very first frame or the hero flashes under it. ONCE PER VISITOR: a browser that has seen it
