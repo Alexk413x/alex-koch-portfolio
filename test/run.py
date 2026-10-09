@@ -20,6 +20,7 @@ import suite_catalog    # noqa: E402
 import suite_hero         # noqa: E402
 import suite_intro        # noqa: E402
 import suite_labs         # noqa: E402
+import suite_library      # noqa: E402
 import suite_layout       # noqa: E402
 import suite_morph        # noqa: E402
 import suite_qr           # noqa: E402
@@ -28,7 +29,7 @@ import suite_seo          # noqa: E402
 
 # suite_catalog LAST: it emulates prefers-reduced-motion, and a suite that crashed mid-emulation would hand
 # the setting to whatever ran after it.
-SUITES = [suite_rpn, suite_morph, suite_qr, suite_book, suite_hero, suite_layout, suite_seo, suite_labs, suite_intro, suite_catalog]
+SUITES = [suite_rpn, suite_morph, suite_qr, suite_book, suite_hero, suite_layout, suite_library, suite_seo, suite_labs, suite_intro, suite_catalog]
 
 
 def _run(suite, page):

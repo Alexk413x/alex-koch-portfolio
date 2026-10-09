@@ -122,11 +122,13 @@ html.css-pending body{visibility:hidden}
      The <noscript> copies are render-blocking, for a reader whose browser will never run the swap. -->
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 <link rel="stylesheet" href="site/site.css" media="print" onload="this.media='all';window.AK_CSS_IN&&window.AK_CSS_IN()">
+<link rel="stylesheet" href="site/wireframe.css" media="print" onload="this.media='all'">
 <!-- The intro's loading ring is the labs' own; the sheet carries it while the tube's shaders compile. -->
 <link rel="stylesheet" href="labs/kit/loading.css" media="print" onload="this.media='all'">
 <noscript>
   <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="site/site.css">
+  <link rel="stylesheet" href="site/wireframe.css">
   <link rel="stylesheet" href="labs/kit/loading.css">
 </noscript>
 </head>
@@ -176,6 +178,7 @@ html.css-pending body{visibility:hidden}
   <div class="links" id="nav-links">
     <a href="#alex">413X</a>
     <a href="#cartographer">CARTOGRAPHER</a>
+    <a href="#library">LIBRARY</a>
     <a href="#app">CALCULATOR</a>
     <a href="#experience">EXPERIENCE</a>
     <a href="#labs">LABS</a>
@@ -449,6 +452,56 @@ html.css-pending body{visibility:hidden}
   </section>
 </div>
 </div>
+
+<!-- THE LIBRARY: a plain section, not a pinned scene. One index drives the ring, the stack of descriptions and
+     the accent bar, so library.js owns the whole state and the stylesheet owns every position. -->
+<section id="library" aria-labelledby="library-title">
+  <i id="library-snap" aria-hidden="true"></i>
+  <div class="inner">
+    <div class="lib-grid">
+
+      <div class="lib-head">
+        <h2 class="sec-title" id="library-title">THE<br><span style="color:var(--accent)">LIBRARY</span></h2>
+        <p class="tagline">A workflow marketplace for Claude Code.</p>
+        <p class="sec-lede">Four plugins. Each works on its own and works better beside the others.</p>
+      </div>
+
+      <div class="lib-ring" role="group" aria-roledescription="carousel" aria-label="The four Library plugins">
+        <div class="lib-slot"><div class="lib-model"></div></div>
+        <div class="lib-slot"><div class="lib-model"></div></div>
+        <div class="lib-slot"><div class="lib-model"></div></div>
+        <div class="lib-slot"><div class="lib-model"></div></div>
+      </div>
+
+      <div class="lib-list">
+      <i class="lib-bar" aria-hidden="true"></i>
+      <ol>
+        <li><button class="lib-item" type="button">
+          <b>Agent Tabs</b>
+          <span>Opens Claude Code, Codex, Gemini and Copilot sessions in IDE and terminal tabs, then messages between them and delegates work.</span>
+        </button></li>
+        <li><button class="lib-item" type="button">
+          <b>Codebase KG</b>
+          <span>A committed, searchable code graph for each repo, so an agent finds code without mapping it again every session.</span>
+        </button></li>
+        <li><button class="lib-item" type="button">
+          <b>Sentinel Swarm</b>
+          <span>An agent swarm that takes a PRD to built, tested, reviewed code, with every hand-off checked against a shared ledger.</span>
+        </button></li>
+        <li><button class="lib-item" type="button">
+          <b>The Index</b>
+          <span>A band above the prompt that shows what a session costs, how close you are to a limit, and where your code stands.</span>
+        </button></li>
+      </ol>
+      </div>
+
+      <div class="lib-foot">
+        <a class="demo-cta" href="https://github.com/Alexk413x/marketplace" target="_blank" rel="noopener">View on GitHub ↗</a>
+      </div>
+
+    </div>
+  </div>
+</section>
 
 <!-- One calculator, not two. Scroll interpolates it from a replica faceplate into the shipped app; the DOM tree
      and the live stack machine behind it never change. -->
@@ -1273,6 +1326,9 @@ html.css-pending body{visibility:hidden}
 <script src="site/rpn-demo.js"></script>
 <script src="site/lab-objects.js"></script>
 <script src="site/case3d.js"></script>
+<script src="site/library-logos.js"></script>
+<script src="site/library-models.js"></script>
+<script src="site/library.js"></script>
 <script type="module" src="site/catalog.js"></script>
 <script src="site/timeline.js"></script>
 <script type="module" src="site/hero-core.js"></script>

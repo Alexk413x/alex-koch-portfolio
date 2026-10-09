@@ -1,0 +1,78 @@
+/* wireframe.css: the one place the Library's wireframe drawings get their look.
+ *
+ * Every value is a custom property on .lm, and every class below reads only those, so a drawing never carries a
+ * color, a weight or a glow of its own. The numbers are the Cartographer's: .fg-node's line, face and weight,
+ * .fg-spark's bead and .fg-wave's pulse. JS passes geometry and progress, never a style, except `--u` on a bead,
+ * which is how far along its track it is. */
+
+.lm {
+  /* Structure. */
+  --wf-line: var(--scenery);
+  --wf-line-w: 1.4;
+  --wf-edge-w: 1.25;
+  --wf-glass: rgba(0, 0, 0, .25);
+  --wf-wall: color-mix(in srgb, var(--accent) 7%, transparent);
+
+  /* Where a shape needs filling it is a transparent orange, never a solid one. */
+  --wf-fill: color-mix(in srgb, var(--accent) 20%, transparent);
+  --wf-bar: color-mix(in srgb, var(--accent) 22%, transparent);
+  --wf-select: color-mix(in srgb, var(--accent) 80%, var(--ink-deep));
+  --wf-mark: color-mix(in srgb, var(--accent) 55%, var(--scenery));
+  --wf-bead-share: .6;
+  --wf-bead-a: .8;
+
+  /* Light: the core color, and the halo chained out of it. */
+  --wf-hot: var(--accent-hover);
+  --wf-halo: var(--accent);
+  --wf-bar-w: 3.2;
+  --wf-hot-w: 1.4;
+  --wf-rim-w: 1.8;
+  --wf-pulse-peak: .6;
+  --wf-pulse: drop-shadow(0 0 2px var(--wf-hot)) drop-shadow(0 0 6px var(--wf-halo));
+  --wf-wave: drop-shadow(0 0 5px var(--wf-hot)) drop-shadow(0 0 17px var(--wf-halo)) drop-shadow(0 0 36px var(--wf-halo));
+
+  /* Type. */
+  --wf-font: var(--font-mono);
+  --wf-text: var(--text-body);
+  --wf-text-dim: var(--text-faint);
+  --wf-text-strong: var(--text-strong);
+}
+
+/* Line and glass. A constant screen weight, as .fg-node uses. */
+.lm .lm-line { fill: none; stroke: var(--wf-line); stroke-width: var(--wf-line-w); stroke-linecap: round; stroke-linejoin: round; vector-effect: non-scaling-stroke }
+.lm .lm-faint { stroke: var(--wf-line) }
+.lm .lm-wire { stroke: var(--wf-line); stroke-width: var(--wf-edge-w) }
+.lm .lm-glass { fill: var(--wf-glass) }
+.lm .lm-snode, .lm .lm-strip { stroke: var(--wf-line) }
+.lm .lm-wall { fill: var(--wf-wall); stroke: none }
+.lm .lm-chip { fill: var(--wf-glass); stroke: var(--wf-line) }
+.lm .lm-chip.lm-on { stroke: var(--wf-select) }
+
+/* Marks. */
+.lm .lm-logo path { fill: none; stroke: var(--wf-line); stroke-width: var(--wf-line-w); stroke-linejoin: round; vector-effect: non-scaling-stroke }
+.lm .lm-on .lm-logo path { stroke: var(--wf-select) }
+
+/* Fills and bars. */
+.lm .lm-tfill { fill: var(--wf-bar); stroke: none }
+.lm .lm-tbars { fill: var(--wf-fill); stroke: var(--wf-line) }
+.lm .lm-bars { fill: none; stroke-width: var(--wf-bar-w); stroke-linecap: round }
+.lm .lm-soft { stroke: var(--wf-bar) }
+.lm .lm-hotbar { stroke: var(--wf-hot); stroke-opacity: .85 }
+
+/* Light. .lm-glow is the IDE's prompt bars and cursor, one filter pass. The travelling bead is not styled here: it is
+   the shared .bead component in site.css, the Cartographer's own. */
+.lm .lm-beads { opacity: var(--wf-bead-a) }
+.lm .lm-sym { stroke: var(--wf-mark) }
+.lm .lm-glow { fill: none; filter: var(--wf-wave); mix-blend-mode: screen }
+.lm .lm-hotline { stroke: var(--wf-line); stroke-width: var(--wf-hot-w) }
+/* A node's border pulses when a bead reaches it. Its opacity is set by script, so it is not declared here: a declaration
+   in a stylesheet outranks the attribute. The light is a small halo, since the bead is what carries the glow. */
+.lm .lm-pulse { fill: none; filter: var(--wf-pulse); opacity: var(--wf-pulse-peak) }
+.lm .lm-rim { fill: var(--wf-halo); stroke: var(--wf-hot); stroke-width: var(--wf-rim-w); stroke-linejoin: round }
+
+/* Type. */
+.lm .lm-text { fill: var(--wf-text); font: 500 9px var(--wf-font); white-space: pre }
+.lm .lm-dim { fill: var(--wf-text-dim) }
+.lm .lm-tier { font-size: 7.5px; letter-spacing: .14em }
+.lm .lm-head { fill: var(--wf-text-strong); font-size: 9.5px; font-weight: 700; letter-spacing: .16em }
+.lm .lm-big { fill: var(--wf-text-strong); font-size: 17px; font-weight: 700 }
