@@ -46,7 +46,7 @@
       l.style.width = 'max-content';
       l.style.whiteSpace = 'nowrap';
       l.style.transform = 'none';
-      /* Back to the AUTHORED tracking before measuring, the same discipline fill() keeps with dsFs. The
+      /* Back to the AUTHORED tracking before measuring, the same discipline fill() keeps with the font size. The
          correction below is a delta on the tracking it reads, so measuring the previous pass's output makes
          every run build on the last: the lines still match each other, but the pair keeps widening. A resize
          from 430 back to 1600 grew this lockup 21px and it never recovered. Cleared rather than cached,
@@ -99,8 +99,10 @@
     /* align() runs several times (mount, fonts.ready, resize, DOM changes). Every value this function
        writes must be recomputed from the AUTHORED baseline, never from the last pass's output, or the
        size shrinks and the margin drifts a little further on each run. */
-    if (!el.dataset.dsFs) el.dataset.dsFs = getComputedStyle(el).fontSize;
-    el.style.fontSize = el.dataset.dsFs;
+    /* The authored size is read fresh on every pass, with the inline size cleared first, and never cached. A pass
+       that ran before the stylesheet applied (it loads without blocking) used to cache the browser's default 16px
+       here, and every later pass restored it, so the line stayed tiny until a reload. */
+    el.style.fontSize = '';
     el.style.wordSpacing = '0px';
     el.style.marginLeft = '0px';
 
