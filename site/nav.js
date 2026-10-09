@@ -219,6 +219,9 @@
       if (cart) list.push(at(cart));
     }
 
+    const lib = document.getElementById('library');
+    if (lib) list.push(at(lib));
+
     /* The calculator is two stops, not one, and they are the ENDS of its pin: the faceplate it arrives at and
        the shipped app it leaves as. The same two positions scenes.js stops the scroll on, so a press and a
        gesture land a reader on the same frame of one hand-off.
@@ -469,6 +472,7 @@
        not have to know which section that is or when it is on screen. */
     const side = e.key === 'ArrowLeft' || e.key === 'ArrowRight';
     if (side && window.AKCAT && window.AKCAT.sideways && window.AKCAT.sideways()) return;
+    if (side && window.AKLIB && window.AKLIB.sideways && window.AKLIB.sideways()) return;
     if (!roomy.matches || reduced.matches) return;
     e.preventDefault();
     stopGlide();

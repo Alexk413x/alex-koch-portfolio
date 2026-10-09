@@ -7,7 +7,7 @@ GL = True
 # 830 is the last width before the 820px rule hides every link but the external one, so it is where a nav that
 # has grown an item too many wraps first. Anything narrower is testing the collapsed nav, not this one.
 WIDTHS = [1600, 1400, 1280, 1150, 1024, 900, 860, 830]
-SECTIONS = ['cartographer', 'experience', 'labs', 'contact']
+SECTIONS = ['cartographer', 'library', 'experience', 'labs', 'contact']
 
 
 def run(page, r):
@@ -275,32 +275,34 @@ def run(page, r):
     # keyboard, which is the one frame of that scene nobody chose to look at.
     page.scroll(beats[2], pause=0.9)
     page.flick(900, pause=0.4)
-    r.near('a flick off Cartographer lands on the faceplate', page.until_still(quiet=0.5), beats[3], 8)
+    r.near('a flick off Cartographer lands on The Library', page.until_still(quiet=0.5), beats[3], 8)
+    page.flick(900, pause=0.4)
+    r.near('a flick off The Library lands on the faceplate', page.until_still(quiet=0.5), beats[4], 8)
     r.near('and the faceplate beat is a pure state', page.until_morphed(), 0.0, 0.001)
 
     page.flick(500, pause=0.4)
-    r.near('a flick off the faceplate lands on the app', page.until_still(quiet=0.5), beats[4], 8)
+    r.near('a flick off the faceplate lands on the app', page.until_still(quiet=0.5), beats[5], 8)
     r.near('and the app beat is the other pure state', page.until_morphed(), 1.0, 0.001)
 
     # ANY MOVE INTO THE PIN IS A DECISION. The scroll drives the turn, and a stop part-way carries on in the
     # direction the reader was going, so even a small nudge down lands on the app rather than being put back.
-    page.scroll(beats[3], pause=0.9)
+    page.scroll(beats[4], pause=0.9)
     page.wheel(160, pause=0)
-    r.near('a nudge inside the pin carries on to the app', page.until_still(quiet=0.5), beats[4], 8)
+    r.near('a nudge inside the pin carries on to the app', page.until_still(quiet=0.5), beats[5], 8)
     r.near('and the calculator finished turning', page.until_morphed(), 1.0, 0.001)
 
     # ...and it plays backwards the same way, which is the half that used to have nowhere to land.
-    page.scroll(beats[4], pause=0.9)
+    page.scroll(beats[5], pause=0.9)
     page.flick(-500, pause=0.4)
-    r.near('back up from the app lands on the faceplate', page.until_still(quiet=0.5), beats[3], 8)
+    r.near('back up from the app lands on the faceplate', page.until_still(quiet=0.5), beats[4], 8)
     r.near('and the calculator turned back', page.until_morphed(), 0.0, 0.001)
 
     # LEAVING THE CALCULATOR COMMITS AT ONCE. Its turn carries on in the direction of travel, so one notch down
     # off the app end is a decision to go on to Experience, not a nudge to undo.
-    page.scroll(beats[4], pause=1.2)
+    page.scroll(beats[5], pause=1.2)
     page.until_still(quiet=0.5)
     page.wheel(100, pause=0)
-    r.near('one notch down off the app carries on to Experience', page.until_still(quiet=0.8), beats[5], 8)
+    r.near('one notch down off the app carries on to Experience', page.until_still(quiet=0.8), beats[6], 8)
 
     # LEAVING IS FREE, and this is the check that caught the worst version of it. `scroll-snap-stop: always`
     # under the reader does not merely refuse to carry them PAST a beat, it refuses to let them OFF it: Chrome
@@ -451,13 +453,18 @@ def run(page, r):
     loop_top = page.js("Math.round(document.getElementById('loop-scroll').getBoundingClientRect().top+scrollY)")
     vh = page.js('innerHeight')
 
-    # NOTHING STOPS IN THE HAND-OFF. The section is exactly one viewport tall, so its top and the calculator's
+    # NOTHING STOPS IN THE HAND-OFF. The section is exactly one viewport tall, so its top and the next one's
     # round to a gap of screen + 1 -- and a gap-filling stop dropped in there lands the reader on the bottom half
-    # of this section and the top of the calculator, seating neither. It shipped that way once.
+    # of this section and the top of the next, seating neither. It shipped that way once. The Library is the next
+    # section now, and its own top is the one stop between Cartographer and the calculator.
+    lib_top = page.js("Math.round(document.getElementById('library').getBoundingClientRect().top+scrollY)")
     app_top = page.js("Math.round(document.getElementById('app-scroll').getBoundingClientRect().top+scrollY)")
     all_stops = page.json('JSON.stringify(window.AKNAV.stops())')
-    between = [s for s in all_stops if loop_top < s < app_top]
-    r.ok('no stop lands between the section and the calculator', not between, 'stops at %s' % between)
+    between = [s for s in all_stops if loop_top < s < lib_top]
+    r.ok('no stop lands between Cartographer and The Library', not between, 'stops at %s' % between)
+    between = [s for s in all_stops if lib_top < s < app_top]
+    r.ok('no stop lands between The Library and the calculator', not between, 'stops at %s' % between)
+    r.ok('and The Library is itself a stop', any(abs(s - lib_top) <= 8 for s in all_stops), 'stops at %s' % all_stops)
 
     # THE CALCULATOR IS THREE PRESSES: one seats it, one commits the morph, and the third leaves. A fourth was
     # landing 890px into the section's exit, showing the same played-out calculator the press before it did.
