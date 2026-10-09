@@ -4,6 +4,7 @@
 # about layout. The keypad cases go through the real buttons afterwards, because a correct machine nobody can
 # reach is still a broken section.
 import json
+import time
 
 NAME = 'rpn'
 
@@ -91,10 +92,12 @@ def run(page, r):
                        "return JSON.stringify(s.view().levels.map(l=>l.text))})()")
     r.check('a sealed stack survives ten undos', seeded, ['12.5', '3', '8', '2'])
 
-    # Now through the real keypad, from the end of the morph where the app is assembled and live. The morph runs
-    # on its own clock rather than tracking the scroll, so the wait here is the animation's, not the browser's.
-    pin = page.pin('app-scroll', 'app-stage')
-    page.scroll(pin['top'] + pin['run'], pause=1.3)
+    # Now through the real keypad, in the app state where the app is assembled and live. The state is set directly
+    # and the timer held off, so the keypad is not turned mid-press.
+    top = page.js("Math.round(document.getElementById('app-scroll').getBoundingClientRect().top+scrollY)")
+    page.scroll(top, pause=0.4)
+    page.js('AKSCENE.morphSet(1);1')
+    time.sleep(0.4)
     page.js("document.querySelector('#rpn .rpn-pad [data-key=\\\"CA\\\"]').click();1")
     for key in ('1', '2', 'Enter', '3', '+'):
         page.js("document.querySelector('#rpn .rpn-pad [data-key=%s]').click();1" % json.dumps(key))

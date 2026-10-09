@@ -66,9 +66,6 @@
   --scene-hold: 0;
   --scene-exit: .7;
 
-  /* The calculator's pin, in viewport heights — the only declaration of it. scenes.js measures the pin rather
-     than restating it, and scrubs the morph across the whole of it. */
-  --morph-run: .7;
 
 }
 
@@ -562,15 +559,15 @@ html.intro-done .hero-grid, html.intro-done .hero-foot { transition-delay: 1.1s 
 
 /* ---------------- featured app ---------------- */
 
-/* The morph's pin. Height is the viewport plus the scrub runway; scenes.js derives progress from this exact
-   geometry, so the runway is declared once, here. */
-#app-scroll { position: relative; height: calc(100vh + var(--morph-run) * 100vh); height: calc(100svh + var(--morph-run) * 100svh) }
+/* One screen. The calculator turns on a timer (scenes.js), so there is no runway to scrub through. */
+#app-scroll { position: relative; height: 100vh; height: 100svh }
 /* --m defaults to the shipped state on the element scenes.js writes to, so an inline style can outrank it while
    no-JS/reduced-motion inherit the finished calculator. Defaulting on .phone instead would shadow that and pin
    the morph at 1 forever. */
 #app-stage {
   --m: 1;
-  position: sticky; top: 0; height: 100vh; height: 100dvh;
+  touch-action: pan-y;
+  position: relative; height: 100vh; height: 100dvh;
   display: flex; align-items: center; overflow: hidden;
 }
 
@@ -979,7 +976,7 @@ html { scroll-snap-type: y proximity }
 
 /* One rule per beat: reactor, graph, and the calculator's two resting states. scenes.js sets each `top` in
    pixels from the numbers its scrubs run on, and clears the alignment once a scene gives its runway back. */
-#hero-snap, #loop-snap, #app-snap-old, #app-snap-app, #library-snap, #exp-snap, #labs-snap, #contact-snap {
+#hero-snap, #loop-snap, #app-snap, #library-snap, #exp-snap, #labs-snap, #contact-snap {
   /* NOT visibility: hidden — an invisible box would stop being a snap area entirely. */
   position: absolute; left: 0; top: 0; width: 1px; height: 1px; pointer-events: none;
   scroll-snap-align: start; scroll-snap-stop: always;
@@ -2796,42 +2793,23 @@ The hover swell lives on a wrapper, not the core — on the core it would fight 
      its own first child; this is the same rule for the rest. */
   .inner > :first-child, .cat-left > :first-child, .app-copy > :first-child { margin-top: 0 }
 
-  /* THE PIN ENGAGES WHERE THE READER STOPS NEEDING THE TITLE.
-     #app measures 1096px at --m 1 against an 852px screen, so something above the phone has to leave. Not the
-     copy: THEN/NOW is the one block that CHANGES as the morph runs, so hiding it hides the readout the scrub
-     exists to drive. So the section scrolls normally — title, lede, all of it — and pins only once THEN/NOW
-     has reached the header, by sticking at a NEGATIVE top of exactly that distance. From there the copy that
-     matters holds under the bar and the phone has the rest of the screen at full size.
-     --app-lift is measured by scenes.js, not written here: it is the distance from #app's top to .then-now,
-     which is a text block's height at whatever width and font the reader actually got. min-height carries the
-     lift too, or the stage's BOTTOM would rise by it and leave a strip of the next section under the pin. */
+  /* ON A PHONE THE SECTION IS TALLER THAN THE SCREEN at its shipped state (1096px against 852), so it is a plain block
+     that runs to its own height rather than one screen. */
+  #app-scroll { height: auto }
   #app-stage {
     display: block; align-items: initial;
-    position: sticky; top: calc(var(--app-lift, 0px) * -1);
-    height: auto; min-height: calc(100dvh + var(--app-lift, 0px));
+    position: static; height: auto;
     background: var(--ink);
-    /* THE CALCULATOR SHOWS PAST THE STAGE, on one axis. The desktop's `overflow: hidden` (declared once, above)
-       is what a phone inherits, and with the pin's negative top the stage's box no longer bounds what the
-       calculator has to show — a key that leans out of the plate is cut at the edge instead of leaning.
-       Not `visible`: a retracting key's cap carries an inverse scale that reaches 25x, and released sideways
-       that hands a 390px phone a horizontally scrollable page. `clip` on x is the same trade #experience.js-cat
-       makes for the open case, and for the same reason. */
+    /* THE CALCULATOR SHOWS PAST THE STAGE, on one axis. A key that leans out of the plate is cut at the edge
+       instead of leaning under the desktop's `overflow: hidden`. Not `visible`: a retracting key's cap carries an
+       inverse scale that reaches 25x, and released sideways that hands a 390px phone a horizontally scrollable
+       page. `clip` on x is the same trade #experience.js-cat makes for the open case. */
     overflow-x: clip; overflow-y: visible;
   }
-  /* 90, not the desktop's 90/60: the bar's box runs to 82px here (22 + content + the 30px scrim tail), and
-     scenes.js reads this very number as the clearance the pin lands THEN/NOW at. */
-  /* THE PIN NEEDS TRAVEL TO BE SCRUBBED THROUGH. At the desktop's .7 the stage caught at local 232 and released
-     at 364 — 132px of hold for a turn the reader is supposed to drive. 1.3 gives 644px, which is what lets
-     scenes.js run --m off the scroll here instead of firing a fixed clock at a threshold. */
-  :root { --morph-run: 1.3 }
-
-  /* scenes.js reads this back as the pin's clearance, so the calculator's THEN/NOW lands on the same line every
-     other section's title does. */
-  /* The bottom is the SHADOW'S ROOM, not spacing. The chassis casts 0 50px 90px -22px, which reaches 73px below
-     it, and at 28px only 22px of that fell inside the ink panel — the rest landed on #cat, which is opaque and
-     paints later, cutting the shadow off in a straight line across the object's foot. Nothing was clipping it;
-     raising the stage instead would put the calculator over the section that is meant to slide across it.
-     scenes.js reads padding-TOP as the pin's clearance and never this, so the two move independently. */
+  /* The top is --title-top, so the calculator's title lands on the same line every other section's does. The bottom
+     is the SHADOW'S ROOM, not spacing. The chassis casts 0 50px 90px -22px, which reaches 73px below it, and at
+     28px only 22px of that fell inside the ink panel; the rest landed on #cat, which is opaque and paints later,
+     cutting the shadow off in a straight line across the object's foot. */
   #app { padding: var(--title-top) var(--pad-page) 80px }
   /* Stacked, the store badge and the device sit nose to tail and read as one block; the desktop's 30-68px gap
      is a COLUMN gap and buys nothing here. Room enough that the badge is a link and not the calculator's lid. */
@@ -2973,7 +2951,7 @@ The hover swell lives on a wrapper, not the core — on the core it would fight 
 
   html { scroll-behavior: auto }
   /* The beats go with the rigs — scenes.js clears them too, but this is what a reader with JS off gets. */
-  #hero-snap, #loop-snap, #app-snap-old, #app-snap-app, #library-snap, #exp-snap, #labs-snap, #contact-snap { scroll-snap-align: none }
+  #hero-snap, #loop-snap, #app-snap, #library-snap, #exp-snap, #labs-snap, #contact-snap { scroll-snap-align: none }
   #scroll { height: auto }
   #stage { position: static; height: auto; min-height: 100vh }
   #app-scroll { height: auto }
@@ -3051,7 +3029,7 @@ li.is-on > .lib-item { opacity: 1 }
 .lib-item b {
   display: flex; align-items: baseline; gap: 11px;
   font-family: var(--font-display); font-weight: 800; font-size: clamp(18px, 1.7vw, 22px);
-  letter-spacing: -.3px; line-height: 1.2; color: var(--text-strong);
+  letter-spacing: -.3px; line-height: 1.2; color: var(--accent);
 }
 .lib-item b::before {
   content: counter(lib, decimal-leading-zero);

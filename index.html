@@ -134,6 +134,11 @@ html.css-pending body{visibility:hidden}
 </head>
 <body>
 
+<!-- Shared icons, drawn once and drawn from here with <use>. The replay arrow is in the brand menu and under the labs. -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <symbol id="ak-replay" viewBox="0 0 24 24"><g transform="rotate(-45 12 12)"><path d="M7.5 6.64A7 7 0 1 0 15.5 5.94"/><path d="M16.85 3.6 12.3 4.09 14.15 8.28Z" fill="currentColor"/></g></symbol>
+</svg>
+
 <!-- The one stable screen height, measured rather than assumed. A custom property carrying a unit cannot be
      read back in pixels, so scenes.js measures this element; the stylesheet and the script therefore cannot
      disagree about how tall a screen is. See #screen-probe in site.css for why it is svh and not dvh. -->
@@ -164,7 +169,7 @@ html.css-pending body{visibility:hidden}
   <div class="brand">
     <button class="mark" type="button" aria-expanded="false" aria-controls="brand-menu">ALEXK413X</button>
     <div class="brand-menu" id="brand-menu">
-      <button type="button" data-replay-intro><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5a7 7 0 1 1-6.3 4"/><path d="M5 4v5h5"/></svg><span>Replay the intro</span></button>
+      <button type="button" data-replay-intro><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ak-replay"/></svg><span>Replay the intro</span></button>
     </div>
   </div>
   <!-- THE CHAPTER METER, COLLAPSED. Six labels do not fit across a 393px bar, so on a phone this button is the
@@ -463,7 +468,7 @@ html.css-pending body{visibility:hidden}
       <div class="lib-head">
         <h2 class="sec-title" id="library-title">THE<br><span style="color:var(--accent)">LIBRARY</span></h2>
         <p class="tagline">A workflow marketplace for Claude Code.</p>
-        <p class="sec-lede">Four plugins. Each works on its own and works better beside the others.</p>
+        <p class="sec-lede">Each plugin works independently but they work better together.</p>
       </div>
 
       <div class="lib-ring" role="group" aria-roledescription="carousel" aria-label="The four Library plugins">
@@ -506,11 +511,9 @@ html.css-pending body{visibility:hidden}
 <!-- One calculator, not two. Scroll interpolates it from a replica faceplate into the shipped app; the DOM tree
      and the live stack machine behind it never change. -->
 <div id="app-scroll" data-range>
-<!-- THE SCENE'S TWO BEATS, at the ends of the pin: the faceplate the section arrives at, and the shipped app it
-     leaves as. scenes.js positions both; scroll-snap-stop: always is what arrests a fling on each of them so the
-     turn is met from either direction rather than scrolled past. -->
-<i id="app-snap-old" aria-hidden="true"></i>
-<i id="app-snap-app" aria-hidden="true"></i>
+<!-- THE SCENE'S ONE BEAT: a one-pixel snap target at the top of the section, placed by scenes.js, which stops a fling on the
+     calculator the way it does on every other screen. The calculator turns on a timer, so nothing here is scrubbed. -->
+<i id="app-snap" aria-hidden="true"></i>
 <div id="app-stage">
   <section id="app">
     <div class="inner app-grid">
@@ -1224,7 +1227,7 @@ html.css-pending body{visibility:hidden}
     </p>
     <!-- The intro is the fourth thing built here, and a browser sees it once; this is the way back to it. -->
     <p class="lab-replay">The opening sequence runs once per browser.
-      <button type="button" data-replay-intro><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5a7 7 0 1 1-6.3 4"/><path d="M5 4v5h5"/></svg><span>Replay the intro</span></button></p>
+      <button type="button" data-replay-intro><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ak-replay"/></svg><span>Replay the intro</span></button></p>
     <div class="lab-grid">
       <a class="lab-card" href="labs/crt/CRT%20Lab.html">
         <div class="obj crt cold"><div class="obj-3d">
