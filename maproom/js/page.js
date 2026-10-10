@@ -76,7 +76,7 @@ function gear() {
             'aria-pressed': String(storedTheme() === mode),
             onclick: () => {
               applyTheme(mode);
-              for (const sib of b.parentNode.children) {
+              for (const sib of b.parentNode.querySelectorAll(':scope > button')) {
                 sib.className = sib === b ? 'on' : '';
                 sib.setAttribute('aria-pressed', String(sib === b));
               }
@@ -84,15 +84,10 @@ function gear() {
           }, icon(ic, 13));
           return b;
         })));
-  menu.hidden = true;
 
-  const button = el('button', {
-    'data-tip': 'Settings',
-    onclick: () => {
-      menu.hidden = !menu.hidden;
-      button.className = menu.hidden ? '' : 'on';
-    },
-  }, icon('gear', 14));
+  // The menu shows while the pointer is over the cog or the keyboard focus is inside it (app.css),
+  // so a tap on a touch screen, which focuses the button, opens it too.
+  const button = el('button', { 'aria-label': 'Settings', 'aria-haspopup': 'true' }, icon('gear', 14));
   return el('div', { class: 'gear' }, button, menu);
 }
 

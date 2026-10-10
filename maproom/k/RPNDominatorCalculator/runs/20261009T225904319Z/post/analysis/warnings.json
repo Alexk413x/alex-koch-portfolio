@@ -1,0 +1,63 @@
+[
+ {
+  "action": "activate-focused-element",
+  "control_key": "android.view.View:0",
+  "interaction": "tap",
+  "outcome": "no_change",
+  "state": "screen-1@state=07112d3a7333",
+  "step": 101
+ },
+ {
+  "action": "activate-focused-element",
+  "control_key": "android.view.View:3",
+  "interaction": "tap",
+  "outcome": "no_change",
+  "state": "screen-1@state=07112d3a7333",
+  "step": 112
+ },
+ {
+  "action": "clear-text",
+  "control_key": "",
+  "interaction": "",
+  "outcome": "no_change",
+  "state": "settings@state=7311010578d2",
+  "step": 139
+ },
+ {
+  "action": "activate-focused-element",
+  "control_key": "android.view.View:Clear all",
+  "interaction": "tap",
+  "outcome": "no_change",
+  "state": "screen-1@state=07112d3a7333",
+  "step": 155
+ },
+ {
+  "action": "activate-focused-element",
+  "control_key": "android.view.View:Clear all",
+  "interaction": "tap",
+  "outcome": "no_change",
+  "state": "screen-1@state=07112d3a7333",
+  "step": 162
+ },
+ {
+  "action": "activate-focused-element",
+  "control_key": "android.view.View:3",
+  "interaction": "tap",
+  "outcome": "no_change",
+  "state": "screen-1@state=07112d3a7333",
+  "step": 249
+ },
+ {
+  "action": "activate-focused-element",
+  "control_key": "android.view.View:Clear all",
+  "interaction": "tap",
+  "outcome": "no_change",
+  "state": "screen-1@state=07112d3a7333",
+  "step": 285
+ },
+ {
+  "accounted_by": "step 246",
+  "seq": 857,
+  "warning": "change-unclaimed"
+ }
+]

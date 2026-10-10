@@ -1,0 +1,4899 @@
+{
+ "ok": true,
+ "run": "20261009T231621629Z",
+ "map": "runs/20261009T231621629Z/post/map.db",
+ "captures": {
+  "delete-data@state=f569f911cc97": {
+   "step": 132,
+   "capture": "own",
+   "screen": "runs/20261009T231621629Z/screens/0132-20261009T232007342Z.png",
+   "tree": "runs/20261009T231621629Z/screenstates/0132-20261009T232007342Z.xml",
+   "uistate": "runs/20261009T231621629Z/post/states/delete-data@f569f911cc97.uistate.txt",
+   "orientation": "landscape",
+   "appearance": "dark"
+  },
+  "screen-1.snackbar@state=db0e1176ec71": {
+   "step": 188,
+   "capture": "own",
+   "screen": "runs/20261009T231621629Z/screens/0188-20261009T232224393Z.png",
+   "tree": "runs/20261009T231621629Z/screenstates/0188-20261009T232224393Z.xml",
+   "uistate": "runs/20261009T231621629Z/post/states/screen-1.snackbar@db0e1176ec71.uistate.txt",
+   "orientation": "landscape",
+   "appearance": "dark"
+  },
+  "screen-1.toggle-menu@state=0bbdbc258733": {
+   "step": 378,
+   "capture": "own",
+   "screen": "runs/20261009T231621629Z/screens/0378-20261009T233320819Z.png",
+   "tree": "runs/20261009T231621629Z/screenstates/0378-20261009T233320819Z.xml",
+   "uistate": "runs/20261009T231621629Z/post/states/screen-1.toggle-menu@0bbdbc258733.uistate.txt",
+   "orientation": "landscape",
+   "appearance": "dark"
+  },
+  "screen-1.toggle-menu@state=2ae6066a214c": {
+   "step": 29,
+   "capture": "own",
+   "screen": "runs/20261009T231621629Z/screens/0029-20261009T231725750Z.png",
+   "tree": "runs/20261009T231621629Z/screenstates/0029-20261009T231725750Z.xml",
+   "uistate": "runs/20261009T231621629Z/post/states/screen-1.toggle-menu@2ae6066a214c.uistate.txt",
+   "orientation": "landscape",
+   "appearance": "dark"
+  },
+  "screen-1@state=07112d3a7333": {
+   "step": 31,
+   "capture": "own",
+   "screen": "runs/20261009T231621629Z/screens/0031-20261009T231731282Z.png",
+   "tree": "runs/20261009T231621629Z/screenstates/0031-20261009T231731282Z.xml",
+   "uistate": "runs/20261009T231621629Z/post/states/screen-1@07112d3a7333.uistate.txt",
+   "orientation": "portrait",
+   "appearance": "dark"
+  },
+  "screen-1@state=5f883dfad867": {
+   "step": 21,
+   "capture": "own",
+   "screen": "runs/20261009T231621629Z/screens/0021-20261009T231708114Z.png",
+   "tree": "runs/20261009T231621629Z/screenstates/0021-20261009T231708114Z.xml",
+   "uistate": "runs/20261009T231621629Z/post/states/screen-1@5f883dfad867.uistate.txt",
+   "orientation": "landscape",
+   "appearance": "dark"
+  },
+  "screen-1@state=6766ef5d0154": {
+   "step": 179,
+   "capture": "own",
+   "screen": "runs/20261009T231621629Z/screens/0179-20261009T232157958Z.png",
+   "tree": "runs/20261009T231621629Z/screenstates/0179-20261009T232157958Z.xml",
+   "uistate": "runs/20261009T231621629Z/post/states/screen-1@6766ef5d0154.uistate.txt",
+   "orientation": "landscape",
+   "appearance": "dark"
+  },
+  "screen-1@state=817cb621fe85": {
+   "step": 7,
+   "capture": "own",
+   "screen": "runs/20261009T231621629Z/screens/0007-20261009T231631104Z.png",
+   "tree": "runs/20261009T231621629Z/screenstates/0007-20261009T231631104Z.xml",
+   "uistate": "runs/20261009T231621629Z/post/states/screen-1@817cb621fe85.uistate.txt",
+   "orientation": "landscape",
+   "appearance": "dark"
+  },
+  "screen-1@state=b98ec66f7695": {
+   "step": 26,
+   "capture": "own",
+   "screen": "runs/20261009T231621629Z/screens/0026-20261009T231719023Z.png",
+   "tree": "runs/20261009T231621629Z/screenstates/0026-20261009T231719023Z.xml",
+   "uistate": "runs/20261009T231621629Z/post/states/screen-1@b98ec66f7695.uistate.txt",
+   "orientation": "landscape",
+   "appearance": "dark"
+  },
+  "screen-1@state=c1dd90495a78": {
+   "step": 185,
+   "capture": "own",
+   "screen": "runs/20261009T231621629Z/screens/0185-20261009T232216369Z.png",
+   "tree": "runs/20261009T231621629Z/screenstates/0185-20261009T232216369Z.xml",
+   "uistate": "runs/20261009T231621629Z/post/states/screen-1@c1dd90495a78.uistate.txt",
+   "orientation": "landscape",
+   "appearance": "dark"
+  },
+  "screen-1@state=f00fc000b4f0": {
+   "step": 11,
+   "capture": "own",
+   "screen": "runs/20261009T231621629Z/screens/0011-20261009T231641650Z.png",
+   "tree": "runs/20261009T231621629Z/screenstates/0011-20261009T231641650Z.xml",
+   "uistate": "runs/20261009T231621629Z/post/states/screen-1@f00fc000b4f0.uistate.txt",
+   "orientation": "landscape",
+   "appearance": "dark"
+  },
+  "screen-1@state=f0f56a9987cf": {
+   "step": 25,
+   "capture": "own",
+   "screen": "runs/20261009T231621629Z/screens/0025-20261009T231716256Z.png",
+   "tree": "runs/20261009T231621629Z/screenstates/0025-20261009T231716256Z.xml",
+   "uistate": "runs/20261009T231621629Z/post/states/screen-1@f0f56a9987cf.uistate.txt",
+   "orientation": "landscape",
+   "appearance": "dark"
+  },
+  "select-rounding-mode@state=33f49bd50ac1": {
+   "step": 57,
+   "capture": "own",
+   "screen": "runs/20261009T231621629Z/screens/0057-20261009T231842276Z.png",
+   "tree": "runs/20261009T231621629Z/screenstates/0057-20261009T231842276Z.xml",
+   "uistate": "runs/20261009T231621629Z/post/states/select-rounding-mode@33f49bd50ac1.uistate.txt",
+   "orientation": "landscape",
+   "appearance": "dark"
+  },
+  "select-rounding-mode@state=577d3ec7faef": {
+   "step": 118,
+   "capture": "own",
+   "screen": "runs/20261009T231621629Z/screens/0118-20261009T231952976Z.png",
+   "tree": "runs/20261009T231621629Z/screenstates/0118-20261009T231952976Z.xml",
+   "uistate": "runs/20261009T231621629Z/post/states/select-rounding-mode@577d3ec7faef.uistate.txt",
+   "orientation": "landscape",
+   "appearance": "dark"
+  },
+  "select-rounding-mode@state=5bf09618b761": {
+   "step": 89,
+   "capture": "own",
+   "screen": "runs/20261009T231621629Z/screens/0089-20261009T231921439Z.png",
+   "tree": "runs/20261009T231621629Z/screenstates/0089-20261009T231921439Z.xml",
+   "uistate": "runs/20261009T231621629Z/post/states/select-rounding-mode@5bf09618b761.uistate.txt",
+   "orientation": "landscape",
+   "appearance": "dark"
+  },
+  "select-rounding-mode@state=a8254ce74a6a": {
+   "step": 56,
+   "capture": "own",
+   "screen": "runs/20261009T231621629Z/screens/0056-20261009T231840841Z.png",
+   "tree": "runs/20261009T231621629Z/screenstates/0056-20261009T231840841Z.xml",
+   "uistate": "runs/20261009T231621629Z/post/states/select-rounding-mode@a8254ce74a6a.uistate.txt",
+   "orientation": "landscape",
+   "appearance": "dark"
+  },
+  "select-rounding-mode@state=cc6834db76d0": {
+   "step": 74,
+   "capture": "own",
+   "screen": "runs/20261009T231621629Z/screens/0074-20261009T231906070Z.png",
+   "tree": "runs/20261009T231621629Z/screenstates/0074-20261009T231906070Z.xml",
+   "uistate": "runs/20261009T231621629Z/post/states/select-rounding-mode@cc6834db76d0.uistate.txt",
+   "orientation": "landscape",
+   "appearance": "dark"
+  },
+  "select-rounding-mode@state=dc2b58656eca": {
+   "step": 61,
+   "capture": "own",
+   "screen": "runs/20261009T231621629Z/screens/0061-20261009T231851180Z.png",
+   "tree": "runs/20261009T231621629Z/screenstates/0061-20261009T231851180Z.xml",
+   "uistate": "runs/20261009T231621629Z/post/states/select-rounding-mode@dc2b58656eca.uistate.txt",
+   "orientation": "landscape",
+   "appearance": "dark"
+  },
+  "select-rounding-mode@state=e91f3974d6a7": {
+   "step": 59,
+   "capture": "own",
+   "screen": "runs/20261009T231621629Z/screens/0059-20261009T231846099Z.png",
+   "tree": "runs/20261009T231621629Z/screenstates/0059-20261009T231846099Z.xml",
+   "uistate": "runs/20261009T231621629Z/post/states/select-rounding-mode@e91f3974d6a7.uistate.txt",
+   "orientation": "landscape",
+   "appearance": "dark"
+  },
+  "select-rounding-mode@state=ec66807cd95e": {
+   "step": 103,
+   "capture": "own",
+   "screen": "runs/20261009T231621629Z/screens/0103-20261009T231936757Z.png",
+   "tree": "runs/20261009T231621629Z/screenstates/0103-20261009T231936757Z.xml",
+   "uistate": "runs/20261009T231621629Z/post/states/select-rounding-mode@ec66807cd95e.uistate.txt",
+   "orientation": "landscape",
+   "appearance": "dark"
+  },
+  "select-rounding-mode@state=f1204093836d": {
+   "step": 62,
+   "capture": "own",
+   "screen": "runs/20261009T231621629Z/screens/0062-20261009T231853336Z.png",
+   "tree": "runs/20261009T231621629Z/screenstates/0062-20261009T231853336Z.xml",
+   "uistate": "runs/20261009T231621629Z/post/states/select-rounding-mode@f1204093836d.uistate.txt",
+   "orientation": "landscape",
+   "appearance": "dark"
+  },
+  "settings.keyboard~max-operation-input@state=5d2af0eafb80": {
+   "step": 150,
+   "capture": "own",
+   "screen": "runs/20261009T231621629Z/screens/0150-20261009T232044651Z.png",
+   "tree": "runs/20261009T231621629Z/screenstates/0150-20261009T232044651Z.xml",
+   "uistate": "runs/20261009T231621629Z/post/states/settings.keyboard~max-operation-input@5d2af0eafb80.uistate.txt",
+   "orientation": "landscape",
+   "appearance": "dark"
+  },
+  "settings.keyboard~rounding-precision@state=223ea51fa33e": {
+   "step": 215,
+   "capture": "own",
+   "screen": "runs/20261009T231621629Z/screens/0215-20261009T232340955Z.png",
+   "tree": "runs/20261009T231621629Z/screenstates/0215-20261009T232340955Z.xml",
+   "uistate": "runs/20261009T231621629Z/post/states/settings.keyboard~rounding-precision@223ea51fa33e.uistate.txt",
+   "orientation": "landscape",
+   "appearance": "dark"
+  },
+  "settings.keyboard~stack-limit@state=4cdac000ed88": {
+   "step": 158,
+   "capture": "own",
+   "screen": "runs/20261009T231621629Z/screens/0158-20261009T232058114Z.png",
+   "tree": "runs/20261009T231621629Z/screenstates/0158-20261009T232058114Z.xml",
+   "uistate": "runs/20261009T231621629Z/post/states/settings.keyboard~stack-limit@4cdac000ed88.uistate.txt",
+   "orientation": "landscape",
+   "appearance": "dark"
+  },
+  "settings.keyboard~undo-history-limit@state=8a69534d858f": {
+   "step": 143,
+   "capture": "own",
+   "screen": "runs/20261009T231621629Z/screens/0143-20261009T232023134Z.png",
+   "tree": "runs/20261009T231621629Z/screenstates/0143-20261009T232023134Z.xml",
+   "uistate": "runs/20261009T231621629Z/post/states/settings.keyboard~undo-history-limit@8a69534d858f.uistate.txt",
+   "orientation": "landscape",
+   "appearance": "dark"
+  },
+  "settings.popup@state=9d7c4e0b13ef": {
+   "step": 196,
+   "capture": "own",
+   "screen": "runs/20261009T231621629Z/screens/0196-20261009T232242779Z.png",
+   "tree": "runs/20261009T231621629Z/screenstates/0196-20261009T232242779Z.xml",
+   "uistate": "runs/20261009T231621629Z/post/states/settings.popup@9d7c4e0b13ef.uistate.txt",
+   "orientation": "landscape",
+   "appearance": "dark"
+  },
+  "settings.toast@state=106d9bafa652": {
+   "step": 197,
+   "capture": "own",
+   "screen": "runs/20261009T231621629Z/screens/0197-20261009T232246746Z.png",
+   "tree": "runs/20261009T231621629Z/screenstates/0197-20261009T232246746Z.xml",
+   "uistate": "runs/20261009T231621629Z/post/states/settings.toast@106d9bafa652.uistate.txt",
+   "orientation": "landscape",
+   "appearance": "dark"
+  },
+  "settings@state=06151d062458": {
+   "step": 50,
+   "capture": "own",
+   "screen": "runs/20261009T231621629Z/screens/0050-20261009T231832229Z.png",
+   "tree": "runs/20261009T231621629Z/screenstates/0050-20261009T231832229Z.xml",
+   "uistate": "runs/20261009T231621629Z/post/states/settings@06151d062458.uistate.txt",
+   "orientation": "landscape",
+   "appearance": "dark"
+  },
+  "settings@state=23ca75aa47ab": {
+   "step": 46,
+   "capture": "own",
+   "screen": "runs/20261009T231621629Z/screens/0046-20261009T231822775Z.png",
+   "tree": "runs/20261009T231621629Z/screenstates/0046-20261009T231822775Z.xml",
+   "uistate": "runs/20261009T231621629Z/post/states/settings@23ca75aa47ab.uistate.txt",
+   "orientation": "landscape",
+   "appearance": "dark"
+  },
+  "settings@state=295b38eed0c7": {
+   "step": 44,
+   "capture": "own",
+   "screen": "runs/20261009T231621629Z/screens/0044-20261009T231816315Z.png",
+   "tree": "runs/20261009T231621629Z/screenstates/0044-20261009T231816315Z.xml",
+   "uistate": "runs/20261009T231621629Z/post/states/settings@295b38eed0c7.uistate.txt",
+   "orientation": "landscape",
+   "appearance": "dark"
+  },
+  "settings@state=55a6305ff914": {
+   "step": 48,
+   "capture": "own",
+   "screen": "runs/20261009T231621629Z/screens/0048-20261009T231827794Z.png",
+   "tree": "runs/20261009T231621629Z/screenstates/0048-20261009T231827794Z.xml",
+   "uistate": "runs/20261009T231621629Z/post/states/settings@55a6305ff914.uistate.txt",
+   "orientation": "landscape",
+   "appearance": "dark"
+  },
+  "settings@state=7311010578d2": {
+   "step": 36,
+   "capture": "own",
+   "screen": "runs/20261009T231621629Z/screens/0036-20261009T231746085Z.png",
+   "tree": "runs/20261009T231621629Z/screenstates/0036-20261009T231746085Z.xml",
+   "uistate": "runs/20261009T231621629Z/post/states/settings@7311010578d2.uistate.txt",
+   "orientation": "landscape",
+   "appearance": "dark"
+  },
+  "settings@state=9c0e631043d1": {
+   "step": 42,
+   "capture": "own",
+   "screen": "runs/20261009T231621629Z/screens/0042-20261009T231811084Z.png",
+   "tree": "runs/20261009T231621629Z/screenstates/0042-20261009T231811084Z.xml",
+   "uistate": "runs/20261009T231621629Z/post/states/settings@9c0e631043d1.uistate.txt",
+   "orientation": "landscape",
+   "appearance": "dark"
+  },
+  "settings@state=a584843d23ad": {
+   "step": 40,
+   "capture": "own",
+   "screen": "runs/20261009T231621629Z/screens/0040-20261009T231805673Z.png",
+   "tree": "runs/20261009T231621629Z/screenstates/0040-20261009T231805673Z.xml",
+   "uistate": "runs/20261009T231621629Z/post/states/settings@a584843d23ad.uistate.txt",
+   "orientation": "landscape",
+   "appearance": "dark"
+  },
+  "settings@state=ba862d969a71": {
+   "step": 127,
+   "capture": "own",
+   "screen": "runs/20261009T231621629Z/screens/0127-20261009T232003018Z.png",
+   "tree": "runs/20261009T231621629Z/screenstates/0127-20261009T232003018Z.xml",
+   "uistate": "runs/20261009T231621629Z/post/states/settings@ba862d969a71.uistate.txt",
+   "orientation": "landscape",
+   "appearance": "dark"
+  },
+  "settings@state=e769bae05a3e": {
+   "step": 38,
+   "capture": "own",
+   "screen": "runs/20261009T231621629Z/screens/0038-20261009T231801253Z.png",
+   "tree": "runs/20261009T231621629Z/screenstates/0038-20261009T231801253Z.xml",
+   "uistate": "runs/20261009T231621629Z/post/states/settings@e769bae05a3e.uistate.txt",
+   "orientation": "landscape",
+   "appearance": "dark"
+  },
+  "settings@state=fd1194fd6ab2": {
+   "step": 52,
+   "capture": "own",
+   "screen": "runs/20261009T231621629Z/screens/0052-20261009T231836746Z.png",
+   "tree": "runs/20261009T231621629Z/screenstates/0052-20261009T231836746Z.xml",
+   "uistate": "runs/20261009T231621629Z/post/states/settings@fd1194fd6ab2.uistate.txt",
+   "orientation": "landscape",
+   "appearance": "dark"
+  },
+  "system-com-google-android-apps-nexuslauncher@state=c752de886c28": {
+   "step": 0,
+   "capture": "own",
+   "screen": "runs/20261009T231621629Z/screens/0000-20261009T231617056Z.png",
+   "tree": "runs/20261009T231621629Z/screenstates/0000-20261009T231617056Z.xml",
+   "uistate": "runs/20261009T231621629Z/post/states/system-com-google-android-apps-nexuslauncher@c752de886c28.uistate.txt",
+   "orientation": "portrait",
+   "appearance": "dark"
+  }
+ },
+ "basis": {
+  "checked": {
+   "by": "replay-open",
+   "bytes": 4399104,
+   "modified_at": 1791585465.6959753,
+   "recorded_at": 1791587784.6936226,
+   "schema_version": "6",
+   "sha256": "8c60d53fa156356d11ca853b65cc2eac0341e826b323ccf64fdbf7d3093cda8d"
+  },
+  "today": {
+   "sha256": "2b936b3b6d2526282f11f98257890284b7dc4497764997c1448c538639e2753a",
+   "bytes": 1851392,
+   "modified_at": 1791593453.9940507,
+   "schema_version": "6"
+  },
+  "kind": "today",
+  "note": "The baseline changed since this run was checked (8c60d53fa156), so it is compared with today's baseline (2b936b3b6d25)."
+ },
+ "alignment": {
+  "replay": true,
+  "map_sha256": "39a271631ef1ad71f0eaeffd4715fbb6cb1c045fc0cb49b5b910978ddfd02aae",
+  "screens": {
+   "delete-data": "match",
+   "screen-1": "match",
+   "screen-1.snackbar": "match",
+   "screen-1.toggle-menu": "changed",
+   "select-rounding-mode": "match",
+   "settings": "match",
+   "settings.keyboard~max-operation-input": "match",
+   "settings.keyboard~rounding-precision": "match",
+   "settings.keyboard~stack-limit": "match",
+   "settings.keyboard~undo-history-limit": "match",
+   "settings.popup": "match",
+   "settings.toast": "changed",
+   "system-com-google-android-apps-nexuslauncher": "changed"
+  },
+  "states": {
+   "delete-data@state=f569f911cc97": {
+    "status": "match"
+   },
+   "screen-1@state=07112d3a7333": {
+    "status": "match",
+    "as": "rpn@state=07112d3a7333"
+   },
+   "screen-1@state=5f883dfad867": {
+    "status": "match",
+    "as": "rpn@state=721fbf29a002"
+   },
+   "screen-1@state=6766ef5d0154": {
+    "status": "match",
+    "as": "rpn@state=a522a769e24a"
+   },
+   "screen-1@state=817cb621fe85": {
+    "status": "match",
+    "as": "rpn@state=07112d3a7333"
+   },
+   "screen-1@state=b98ec66f7695": {
+    "status": "match",
+    "as": "rpn@state=6cfc5095a80f"
+   },
+   "screen-1@state=c1dd90495a78": {
+    "status": "match",
+    "as": "rpn@state=721fbf29a002"
+   },
+   "screen-1@state=f00fc000b4f0": {
+    "status": "match",
+    "as": "rpn@state=721fbf29a002"
+   },
+   "screen-1@state=f0f56a9987cf": {
+    "status": "match",
+    "as": "rpn@state=b2baf56e7a25"
+   },
+   "screen-1.snackbar@state=db0e1176ec71": {
+    "status": "match",
+    "as": "rpn.snackbar@state=db0e1176ec71"
+   },
+   "screen-1.toggle-menu@state=0bbdbc258733": {
+    "status": "new",
+    "as": "rpn@state=e678fe86228a"
+   },
+   "screen-1.toggle-menu@state=2ae6066a214c": {
+    "status": "new",
+    "as": "rpn@state=e678fe86228a"
+   },
+   "select-rounding-mode@state=33f49bd50ac1": {
+    "status": "match"
+   },
+   "select-rounding-mode@state=577d3ec7faef": {
+    "status": "match"
+   },
+   "select-rounding-mode@state=5bf09618b761": {
+    "status": "match"
+   },
+   "select-rounding-mode@state=a8254ce74a6a": {
+    "status": "match"
+   },
+   "select-rounding-mode@state=cc6834db76d0": {
+    "status": "match"
+   },
+   "select-rounding-mode@state=dc2b58656eca": {
+    "status": "match"
+   },
+   "select-rounding-mode@state=e91f3974d6a7": {
+    "status": "match"
+   },
+   "select-rounding-mode@state=ec66807cd95e": {
+    "status": "match"
+   },
+   "select-rounding-mode@state=f1204093836d": {
+    "status": "match",
+    "as": "select-rounding-mode@state=577d3ec7faef"
+   },
+   "settings@state=06151d062458": {
+    "status": "match"
+   },
+   "settings@state=23ca75aa47ab": {
+    "status": "match"
+   },
+   "settings@state=295b38eed0c7": {
+    "status": "match"
+   },
+   "settings@state=55a6305ff914": {
+    "status": "match"
+   },
+   "settings@state=7311010578d2": {
+    "status": "match"
+   },
+   "settings@state=9c0e631043d1": {
+    "status": "match"
+   },
+   "settings@state=a584843d23ad": {
+    "status": "match"
+   },
+   "settings@state=ba862d969a71": {
+    "status": "match",
+    "as": "settings@state=7311010578d2"
+   },
+   "settings@state=e769bae05a3e": {
+    "status": "match"
+   },
+   "settings@state=fd1194fd6ab2": {
+    "status": "match",
+    "as": "settings@state=7311010578d2"
+   },
+   "settings.keyboard~max-operation-input@state=5d2af0eafb80": {
+    "status": "match",
+    "as": "settings.keyboard~significant-figures@state=6af5ca35bb12"
+   },
+   "settings.keyboard~rounding-precision@state=223ea51fa33e": {
+    "status": "match",
+    "as": "settings.keyboard~rounding-precision@state=dfb8b1d53d06"
+   },
+   "settings.keyboard~stack-limit@state=4cdac000ed88": {
+    "status": "match",
+    "as": "settings.keyboard~stack-limit@state=c43030620854"
+   },
+   "settings.keyboard~undo-history-limit@state=8a69534d858f": {
+    "status": "match",
+    "as": "settings.keyboard~max-operation-input@state=65d38f3c9ab3"
+   },
+   "settings.popup@state=9d7c4e0b13ef": {
+    "status": "match",
+    "as": "settings@state=7311010578d2"
+   },
+   "settings.toast@state=106d9bafa652": {
+    "status": "changed"
+   },
+   "system-com-google-android-apps-nexuslauncher@state=c752de886c28": {
+    "status": "new",
+    "as": "system-com-google-android-apps-nexuslauncher"
+   }
+  },
+  "edges": [
+   {
+    "src": "delete-data@state=f569f911cc97",
+    "dst": "settings@state=ba862d969a71",
+    "action": "activate-focused-element[tap]:android.view.View:Cancel",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "delete-data@state=f569f911cc97 -[activate-focused-element[tap]:android.view.View:Cancel]-> settings@state=7311010578d2 [nav=touch]"
+   },
+   {
+    "src": "screen-1.snackbar@state=db0e1176ec71",
+    "dst": "screen-1@state=817cb621fe85",
+    "action": "activate-focused-element[tap]:android.view.View:Dismiss",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "rpn.snackbar@state=db0e1176ec71 -[activate-focused-element[tap]:android.view.View:Dismiss]-> rpn@state=07112d3a7333 [nav=touch]"
+   },
+   {
+    "src": "screen-1.snackbar@state=db0e1176ec71",
+    "dst": "screen-1@state=817cb621fe85",
+    "action": "dismiss-transient-view:transient",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "rpn.snackbar@state=db0e1176ec71 -[dismiss-transient-view:transient]-> rpn@state=07112d3a7333 [nav=touch]"
+   },
+   {
+    "src": "screen-1.snackbar@state=db0e1176ec71",
+    "dst": "screen-1@state=817cb621fe85",
+    "action": "swipe-at-coordinates[gesture:swipe-to-dismiss][right-long]",
+    "requires": "nav=touch;orientation=landscape",
+    "status": "match",
+    "as": "rpn.snackbar@state=db0e1176ec71 -[swipe-at-coordinates[gesture:swipe-to-dismiss][right-long]]-> rpn@state=07112d3a7333 [nav=touch;orientation=landscape]"
+   },
+   {
+    "src": "screen-1.snackbar@state=db0e1176ec71",
+    "dst": "screen-1@state=b98ec66f7695",
+    "action": "activate-focused-element[tap]:android.view.View:Dismiss",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "rpn.snackbar@state=db0e1176ec71 -[activate-focused-element[tap]:android.view.View:Dismiss]-> rpn@state=6cfc5095a80f [nav=touch]"
+   },
+   {
+    "src": "screen-1.snackbar@state=db0e1176ec71",
+    "dst": "screen-1@state=b98ec66f7695",
+    "action": "dismiss-transient-view:transient",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "rpn.snackbar@state=db0e1176ec71 -[dismiss-transient-view:transient]-> rpn@state=6cfc5095a80f [nav=touch]"
+   },
+   {
+    "src": "screen-1.snackbar@state=db0e1176ec71",
+    "dst": "screen-1@state=f0f56a9987cf",
+    "action": "activate-focused-element[tap]:android.view.View:Dismiss",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "rpn.snackbar@state=db0e1176ec71 -[activate-focused-element[tap]:android.view.View:Dismiss]-> rpn@state=b2baf56e7a25 [nav=touch]"
+   },
+   {
+    "src": "screen-1.snackbar@state=db0e1176ec71",
+    "dst": "screen-1@state=f0f56a9987cf",
+    "action": "dismiss-transient-view:transient",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "rpn.snackbar@state=db0e1176ec71 -[dismiss-transient-view:transient]-> rpn@state=b2baf56e7a25 [nav=touch]"
+   },
+   {
+    "src": "screen-1.toggle-menu@state=0bbdbc258733",
+    "dst": "settings@state=7311010578d2",
+    "action": "activate-focused-element[tap]:android.view.View:Settings",
+    "requires": "nav=touch",
+    "status": "match"
+   },
+   {
+    "src": "screen-1.toggle-menu@state=2ae6066a214c",
+    "dst": "screen-1@state=817cb621fe85",
+    "action": "activate-focused-element[tap]:android.view.View:Memory: <n>",
+    "requires": "nav=touch",
+    "status": "match"
+   },
+   {
+    "src": "screen-1.toggle-menu@state=2ae6066a214c",
+    "dst": "screen-1@state=817cb621fe85",
+    "action": "activate-focused-element[tap]:android.view.View:Toggle Menu",
+    "requires": "nav=touch",
+    "status": "match"
+   },
+   {
+    "src": "screen-1.toggle-menu@state=2ae6066a214c",
+    "dst": "screen-1@state=817cb621fe85",
+    "action": "back",
+    "requires": "nav=touch",
+    "status": "match"
+   },
+   {
+    "src": "screen-1.toggle-menu@state=2ae6066a214c",
+    "dst": "settings@state=7311010578d2",
+    "action": "activate-focused-element[tap]:android.view.View:Settings",
+    "requires": "nav=touch",
+    "status": "match"
+   },
+   {
+    "src": "screen-1@state=07112d3a7333",
+    "dst": "screen-1@state=817cb621fe85",
+    "action": "rotate-display",
+    "requires": "nav=touch",
+    "status": "match"
+   },
+   {
+    "src": "screen-1@state=5f883dfad867",
+    "dst": "screen-1.snackbar@state=db0e1176ec71",
+    "action": "activate-focused-element[tap]:android.view.View:Memory",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "rpn@state=721fbf29a002 -[activate-focused-element[tap]:android.view.View:Memory]-> rpn.snackbar@state=db0e1176ec71 [nav=touch]"
+   },
+   {
+    "src": "screen-1@state=5f883dfad867",
+    "dst": "screen-1@state=817cb621fe85",
+    "action": "activate-focused-element[tap]:android.view.View:Delete",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "rpn@state=721fbf29a002 -[activate-focused-element[tap]:android.view.View:Delete]-> rpn@state=07112d3a7333 [nav=touch]"
+   },
+   {
+    "src": "screen-1@state=5f883dfad867",
+    "dst": "screen-1@state=817cb621fe85",
+    "action": "activate-focused-element[tap]:android.view.View:Paste",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "rpn@state=721fbf29a002 -[activate-focused-element[tap]:android.view.View:Paste]-> rpn@state=07112d3a7333 [nav=touch]"
+   },
+   {
+    "src": "screen-1@state=5f883dfad867",
+    "dst": "screen-1@state=817cb621fe85",
+    "action": "back",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "rpn@state=721fbf29a002 -[back]-> rpn@state=07112d3a7333 [nav=touch]"
+   },
+   {
+    "src": "screen-1@state=6766ef5d0154",
+    "dst": "screen-1@state=817cb621fe85",
+    "action": "activate-focused-element[tap]:android.view.View:Radians",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "rpn@state=a522a769e24a -[activate-focused-element[tap]:android.view.View:Radians]-> rpn@state=07112d3a7333 [nav=touch]"
+   },
+   {
+    "src": "screen-1@state=817cb621fe85",
+    "dst": "screen-1.snackbar@state=db0e1176ec71",
+    "action": "activate-focused-element[tap]:android.view.View:Add",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "rpn@state=07112d3a7333 -[activate-focused-element[tap]:android.view.View:Add]-> rpn.snackbar@state=db0e1176ec71 [nav=touch]"
+   },
+   {
+    "src": "screen-1@state=817cb621fe85",
+    "dst": "screen-1.snackbar@state=db0e1176ec71",
+    "action": "activate-focused-element[tap]:android.view.View:Divide",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "rpn@state=07112d3a7333 -[activate-focused-element[tap]:android.view.View:Divide]-> rpn.snackbar@state=db0e1176ec71 [nav=touch]"
+   },
+   {
+    "src": "screen-1@state=817cb621fe85",
+    "dst": "screen-1.snackbar@state=db0e1176ec71",
+    "action": "activate-focused-element[tap]:android.view.View:Factorial",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "rpn@state=07112d3a7333 -[activate-focused-element[tap]:android.view.View:Factorial]-> rpn.snackbar@state=db0e1176ec71 [nav=touch]"
+   },
+   {
+    "src": "screen-1@state=817cb621fe85",
+    "dst": "screen-1.snackbar@state=db0e1176ec71",
+    "action": "activate-focused-element[tap]:android.view.View:Memory in",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "rpn@state=07112d3a7333 -[activate-focused-element[tap]:android.view.View:Memory in]-> rpn.snackbar@state=db0e1176ec71 [nav=touch]"
+   },
+   {
+    "src": "screen-1@state=817cb621fe85",
+    "dst": "screen-1.snackbar@state=db0e1176ec71",
+    "action": "activate-focused-element[tap]:android.view.View:Multiply",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "rpn@state=07112d3a7333 -[activate-focused-element[tap]:android.view.View:Multiply]-> rpn.snackbar@state=db0e1176ec71 [nav=touch]"
+   },
+   {
+    "src": "screen-1@state=817cb621fe85",
+    "dst": "screen-1.snackbar@state=db0e1176ec71",
+    "action": "activate-focused-element[tap]:android.view.View:Reciprocal, one divided by X",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "rpn@state=07112d3a7333 -[activate-focused-element[tap]:android.view.View:Reciprocal, one divided by X]-> rpn.snackbar@state=db0e1176ec71 [nav=touch]"
+   },
+   {
+    "src": "screen-1@state=817cb621fe85",
+    "dst": "screen-1.snackbar@state=db0e1176ec71",
+    "action": "activate-focused-element[tap]:android.view.View:Subtract",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "rpn@state=07112d3a7333 -[activate-focused-element[tap]:android.view.View:Subtract]-> rpn.snackbar@state=db0e1176ec71 [nav=touch]"
+   },
+   {
+    "src": "screen-1@state=817cb621fe85",
+    "dst": "screen-1.toggle-menu@state=0bbdbc258733",
+    "action": "activate-focused-element[tap]:android.view.View:Toggle Menu",
+    "requires": "nav=touch",
+    "status": "match"
+   },
+   {
+    "src": "screen-1@state=817cb621fe85",
+    "dst": "screen-1.toggle-menu@state=2ae6066a214c",
+    "action": "activate-focused-element[tap](late):android.view.View:Toggle Menu",
+    "requires": "nav=touch",
+    "status": "match"
+   },
+   {
+    "src": "screen-1@state=817cb621fe85",
+    "dst": "screen-1@state=07112d3a7333",
+    "action": "rotate-display",
+    "requires": "nav=touch",
+    "status": "match"
+   },
+   {
+    "src": "screen-1@state=817cb621fe85",
+    "dst": "screen-1@state=5f883dfad867",
+    "action": "activate-focused-element[tap]:list@item-1",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "rpn@state=07112d3a7333 -[activate-focused-element[tap]:list@item-1]-> rpn@state=721fbf29a002 [nav=touch]"
+   },
+   {
+    "src": "screen-1@state=817cb621fe85",
+    "dst": "screen-1@state=5f883dfad867",
+    "action": "activate-focused-element[tap]:list@item-2",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "rpn@state=07112d3a7333 -[activate-focused-element[tap]:list@item-2]-> rpn@state=721fbf29a002 [nav=touch]"
+   },
+   {
+    "src": "screen-1@state=817cb621fe85",
+    "dst": "screen-1@state=6766ef5d0154",
+    "action": "activate-focused-element[tap]:android.view.View:Degrees",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "rpn@state=07112d3a7333 -[activate-focused-element[tap]:android.view.View:Degrees]-> rpn@state=a522a769e24a [nav=touch]"
+   },
+   {
+    "src": "screen-1@state=817cb621fe85",
+    "dst": "screen-1@state=817cb621fe85",
+    "action": "activate-focused-element[tap]:android.view.View:0",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "rpn@state=07112d3a7333 -[activate-focused-element[tap]:android.view.View:0]-> rpn@state=07112d3a7333 [nav=touch]"
+   },
+   {
+    "src": "screen-1@state=817cb621fe85",
+    "dst": "screen-1@state=817cb621fe85",
+    "action": "activate-focused-element[tap]:android.view.View:1",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "rpn@state=07112d3a7333 -[activate-focused-element[tap]:android.view.View:1]-> rpn@state=07112d3a7333 [nav=touch]"
+   },
+   {
+    "src": "screen-1@state=817cb621fe85",
+    "dst": "screen-1@state=817cb621fe85",
+    "action": "activate-focused-element[tap]:android.view.View:2",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "rpn@state=07112d3a7333 -[activate-focused-element[tap]:android.view.View:2]-> rpn@state=07112d3a7333 [nav=touch]"
+   },
+   {
+    "src": "screen-1@state=817cb621fe85",
+    "dst": "screen-1@state=817cb621fe85",
+    "action": "activate-focused-element[tap]:android.view.View:3",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "rpn@state=07112d3a7333 -[activate-focused-element[tap]:android.view.View:3]-> rpn@state=07112d3a7333 [nav=touch]"
+   },
+   {
+    "src": "screen-1@state=817cb621fe85",
+    "dst": "screen-1@state=817cb621fe85",
+    "action": "activate-focused-element[tap]:android.view.View:4",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "rpn@state=07112d3a7333 -[activate-focused-element[tap]:android.view.View:4]-> rpn@state=07112d3a7333 [nav=touch]"
+   },
+   {
+    "src": "screen-1@state=817cb621fe85",
+    "dst": "screen-1@state=817cb621fe85",
+    "action": "activate-focused-element[tap]:android.view.View:5",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "rpn@state=07112d3a7333 -[activate-focused-element[tap]:android.view.View:5]-> rpn@state=07112d3a7333 [nav=touch]"
+   },
+   {
+    "src": "screen-1@state=817cb621fe85",
+    "dst": "screen-1@state=817cb621fe85",
+    "action": "activate-focused-element[tap]:android.view.View:6",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "rpn@state=07112d3a7333 -[activate-focused-element[tap]:android.view.View:6]-> rpn@state=07112d3a7333 [nav=touch]"
+   },
+   {
+    "src": "screen-1@state=817cb621fe85",
+    "dst": "screen-1@state=817cb621fe85",
+    "action": "activate-focused-element[tap]:android.view.View:7",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "rpn@state=07112d3a7333 -[activate-focused-element[tap]:android.view.View:7]-> rpn@state=07112d3a7333 [nav=touch]"
+   },
+   {
+    "src": "screen-1@state=817cb621fe85",
+    "dst": "screen-1@state=817cb621fe85",
+    "action": "activate-focused-element[tap]:android.view.View:8",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "rpn@state=07112d3a7333 -[activate-focused-element[tap]:android.view.View:8]-> rpn@state=07112d3a7333 [nav=touch]"
+   },
+   {
+    "src": "screen-1@state=817cb621fe85",
+    "dst": "screen-1@state=817cb621fe85",
+    "action": "activate-focused-element[tap]:android.view.View:9",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "rpn@state=07112d3a7333 -[activate-focused-element[tap]:android.view.View:9]-> rpn@state=07112d3a7333 [nav=touch]"
+   },
+   {
+    "src": "screen-1@state=817cb621fe85",
+    "dst": "screen-1@state=817cb621fe85",
+    "action": "activate-focused-element[tap]:android.view.View:Change sign",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "rpn@state=07112d3a7333 -[activate-focused-element[tap]:android.view.View:Change sign]-> rpn@state=07112d3a7333 [nav=touch]"
+   },
+   {
+    "src": "screen-1@state=817cb621fe85",
+    "dst": "screen-1@state=817cb621fe85",
+    "action": "activate-focused-element[tap]:android.view.View:Clear all",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "rpn@state=07112d3a7333 -[activate-focused-element[tap]:android.view.View:Clear all]-> rpn@state=07112d3a7333 [nav=touch]"
+   },
+   {
+    "src": "screen-1@state=817cb621fe85",
+    "dst": "screen-1@state=817cb621fe85",
+    "action": "activate-focused-element[tap]:android.view.View:Clear entry",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "rpn@state=07112d3a7333 -[activate-focused-element[tap]:android.view.View:Clear entry]-> rpn@state=07112d3a7333 [nav=touch]"
+   },
+   {
+    "src": "screen-1@state=817cb621fe85",
+    "dst": "screen-1@state=817cb621fe85",
+    "action": "activate-focused-element[tap]:android.view.View:Decimal point",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "rpn@state=07112d3a7333 -[activate-focused-element[tap]:android.view.View:Decimal point]-> rpn@state=07112d3a7333 [nav=touch]"
+   },
+   {
+    "src": "screen-1@state=817cb621fe85",
+    "dst": "screen-1@state=817cb621fe85",
+    "action": "activate-focused-element[tap]:android.view.View:Delete last digit",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "rpn@state=07112d3a7333 -[activate-focused-element[tap]:android.view.View:Delete last digit]-> rpn@state=07112d3a7333 [nav=touch]"
+   },
+   {
+    "src": "screen-1@state=817cb621fe85",
+    "dst": "screen-1@state=817cb621fe85",
+    "action": "activate-focused-element[tap]:android.view.View:Enter",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "rpn@state=07112d3a7333 -[activate-focused-element[tap]:android.view.View:Enter]-> rpn@state=07112d3a7333 [nav=touch]"
+   },
+   {
+    "src": "screen-1@state=817cb621fe85",
+    "dst": "screen-1@state=817cb621fe85",
+    "action": "activate-focused-element[tap]:android.view.View:Memory out",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "rpn@state=07112d3a7333 -[activate-focused-element[tap]:android.view.View:Memory out]-> rpn@state=07112d3a7333 [nav=touch]"
+   },
+   {
+    "src": "screen-1@state=817cb621fe85",
+    "dst": "screen-1@state=817cb621fe85",
+    "action": "activate-focused-element[tap]:android.view.View:Pi",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "rpn@state=07112d3a7333 -[activate-focused-element[tap]:android.view.View:Pi]-> rpn@state=07112d3a7333 [nav=touch]"
+   },
+   {
+    "src": "screen-1@state=817cb621fe85",
+    "dst": "screen-1@state=817cb621fe85",
+    "action": "activate-focused-element[tap]:android.view.View:Undo",
+    "requires": "nav=touch",
+    "status": "match"
+   },
+   {
+    "src": "screen-1@state=817cb621fe85",
+    "dst": "screen-1@state=c1dd90495a78",
+    "action": "activate-focused-element[tap]:list@item-1",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "rpn@state=07112d3a7333 -[activate-focused-element[tap]:list@item-1]-> rpn@state=721fbf29a002 [nav=touch]"
+   },
+   {
+    "src": "screen-1@state=817cb621fe85",
+    "dst": "screen-1@state=f00fc000b4f0",
+    "action": "activate-focused-element[tap]:list@item-2",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "rpn@state=07112d3a7333 -[activate-focused-element[tap]:list@item-2]-> rpn@state=721fbf29a002 [nav=touch]"
+   },
+   {
+    "src": "screen-1@state=817cb621fe85",
+    "dst": "screen-1@state=f0f56a9987cf",
+    "action": "activate-focused-element[tap](late):android.view.View:Show More Functions",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "rpn@state=07112d3a7333 -[activate-focused-element[tap]:android.view.View:Show More Functions]-> rpn@state=b2baf56e7a25 [nav=touch]"
+   },
+   {
+    "src": "screen-1@state=b98ec66f7695",
+    "dst": "screen-1.snackbar@state=db0e1176ec71",
+    "action": "activate-focused-element[tap]:android.view.View:10 to the power of X",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "rpn@state=6cfc5095a80f -[activate-focused-element[tap]:android.view.View:10 to the power of X]-> rpn.snackbar@state=db0e1176ec71 [nav=touch]"
+   },
+   {
+    "src": "screen-1@state=b98ec66f7695",
+    "dst": "screen-1.snackbar@state=db0e1176ec71",
+    "action": "activate-focused-element[tap]:android.view.View:E to the power of X",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "rpn@state=6cfc5095a80f -[activate-focused-element[tap]:android.view.View:E to the power of X]-> rpn.snackbar@state=db0e1176ec71 [nav=touch]"
+   },
+   {
+    "src": "screen-1@state=b98ec66f7695",
+    "dst": "screen-1.snackbar@state=db0e1176ec71",
+    "action": "activate-focused-element[tap]:android.view.View:Inverse cosine",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "rpn@state=6cfc5095a80f -[activate-focused-element[tap]:android.view.View:Inverse cosine]-> rpn.snackbar@state=db0e1176ec71 [nav=touch]"
+   },
+   {
+    "src": "screen-1@state=b98ec66f7695",
+    "dst": "screen-1.snackbar@state=db0e1176ec71",
+    "action": "activate-focused-element[tap]:android.view.View:Inverse sine",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "rpn@state=6cfc5095a80f -[activate-focused-element[tap]:android.view.View:Inverse sine]-> rpn.snackbar@state=db0e1176ec71 [nav=touch]"
+   },
+   {
+    "src": "screen-1@state=b98ec66f7695",
+    "dst": "screen-1.snackbar@state=db0e1176ec71",
+    "action": "activate-focused-element[tap]:android.view.View:Inverse tangent",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "rpn@state=6cfc5095a80f -[activate-focused-element[tap]:android.view.View:Inverse tangent]-> rpn.snackbar@state=db0e1176ec71 [nav=touch]"
+   },
+   {
+    "src": "screen-1@state=b98ec66f7695",
+    "dst": "screen-1.snackbar@state=db0e1176ec71",
+    "action": "activate-focused-element[tap]:android.view.View:X squared",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "rpn@state=6cfc5095a80f -[activate-focused-element[tap]:android.view.View:X squared]-> rpn.snackbar@state=db0e1176ec71 [nav=touch]"
+   },
+   {
+    "src": "screen-1@state=b98ec66f7695",
+    "dst": "screen-1.snackbar@state=db0e1176ec71",
+    "action": "activate-focused-element[tap]:android.view.View:Y to the power of X",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "rpn@state=6cfc5095a80f -[activate-focused-element[tap]:android.view.View:Y to the power of X]-> rpn.snackbar@state=db0e1176ec71 [nav=touch]"
+   },
+   {
+    "src": "screen-1@state=b98ec66f7695",
+    "dst": "screen-1@state=f0f56a9987cf",
+    "action": "activate-focused-element[tap]:android.view.View:Standard functions",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "rpn@state=6cfc5095a80f -[activate-focused-element[tap]:android.view.View:Standard functions]-> rpn@state=b2baf56e7a25 [nav=touch]"
+   },
+   {
+    "src": "screen-1@state=b98ec66f7695",
+    "dst": "system-com-google-android-apps-nexuslauncher@state=c752de886c28",
+    "action": "back",
+    "requires": "nav=touch",
+    "status": "new"
+   },
+   {
+    "src": "screen-1@state=c1dd90495a78",
+    "dst": "screen-1@state=817cb621fe85",
+    "action": "activate-focused-element[tap]:android.view.View:Paste",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "rpn@state=721fbf29a002 -[activate-focused-element[tap]:android.view.View:Paste]-> rpn@state=07112d3a7333 [nav=touch]"
+   },
+   {
+    "src": "screen-1@state=f00fc000b4f0",
+    "dst": "screen-1@state=817cb621fe85",
+    "action": "activate-focused-element[tap]:android.view.View:Copy",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "rpn@state=721fbf29a002 -[activate-focused-element[tap]:android.view.View:Copy]-> rpn@state=07112d3a7333 [nav=touch]"
+   },
+   {
+    "src": "screen-1@state=f0f56a9987cf",
+    "dst": "screen-1.snackbar@state=db0e1176ec71",
+    "action": "activate-focused-element[tap]:android.view.View:Cosine",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "rpn@state=b2baf56e7a25 -[activate-focused-element[tap]:android.view.View:Cosine]-> rpn.snackbar@state=db0e1176ec71 [nav=touch]"
+   },
+   {
+    "src": "screen-1@state=f0f56a9987cf",
+    "dst": "screen-1.snackbar@state=db0e1176ec71",
+    "action": "activate-focused-element[tap]:android.view.View:Logarithm base 10",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "rpn@state=b2baf56e7a25 -[activate-focused-element[tap]:android.view.View:Logarithm base 10]-> rpn.snackbar@state=db0e1176ec71 [nav=touch]"
+   },
+   {
+    "src": "screen-1@state=f0f56a9987cf",
+    "dst": "screen-1.snackbar@state=db0e1176ec71",
+    "action": "activate-focused-element[tap]:android.view.View:Natural logarithm",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "rpn@state=b2baf56e7a25 -[activate-focused-element[tap]:android.view.View:Natural logarithm]-> rpn.snackbar@state=db0e1176ec71 [nav=touch]"
+   },
+   {
+    "src": "screen-1@state=f0f56a9987cf",
+    "dst": "screen-1.snackbar@state=db0e1176ec71",
+    "action": "activate-focused-element[tap]:android.view.View:Sine",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "rpn@state=b2baf56e7a25 -[activate-focused-element[tap]:android.view.View:Sine]-> rpn.snackbar@state=db0e1176ec71 [nav=touch]"
+   },
+   {
+    "src": "screen-1@state=f0f56a9987cf",
+    "dst": "screen-1.snackbar@state=db0e1176ec71",
+    "action": "activate-focused-element[tap]:android.view.View:Square root",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "rpn@state=b2baf56e7a25 -[activate-focused-element[tap]:android.view.View:Square root]-> rpn.snackbar@state=db0e1176ec71 [nav=touch]"
+   },
+   {
+    "src": "screen-1@state=f0f56a9987cf",
+    "dst": "screen-1.snackbar@state=db0e1176ec71",
+    "action": "activate-focused-element[tap]:android.view.View:Tangent",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "rpn@state=b2baf56e7a25 -[activate-focused-element[tap]:android.view.View:Tangent]-> rpn.snackbar@state=db0e1176ec71 [nav=touch]"
+   },
+   {
+    "src": "screen-1@state=f0f56a9987cf",
+    "dst": "screen-1.snackbar@state=db0e1176ec71",
+    "action": "activate-focused-element[tap]:android.view.View:Xth root of Y",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "rpn@state=b2baf56e7a25 -[activate-focused-element[tap]:android.view.View:Xth root of Y]-> rpn.snackbar@state=db0e1176ec71 [nav=touch]"
+   },
+   {
+    "src": "screen-1@state=f0f56a9987cf",
+    "dst": "screen-1@state=817cb621fe85",
+    "action": "activate-focused-element[tap]:android.view.View:Hide More Functions",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "rpn@state=b2baf56e7a25 -[activate-focused-element[tap]:android.view.View:Hide More Functions]-> rpn@state=07112d3a7333 [nav=touch]"
+   },
+   {
+    "src": "screen-1@state=f0f56a9987cf",
+    "dst": "screen-1@state=b98ec66f7695",
+    "action": "activate-focused-element[tap]:android.view.View:Inverse functions",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "rpn@state=b2baf56e7a25 -[activate-focused-element[tap]:android.view.View:Inverse functions]-> rpn@state=6cfc5095a80f [nav=touch]"
+   },
+   {
+    "src": "screen-1@state=f0f56a9987cf",
+    "dst": "screen-1@state=f0f56a9987cf",
+    "action": "raise-and-tap-transient-action:android.view.View:Dismiss",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "rpn@state=b2baf56e7a25 -[raise-and-tap-transient-action:android.view.View:Dismiss]-> rpn@state=b2baf56e7a25 [nav=touch]"
+   },
+   {
+    "src": "screen-1@state=f0f56a9987cf",
+    "dst": "system-com-google-android-apps-nexuslauncher@state=c752de886c28",
+    "action": "back",
+    "requires": "nav=touch",
+    "status": "new"
+   },
+   {
+    "src": "select-rounding-mode@state=33f49bd50ac1",
+    "dst": "select-rounding-mode@state=a8254ce74a6a",
+    "action": "activate-focused-element[tap]:android.view.View:Half Even - (Default) Round towards nearest neighbor, if equal even neighbor.",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "select-rounding-mode@state=33f49bd50ac1 -[activate-focused-element[tap]:android.view.View:Half Even - (Default) Round towards nearest neighbor, if equal even neighbor.]-> select-rounding-mode@state=a8254ce74a6a [nav=touch]"
+   },
+   {
+    "src": "select-rounding-mode@state=33f49bd50ac1",
+    "dst": "settings@state=fd1194fd6ab2",
+    "action": "activate-focused-element[tap]:android.view.View:Done",
+    "requires": "nav=touch",
+    "status": "new"
+   },
+   {
+    "src": "select-rounding-mode@state=577d3ec7faef",
+    "dst": "select-rounding-mode@state=f1204093836d",
+    "action": "scroll-up:android.view.View@android:id/content",
+    "requires": "nav=touch",
+    "status": "match"
+   },
+   {
+    "src": "select-rounding-mode@state=577d3ec7faef",
+    "dst": "settings@state=fd1194fd6ab2",
+    "action": "back",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "select-rounding-mode@state=577d3ec7faef -[back]-> settings@state=7311010578d2 [nav=touch]"
+   },
+   {
+    "src": "select-rounding-mode@state=5bf09618b761",
+    "dst": "select-rounding-mode@state=5bf09618b761",
+    "action": "scroll-down:android.view.View@android:id/content",
+    "requires": "nav=touch",
+    "status": "match"
+   },
+   {
+    "src": "select-rounding-mode@state=5bf09618b761",
+    "dst": "select-rounding-mode@state=f1204093836d",
+    "action": "scroll-up:android.view.View@android:id/content",
+    "requires": "nav=touch",
+    "status": "new"
+   },
+   {
+    "src": "select-rounding-mode@state=a8254ce74a6a",
+    "dst": "select-rounding-mode@state=33f49bd50ac1",
+    "action": "activate-focused-element[tap]:android.view.View:Half Up - Round towards nearest neighbor, if equal round up.",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "select-rounding-mode@state=a8254ce74a6a -[activate-focused-element[tap]:android.view.View:Half Up - Round towards nearest neighbor, if equal round up.]-> select-rounding-mode@state=33f49bd50ac1 [nav=touch]"
+   },
+   {
+    "src": "select-rounding-mode@state=a8254ce74a6a",
+    "dst": "select-rounding-mode@state=dc2b58656eca",
+    "action": "activate-focused-element[tap]:android.view.View:Up - Rounds away from zero",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "select-rounding-mode@state=a8254ce74a6a -[activate-focused-element[tap]:android.view.View:Up - Rounds away from zero]-> select-rounding-mode@state=dc2b58656eca [nav=touch]"
+   },
+   {
+    "src": "select-rounding-mode@state=a8254ce74a6a",
+    "dst": "select-rounding-mode@state=e91f3974d6a7",
+    "action": "activate-focused-element[tap]:android.view.View:Half Down - Round towards nearest neighbor, if equal round down.",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "select-rounding-mode@state=a8254ce74a6a -[activate-focused-element[tap]:android.view.View:Half Down - Round towards nearest neighbor, if equal round down.]-> select-rounding-mode@state=e91f3974d6a7 [nav=touch]"
+   },
+   {
+    "src": "select-rounding-mode@state=a8254ce74a6a",
+    "dst": "select-rounding-mode@state=f1204093836d",
+    "action": "scroll-down(late):android.view.View@android:id/content",
+    "requires": "nav=touch",
+    "status": "match"
+   },
+   {
+    "src": "select-rounding-mode@state=a8254ce74a6a",
+    "dst": "settings@state=fd1194fd6ab2",
+    "action": "activate-focused-element[tap]:android.view.View:Done",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "select-rounding-mode@state=a8254ce74a6a -[activate-focused-element[tap]:android.view.View:Done]-> settings@state=7311010578d2 [nav=touch]"
+   },
+   {
+    "src": "select-rounding-mode@state=a8254ce74a6a",
+    "dst": "settings@state=fd1194fd6ab2",
+    "action": "back",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "select-rounding-mode@state=a8254ce74a6a -[back]-> settings@state=7311010578d2 [nav=touch]"
+   },
+   {
+    "src": "select-rounding-mode@state=cc6834db76d0",
+    "dst": "select-rounding-mode@state=cc6834db76d0",
+    "action": "scroll-down:android.view.View@android:id/content",
+    "requires": "nav=touch",
+    "status": "match"
+   },
+   {
+    "src": "select-rounding-mode@state=cc6834db76d0",
+    "dst": "select-rounding-mode@state=f1204093836d",
+    "action": "scroll-up:android.view.View@android:id/content",
+    "requires": "nav=touch",
+    "status": "new"
+   },
+   {
+    "src": "select-rounding-mode@state=dc2b58656eca",
+    "dst": "select-rounding-mode@state=a8254ce74a6a",
+    "action": "activate-focused-element[tap]:android.view.View:Half Even - (Default) Round towards nearest neighbor, if equal even neighbor.",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "select-rounding-mode@state=dc2b58656eca -[activate-focused-element[tap]:android.view.View:Half Even - (Default) Round towards nearest neighbor, if equal even neighbor.]-> select-rounding-mode@state=a8254ce74a6a [nav=touch]"
+   },
+   {
+    "src": "select-rounding-mode@state=dc2b58656eca",
+    "dst": "select-rounding-mode@state=dc2b58656eca",
+    "action": "scroll-up:android.view.View@android:id/content",
+    "requires": "nav=touch",
+    "status": "match"
+   },
+   {
+    "src": "select-rounding-mode@state=dc2b58656eca",
+    "dst": "select-rounding-mode@state=f1204093836d",
+    "action": "scroll-down:android.view.View@android:id/content",
+    "requires": "nav=touch",
+    "status": "new"
+   },
+   {
+    "src": "select-rounding-mode@state=e91f3974d6a7",
+    "dst": "select-rounding-mode@state=a8254ce74a6a",
+    "action": "activate-focused-element[tap]:android.view.View:Half Even - (Default) Round towards nearest neighbor, if equal even neighbor.",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "select-rounding-mode@state=e91f3974d6a7 -[activate-focused-element[tap]:android.view.View:Half Even - (Default) Round towards nearest neighbor, if equal even neighbor.]-> select-rounding-mode@state=a8254ce74a6a [nav=touch]"
+   },
+   {
+    "src": "select-rounding-mode@state=ec66807cd95e",
+    "dst": "select-rounding-mode@state=ec66807cd95e",
+    "action": "scroll-down:android.view.View@android:id/content",
+    "requires": "nav=touch",
+    "status": "match"
+   },
+   {
+    "src": "select-rounding-mode@state=ec66807cd95e",
+    "dst": "select-rounding-mode@state=f1204093836d",
+    "action": "scroll-up:android.view.View@android:id/content",
+    "requires": "nav=touch",
+    "status": "new"
+   },
+   {
+    "src": "select-rounding-mode@state=f1204093836d",
+    "dst": "select-rounding-mode@state=577d3ec7faef",
+    "action": "activate-focused-element[tap]:android.view.View:Unnecessary - No rounding.",
+    "requires": "nav=touch",
+    "status": "new"
+   },
+   {
+    "src": "select-rounding-mode@state=f1204093836d",
+    "dst": "select-rounding-mode@state=5bf09618b761",
+    "action": "activate-focused-element[tap]:android.view.View:Ceiling - Round towards positive infinity.",
+    "requires": "nav=touch",
+    "status": "new"
+   },
+   {
+    "src": "select-rounding-mode@state=f1204093836d",
+    "dst": "select-rounding-mode@state=a8254ce74a6a",
+    "action": "activate-focused-element[tap]:android.view.View:Half Even - (Default) Round towards nearest neighbor, if equal even neighbor.",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "select-rounding-mode@state=577d3ec7faef -[activate-focused-element[tap]:android.view.View:Half Even - (Default) Round towards nearest neighbor, if equal even neighbor.]-> select-rounding-mode@state=a8254ce74a6a [nav=touch]"
+   },
+   {
+    "src": "select-rounding-mode@state=f1204093836d",
+    "dst": "select-rounding-mode@state=cc6834db76d0",
+    "action": "activate-focused-element[tap]:android.view.View:Down - Round towards zero.",
+    "requires": "nav=touch",
+    "status": "new"
+   },
+   {
+    "src": "select-rounding-mode@state=f1204093836d",
+    "dst": "select-rounding-mode@state=dc2b58656eca",
+    "action": "scroll-up:android.view.View@android:id/content",
+    "requires": "nav=touch",
+    "status": "new"
+   },
+   {
+    "src": "select-rounding-mode@state=f1204093836d",
+    "dst": "select-rounding-mode@state=ec66807cd95e",
+    "action": "activate-focused-element[tap]:android.view.View:Floor - Round towards negative infinity.",
+    "requires": "nav=touch",
+    "status": "new"
+   },
+   {
+    "src": "select-rounding-mode@state=f1204093836d",
+    "dst": "select-rounding-mode@state=f1204093836d",
+    "action": "scroll-down:android.view.View@android:id/content",
+    "requires": "nav=touch",
+    "status": "match"
+   },
+   {
+    "src": "settings.keyboard~max-operation-input@state=5d2af0eafb80",
+    "dst": "settings@state=ba862d969a71",
+    "action": "ime-enter[ime-enter]:android.widget.EditText@android:id/content#1",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "settings.keyboard~significant-figures@state=6af5ca35bb12 -[ime-enter[ime-enter]:android.widget.EditText@android:id/content#1]-> settings@state=7311010578d2 [nav=touch]"
+   },
+   {
+    "src": "settings.keyboard~max-operation-input@state=5d2af0eafb80",
+    "dst": "settings@state=ba862d969a71",
+    "action": "ime-enter[ime-enter]:android.widget.EditText@android:id/content#3",
+    "requires": "nav=touch",
+    "status": "match"
+   },
+   {
+    "src": "settings.keyboard~max-operation-input@state=5d2af0eafb80",
+    "dst": "settings@state=ba862d969a71",
+    "action": "replace-text",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "settings.keyboard~significant-figures@state=6af5ca35bb12 -[replace-text]-> settings@state=7311010578d2 [nav=touch]"
+   },
+   {
+    "src": "settings.keyboard~rounding-precision@state=223ea51fa33e",
+    "dst": "settings.keyboard~rounding-precision@state=223ea51fa33e",
+    "action": "clear-text",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "settings.keyboard~rounding-precision@state=dfb8b1d53d06 -[clear-text]-> settings.keyboard~rounding-precision@state=dfb8b1d53d06 [nav=touch]"
+   },
+   {
+    "src": "settings.keyboard~rounding-precision@state=223ea51fa33e",
+    "dst": "settings@state=fd1194fd6ab2",
+    "action": "replace-text",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "settings.keyboard~rounding-precision@state=dfb8b1d53d06 -[replace-text]-> settings@state=7311010578d2 [nav=touch]"
+   },
+   {
+    "src": "settings.keyboard~stack-limit@state=4cdac000ed88",
+    "dst": "settings@state=ba862d969a71",
+    "action": "ime-enter[ime-enter]:android.widget.EditText@android:id/content#4",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "settings.keyboard~stack-limit@state=c43030620854 -[ime-enter[ime-enter]:android.widget.EditText@android:id/content#4]-> settings@state=7311010578d2 [nav=touch]"
+   },
+   {
+    "src": "settings.keyboard~stack-limit@state=4cdac000ed88",
+    "dst": "settings@state=ba862d969a71",
+    "action": "replace-text",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "settings.keyboard~stack-limit@state=c43030620854 -[replace-text]-> settings@state=7311010578d2 [nav=touch]"
+   },
+   {
+    "src": "settings.keyboard~undo-history-limit@state=8a69534d858f",
+    "dst": "screen-1@state=817cb621fe85",
+    "action": "back",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "settings.keyboard~max-operation-input@state=65d38f3c9ab3 -[back]-> rpn@state=07112d3a7333 [nav=touch]"
+   },
+   {
+    "src": "settings.keyboard~undo-history-limit@state=8a69534d858f",
+    "dst": "settings.keyboard~undo-history-limit@state=8a69534d858f",
+    "action": "tap-at-coordinates",
+    "requires": "nav=touch;orientation=landscape",
+    "status": "match"
+   },
+   {
+    "src": "settings.keyboard~undo-history-limit@state=8a69534d858f",
+    "dst": "settings@state=ba862d969a71",
+    "action": "ime-enter[ime-enter]:android.widget.EditText@android:id/content#3",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "settings.keyboard~max-operation-input@state=65d38f3c9ab3 -[ime-enter[ime-enter]:android.widget.EditText@android:id/content#3]-> settings@state=7311010578d2 [nav=touch]"
+   },
+   {
+    "src": "settings.keyboard~undo-history-limit@state=8a69534d858f",
+    "dst": "settings@state=ba862d969a71",
+    "action": "ime-enter[ime-enter]:android.widget.EditText@android:id/content#5",
+    "requires": "nav=touch",
+    "status": "match"
+   },
+   {
+    "src": "settings.keyboard~undo-history-limit@state=8a69534d858f",
+    "dst": "settings@state=ba862d969a71",
+    "action": "replace-text",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "settings.keyboard~max-operation-input@state=65d38f3c9ab3 -[replace-text]-> settings@state=7311010578d2 [nav=touch]"
+   },
+   {
+    "src": "settings.popup@state=9d7c4e0b13ef",
+    "dst": "settings.toast@state=106d9bafa652",
+    "action": "tap-at-coordinates",
+    "requires": "nav=touch;orientation=landscape",
+    "status": "match",
+    "as": "settings@state=7311010578d2 -[tap-at-coordinates]-> settings@state=7311010578d2 [nav=touch;orientation=landscape]"
+   },
+   {
+    "src": "settings@state=06151d062458",
+    "dst": "settings@state=7311010578d2",
+    "action": "activate-focused-element[tap]:android.view.View:None",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "settings@state=06151d062458 -[activate-focused-element[tap]:android.view.View:None]-> settings@state=7311010578d2 [nav=touch]"
+   },
+   {
+    "src": "settings@state=23ca75aa47ab",
+    "dst": "settings@state=7311010578d2",
+    "action": "activate-focused-element[tap]:android.view.View:None",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "settings@state=23ca75aa47ab -[activate-focused-element[tap]:android.view.View:None]-> settings@state=7311010578d2 [nav=touch]"
+   },
+   {
+    "src": "settings@state=295b38eed0c7",
+    "dst": "settings@state=7311010578d2",
+    "action": "activate-focused-element[tap]:android.view.View:System",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "settings@state=295b38eed0c7 -[activate-focused-element[tap]:android.view.View:System]-> settings@state=7311010578d2 [nav=touch]"
+   },
+   {
+    "src": "settings@state=55a6305ff914",
+    "dst": "settings@state=7311010578d2",
+    "action": "activate-focused-element[tap]:android.view.View:None",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "settings@state=55a6305ff914 -[activate-focused-element[tap]:android.view.View:None]-> settings@state=7311010578d2 [nav=touch]"
+   },
+   {
+    "src": "settings@state=7311010578d2",
+    "dst": "screen-1@state=817cb621fe85",
+    "action": "activate-focused-element[tap]:android.view.View:Back",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "settings@state=7311010578d2 -[activate-focused-element[tap]:android.view.View:Back]-> rpn@state=07112d3a7333 [nav=touch]"
+   },
+   {
+    "src": "settings@state=7311010578d2",
+    "dst": "screen-1@state=817cb621fe85",
+    "action": "back",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "settings@state=7311010578d2 -[back]-> rpn@state=07112d3a7333 [nav=touch]"
+   },
+   {
+    "src": "settings@state=7311010578d2",
+    "dst": "settings.keyboard~max-operation-input@state=5d2af0eafb80",
+    "action": "activate-focused-element(late):android.widget.EditText@android:id/content#1",
+    "requires": "nav=touch",
+    "status": "match"
+   },
+   {
+    "src": "settings@state=7311010578d2",
+    "dst": "settings.keyboard~max-operation-input@state=5d2af0eafb80",
+    "action": "activate-focused-element[tap](late):android.widget.EditText@android:id/content#1",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "settings@state=7311010578d2 -[activate-focused-element[tap]:android.widget.EditText@android:id/content#1]-> settings.keyboard~significant-figures@state=6af5ca35bb12 [nav=touch]"
+   },
+   {
+    "src": "settings@state=7311010578d2",
+    "dst": "settings.keyboard~max-operation-input@state=5d2af0eafb80",
+    "action": "long-press-focused-element[long-press](late):android.widget.EditText@android:id/content#1",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "settings@state=7311010578d2 -[long-press-focused-element[long-press]:android.widget.EditText@android:id/content#1]-> settings.keyboard~significant-figures@state=6af5ca35bb12 [nav=touch]"
+   },
+   {
+    "src": "settings@state=7311010578d2",
+    "dst": "settings@state=06151d062458",
+    "action": "activate-focused-element[tap]:android.view.View:Group",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "settings@state=7311010578d2 -[activate-focused-element[tap]:android.view.View:Group]-> settings@state=06151d062458 [nav=touch]"
+   },
+   {
+    "src": "settings@state=7311010578d2",
+    "dst": "settings@state=23ca75aa47ab",
+    "action": "activate-focused-element[tap]:android.view.View:Finance",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "settings@state=7311010578d2 -[activate-focused-element[tap]:android.view.View:Finance]-> settings@state=23ca75aa47ab [nav=touch]"
+   },
+   {
+    "src": "settings@state=7311010578d2",
+    "dst": "settings@state=295b38eed0c7",
+    "action": "activate-focused-element[tap]:android.view.View:Dark",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "settings@state=7311010578d2 -[activate-focused-element[tap]:android.view.View:Dark]-> settings@state=295b38eed0c7 [nav=touch]"
+   },
+   {
+    "src": "settings@state=7311010578d2",
+    "dst": "settings@state=55a6305ff914",
+    "action": "activate-focused-element[tap]:android.view.View:Scientific",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "settings@state=7311010578d2 -[activate-focused-element[tap]:android.view.View:Scientific]-> settings@state=55a6305ff914 [nav=touch]"
+   },
+   {
+    "src": "settings@state=7311010578d2",
+    "dst": "settings@state=7311010578d2",
+    "action": "clear-text",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "settings@state=7311010578d2 -[clear-text]-> settings@state=7311010578d2 [nav=touch]"
+   },
+   {
+    "src": "settings@state=7311010578d2",
+    "dst": "settings@state=7311010578d2",
+    "action": "replace-text",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "settings@state=7311010578d2 -[replace-text]-> settings@state=7311010578d2 [nav=touch]"
+   },
+   {
+    "src": "settings@state=7311010578d2",
+    "dst": "settings@state=7311010578d2",
+    "action": "tap-at-coordinates",
+    "requires": "nav=touch;orientation=landscape",
+    "status": "match",
+    "as": "settings@state=7311010578d2 -[tap-at-coordinates]-> settings@state=7311010578d2 [nav=touch;orientation=landscape]"
+   },
+   {
+    "src": "settings@state=7311010578d2",
+    "dst": "settings@state=7311010578d2",
+    "action": "tap-at-coordinates[tap]",
+    "requires": "nav=touch;orientation=landscape",
+    "status": "match",
+    "as": "settings@state=7311010578d2 -[tap-at-coordinates[tap]]-> settings@state=7311010578d2 [nav=touch;orientation=landscape]"
+   },
+   {
+    "src": "settings@state=7311010578d2",
+    "dst": "settings@state=9c0e631043d1",
+    "action": "activate-focused-element[tap]:android.view.View:Light",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "settings@state=7311010578d2 -[activate-focused-element[tap]:android.view.View:Light]-> settings@state=9c0e631043d1 [nav=touch]"
+   },
+   {
+    "src": "settings@state=7311010578d2",
+    "dst": "settings@state=a584843d23ad",
+    "action": "activate-focused-element[tap]:android.view.View:Dynamic Color",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "settings@state=7311010578d2 -[activate-focused-element[tap]:android.view.View:Dynamic Color]-> settings@state=a584843d23ad [nav=touch]"
+   },
+   {
+    "src": "settings@state=7311010578d2",
+    "dst": "settings@state=e769bae05a3e",
+    "action": "activate-focused-element[tap]:android.view.View:Haptic Feedback",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "settings@state=7311010578d2 -[activate-focused-element[tap]:android.view.View:Haptic Feedback]-> settings@state=e769bae05a3e [nav=touch]"
+   },
+   {
+    "src": "settings@state=9c0e631043d1",
+    "dst": "settings@state=7311010578d2",
+    "action": "activate-focused-element[tap]:android.view.View:System",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "settings@state=9c0e631043d1 -[activate-focused-element[tap]:android.view.View:System]-> settings@state=7311010578d2 [nav=touch]"
+   },
+   {
+    "src": "settings@state=a584843d23ad",
+    "dst": "settings@state=7311010578d2",
+    "action": "activate-focused-element[tap]:android.view.View:Dynamic Color",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "settings@state=a584843d23ad -[activate-focused-element[tap]:android.view.View:Dynamic Color]-> settings@state=7311010578d2 [nav=touch]"
+   },
+   {
+    "src": "settings@state=ba862d969a71",
+    "dst": "delete-data@state=f569f911cc97",
+    "action": "activate-focused-element[tap]:android.view.View:Delete",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "settings@state=7311010578d2 -[activate-focused-element[tap]:android.view.View:Delete]-> delete-data@state=f569f911cc97 [nav=touch]"
+   },
+   {
+    "src": "settings@state=ba862d969a71",
+    "dst": "screen-1@state=817cb621fe85",
+    "action": "activate-focused-element[tap]:android.view.View:Back",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "settings@state=7311010578d2 -[activate-focused-element[tap]:android.view.View:Back]-> rpn@state=07112d3a7333 [nav=touch]"
+   },
+   {
+    "src": "settings@state=ba862d969a71",
+    "dst": "screen-1@state=817cb621fe85",
+    "action": "back(late)",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "settings@state=7311010578d2 -[back]-> rpn@state=07112d3a7333 [nav=touch]"
+   },
+   {
+    "src": "settings@state=ba862d969a71",
+    "dst": "settings.keyboard~max-operation-input@state=5d2af0eafb80",
+    "action": "activate-focused-element[tap](late):android.widget.EditText@android:id/content#3",
+    "requires": "nav=touch",
+    "status": "match"
+   },
+   {
+    "src": "settings@state=ba862d969a71",
+    "dst": "settings.keyboard~stack-limit@state=4cdac000ed88",
+    "action": "activate-focused-element(late):android.widget.EditText@android:id/content#4",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "settings@state=7311010578d2 -[activate-focused-element:android.widget.EditText@android:id/content#4]-> settings.keyboard~stack-limit@state=c43030620854 [nav=touch]"
+   },
+   {
+    "src": "settings@state=ba862d969a71",
+    "dst": "settings.keyboard~stack-limit@state=4cdac000ed88",
+    "action": "activate-focused-element[tap](late):android.widget.EditText@android:id/content#4",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "settings@state=7311010578d2 -[activate-focused-element[tap]:android.widget.EditText@android:id/content#4]-> settings.keyboard~stack-limit@state=c43030620854 [nav=touch]"
+   },
+   {
+    "src": "settings@state=ba862d969a71",
+    "dst": "settings.keyboard~stack-limit@state=4cdac000ed88",
+    "action": "long-press-focused-element[long-press]:android.widget.EditText@android:id/content#4",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "settings@state=7311010578d2 -[long-press-focused-element[long-press]:android.widget.EditText@android:id/content#4]-> settings.keyboard~stack-limit@state=c43030620854 [nav=touch]"
+   },
+   {
+    "src": "settings@state=ba862d969a71",
+    "dst": "settings.keyboard~undo-history-limit@state=8a69534d858f",
+    "action": "activate-focused-element:android.widget.EditText@android:id/content#5",
+    "requires": "nav=touch",
+    "status": "match"
+   },
+   {
+    "src": "settings@state=ba862d969a71",
+    "dst": "settings.keyboard~undo-history-limit@state=8a69534d858f",
+    "action": "activate-focused-element[tap](late):android.widget.EditText@android:id/content#5",
+    "requires": "nav=touch",
+    "status": "match"
+   },
+   {
+    "src": "settings@state=ba862d969a71",
+    "dst": "settings.keyboard~undo-history-limit@state=8a69534d858f",
+    "action": "long-press-focused-element[long-press](late):android.widget.EditText@android:id/content#5",
+    "requires": "nav=touch",
+    "status": "match"
+   },
+   {
+    "src": "settings@state=e769bae05a3e",
+    "dst": "settings@state=7311010578d2",
+    "action": "activate-focused-element[tap]:android.view.View:Haptic Feedback",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "settings@state=e769bae05a3e -[activate-focused-element[tap]:android.view.View:Haptic Feedback]-> settings@state=7311010578d2 [nav=touch]"
+   },
+   {
+    "src": "settings@state=fd1194fd6ab2",
+    "dst": "screen-1@state=817cb621fe85",
+    "action": "activate-focused-element[tap]:android.view.View:Back",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "settings@state=7311010578d2 -[activate-focused-element[tap]:android.view.View:Back]-> rpn@state=07112d3a7333 [nav=touch]"
+   },
+   {
+    "src": "settings@state=fd1194fd6ab2",
+    "dst": "screen-1@state=817cb621fe85",
+    "action": "back(late)",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "settings@state=7311010578d2 -[back]-> rpn@state=07112d3a7333 [nav=touch]"
+   },
+   {
+    "src": "settings@state=fd1194fd6ab2",
+    "dst": "select-rounding-mode@state=33f49bd50ac1",
+    "action": "activate-focused-element[tap]:android.view.View:Half Up",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "settings@state=7311010578d2 -[activate-focused-element[tap]:android.view.View:Half Up]-> select-rounding-mode@state=33f49bd50ac1 [nav=touch]"
+   },
+   {
+    "src": "settings@state=fd1194fd6ab2",
+    "dst": "select-rounding-mode@state=a8254ce74a6a",
+    "action": "activate-focused-element[tap]:android.view.View:Half Even",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "settings@state=7311010578d2 -[activate-focused-element[tap]:android.view.View:Half Even]-> select-rounding-mode@state=a8254ce74a6a [nav=touch]"
+   },
+   {
+    "src": "settings@state=fd1194fd6ab2",
+    "dst": "select-rounding-mode@state=f1204093836d",
+    "action": "activate-focused-element[tap]:android.view.View:Unnecessary",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "settings@state=7311010578d2 -[activate-focused-element[tap]:android.view.View:Unnecessary]-> select-rounding-mode@state=577d3ec7faef [nav=touch]"
+   },
+   {
+    "src": "settings@state=fd1194fd6ab2",
+    "dst": "select-rounding-mode@state=f1204093836d",
+    "action": "tap-at-coordinates[tap]",
+    "requires": "nav=touch;orientation=landscape",
+    "status": "match"
+   },
+   {
+    "src": "settings@state=fd1194fd6ab2",
+    "dst": "settings.keyboard~rounding-precision@state=223ea51fa33e",
+    "action": "activate-focused-element[tap]:android.widget.EditText@android:id/content#2",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "settings@state=7311010578d2 -[activate-focused-element[tap]:android.widget.EditText@android:id/content#2]-> settings.keyboard~rounding-precision@state=dfb8b1d53d06 [nav=touch]"
+   },
+   {
+    "src": "settings@state=fd1194fd6ab2",
+    "dst": "settings.keyboard~rounding-precision@state=223ea51fa33e",
+    "action": "clear-text",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "settings@state=7311010578d2 -[clear-text]-> settings.keyboard~rounding-precision@state=dfb8b1d53d06 [nav=touch]"
+   },
+   {
+    "src": "settings@state=fd1194fd6ab2",
+    "dst": "settings.keyboard~undo-history-limit@state=8a69534d858f",
+    "action": "activate-focused-element[tap](late):android.widget.EditText@android:id/content#3",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "settings@state=7311010578d2 -[activate-focused-element[tap]:android.widget.EditText@android:id/content#3]-> settings.keyboard~max-operation-input@state=65d38f3c9ab3 [nav=touch]"
+   },
+   {
+    "src": "settings@state=fd1194fd6ab2",
+    "dst": "settings.keyboard~undo-history-limit@state=8a69534d858f",
+    "action": "long-press-focused-element[long-press](late):android.widget.EditText@android:id/content#3",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "settings@state=7311010578d2 -[long-press-focused-element[long-press]:android.widget.EditText@android:id/content#3]-> settings.keyboard~max-operation-input@state=65d38f3c9ab3 [nav=touch]"
+   },
+   {
+    "src": "settings@state=fd1194fd6ab2",
+    "dst": "settings.popup@state=9d7c4e0b13ef",
+    "action": "long-press-focused-element[long-press]:android.widget.EditText@android:id/content#2",
+    "requires": "nav=touch",
+    "status": "match"
+   },
+   {
+    "src": "settings@state=fd1194fd6ab2",
+    "dst": "settings@state=fd1194fd6ab2",
+    "action": "replace-text",
+    "requires": "nav=touch",
+    "status": "match",
+    "as": "settings@state=7311010578d2 -[replace-text]-> settings@state=7311010578d2 [nav=touch]"
+   },
+   {
+    "src": "system-com-google-android-apps-nexuslauncher@state=c752de886c28",
+    "dst": "screen-1@state=817cb621fe85",
+    "action": "launch-app-by-package-activity",
+    "requires": "nav=touch",
+    "status": "new"
+   },
+   {
+    "src": "system-com-google-android-apps-nexuslauncher@state=c752de886c28",
+    "dst": "screen-1@state=b98ec66f7695",
+    "action": "launch-app-by-package-activity",
+    "requires": "nav=touch",
+    "status": "new"
+   },
+   {
+    "src": "system-com-google-android-apps-nexuslauncher@state=c752de886c28",
+    "dst": "screen-1@state=f0f56a9987cf",
+    "action": "launch-app-by-package-activity",
+    "requires": "nav=touch",
+    "status": "new"
+   }
+  ],
+  "missing": {
+   "screens": [
+    "android-home",
+    "rpn",
+    "rpn.snackbar",
+    "rpn.toggle-menu",
+    "settings.keyboard~max-operation-input",
+    "settings.keyboard~significant-figures",
+    "settings.keyboard~undo-history-limit",
+    "settings.popup",
+    "settings.snackbar",
+    "settings.toast"
+   ],
+   "states": [
+    "android-home",
+    "rpn.toggle-menu@state=0bbdbc258733",
+    "select-rounding-mode@state=f1204093836d",
+    "settings.keyboard~undo-history-limit@state=e96d4456cd3c",
+    "settings.popup@state=a3bbbb5052cb",
+    "settings.snackbar@state=a841134b7a30",
+    "settings.toast@state=106d9bafa652"
+   ],
+   "edges": [
+    {
+     "src": "android-home",
+     "dst": "rpn@state=07112d3a7333",
+     "action": "launch-app-by-package-activity",
+     "requires": "nav=touch"
+    },
+    {
+     "src": "android-home",
+     "dst": "rpn@state=6cfc5095a80f",
+     "action": "launch-app-by-package-activity",
+     "requires": "nav=touch"
+    },
+    {
+     "src": "android-home",
+     "dst": "rpn@state=b2baf56e7a25",
+     "action": "launch-app-by-package-activity",
+     "requires": "nav=touch"
+    },
+    {
+     "src": "delete-data@state=f569f911cc97",
+     "dst": "settings.snackbar@state=a841134b7a30",
+     "action": "activate-focused-element[tap]:android.view.View:Delete",
+     "requires": "nav=touch",
+     "why": "ord 108 skipped: unreachable: no route over control-set screens from where the device is to its start, and the relaunch landed on rpn@state=07112d3a7333, and no verified edge chain goes on to delete-data@state=f569f911cc97"
+    },
+    {
+     "src": "rpn.toggle-menu@state=0bbdbc258733",
+     "dst": "rpn@state=07112d3a7333",
+     "action": "activate-focused-element[tap]:android.view.View:Memory: <n>",
+     "requires": "nav=touch"
+    },
+    {
+     "src": "rpn.toggle-menu@state=0bbdbc258733",
+     "dst": "settings@state=7311010578d2",
+     "action": "activate-focused-element[tap]:android.view.View:Settings",
+     "requires": "nav=touch"
+    },
+    {
+     "src": "rpn.toggle-menu@state=0bbdbc258733",
+     "dst": "rpn@state=07112d3a7333",
+     "action": "activate-focused-element[tap]:android.view.View:Toggle Menu",
+     "requires": "nav=touch"
+    },
+    {
+     "src": "rpn.toggle-menu@state=0bbdbc258733",
+     "dst": "rpn@state=07112d3a7333",
+     "action": "back",
+     "requires": "nav=touch"
+    },
+    {
+     "src": "rpn@state=07112d3a7333",
+     "dst": "rpn.toggle-menu@state=0bbdbc258733",
+     "action": "activate-focused-element[tap]:android.view.View:Toggle Menu",
+     "requires": "nav=touch"
+    },
+    {
+     "src": "rpn@state=07112d3a7333",
+     "dst": "rpn.snackbar@state=db0e1176ec71",
+     "action": "activate-focused-element[tap]:android.view.View:Undo",
+     "requires": "nav=touch"
+    },
+    {
+     "src": "rpn@state=6cfc5095a80f",
+     "dst": "android-home",
+     "action": "back",
+     "requires": "nav=touch"
+    },
+    {
+     "src": "rpn@state=b2baf56e7a25",
+     "dst": "rpn@state=b2baf56e7a25",
+     "action": "activate-focused-element[tap]:android.view.View:Jump to end of number",
+     "requires": "nav=touch",
+     "why": "ord 160 failed: missing-control: the screen is rpn@state=b2baf56e7a25's control-set screen, and its control is not on it"
+    },
+    {
+     "src": "rpn@state=b2baf56e7a25",
+     "dst": "rpn@state=b2baf56e7a25",
+     "action": "activate-focused-element[tap]:android.view.View:Jump to start of number",
+     "requires": "nav=touch",
+     "why": "ord 159 failed: missing-control: the screen is rpn@state=b2baf56e7a25's control-set screen, and its control is not on it"
+    },
+    {
+     "src": "rpn@state=b2baf56e7a25",
+     "dst": "android-home",
+     "action": "back",
+     "requires": "nav=touch"
+    },
+    {
+     "src": "select-rounding-mode@state=5bf09618b761",
+     "dst": "select-rounding-mode@state=a8254ce74a6a",
+     "action": "activate-focused-element[tap]:android.view.View:Half Even - (Default) Round towards nearest neighbor, if equal even neighbor.",
+     "requires": "nav=touch"
+    },
+    {
+     "src": "select-rounding-mode@state=a8254ce74a6a",
+     "dst": "select-rounding-mode@state=5bf09618b761",
+     "action": "activate-focused-element[tap]:android.view.View:Ceiling - Round towards positive infinity.",
+     "requires": "nav=touch"
+    },
+    {
+     "src": "select-rounding-mode@state=a8254ce74a6a",
+     "dst": "select-rounding-mode@state=cc6834db76d0",
+     "action": "activate-focused-element[tap]:android.view.View:Down - Round towards zero.",
+     "requires": "nav=touch"
+    },
+    {
+     "src": "select-rounding-mode@state=a8254ce74a6a",
+     "dst": "select-rounding-mode@state=ec66807cd95e",
+     "action": "activate-focused-element[tap]:android.view.View:Floor - Round towards negative infinity.",
+     "requires": "nav=touch"
+    },
+    {
+     "src": "select-rounding-mode@state=a8254ce74a6a",
+     "dst": "select-rounding-mode@state=577d3ec7faef",
+     "action": "activate-focused-element[tap]:android.view.View:Unnecessary - No rounding.",
+     "requires": "nav=touch"
+    },
+    {
+     "src": "select-rounding-mode@state=cc6834db76d0",
+     "dst": "select-rounding-mode@state=a8254ce74a6a",
+     "action": "activate-focused-element[tap]:android.view.View:Half Even - (Default) Round towards nearest neighbor, if equal even neighbor.",
+     "requires": "nav=touch"
+    },
+    {
+     "src": "select-rounding-mode@state=ec66807cd95e",
+     "dst": "select-rounding-mode@state=a8254ce74a6a",
+     "action": "activate-focused-element[tap]:android.view.View:Half Even - (Default) Round towards nearest neighbor, if equal even neighbor.",
+     "requires": "nav=touch"
+    },
+    {
+     "src": "select-rounding-mode@state=f1204093836d",
+     "dst": "select-rounding-mode@state=5bf09618b761",
+     "action": "activate-focused-element[tap]:android.view.View:Ceiling - Round towards positive infinity.",
+     "requires": "nav=touch"
+    },
+    {
+     "src": "select-rounding-mode@state=f1204093836d",
+     "dst": "select-rounding-mode@state=cc6834db76d0",
+     "action": "activate-focused-element[tap]:android.view.View:Down - Round towards zero.",
+     "requires": "nav=touch"
+    },
+    {
+     "src": "select-rounding-mode@state=f1204093836d",
+     "dst": "select-rounding-mode@state=ec66807cd95e",
+     "action": "activate-focused-element[tap]:android.view.View:Floor - Round towards negative infinity.",
+     "requires": "nav=touch"
+    },
+    {
+     "src": "select-rounding-mode@state=f1204093836d",
+     "dst": "select-rounding-mode@state=a8254ce74a6a",
+     "action": "activate-focused-element[tap]:android.view.View:Half Even - (Default) Round towards nearest neighbor, if equal even neighbor.",
+     "requires": "nav=touch"
+    },
+    {
+     "src": "select-rounding-mode@state=f1204093836d",
+     "dst": "select-rounding-mode@state=577d3ec7faef",
+     "action": "activate-focused-element[tap]:android.view.View:Unnecessary - No rounding.",
+     "requires": "nav=touch"
+    },
+    {
+     "src": "settings.keyboard~max-operation-input@state=65d38f3c9ab3",
+     "dst": "settings@state=7311010578d2",
+     "action": "ime-enter[ime-enter]:android.widget.EditText@android:id/content#1",
+     "requires": "nav=touch"
+    },
+    {
+     "src": "settings.keyboard~undo-history-limit@state=e96d4456cd3c",
+     "dst": "rpn@state=07112d3a7333",
+     "action": "back",
+     "requires": "nav=touch"
+    },
+    {
+     "src": "settings.keyboard~undo-history-limit@state=e96d4456cd3c",
+     "dst": "settings@state=7311010578d2",
+     "action": "ime-enter[ime-enter]:android.widget.EditText@android:id/content#3",
+     "requires": "nav=touch"
+    },
+    {
+     "src": "settings.keyboard~undo-history-limit@state=e96d4456cd3c",
+     "dst": "settings@state=7311010578d2",
+     "action": "ime-enter[ime-enter]:android.widget.EditText@android:id/content#5",
+     "requires": "nav=touch"
+    },
+    {
+     "src": "settings.keyboard~undo-history-limit@state=e96d4456cd3c",
+     "dst": "settings@state=7311010578d2",
+     "action": "replace-text",
+     "requires": "nav=touch"
+    },
+    {
+     "src": "settings.keyboard~undo-history-limit@state=e96d4456cd3c",
+     "dst": "settings.keyboard~undo-history-limit@state=e96d4456cd3c",
+     "action": "tap-at-coordinates",
+     "requires": "nav=touch;orientation=landscape"
+    },
+    {
+     "src": "settings.popup@state=a3bbbb5052cb",
+     "dst": "settings.toast@state=106d9bafa652",
+     "action": "tap-at-coordinates",
+     "requires": "nav=touch;orientation=landscape"
+    },
+    {
+     "src": "settings.popup@state=a3bbbb5052cb",
+     "dst": "settings.toast@state=106d9bafa652",
+     "action": "tap-at-coordinates",
+     "requires": "nav=touch;orientation=portrait"
+    },
+    {
+     "src": "settings.snackbar@state=a841134b7a30",
+     "dst": "settings@state=7311010578d2",
+     "action": "dismiss-transient-view:transient",
+     "requires": "nav=touch"
+    },
+    {
+     "src": "settings@state=7311010578d2",
+     "dst": "settings.keyboard~max-operation-input@state=65d38f3c9ab3",
+     "action": "activate-focused-element(late):android.widget.EditText@android:id/content#1",
+     "requires": "nav=touch"
+    },
+    {
+     "src": "settings@state=7311010578d2",
+     "dst": "settings.keyboard~undo-history-limit@state=e96d4456cd3c",
+     "action": "activate-focused-element:android.widget.EditText@android:id/content#5",
+     "requires": "nav=touch"
+    },
+    {
+     "src": "settings@state=7311010578d2",
+     "dst": "settings.keyboard~max-operation-input@state=65d38f3c9ab3",
+     "action": "activate-focused-element[tap](late):android.widget.EditText@android:id/content#1",
+     "requires": "nav=touch"
+    },
+    {
+     "src": "settings@state=7311010578d2",
+     "dst": "settings.keyboard~undo-history-limit@state=e96d4456cd3c",
+     "action": "activate-focused-element[tap](late):android.widget.EditText@android:id/content#5",
+     "requires": "nav=touch"
+    },
+    {
+     "src": "settings@state=7311010578d2",
+     "dst": "settings.keyboard~max-operation-input@state=65d38f3c9ab3",
+     "action": "long-press-focused-element[long-press](late):android.widget.EditText@android:id/content#1",
+     "requires": "nav=touch"
+    },
+    {
+     "src": "settings@state=7311010578d2",
+     "dst": "settings.popup@state=a3bbbb5052cb",
+     "action": "long-press-focused-element[long-press]:android.widget.EditText@android:id/content#2",
+     "requires": "nav=touch"
+    },
+    {
+     "src": "settings@state=7311010578d2",
+     "dst": "settings.keyboard~undo-history-limit@state=e96d4456cd3c",
+     "action": "long-press-focused-element[long-press]:android.widget.EditText@android:id/content#5",
+     "requires": "nav=touch"
+    },
+    {
+     "src": "settings@state=7311010578d2",
+     "dst": "select-rounding-mode@state=a8254ce74a6a",
+     "action": "tap-at-coordinates[tap]",
+     "requires": "nav=touch;orientation=portrait"
+    },
+    {
+     "src": "settings@state=7311010578d2",
+     "dst": "select-rounding-mode@state=f1204093836d",
+     "action": "tap-at-coordinates[tap]",
+     "requires": "nav=touch;orientation=landscape"
+    }
+   ],
+   "why": {
+    "settings.snackbar@state=a841134b7a30": "ord 108 skipped: unreachable: no route over control-set screens from where the device is to its start, and the relaunch landed on rpn@state=07112d3a7333, and no verified edge chain goes on to delete-data@state=f569f911cc97",
+    "settings.toast@state=106d9bafa652": "ord 106 differs: the screen is settings.toast@state=106d9bafa652's, with 2 line(s) of its tree other than the stored one, first: -overlay:toast desc=\"Contents can\u2019t be autofilled\""
+   }
+  },
+  "counts": {
+   "screens": {
+    "match": 10,
+    "new": 0,
+    "changed": 3,
+    "missing": 10
+   },
+   "states": {
+    "match": 34,
+    "new": 3,
+    "changed": 1,
+    "missing": 7
+   },
+   "edges": {
+    "match": 149,
+    "new": 15,
+    "changed": 0,
+    "missing": 44
+   }
+  },
+  "found": {
+   "gaps": [
+    {
+     "kind": "new-state",
+     "state": "rpn@state=e678fe86228a"
+    },
+    {
+     "kind": "new-state",
+     "state": "system-com-google-android-apps-nexuslauncher"
+    },
+    {
+     "kind": "new-edge",
+     "edge": "rpn@state=6cfc5095a80f -[back]-> system-com-google-android-apps-nexuslauncher [nav=touch]"
+    },
+    {
+     "kind": "new-edge",
+     "edge": "rpn@state=b2baf56e7a25 -[back]-> system-com-google-android-apps-nexuslauncher [nav=touch]"
+    },
+    {
+     "kind": "new-edge",
+     "edge": "select-rounding-mode@state=33f49bd50ac1 -[activate-focused-element[tap]:android.view.View:Done]-> settings@state=7311010578d2 [nav=touch]"
+    },
+    {
+     "kind": "new-edge",
+     "edge": "select-rounding-mode@state=577d3ec7faef -[activate-focused-element[tap]:android.view.View:Ceiling - Round towards positive infinity.]-> select-rounding-mode@state=5bf09618b761 [nav=touch]"
+    },
+    {
+     "kind": "new-edge",
+     "edge": "select-rounding-mode@state=577d3ec7faef -[activate-focused-element[tap]:android.view.View:Down - Round towards zero.]-> select-rounding-mode@state=cc6834db76d0 [nav=touch]"
+    },
+    {
+     "kind": "new-edge",
+     "edge": "select-rounding-mode@state=577d3ec7faef -[activate-focused-element[tap]:android.view.View:Floor - Round towards negative infinity.]-> select-rounding-mode@state=ec66807cd95e [nav=touch]"
+    },
+    {
+     "kind": "new-edge",
+     "edge": "select-rounding-mode@state=577d3ec7faef -[activate-focused-element[tap]:android.view.View:Unnecessary - No rounding.]-> select-rounding-mode@state=577d3ec7faef [nav=touch]"
+    },
+    {
+     "kind": "new-edge",
+     "edge": "select-rounding-mode@state=577d3ec7faef -[scroll-up:android.view.View@android:id/content]-> select-rounding-mode@state=dc2b58656eca [nav=touch]"
+    },
+    {
+     "kind": "new-edge",
+     "edge": "select-rounding-mode@state=5bf09618b761 -[scroll-up:android.view.View@android:id/content]-> select-rounding-mode@state=577d3ec7faef [nav=touch]"
+    },
+    {
+     "kind": "new-edge",
+     "edge": "select-rounding-mode@state=cc6834db76d0 -[scroll-up:android.view.View@android:id/content]-> select-rounding-mode@state=577d3ec7faef [nav=touch]"
+    },
+    {
+     "kind": "new-edge",
+     "edge": "select-rounding-mode@state=dc2b58656eca -[scroll-down:android.view.View@android:id/content]-> select-rounding-mode@state=577d3ec7faef [nav=touch]"
+    },
+    {
+     "kind": "new-edge",
+     "edge": "select-rounding-mode@state=ec66807cd95e -[scroll-up:android.view.View@android:id/content]-> select-rounding-mode@state=577d3ec7faef [nav=touch]"
+    },
+    {
+     "kind": "new-edge",
+     "edge": "system-com-google-android-apps-nexuslauncher -[launch-app-by-package-activity]-> rpn@state=07112d3a7333 [nav=touch]"
+    },
+    {
+     "kind": "new-edge",
+     "edge": "system-com-google-android-apps-nexuslauncher -[launch-app-by-package-activity]-> rpn@state=6cfc5095a80f [nav=touch]"
+    },
+    {
+     "kind": "new-edge",
+     "edge": "system-com-google-android-apps-nexuslauncher -[launch-app-by-package-activity]-> rpn@state=b2baf56e7a25 [nav=touch]"
+    }
+   ],
+   "to_explore": [
+    {
+     "kind": "new-control",
+     "state": "settings.keyboard~max-operation-input@state=65d38f3c9ab3",
+     "control": "EditText@row:Stack Limit",
+     "explore": "goal",
+     "why": "settings.keyboard~max-operation-input@state=65d38f3c9ab3 shows EditText@row:Stack Limit, which its stored leaf lacks and no baseline edge acts on",
+     "goal": "reach settings.keyboard~max-operation-input@state=65d38f3c9ab3 and try EditText@row:Stack Limit"
+    },
+    {
+     "kind": "new-control",
+     "state": "settings.keyboard~max-operation-input@state=65d38f3c9ab3",
+     "control": "EditText@row:Undo History Limit",
+     "explore": "goal",
+     "why": "settings.keyboard~max-operation-input@state=65d38f3c9ab3 shows EditText@row:Undo History Limit, which its stored leaf lacks and no baseline edge acts on",
+     "goal": "reach settings.keyboard~max-operation-input@state=65d38f3c9ab3 and try EditText@row:Undo History Limit"
+    },
+    {
+     "kind": "new-control",
+     "state": "settings@state=7311010578d2",
+     "control": "EditText@row:Max Operation Input",
+     "explore": "goal",
+     "why": "settings@state=7311010578d2 shows EditText@row:Max Operation Input, which its stored leaf lacks and no baseline edge acts on",
+     "goal": "reach settings@state=7311010578d2 and try EditText@row:Max Operation Input"
+    },
+    {
+     "kind": "new-control",
+     "state": "settings@state=7311010578d2",
+     "control": "EditText@row:Stack Limit",
+     "explore": "goal",
+     "why": "settings@state=7311010578d2 shows EditText@row:Stack Limit, which its stored leaf lacks and no baseline edge acts on",
+     "goal": "reach settings@state=7311010578d2 and try EditText@row:Stack Limit"
+    },
+    {
+     "kind": "new-control",
+     "state": "settings@state=7311010578d2",
+     "control": "EditText@row:Undo History Limit",
+     "explore": "goal",
+     "why": "settings@state=7311010578d2 shows EditText@row:Undo History Limit, which its stored leaf lacks and no baseline edge acts on",
+     "goal": "reach settings@state=7311010578d2 and try EditText@row:Undo History Limit"
+    },
+    {
+     "kind": "new-state",
+     "subject": "rpn@state=e678fe86228a",
+     "explore": "goal",
+     "why": "the replay's capture shows rpn@state=e678fe86228a, which the baseline lacks",
+     "goal": "reach and explore rpn@state=e678fe86228a"
+    },
+    {
+     "kind": "new-state",
+     "subject": "system-com-google-android-apps-nexuslauncher",
+     "explore": "full",
+     "why": "the replay's capture shows system-com-google-android-apps-nexuslauncher, which the baseline lacks",
+     "goal": "explore system-com-google-android-apps-nexuslauncher"
+    },
+    {
+     "kind": "new-edge",
+     "subject": "rpn@state=6cfc5095a80f -[back]-> system-com-google-android-apps-nexuslauncher [nav=touch]",
+     "explore": "full",
+     "why": "the replay's capture shows rpn@state=6cfc5095a80f -[back]-> system-com-google-android-apps-nexuslauncher [nav=touch], which the baseline lacks",
+     "goal": "explore system-com-google-android-apps-nexuslauncher"
+    },
+    {
+     "kind": "new-edge",
+     "subject": "rpn@state=b2baf56e7a25 -[back]-> system-com-google-android-apps-nexuslauncher [nav=touch]",
+     "explore": "full",
+     "why": "the replay's capture shows rpn@state=b2baf56e7a25 -[back]-> system-com-google-android-apps-nexuslauncher [nav=touch], which the baseline lacks",
+     "goal": "explore system-com-google-android-apps-nexuslauncher"
+    },
+    {
+     "kind": "new-edge",
+     "subject": "select-rounding-mode@state=33f49bd50ac1 -[activate-focused-element[tap]:android.view.View:Done]-> settings@state=7311010578d2 [nav=touch]",
+     "explore": "goal",
+     "why": "the replay's capture shows select-rounding-mode@state=33f49bd50ac1 -[activate-focused-element[tap]:android.view.View:Done]-> settings@state=7311010578d2 [nav=touch], which the baseline lacks",
+     "goal": "reach select-rounding-mode and take select-rounding-mode@state=33f49bd50ac1 -[activate-focused-element[tap]:android.view.View:Done]-> settings@state=7311010578d2 [nav=touch]"
+    },
+    {
+     "kind": "new-edge",
+     "subject": "select-rounding-mode@state=577d3ec7faef -[activate-focused-element[tap]:android.view.View:Ceiling - Round towards positive infinity.]-> select-rounding-mode@state=5bf09618b761 [nav=touch]",
+     "explore": "goal",
+     "why": "the replay's capture shows select-rounding-mode@state=577d3ec7faef -[activate-focused-element[tap]:android.view.View:Ceiling - Round towards positive infinity.]-> select-rounding-mode@state=5bf09618b761 [nav=touch], which the baseline lacks",
+     "goal": "reach select-rounding-mode and take select-rounding-mode@state=577d3ec7faef -[activate-focused-element[tap]:android.view.View:Ceiling - Round towards positive infinity.]-> select-rounding-mode@state=5bf09618b761 [nav=touch]"
+    },
+    {
+     "kind": "new-edge",
+     "subject": "select-rounding-mode@state=577d3ec7faef -[activate-focused-element[tap]:android.view.View:Down - Round towards zero.]-> select-rounding-mode@state=cc6834db76d0 [nav=touch]",
+     "explore": "goal",
+     "why": "the replay's capture shows select-rounding-mode@state=577d3ec7faef -[activate-focused-element[tap]:android.view.View:Down - Round towards zero.]-> select-rounding-mode@state=cc6834db76d0 [nav=touch], which the baseline lacks",
+     "goal": "reach select-rounding-mode and take select-rounding-mode@state=577d3ec7faef -[activate-focused-element[tap]:android.view.View:Down - Round towards zero.]-> select-rounding-mode@state=cc6834db76d0 [nav=touch]"
+    },
+    {
+     "kind": "new-edge",
+     "subject": "select-rounding-mode@state=577d3ec7faef -[activate-focused-element[tap]:android.view.View:Floor - Round towards negative infinity.]-> select-rounding-mode@state=ec66807cd95e [nav=touch]",
+     "explore": "goal",
+     "why": "the replay's capture shows select-rounding-mode@state=577d3ec7faef -[activate-focused-element[tap]:android.view.View:Floor - Round towards negative infinity.]-> select-rounding-mode@state=ec66807cd95e [nav=touch], which the baseline lacks",
+     "goal": "reach select-rounding-mode and take select-rounding-mode@state=577d3ec7faef -[activate-focused-element[tap]:android.view.View:Floor - Round towards negative infinity.]-> select-rounding-mode@state=ec66807cd95e [nav=touch]"
+    },
+    {
+     "kind": "new-edge",
+     "subject": "select-rounding-mode@state=577d3ec7faef -[activate-focused-element[tap]:android.view.View:Unnecessary - No rounding.]-> select-rounding-mode@state=577d3ec7faef [nav=touch]",
+     "explore": "goal",
+     "why": "the replay's capture shows select-rounding-mode@state=577d3ec7faef -[activate-focused-element[tap]:android.view.View:Unnecessary - No rounding.]-> select-rounding-mode@state=577d3ec7faef [nav=touch], which the baseline lacks",
+     "goal": "reach select-rounding-mode and take select-rounding-mode@state=577d3ec7faef -[activate-focused-element[tap]:android.view.View:Unnecessary - No rounding.]-> select-rounding-mode@state=577d3ec7faef [nav=touch]"
+    },
+    {
+     "kind": "new-edge",
+     "subject": "select-rounding-mode@state=577d3ec7faef -[scroll-up:android.view.View@android:id/content]-> select-rounding-mode@state=dc2b58656eca [nav=touch]",
+     "explore": "goal",
+     "why": "the replay's capture shows select-rounding-mode@state=577d3ec7faef -[scroll-up:android.view.View@android:id/content]-> select-rounding-mode@state=dc2b58656eca [nav=touch], which the baseline lacks",
+     "goal": "reach select-rounding-mode and take select-rounding-mode@state=577d3ec7faef -[scroll-up:android.view.View@android:id/content]-> select-rounding-mode@state=dc2b58656eca [nav=touch]"
+    },
+    {
+     "kind": "new-edge",
+     "subject": "select-rounding-mode@state=5bf09618b761 -[scroll-up:android.view.View@android:id/content]-> select-rounding-mode@state=577d3ec7faef [nav=touch]",
+     "explore": "goal",
+     "why": "the replay's capture shows select-rounding-mode@state=5bf09618b761 -[scroll-up:android.view.View@android:id/content]-> select-rounding-mode@state=577d3ec7faef [nav=touch], which the baseline lacks",
+     "goal": "reach select-rounding-mode and take select-rounding-mode@state=5bf09618b761 -[scroll-up:android.view.View@android:id/content]-> select-rounding-mode@state=577d3ec7faef [nav=touch]"
+    },
+    {
+     "kind": "new-edge",
+     "subject": "select-rounding-mode@state=cc6834db76d0 -[scroll-up:android.view.View@android:id/content]-> select-rounding-mode@state=577d3ec7faef [nav=touch]",
+     "explore": "goal",
+     "why": "the replay's capture shows select-rounding-mode@state=cc6834db76d0 -[scroll-up:android.view.View@android:id/content]-> select-rounding-mode@state=577d3ec7faef [nav=touch], which the baseline lacks",
+     "goal": "reach select-rounding-mode and take select-rounding-mode@state=cc6834db76d0 -[scroll-up:android.view.View@android:id/content]-> select-rounding-mode@state=577d3ec7faef [nav=touch]"
+    },
+    {
+     "kind": "new-edge",
+     "subject": "select-rounding-mode@state=dc2b58656eca -[scroll-down:android.view.View@android:id/content]-> select-rounding-mode@state=577d3ec7faef [nav=touch]",
+     "explore": "goal",
+     "why": "the replay's capture shows select-rounding-mode@state=dc2b58656eca -[scroll-down:android.view.View@android:id/content]-> select-rounding-mode@state=577d3ec7faef [nav=touch], which the baseline lacks",
+     "goal": "reach select-rounding-mode and take select-rounding-mode@state=dc2b58656eca -[scroll-down:android.view.View@android:id/content]-> select-rounding-mode@state=577d3ec7faef [nav=touch]"
+    },
+    {
+     "kind": "new-edge",
+     "subject": "select-rounding-mode@state=ec66807cd95e -[scroll-up:android.view.View@android:id/content]-> select-rounding-mode@state=577d3ec7faef [nav=touch]",
+     "explore": "goal",
+     "why": "the replay's capture shows select-rounding-mode@state=ec66807cd95e -[scroll-up:android.view.View@android:id/content]-> select-rounding-mode@state=577d3ec7faef [nav=touch], which the baseline lacks",
+     "goal": "reach select-rounding-mode and take select-rounding-mode@state=ec66807cd95e -[scroll-up:android.view.View@android:id/content]-> select-rounding-mode@state=577d3ec7faef [nav=touch]"
+    },
+    {
+     "kind": "new-edge",
+     "subject": "system-com-google-android-apps-nexuslauncher -[launch-app-by-package-activity]-> rpn@state=07112d3a7333 [nav=touch]",
+     "explore": "goal",
+     "why": "the replay's capture shows system-com-google-android-apps-nexuslauncher -[launch-app-by-package-activity]-> rpn@state=07112d3a7333 [nav=touch], which the baseline lacks",
+     "goal": "reach system-com-google-android-apps-nexuslauncher and take system-com-google-android-apps-nexuslauncher -[launch-app-by-package-activity]-> rpn@state=07112d3a7333 [nav=touch]"
+    },
+    {
+     "kind": "new-edge",
+     "subject": "system-com-google-android-apps-nexuslauncher -[launch-app-by-package-activity]-> rpn@state=6cfc5095a80f [nav=touch]",
+     "explore": "goal",
+     "why": "the replay's capture shows system-com-google-android-apps-nexuslauncher -[launch-app-by-package-activity]-> rpn@state=6cfc5095a80f [nav=touch], which the baseline lacks",
+     "goal": "reach system-com-google-android-apps-nexuslauncher and take system-com-google-android-apps-nexuslauncher -[launch-app-by-package-activity]-> rpn@state=6cfc5095a80f [nav=touch]"
+    },
+    {
+     "kind": "new-edge",
+     "subject": "system-com-google-android-apps-nexuslauncher -[launch-app-by-package-activity]-> rpn@state=b2baf56e7a25 [nav=touch]",
+     "explore": "goal",
+     "why": "the replay's capture shows system-com-google-android-apps-nexuslauncher -[launch-app-by-package-activity]-> rpn@state=b2baf56e7a25 [nav=touch], which the baseline lacks",
+     "goal": "reach system-com-google-android-apps-nexuslauncher and take system-com-google-android-apps-nexuslauncher -[launch-app-by-package-activity]-> rpn@state=b2baf56e7a25 [nav=touch]"
+    }
+   ],
+   "counts": {
+    "gaps": 17,
+    "to_explore": 22
+   }
+  }
+ },
+ "verdicts": {
+  "replay": {
+   "test": "skeleton:6",
+   "appearance": "dark",
+   "orientation": "landscape",
+   "from_ord": 0,
+   "to_ord": 237,
+   "refused": null,
+   "passed": false,
+   "verdicts": {
+    "arrived": 219,
+    "differs": 1,
+    "failed": 9,
+    "no-change": 2,
+    "not-started": 4,
+    "skipped": 3
+   },
+   "counts": {
+    "captured": 30,
+    "differs": 1,
+    "review": 0,
+    "not-captured": 1
+   },
+   "failures": [
+    {
+     "path_step": 70,
+     "source_step": -1,
+     "why": "activate-focused-element: cannot_run: step 1/1 (activate-focused-element): no node matches target 'control=android.widget.EditText@android:id/content#3' on the current screen",
+     "expected": {
+      "screen": "settings.keyboard~max-operation-input",
+      "recorded_screen": "settings",
+      "state": "settings.keyboard~max-operation-input@state=65d38f3c9ab3",
+      "from_state": "settings@state=7311010578d2"
+     },
+     "reached": {
+      "screen": "rpn",
+      "run_screen": "add+change-sign+clear-all",
+      "state": "rpn@state=07112d3a7333"
+     }
+    },
+    {
+     "path_step": 107,
+     "source_step": -1,
+     "why": "the transient did not leave: the screen stayed on settings.toast@state=106d9bafa652",
+     "expected": {
+      "screen": "delete-data",
+      "recorded_screen": "delete-data",
+      "state": "delete-data@state=f569f911cc97",
+      "from_state": "settings@state=7311010578d2"
+     },
+     "reached": {
+      "screen": "settings",
+      "run_screen": "settings",
+      "state": null
+     }
+    },
+    {
+     "path_step": 111,
+     "source_step": -1,
+     "why": "activate-focused-element: cannot_run: step 1/1 (activate-focused-element): no node matches target 'control=android.widget.EditText@android:id/content#2' on the current screen",
+     "expected": {
+      "screen": "settings.keyboard~rounding-precision",
+      "recorded_screen": "settings",
+      "state": "settings.keyboard~rounding-precision@state=dfb8b1d53d06",
+      "from_state": "settings@state=7311010578d2"
+     },
+     "reached": {
+      "screen": "rpn",
+      "run_screen": "add+change-sign+clear-all",
+      "state": "rpn@state=07112d3a7333"
+     }
+    },
+    {
+     "path_step": 113,
+     "source_step": -1,
+     "why": "the driver answered no_change, and its edge moved the screen from settings@state=7311010578d2 to settings.keyboard~max-operation-input@state=65d38f3c9ab3",
+     "expected": {
+      "screen": "settings.keyboard~max-operation-input",
+      "recorded_screen": "settings",
+      "state": "settings.keyboard~max-operation-input@state=65d38f3c9ab3",
+      "from_state": "settings@state=7311010578d2"
+     },
+     "reached": {
+      "screen": "settings",
+      "run_screen": "settings",
+      "state": "settings@state=7311010578d2"
+     }
+    },
+    {
+     "path_step": 115,
+     "source_step": -1,
+     "why": "the keyboard settings.keyboard~max-operation-input@state=65d38f3c9ab3 came down, and the screen is not its origin settings@state=7311010578d2",
+     "expected": {
+      "screen": "settings.keyboard~undo-history-limit",
+      "recorded_screen": "settings",
+      "state": "settings.keyboard~undo-history-limit@state=e96d4456cd3c",
+      "from_state": "settings@state=7311010578d2"
+     },
+     "reached": {
+      "screen": "rpn",
+      "run_screen": "add+change-sign+clear-all",
+      "state": "rpn@state=07112d3a7333"
+     }
+    },
+    {
+     "path_step": 116,
+     "source_step": -1,
+     "why": "ime-enter: cannot_run: step 1/1 (ime-enter): no node matches target 'control=android.widget.EditText@android:id/content' on the current screen",
+     "expected": {
+      "screen": "settings",
+      "recorded_screen": "settings",
+      "state": "settings@state=7311010578d2",
+      "from_state": "settings@state=7311010578d2"
+     },
+     "reached": {
+      "screen": "settings.keyboard~max-operation-input",
+      "run_screen": "settings",
+      "state": "settings.keyboard~max-operation-input@state=65d38f3c9ab3"
+     }
+    },
+    {
+     "path_step": 159,
+     "source_step": -1,
+     "why": "missing-control: the screen is rpn@state=b2baf56e7a25's control-set screen, and its control is not on it",
+     "expected": {
+      "screen": "rpn",
+      "recorded_screen": "rpn-cosine",
+      "state": "rpn@state=b2baf56e7a25",
+      "from_state": "rpn@state=b2baf56e7a25"
+     },
+     "reached": {
+      "screen": "rpn",
+      "run_screen": "add+change-sign+clear-all",
+      "state": "rpn@state=b2baf56e7a25"
+     }
+    },
+    {
+     "path_step": 160,
+     "source_step": -1,
+     "why": "missing-control: the screen is rpn@state=b2baf56e7a25's control-set screen, and its control is not on it",
+     "expected": {
+      "screen": "rpn",
+      "recorded_screen": "rpn-cosine",
+      "state": "rpn@state=b2baf56e7a25",
+      "from_state": "rpn@state=b2baf56e7a25"
+     },
+     "reached": {
+      "screen": "rpn",
+      "run_screen": "add+change-sign+clear-all",
+      "state": "rpn@state=b2baf56e7a25"
+     }
+    },
+    {
+     "path_step": 165,
+     "source_step": -1,
+     "why": "the keyboard settings.keyboard~max-operation-input@state=65d38f3c9ab3 came down, and the screen is not its origin settings@state=7311010578d2",
+     "expected": {
+      "screen": "select-rounding-mode",
+      "recorded_screen": "select-rounding-mode",
+      "state": "select-rounding-mode@state=a8254ce74a6a",
+      "from_state": "settings@state=7311010578d2"
+     },
+     "reached": {
+      "screen": "rpn",
+      "run_screen": "add+change-sign+clear-all",
+      "state": "rpn@state=07112d3a7333"
+     }
+    },
+    {
+     "path_step": 167,
+     "source_step": -1,
+     "why": "the driver answered no_change, and its edge moved the screen from settings@state=7311010578d2 to select-rounding-mode@state=a8254ce74a6a",
+     "expected": {
+      "screen": "select-rounding-mode",
+      "recorded_screen": "select-rounding-mode",
+      "state": "select-rounding-mode@state=a8254ce74a6a",
+      "from_state": "settings@state=7311010578d2"
+     },
+     "reached": {
+      "screen": "settings",
+      "run_screen": "settings",
+      "state": "settings@state=7311010578d2"
+     }
+    },
+    {
+     "path_step": 171,
+     "source_step": -1,
+     "why": "activate-focused-element: cannot_run: step 1/1 (activate-focused-element): no node matches target 'control=android.widget.EditText@android:id/content#1' on the current screen",
+     "expected": {
+      "screen": "settings.keyboard~significant-figures",
+      "recorded_screen": "settings",
+      "state": "settings.keyboard~significant-figures@state=6af5ca35bb12",
+      "from_state": "settings@state=7311010578d2"
+     },
+     "reached": {
+      "screen": "rpn",
+      "run_screen": "add+change-sign+clear-all",
+      "state": "rpn@state=07112d3a7333"
+     }
+    },
+    {
+     "path_step": 175,
+     "source_step": -1,
+     "why": "activate-focused-element: cannot_run: step 1/1 (activate-focused-element): no node matches target 'control=android.widget.EditText@android:id/content#4' on the current screen",
+     "expected": {
+      "screen": "settings.keyboard~stack-limit",
+      "recorded_screen": "settings",
+      "state": "settings.keyboard~stack-limit@state=c43030620854",
+      "from_state": "settings@state=7311010578d2"
+     },
+     "reached": {
+      "screen": "rpn",
+      "run_screen": "add+change-sign+clear-all",
+      "state": "rpn@state=07112d3a7333"
+     }
+    },
+    {
+     "path_step": 179,
+     "source_step": -1,
+     "why": "activate-focused-element: cannot_run: step 1/1 (activate-focused-element): no node matches target 'control=android.widget.EditText@android:id/content#5' on the current screen",
+     "expected": {
+      "screen": "settings.keyboard~undo-history-limit",
+      "recorded_screen": "settings",
+      "state": "settings.keyboard~undo-history-limit@state=e96d4456cd3c",
+      "from_state": "settings@state=7311010578d2"
+     },
+     "reached": {
+      "screen": "rpn",
+      "run_screen": "add+change-sign+clear-all",
+      "state": "rpn@state=07112d3a7333"
+     }
+    },
+    {
+     "path_step": 185,
+     "source_step": -1,
+     "why": "the keyboard settings.keyboard~undo-history-limit@state=e96d4456cd3c came down, and the screen is not its origin settings@state=7311010578d2",
+     "expected": {
+      "screen": "rpn",
+      "recorded_screen": "rpn",
+      "state": "rpn@state=07112d3a7333",
+      "from_state": "settings@state=7311010578d2"
+     },
+     "reached": {
+      "screen": "rpn",
+      "run_screen": "add+change-sign+clear-all",
+      "state": "rpn@state=07112d3a7333"
+     }
+    },
+    {
+     "path_step": 222,
+     "source_step": -1,
+     "why": "activate-focused-element: cannot_run: step 1/1 (activate-focused-element): no node matches target 'control=android.widget.EditText@android:id/content#1' on the current screen",
+     "expected": {
+      "screen": "settings.keyboard~significant-figures",
+      "recorded_screen": "settings",
+      "state": "settings.keyboard~significant-figures@state=6af5ca35bb12",
+      "from_state": "settings@state=7311010578d2"
+     },
+     "reached": {
+      "screen": "rpn",
+      "run_screen": "add+change-sign+clear-all",
+      "state": "rpn@state=07112d3a7333"
+     }
+    }
+   ],
+   "steps": [
+    {
+     "ord": 0,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "android-home",
+     "to_state": "rpn@state=07112d3a7333",
+     "reached": "rpn@state=07112d3a7333"
+    },
+    {
+     "ord": 1,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn@state=07112d3a7333",
+     "to_state": "rpn@state=07112d3a7333",
+     "reached": "rpn@state=07112d3a7333"
+    },
+    {
+     "ord": 2,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn@state=07112d3a7333",
+     "to_state": "rpn@state=07112d3a7333",
+     "reached": "rpn@state=07112d3a7333"
+    },
+    {
+     "ord": 3,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn@state=07112d3a7333",
+     "to_state": "rpn@state=07112d3a7333",
+     "reached": "rpn@state=07112d3a7333"
+    },
+    {
+     "ord": 4,
+     "kind": "edge",
+     "verdict": "arrived",
+     "why": "on rpn-copy, the screen rpn@state=721fbf29a002 is on, in a state the baseline does not hold",
+     "from_state": "rpn@state=07112d3a7333",
+     "to_state": "rpn@state=721fbf29a002",
+     "reached": "rpn@state=721fbf29a002"
+    },
+    {
+     "ord": 5,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn@state=721fbf29a002",
+     "to_state": "rpn@state=07112d3a7333",
+     "reached": "rpn@state=07112d3a7333"
+    },
+    {
+     "ord": 6,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn@state=07112d3a7333",
+     "to_state": "rpn@state=07112d3a7333",
+     "reached": "rpn@state=07112d3a7333"
+    },
+    {
+     "ord": 7,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn@state=07112d3a7333",
+     "to_state": "rpn@state=07112d3a7333",
+     "reached": "rpn@state=07112d3a7333"
+    },
+    {
+     "ord": 8,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn@state=07112d3a7333",
+     "to_state": "rpn@state=07112d3a7333",
+     "reached": "rpn@state=07112d3a7333"
+    },
+    {
+     "ord": 9,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn@state=07112d3a7333",
+     "to_state": "rpn@state=07112d3a7333",
+     "reached": "rpn@state=07112d3a7333"
+    },
+    {
+     "ord": 10,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn@state=07112d3a7333",
+     "to_state": "rpn@state=07112d3a7333",
+     "reached": "rpn@state=07112d3a7333"
+    },
+    {
+     "ord": 11,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn@state=07112d3a7333",
+     "to_state": "rpn@state=07112d3a7333",
+     "reached": "rpn@state=07112d3a7333"
+    },
+    {
+     "ord": 12,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn@state=07112d3a7333",
+     "to_state": "rpn@state=07112d3a7333",
+     "reached": "rpn@state=07112d3a7333"
+    },
+    {
+     "ord": 13,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn@state=07112d3a7333",
+     "to_state": "rpn@state=07112d3a7333",
+     "reached": "rpn@state=07112d3a7333"
+    },
+    {
+     "ord": 14,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn@state=07112d3a7333",
+     "to_state": "rpn@state=721fbf29a002",
+     "reached": "rpn@state=721fbf29a002"
+    },
+    {
+     "ord": 15,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn@state=721fbf29a002",
+     "to_state": "rpn@state=07112d3a7333",
+     "reached": "rpn@state=07112d3a7333"
+    },
+    {
+     "ord": 16,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn@state=07112d3a7333",
+     "to_state": "rpn@state=721fbf29a002",
+     "reached": "rpn@state=721fbf29a002"
+    },
+    {
+     "ord": 17,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn@state=721fbf29a002",
+     "to_state": "rpn@state=07112d3a7333",
+     "reached": "rpn@state=07112d3a7333"
+    },
+    {
+     "ord": 18,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn@state=07112d3a7333",
+     "to_state": "rpn@state=b2baf56e7a25",
+     "reached": "rpn@state=b2baf56e7a25"
+    },
+    {
+     "ord": 19,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn@state=b2baf56e7a25",
+     "to_state": "rpn@state=6cfc5095a80f",
+     "reached": "rpn@state=6cfc5095a80f"
+    },
+    {
+     "ord": 20,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn@state=6cfc5095a80f",
+     "to_state": "rpn@state=b2baf56e7a25",
+     "reached": "rpn@state=b2baf56e7a25"
+    },
+    {
+     "ord": 21,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn@state=b2baf56e7a25",
+     "to_state": "rpn@state=07112d3a7333",
+     "reached": "rpn@state=07112d3a7333"
+    },
+    {
+     "ord": 22,
+     "kind": "edge",
+     "verdict": "arrived",
+     "why": "on rpn-settings, the screen rpn@state=e678fe86228a is on, in a state the baseline does not hold",
+     "from_state": "rpn@state=07112d3a7333",
+     "to_state": "rpn@state=e678fe86228a",
+     "reached": "rpn@state=e678fe86228a"
+    },
+    {
+     "ord": 23,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn@state=e678fe86228a",
+     "to_state": "rpn@state=07112d3a7333",
+     "reached": "rpn@state=07112d3a7333"
+    },
+    {
+     "ord": 24,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn@state=07112d3a7333",
+     "to_state": "rpn@state=07112d3a7333",
+     "reached": "rpn@state=07112d3a7333"
+    },
+    {
+     "ord": 25,
+     "kind": "action",
+     "verdict": "arrived",
+     "from_state": "rpn@state=07112d3a7333",
+     "to_state": "rpn@state=07112d3a7333",
+     "reached": "rpn@state=07112d3a7333"
+    },
+    {
+     "ord": 26,
+     "kind": "edge",
+     "verdict": "arrived",
+     "why": "on rpn-settings, the screen rpn@state=e678fe86228a is on, in a state the baseline does not hold",
+     "from_state": "rpn@state=07112d3a7333",
+     "to_state": "rpn@state=e678fe86228a",
+     "reached": "rpn@state=e678fe86228a"
+    },
+    {
+     "ord": 27,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn@state=e678fe86228a",
+     "to_state": "rpn@state=07112d3a7333",
+     "reached": "rpn@state=07112d3a7333"
+    },
+    {
+     "ord": 28,
+     "kind": "edge",
+     "verdict": "arrived",
+     "why": "on rpn-settings, the screen rpn@state=e678fe86228a is on, in a state the baseline does not hold",
+     "from_state": "rpn@state=07112d3a7333",
+     "to_state": "rpn@state=e678fe86228a",
+     "reached": "rpn@state=e678fe86228a"
+    },
+    {
+     "ord": 29,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn@state=e678fe86228a",
+     "to_state": "settings@state=7311010578d2",
+     "reached": "settings@state=7311010578d2"
+    },
+    {
+     "ord": 30,
+     "kind": "read",
+     "verdict": "arrived",
+     "from_state": "settings@state=7311010578d2",
+     "to_state": "settings@state=7311010578d2",
+     "reached": "settings@state=7311010578d2"
+    },
+    {
+     "ord": 31,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "settings@state=7311010578d2",
+     "to_state": "settings@state=e769bae05a3e",
+     "reached": "settings@state=e769bae05a3e"
+    },
+    {
+     "ord": 32,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "settings@state=e769bae05a3e",
+     "to_state": "settings@state=7311010578d2",
+     "reached": "settings@state=7311010578d2"
+    },
+    {
+     "ord": 33,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "settings@state=7311010578d2",
+     "to_state": "settings@state=a584843d23ad",
+     "reached": "settings@state=a584843d23ad"
+    },
+    {
+     "ord": 34,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "settings@state=a584843d23ad",
+     "to_state": "settings@state=7311010578d2",
+     "reached": "settings@state=7311010578d2"
+    },
+    {
+     "ord": 35,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "settings@state=7311010578d2",
+     "to_state": "settings@state=9c0e631043d1",
+     "reached": "settings@state=9c0e631043d1"
+    },
+    {
+     "ord": 36,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "settings@state=9c0e631043d1",
+     "to_state": "settings@state=7311010578d2",
+     "reached": "settings@state=7311010578d2"
+    },
+    {
+     "ord": 37,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "settings@state=7311010578d2",
+     "to_state": "settings@state=295b38eed0c7",
+     "reached": "settings@state=295b38eed0c7"
+    },
+    {
+     "ord": 38,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "settings@state=295b38eed0c7",
+     "to_state": "settings@state=7311010578d2",
+     "reached": "settings@state=7311010578d2"
+    },
+    {
+     "ord": 39,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "settings@state=7311010578d2",
+     "to_state": "settings@state=23ca75aa47ab",
+     "reached": "settings@state=23ca75aa47ab"
+    },
+    {
+     "ord": 40,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "settings@state=23ca75aa47ab",
+     "to_state": "settings@state=7311010578d2",
+     "reached": "settings@state=7311010578d2"
+    },
+    {
+     "ord": 41,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "settings@state=7311010578d2",
+     "to_state": "settings@state=55a6305ff914",
+     "reached": "settings@state=55a6305ff914"
+    },
+    {
+     "ord": 42,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "settings@state=55a6305ff914",
+     "to_state": "settings@state=7311010578d2",
+     "reached": "settings@state=7311010578d2"
+    },
+    {
+     "ord": 43,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "settings@state=7311010578d2",
+     "to_state": "settings@state=06151d062458",
+     "reached": "settings@state=06151d062458"
+    },
+    {
+     "ord": 44,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "settings@state=06151d062458",
+     "to_state": "settings@state=7311010578d2",
+     "reached": "settings@state=7311010578d2"
+    },
+    {
+     "ord": 45,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "settings@state=7311010578d2",
+     "to_state": "select-rounding-mode@state=a8254ce74a6a",
+     "reached": "select-rounding-mode@state=a8254ce74a6a"
+    },
+    {
+     "ord": 46,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "select-rounding-mode@state=a8254ce74a6a",
+     "to_state": "select-rounding-mode@state=33f49bd50ac1",
+     "reached": "select-rounding-mode@state=33f49bd50ac1"
+    },
+    {
+     "ord": 47,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "select-rounding-mode@state=33f49bd50ac1",
+     "to_state": "select-rounding-mode@state=a8254ce74a6a",
+     "reached": "select-rounding-mode@state=a8254ce74a6a"
+    },
+    {
+     "ord": 48,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "select-rounding-mode@state=a8254ce74a6a",
+     "to_state": "select-rounding-mode@state=e91f3974d6a7",
+     "reached": "select-rounding-mode@state=e91f3974d6a7"
+    },
+    {
+     "ord": 49,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "select-rounding-mode@state=e91f3974d6a7",
+     "to_state": "select-rounding-mode@state=a8254ce74a6a",
+     "reached": "select-rounding-mode@state=a8254ce74a6a"
+    },
+    {
+     "ord": 50,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "select-rounding-mode@state=a8254ce74a6a",
+     "to_state": "select-rounding-mode@state=dc2b58656eca",
+     "reached": "select-rounding-mode@state=dc2b58656eca"
+    },
+    {
+     "ord": 51,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "select-rounding-mode@state=dc2b58656eca",
+     "to_state": "select-rounding-mode@state=a8254ce74a6a",
+     "reached": "select-rounding-mode@state=a8254ce74a6a"
+    },
+    {
+     "ord": 52,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "select-rounding-mode@state=a8254ce74a6a",
+     "to_state": "select-rounding-mode@state=cc6834db76d0",
+     "reached": "select-rounding-mode@state=cc6834db76d0"
+    },
+    {
+     "ord": 53,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "select-rounding-mode@state=cc6834db76d0",
+     "to_state": "select-rounding-mode@state=a8254ce74a6a",
+     "reached": "select-rounding-mode@state=a8254ce74a6a"
+    },
+    {
+     "ord": 54,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "select-rounding-mode@state=a8254ce74a6a",
+     "to_state": "select-rounding-mode@state=5bf09618b761",
+     "reached": "select-rounding-mode@state=5bf09618b761"
+    },
+    {
+     "ord": 55,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "select-rounding-mode@state=5bf09618b761",
+     "to_state": "select-rounding-mode@state=a8254ce74a6a",
+     "reached": "select-rounding-mode@state=a8254ce74a6a"
+    },
+    {
+     "ord": 56,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "select-rounding-mode@state=a8254ce74a6a",
+     "to_state": "select-rounding-mode@state=ec66807cd95e",
+     "reached": "select-rounding-mode@state=ec66807cd95e"
+    },
+    {
+     "ord": 57,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "select-rounding-mode@state=ec66807cd95e",
+     "to_state": "select-rounding-mode@state=a8254ce74a6a",
+     "reached": "select-rounding-mode@state=a8254ce74a6a"
+    },
+    {
+     "ord": 58,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "select-rounding-mode@state=a8254ce74a6a",
+     "to_state": "select-rounding-mode@state=577d3ec7faef",
+     "reached": "select-rounding-mode@state=577d3ec7faef"
+    },
+    {
+     "ord": 59,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "select-rounding-mode@state=577d3ec7faef",
+     "to_state": "select-rounding-mode@state=a8254ce74a6a",
+     "reached": "select-rounding-mode@state=a8254ce74a6a"
+    },
+    {
+     "ord": 60,
+     "kind": "edge",
+     "verdict": "arrived",
+     "why": "on settings, the screen settings@state=7311010578d2 is on, in a state the baseline does not hold",
+     "from_state": "select-rounding-mode@state=a8254ce74a6a",
+     "to_state": "settings@state=7311010578d2",
+     "reached": "settings@state=7311010578d2"
+    },
+    {
+     "ord": 61,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "settings@state=7311010578d2",
+     "to_state": "delete-data@state=f569f911cc97",
+     "reached": "delete-data@state=f569f911cc97"
+    },
+    {
+     "ord": 62,
+     "kind": "edge",
+     "verdict": "arrived",
+     "why": "on settings, the screen settings@state=7311010578d2 is on, in a state the baseline does not hold",
+     "from_state": "delete-data@state=f569f911cc97",
+     "to_state": "settings@state=7311010578d2",
+     "reached": "settings@state=7311010578d2"
+    },
+    {
+     "ord": 63,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "settings@state=7311010578d2",
+     "to_state": "rpn@state=07112d3a7333",
+     "reached": "rpn@state=07112d3a7333"
+    },
+    {
+     "ord": 64,
+     "kind": "edge",
+     "verdict": "arrived",
+     "why": "on rpn-settings, the screen rpn@state=e678fe86228a is on, in a state the baseline does not hold",
+     "from_state": "rpn@state=07112d3a7333",
+     "to_state": "rpn@state=e678fe86228a",
+     "reached": "rpn@state=e678fe86228a"
+    },
+    {
+     "ord": 65,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn@state=e678fe86228a",
+     "to_state": "rpn@state=07112d3a7333",
+     "reached": "rpn@state=07112d3a7333"
+    },
+    {
+     "ord": 66,
+     "kind": "edge",
+     "verdict": "arrived",
+     "why": "on rpn-settings, the screen rpn@state=e678fe86228a is on, in a state the baseline does not hold",
+     "from_state": "rpn@state=07112d3a7333",
+     "to_state": "rpn@state=e678fe86228a",
+     "reached": "rpn@state=e678fe86228a"
+    },
+    {
+     "ord": 67,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn@state=e678fe86228a",
+     "to_state": "settings@state=7311010578d2",
+     "reached": "settings@state=7311010578d2"
+    },
+    {
+     "ord": 68,
+     "kind": "edge",
+     "verdict": "arrived",
+     "why": "on settings, the screen settings.keyboard~max-operation-input@state=65d38f3c9ab3 is on, in a state the baseline does not hold",
+     "from_state": "settings@state=7311010578d2",
+     "to_state": "settings.keyboard~max-operation-input@state=65d38f3c9ab3",
+     "reached": "settings.keyboard~max-operation-input@state=65d38f3c9ab3"
+    },
+    {
+     "ord": 69,
+     "kind": "edge",
+     "verdict": "arrived",
+     "why": "on settings, the screen settings@state=7311010578d2 is on, in a state the baseline does not hold",
+     "from_state": "settings.keyboard~max-operation-input@state=65d38f3c9ab3",
+     "to_state": "settings@state=7311010578d2",
+     "reached": "settings@state=7311010578d2"
+    },
+    {
+     "ord": 70,
+     "kind": "edge",
+     "verdict": "failed",
+     "why": "activate-focused-element: cannot_run: step 1/1 (activate-focused-element): no node matches target 'control=android.widget.EditText@android:id/content#3' on the current screen",
+     "from_state": "settings@state=7311010578d2",
+     "to_state": "settings.keyboard~max-operation-input@state=65d38f3c9ab3",
+     "reached": "rpn@state=07112d3a7333"
+    },
+    {
+     "ord": 71,
+     "kind": "action",
+     "verdict": "arrived",
+     "from_state": "settings.keyboard~max-operation-input@state=65d38f3c9ab3",
+     "to_state": "settings@state=7311010578d2",
+     "reached": "settings@state=7311010578d2"
+    },
+    {
+     "ord": 72,
+     "kind": "edge",
+     "verdict": "arrived",
+     "why": "on settings, the screen settings.keyboard~significant-figures@state=6af5ca35bb12 is on, in a state the baseline does not hold",
+     "from_state": "settings@state=7311010578d2",
+     "to_state": "settings.keyboard~significant-figures@state=6af5ca35bb12",
+     "reached": "settings.keyboard~significant-figures@state=6af5ca35bb12"
+    },
+    {
+     "ord": 73,
+     "kind": "edge",
+     "verdict": "arrived",
+     "why": "on settings, the screen settings@state=7311010578d2 is on, in a state the baseline does not hold",
+     "from_state": "settings.keyboard~significant-figures@state=6af5ca35bb12",
+     "to_state": "settings@state=7311010578d2",
+     "reached": "settings@state=7311010578d2"
+    },
+    {
+     "ord": 74,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "settings@state=7311010578d2",
+     "to_state": "settings.keyboard~max-operation-input@state=65d38f3c9ab3",
+     "reached": "settings.keyboard~max-operation-input@state=65d38f3c9ab3"
+    },
+    {
+     "ord": 75,
+     "kind": "edge",
+     "verdict": "arrived",
+     "why": "on settings, the screen settings@state=7311010578d2 is on, in a state the baseline does not hold",
+     "from_state": "settings.keyboard~max-operation-input@state=65d38f3c9ab3",
+     "to_state": "settings@state=7311010578d2",
+     "reached": "settings@state=7311010578d2"
+    },
+    {
+     "ord": 76,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "settings@state=7311010578d2",
+     "to_state": "settings.keyboard~stack-limit@state=c43030620854",
+     "reached": "settings.keyboard~stack-limit@state=c43030620854"
+    },
+    {
+     "ord": 77,
+     "kind": "edge",
+     "verdict": "arrived",
+     "why": "on settings, the screen settings@state=7311010578d2 is on, in a state the baseline does not hold",
+     "from_state": "settings.keyboard~stack-limit@state=c43030620854",
+     "to_state": "settings@state=7311010578d2",
+     "reached": "settings@state=7311010578d2"
+    },
+    {
+     "ord": 78,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "settings@state=7311010578d2",
+     "to_state": "settings.keyboard~undo-history-limit@state=e96d4456cd3c",
+     "reached": "settings.keyboard~undo-history-limit@state=e96d4456cd3c"
+    },
+    {
+     "ord": 79,
+     "kind": "edge",
+     "verdict": "arrived",
+     "why": "on settings, the screen settings@state=7311010578d2 is on, in a state the baseline does not hold",
+     "from_state": "settings.keyboard~undo-history-limit@state=e96d4456cd3c",
+     "to_state": "settings@state=7311010578d2",
+     "reached": "settings@state=7311010578d2"
+    },
+    {
+     "ord": 80,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "settings@state=7311010578d2",
+     "to_state": "rpn@state=07112d3a7333",
+     "reached": "rpn@state=07112d3a7333"
+    },
+    {
+     "ord": 81,
+     "kind": "edge",
+     "verdict": "arrived",
+     "why": "on rpn-settings, the screen rpn@state=e678fe86228a is on, in a state the baseline does not hold",
+     "from_state": "rpn@state=07112d3a7333",
+     "to_state": "rpn@state=e678fe86228a",
+     "reached": "rpn@state=e678fe86228a"
+    },
+    {
+     "ord": 82,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn@state=e678fe86228a",
+     "to_state": "settings@state=7311010578d2",
+     "reached": "settings@state=7311010578d2"
+    },
+    {
+     "ord": 83,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "settings@state=7311010578d2",
+     "to_state": "select-rounding-mode@state=a8254ce74a6a",
+     "reached": "select-rounding-mode@state=a8254ce74a6a"
+    },
+    {
+     "ord": 84,
+     "kind": "edge",
+     "verdict": "arrived",
+     "why": "on settings, the screen settings@state=7311010578d2 is on, in a state the baseline does not hold",
+     "from_state": "select-rounding-mode@state=577d3ec7faef",
+     "to_state": "settings@state=7311010578d2",
+     "reached": "settings@state=7311010578d2"
+    },
+    {
+     "ord": 85,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "settings@state=7311010578d2",
+     "to_state": "rpn@state=07112d3a7333",
+     "reached": "rpn@state=07112d3a7333"
+    },
+    {
+     "ord": 86,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn@state=07112d3a7333",
+     "to_state": "rpn@state=07112d3a7333",
+     "reached": "rpn@state=07112d3a7333"
+    },
+    {
+     "ord": 87,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn@state=07112d3a7333",
+     "to_state": "rpn@state=07112d3a7333",
+     "reached": "rpn@state=07112d3a7333"
+    },
+    {
+     "ord": 88,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn@state=07112d3a7333",
+     "to_state": "rpn@state=07112d3a7333",
+     "reached": "rpn@state=07112d3a7333"
+    },
+    {
+     "ord": 89,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn@state=07112d3a7333",
+     "to_state": "rpn@state=07112d3a7333",
+     "reached": "rpn@state=07112d3a7333"
+    },
+    {
+     "ord": 90,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn@state=07112d3a7333",
+     "to_state": "rpn@state=07112d3a7333",
+     "reached": "rpn@state=07112d3a7333"
+    },
+    {
+     "ord": 91,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn@state=07112d3a7333",
+     "to_state": "rpn@state=07112d3a7333",
+     "reached": "rpn@state=07112d3a7333"
+    },
+    {
+     "ord": 92,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn@state=07112d3a7333",
+     "to_state": "rpn@state=07112d3a7333",
+     "reached": "rpn@state=07112d3a7333"
+    },
+    {
+     "ord": 93,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn@state=07112d3a7333",
+     "to_state": "rpn@state=a522a769e24a",
+     "reached": "rpn@state=a522a769e24a"
+    },
+    {
+     "ord": 94,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn@state=a522a769e24a",
+     "to_state": "rpn@state=07112d3a7333",
+     "reached": "rpn@state=07112d3a7333"
+    },
+    {
+     "ord": 95,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn@state=07112d3a7333",
+     "to_state": "rpn@state=07112d3a7333",
+     "reached": "rpn@state=07112d3a7333"
+    },
+    {
+     "ord": 96,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn@state=07112d3a7333",
+     "to_state": "rpn@state=07112d3a7333",
+     "reached": "rpn@state=07112d3a7333"
+    },
+    {
+     "ord": 97,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn@state=07112d3a7333",
+     "to_state": "rpn@state=07112d3a7333",
+     "reached": "rpn@state=07112d3a7333"
+    },
+    {
+     "ord": 98,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn@state=07112d3a7333",
+     "to_state": "rpn@state=07112d3a7333",
+     "reached": "rpn@state=07112d3a7333"
+    },
+    {
+     "ord": 99,
+     "kind": "edge",
+     "verdict": "arrived",
+     "why": "on rpn-copy, the screen rpn@state=721fbf29a002 is on, in a state the baseline does not hold",
+     "from_state": "rpn@state=07112d3a7333",
+     "to_state": "rpn@state=721fbf29a002",
+     "reached": "rpn@state=721fbf29a002"
+    },
+    {
+     "ord": 100,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn@state=721fbf29a002",
+     "to_state": "rpn@state=07112d3a7333",
+     "reached": "rpn@state=07112d3a7333"
+    },
+    {
+     "ord": 101,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn@state=07112d3a7333",
+     "to_state": "rpn@state=07112d3a7333",
+     "reached": "rpn@state=07112d3a7333"
+    },
+    {
+     "ord": 102,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn@state=07112d3a7333",
+     "to_state": "rpn.snackbar@state=db0e1176ec71",
+     "reached": "rpn.snackbar@state=db0e1176ec71"
+    },
+    {
+     "ord": 103,
+     "kind": "edge",
+     "verdict": "arrived",
+     "why": "on rpn-settings, the screen rpn@state=e678fe86228a is on, in a state the baseline does not hold",
+     "from_state": "rpn@state=07112d3a7333",
+     "to_state": "rpn@state=e678fe86228a",
+     "reached": "rpn@state=e678fe86228a"
+    },
+    {
+     "ord": 104,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn@state=e678fe86228a",
+     "to_state": "settings@state=7311010578d2",
+     "reached": "settings@state=7311010578d2"
+    },
+    {
+     "ord": 105,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "settings@state=7311010578d2",
+     "to_state": "settings.popup@state=a3bbbb5052cb",
+     "reached": "settings.popup@state=a3bbbb5052cb"
+    },
+    {
+     "ord": 106,
+     "kind": "action",
+     "verdict": "differs",
+     "why": "the screen is settings.toast@state=106d9bafa652's, with 2 line(s) of its tree other than the stored one, first: -overlay:toast desc=\"Contents can\u2019t be autofilled\"",
+     "from_state": "settings.popup@state=a3bbbb5052cb",
+     "to_state": "settings.toast@state=106d9bafa652",
+     "reached": "settings.toast@state=106d9bafa652"
+    },
+    {
+     "ord": 107,
+     "kind": "edge",
+     "verdict": "not-started",
+     "why": "the transient did not leave: the screen stayed on settings.toast@state=106d9bafa652",
+     "from_state": "settings@state=7311010578d2",
+     "to_state": "delete-data@state=f569f911cc97"
+    },
+    {
+     "ord": 108,
+     "kind": "edge",
+     "verdict": "skipped",
+     "why": "unreachable: no route over control-set screens from where the device is to its start, and the relaunch landed on rpn@state=07112d3a7333, and no verified edge chain goes on to delete-data@state=f569f911cc97",
+     "from_state": "delete-data@state=f569f911cc97",
+     "to_state": "settings.snackbar@state=a841134b7a30"
+    },
+    {
+     "ord": 109,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "settings@state=7311010578d2",
+     "to_state": "settings.keyboard~rounding-precision@state=dfb8b1d53d06",
+     "reached": "settings.keyboard~rounding-precision@state=dfb8b1d53d06"
+    },
+    {
+     "ord": 110,
+     "kind": "edge",
+     "verdict": "arrived",
+     "why": "on settings, the screen settings@state=7311010578d2 is on, in a state the baseline does not hold",
+     "from_state": "settings.keyboard~rounding-precision@state=dfb8b1d53d06",
+     "to_state": "settings@state=7311010578d2",
+     "reached": "settings@state=7311010578d2"
+    },
+    {
+     "ord": 111,
+     "kind": "edge",
+     "verdict": "failed",
+     "why": "activate-focused-element: cannot_run: step 1/1 (activate-focused-element): no node matches target 'control=android.widget.EditText@android:id/content#2' on the current screen",
+     "from_state": "settings@state=7311010578d2",
+     "to_state": "settings.keyboard~rounding-precision@state=dfb8b1d53d06",
+     "reached": "rpn@state=07112d3a7333"
+    },
+    {
+     "ord": 112,
+     "kind": "action",
+     "verdict": "arrived",
+     "from_state": "settings.keyboard~rounding-precision@state=dfb8b1d53d06",
+     "to_state": "settings@state=7311010578d2",
+     "reached": "settings@state=7311010578d2"
+    },
+    {
+     "ord": 113,
+     "kind": "edge",
+     "verdict": "no-change",
+     "why": "the driver answered no_change, and its edge moved the screen from settings@state=7311010578d2 to settings.keyboard~max-operation-input@state=65d38f3c9ab3",
+     "from_state": "settings@state=7311010578d2",
+     "to_state": "settings.keyboard~max-operation-input@state=65d38f3c9ab3",
+     "reached": "settings@state=7311010578d2"
+    },
+    {
+     "ord": 114,
+     "kind": "edge",
+     "verdict": "arrived",
+     "why": "on settings, the screen settings.keyboard~max-operation-input@state=65d38f3c9ab3 is on, in a state the baseline does not hold",
+     "from_state": "settings.keyboard~max-operation-input@state=65d38f3c9ab3",
+     "to_state": "settings.keyboard~max-operation-input@state=65d38f3c9ab3",
+     "reached": "settings.keyboard~max-operation-input@state=65d38f3c9ab3"
+    },
+    {
+     "ord": 115,
+     "kind": "edge",
+     "verdict": "not-started",
+     "why": "the keyboard settings.keyboard~max-operation-input@state=65d38f3c9ab3 came down, and the screen is not its origin settings@state=7311010578d2",
+     "from_state": "settings@state=7311010578d2",
+     "to_state": "settings.keyboard~undo-history-limit@state=e96d4456cd3c",
+     "reached": "rpn@state=07112d3a7333"
+    },
+    {
+     "ord": 116,
+     "kind": "edge",
+     "verdict": "failed",
+     "why": "ime-enter: cannot_run: step 1/1 (ime-enter): no node matches target 'control=android.widget.EditText@android:id/content' on the current screen",
+     "from_state": "settings@state=7311010578d2",
+     "to_state": "settings@state=7311010578d2",
+     "reached": "settings.keyboard~max-operation-input@state=65d38f3c9ab3"
+    },
+    {
+     "ord": 117,
+     "kind": "edge",
+     "verdict": "arrived",
+     "why": "on settings, the screen settings@state=7311010578d2 is on, in a state the baseline does not hold",
+     "from_state": "settings@state=7311010578d2",
+     "to_state": "settings@state=7311010578d2",
+     "reached": "settings@state=7311010578d2"
+    },
+    {
+     "ord": 118,
+     "kind": "edge",
+     "verdict": "arrived",
+     "why": "on settings, the screen settings@state=7311010578d2 is on, in a state the baseline does not hold",
+     "from_state": "settings@state=7311010578d2",
+     "to_state": "settings@state=7311010578d2",
+     "reached": "settings@state=7311010578d2"
+    },
+    {
+     "ord": 119,
+     "kind": "edge",
+     "verdict": "arrived",
+     "why": "on settings, the screen settings@state=7311010578d2 is on, in a state the baseline does not hold",
+     "from_state": "settings@state=7311010578d2",
+     "to_state": "settings@state=7311010578d2",
+     "reached": "settings@state=7311010578d2"
+    },
+    {
+     "ord": 120,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "settings@state=7311010578d2",
+     "to_state": "rpn@state=07112d3a7333",
+     "reached": "rpn@state=07112d3a7333"
+    },
+    {
+     "ord": 121,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn@state=07112d3a7333",
+     "to_state": "rpn.snackbar@state=db0e1176ec71",
+     "reached": "rpn.snackbar@state=db0e1176ec71"
+    },
+    {
+     "ord": 122,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn@state=07112d3a7333",
+     "to_state": "rpn.snackbar@state=db0e1176ec71",
+     "reached": "rpn.snackbar@state=db0e1176ec71"
+    },
+    {
+     "ord": 123,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn@state=07112d3a7333",
+     "to_state": "rpn.snackbar@state=db0e1176ec71",
+     "reached": "rpn.snackbar@state=db0e1176ec71"
+    },
+    {
+     "ord": 124,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn.snackbar@state=db0e1176ec71",
+     "to_state": "rpn@state=07112d3a7333",
+     "reached": "rpn@state=07112d3a7333"
+    },
+    {
+     "ord": 125,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn@state=07112d3a7333",
+     "to_state": "rpn.snackbar@state=db0e1176ec71",
+     "reached": "rpn.snackbar@state=db0e1176ec71"
+    },
+    {
+     "ord": 126,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn.snackbar@state=db0e1176ec71",
+     "to_state": "rpn@state=07112d3a7333",
+     "reached": "rpn@state=07112d3a7333"
+    },
+    {
+     "ord": 127,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn@state=07112d3a7333",
+     "to_state": "rpn@state=07112d3a7333",
+     "reached": "rpn@state=07112d3a7333"
+    },
+    {
+     "ord": 128,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn@state=07112d3a7333",
+     "to_state": "rpn.snackbar@state=db0e1176ec71",
+     "reached": "rpn.snackbar@state=db0e1176ec71"
+    },
+    {
+     "ord": 129,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn@state=07112d3a7333",
+     "to_state": "rpn@state=07112d3a7333",
+     "reached": "rpn@state=07112d3a7333"
+    },
+    {
+     "ord": 130,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn@state=07112d3a7333",
+     "to_state": "rpn.snackbar@state=db0e1176ec71",
+     "reached": "rpn.snackbar@state=db0e1176ec71"
+    },
+    {
+     "ord": 131,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn@state=07112d3a7333",
+     "to_state": "rpn@state=07112d3a7333",
+     "reached": "rpn@state=07112d3a7333"
+    },
+    {
+     "ord": 132,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn@state=07112d3a7333",
+     "to_state": "rpn.snackbar@state=db0e1176ec71",
+     "reached": "rpn.snackbar@state=db0e1176ec71"
+    },
+    {
+     "ord": 133,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn@state=07112d3a7333",
+     "to_state": "rpn@state=b2baf56e7a25",
+     "reached": "rpn@state=b2baf56e7a25"
+    },
+    {
+     "ord": 134,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn@state=b2baf56e7a25",
+     "to_state": "rpn.snackbar@state=db0e1176ec71",
+     "reached": "rpn.snackbar@state=db0e1176ec71"
+    },
+    {
+     "ord": 135,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn.snackbar@state=db0e1176ec71",
+     "to_state": "rpn@state=b2baf56e7a25",
+     "reached": "rpn@state=b2baf56e7a25"
+    },
+    {
+     "ord": 136,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn@state=b2baf56e7a25",
+     "to_state": "rpn.snackbar@state=db0e1176ec71",
+     "reached": "rpn.snackbar@state=db0e1176ec71"
+    },
+    {
+     "ord": 137,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn@state=b2baf56e7a25",
+     "to_state": "rpn.snackbar@state=db0e1176ec71",
+     "reached": "rpn.snackbar@state=db0e1176ec71"
+    },
+    {
+     "ord": 138,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn@state=b2baf56e7a25",
+     "to_state": "rpn.snackbar@state=db0e1176ec71",
+     "reached": "rpn.snackbar@state=db0e1176ec71"
+    },
+    {
+     "ord": 139,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn@state=b2baf56e7a25",
+     "to_state": "rpn.snackbar@state=db0e1176ec71",
+     "reached": "rpn.snackbar@state=db0e1176ec71"
+    },
+    {
+     "ord": 140,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn@state=b2baf56e7a25",
+     "to_state": "rpn.snackbar@state=db0e1176ec71",
+     "reached": "rpn.snackbar@state=db0e1176ec71"
+    },
+    {
+     "ord": 141,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn@state=b2baf56e7a25",
+     "to_state": "rpn@state=b2baf56e7a25",
+     "reached": "rpn@state=b2baf56e7a25"
+    },
+    {
+     "ord": 142,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn@state=b2baf56e7a25",
+     "to_state": "rpn@state=b2baf56e7a25",
+     "reached": "rpn@state=b2baf56e7a25"
+    },
+    {
+     "ord": 143,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn@state=b2baf56e7a25",
+     "to_state": "rpn@state=6cfc5095a80f",
+     "reached": "rpn@state=6cfc5095a80f"
+    },
+    {
+     "ord": 144,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn@state=6cfc5095a80f",
+     "to_state": "rpn.snackbar@state=db0e1176ec71",
+     "reached": "rpn.snackbar@state=db0e1176ec71"
+    },
+    {
+     "ord": 145,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn@state=6cfc5095a80f",
+     "to_state": "rpn.snackbar@state=db0e1176ec71",
+     "reached": "rpn.snackbar@state=db0e1176ec71"
+    },
+    {
+     "ord": 146,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn@state=6cfc5095a80f",
+     "to_state": "rpn.snackbar@state=db0e1176ec71",
+     "reached": "rpn.snackbar@state=db0e1176ec71"
+    },
+    {
+     "ord": 147,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn@state=6cfc5095a80f",
+     "to_state": "rpn.snackbar@state=db0e1176ec71",
+     "reached": "rpn.snackbar@state=db0e1176ec71"
+    },
+    {
+     "ord": 148,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn@state=6cfc5095a80f",
+     "to_state": "rpn.snackbar@state=db0e1176ec71",
+     "reached": "rpn.snackbar@state=db0e1176ec71"
+    },
+    {
+     "ord": 149,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn@state=6cfc5095a80f",
+     "to_state": "rpn.snackbar@state=db0e1176ec71",
+     "reached": "rpn.snackbar@state=db0e1176ec71"
+    },
+    {
+     "ord": 150,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn@state=6cfc5095a80f",
+     "to_state": "rpn.snackbar@state=db0e1176ec71",
+     "reached": "rpn.snackbar@state=db0e1176ec71"
+    },
+    {
+     "ord": 151,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn.snackbar@state=db0e1176ec71",
+     "to_state": "rpn@state=6cfc5095a80f",
+     "reached": "rpn@state=6cfc5095a80f"
+    },
+    {
+     "ord": 152,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn@state=6cfc5095a80f",
+     "to_state": "rpn@state=b2baf56e7a25",
+     "reached": "rpn@state=b2baf56e7a25"
+    },
+    {
+     "ord": 153,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn@state=b2baf56e7a25",
+     "to_state": "rpn@state=07112d3a7333",
+     "reached": "rpn@state=07112d3a7333"
+    },
+    {
+     "ord": 154,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn@state=07112d3a7333",
+     "to_state": "rpn@state=b2baf56e7a25",
+     "reached": "rpn@state=b2baf56e7a25"
+    },
+    {
+     "ord": 155,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn@state=b2baf56e7a25",
+     "to_state": "rpn.snackbar@state=db0e1176ec71",
+     "reached": "rpn.snackbar@state=db0e1176ec71"
+    },
+    {
+     "ord": 156,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn@state=b2baf56e7a25",
+     "to_state": "rpn@state=07112d3a7333",
+     "reached": "rpn@state=07112d3a7333"
+    },
+    {
+     "ord": 157,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn@state=07112d3a7333",
+     "to_state": "rpn@state=07112d3a7333",
+     "reached": "rpn@state=07112d3a7333"
+    },
+    {
+     "ord": 158,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn@state=07112d3a7333",
+     "to_state": "rpn@state=b2baf56e7a25",
+     "reached": "rpn@state=b2baf56e7a25"
+    },
+    {
+     "ord": 159,
+     "kind": "edge",
+     "verdict": "failed",
+     "why": "missing-control: the screen is rpn@state=b2baf56e7a25's control-set screen, and its control is not on it",
+     "from_state": "rpn@state=b2baf56e7a25",
+     "to_state": "rpn@state=b2baf56e7a25",
+     "reached": "rpn@state=b2baf56e7a25"
+    },
+    {
+     "ord": 160,
+     "kind": "edge",
+     "verdict": "failed",
+     "why": "missing-control: the screen is rpn@state=b2baf56e7a25's control-set screen, and its control is not on it",
+     "from_state": "rpn@state=b2baf56e7a25",
+     "to_state": "rpn@state=b2baf56e7a25",
+     "reached": "rpn@state=b2baf56e7a25"
+    },
+    {
+     "ord": 161,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn@state=b2baf56e7a25",
+     "to_state": "rpn@state=07112d3a7333",
+     "reached": "rpn@state=07112d3a7333"
+    },
+    {
+     "ord": 162,
+     "kind": "edge",
+     "verdict": "arrived",
+     "why": "on rpn-settings, the screen rpn@state=e678fe86228a is on, in a state the baseline does not hold",
+     "from_state": "rpn@state=07112d3a7333",
+     "to_state": "rpn@state=e678fe86228a",
+     "reached": "rpn@state=e678fe86228a"
+    },
+    {
+     "ord": 163,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn@state=e678fe86228a",
+     "to_state": "settings@state=7311010578d2",
+     "reached": "settings@state=7311010578d2"
+    },
+    {
+     "ord": 164,
+     "kind": "edge",
+     "verdict": "arrived",
+     "why": "on settings, the screen settings.keyboard~max-operation-input@state=65d38f3c9ab3 is on, in a state the baseline does not hold",
+     "from_state": "settings@state=7311010578d2",
+     "to_state": "settings.keyboard~max-operation-input@state=65d38f3c9ab3",
+     "reached": "settings.keyboard~max-operation-input@state=65d38f3c9ab3"
+    },
+    {
+     "ord": 165,
+     "kind": "edge",
+     "verdict": "not-started",
+     "why": "the keyboard settings.keyboard~max-operation-input@state=65d38f3c9ab3 came down, and the screen is not its origin settings@state=7311010578d2",
+     "from_state": "settings@state=7311010578d2",
+     "to_state": "select-rounding-mode@state=a8254ce74a6a",
+     "reached": "rpn@state=07112d3a7333"
+    },
+    {
+     "ord": 166,
+     "kind": "edge",
+     "verdict": "skipped",
+     "why": "unreachable: no route over control-set screens from where the device is to its start, and the relaunch landed on rpn@state=07112d3a7333, and no verified edge chain goes on to select-rounding-mode@state=a8254ce74a6a",
+     "from_state": "select-rounding-mode@state=a8254ce74a6a",
+     "to_state": "settings@state=7311010578d2"
+    },
+    {
+     "ord": 167,
+     "kind": "edge",
+     "verdict": "no-change",
+     "why": "the driver answered no_change, and its edge moved the screen from settings@state=7311010578d2 to select-rounding-mode@state=a8254ce74a6a",
+     "from_state": "settings@state=7311010578d2",
+     "to_state": "select-rounding-mode@state=a8254ce74a6a",
+     "reached": "settings@state=7311010578d2"
+    },
+    {
+     "ord": 168,
+     "kind": "edge",
+     "verdict": "skipped",
+     "why": "unreachable: no route over control-set screens from where the device is to its start, and the relaunch landed on rpn@state=07112d3a7333, and no verified edge chain goes on to select-rounding-mode@state=577d3ec7faef",
+     "from_state": "select-rounding-mode@state=577d3ec7faef",
+     "to_state": "settings@state=7311010578d2"
+    },
+    {
+     "ord": 169,
+     "kind": "edge",
+     "verdict": "arrived",
+     "why": "on settings, the screen settings.keyboard~significant-figures@state=6af5ca35bb12 is on, in a state the baseline does not hold",
+     "from_state": "settings@state=7311010578d2",
+     "to_state": "settings.keyboard~significant-figures@state=6af5ca35bb12",
+     "reached": "settings.keyboard~significant-figures@state=6af5ca35bb12"
+    },
+    {
+     "ord": 170,
+     "kind": "edge",
+     "verdict": "arrived",
+     "why": "on settings, the screen settings@state=7311010578d2 is on, in a state the baseline does not hold",
+     "from_state": "settings.keyboard~significant-figures@state=6af5ca35bb12",
+     "to_state": "settings@state=7311010578d2",
+     "reached": "settings@state=7311010578d2"
+    },
+    {
+     "ord": 171,
+     "kind": "edge",
+     "verdict": "failed",
+     "why": "activate-focused-element: cannot_run: step 1/1 (activate-focused-element): no node matches target 'control=android.widget.EditText@android:id/content#1' on the current screen",
+     "from_state": "settings@state=7311010578d2",
+     "to_state": "settings.keyboard~significant-figures@state=6af5ca35bb12",
+     "reached": "rpn@state=07112d3a7333"
+    },
+    {
+     "ord": 172,
+     "kind": "action",
+     "verdict": "arrived",
+     "from_state": "settings.keyboard~significant-figures@state=6af5ca35bb12",
+     "to_state": "settings@state=7311010578d2",
+     "reached": "settings@state=7311010578d2"
+    },
+    {
+     "ord": 173,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "settings@state=7311010578d2",
+     "to_state": "settings.keyboard~stack-limit@state=c43030620854",
+     "reached": "settings.keyboard~stack-limit@state=c43030620854"
+    },
+    {
+     "ord": 174,
+     "kind": "edge",
+     "verdict": "arrived",
+     "why": "on settings, the screen settings@state=7311010578d2 is on, in a state the baseline does not hold",
+     "from_state": "settings.keyboard~stack-limit@state=c43030620854",
+     "to_state": "settings@state=7311010578d2",
+     "reached": "settings@state=7311010578d2"
+    },
+    {
+     "ord": 175,
+     "kind": "edge",
+     "verdict": "failed",
+     "why": "activate-focused-element: cannot_run: step 1/1 (activate-focused-element): no node matches target 'control=android.widget.EditText@android:id/content#4' on the current screen",
+     "from_state": "settings@state=7311010578d2",
+     "to_state": "settings.keyboard~stack-limit@state=c43030620854",
+     "reached": "rpn@state=07112d3a7333"
+    },
+    {
+     "ord": 176,
+     "kind": "action",
+     "verdict": "arrived",
+     "from_state": "settings.keyboard~stack-limit@state=c43030620854",
+     "to_state": "settings@state=7311010578d2",
+     "reached": "settings@state=7311010578d2"
+    },
+    {
+     "ord": 177,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "settings@state=7311010578d2",
+     "to_state": "settings.keyboard~undo-history-limit@state=e96d4456cd3c",
+     "reached": "settings.keyboard~undo-history-limit@state=e96d4456cd3c"
+    },
+    {
+     "ord": 178,
+     "kind": "edge",
+     "verdict": "arrived",
+     "why": "on settings, the screen settings@state=7311010578d2 is on, in a state the baseline does not hold",
+     "from_state": "settings.keyboard~undo-history-limit@state=e96d4456cd3c",
+     "to_state": "settings@state=7311010578d2",
+     "reached": "settings@state=7311010578d2"
+    },
+    {
+     "ord": 179,
+     "kind": "edge",
+     "verdict": "failed",
+     "why": "activate-focused-element: cannot_run: step 1/1 (activate-focused-element): no node matches target 'control=android.widget.EditText@android:id/content#5' on the current screen",
+     "from_state": "settings@state=7311010578d2",
+     "to_state": "settings.keyboard~undo-history-limit@state=e96d4456cd3c",
+     "reached": "rpn@state=07112d3a7333"
+    },
+    {
+     "ord": 180,
+     "kind": "action",
+     "verdict": "arrived",
+     "from_state": "settings.keyboard~undo-history-limit@state=e96d4456cd3c",
+     "to_state": "settings@state=7311010578d2",
+     "reached": "settings@state=7311010578d2"
+    },
+    {
+     "ord": 181,
+     "kind": "edge",
+     "verdict": "arrived",
+     "why": "on settings, the screen settings@state=7311010578d2 is on, in a state the baseline does not hold",
+     "from_state": "settings.keyboard~max-operation-input@state=65d38f3c9ab3",
+     "to_state": "settings@state=7311010578d2",
+     "reached": "settings@state=7311010578d2"
+    },
+    {
+     "ord": 182,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "settings@state=7311010578d2",
+     "to_state": "settings.keyboard~stack-limit@state=c43030620854",
+     "reached": "settings.keyboard~stack-limit@state=c43030620854"
+    },
+    {
+     "ord": 183,
+     "kind": "edge",
+     "verdict": "arrived",
+     "why": "on settings, the screen settings@state=7311010578d2 is on, in a state the baseline does not hold",
+     "from_state": "settings.keyboard~stack-limit@state=c43030620854",
+     "to_state": "settings@state=7311010578d2",
+     "reached": "settings@state=7311010578d2"
+    },
+    {
+     "ord": 184,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "settings@state=7311010578d2",
+     "to_state": "settings.keyboard~undo-history-limit@state=e96d4456cd3c",
+     "reached": "settings.keyboard~undo-history-limit@state=e96d4456cd3c"
+    },
+    {
+     "ord": 185,
+     "kind": "edge",
+     "verdict": "not-started",
+     "why": "the keyboard settings.keyboard~undo-history-limit@state=e96d4456cd3c came down, and the screen is not its origin settings@state=7311010578d2",
+     "from_state": "settings@state=7311010578d2",
+     "to_state": "rpn@state=07112d3a7333",
+     "reached": "rpn@state=07112d3a7333"
+    },
+    {
+     "ord": 186,
+     "kind": "edge",
+     "verdict": "arrived",
+     "why": "on rpn-settings, the screen rpn@state=e678fe86228a is on, in a state the baseline does not hold",
+     "from_state": "rpn@state=07112d3a7333",
+     "to_state": "rpn@state=e678fe86228a",
+     "reached": "rpn@state=e678fe86228a"
+    },
+    {
+     "ord": 187,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn@state=e678fe86228a",
+     "to_state": "settings@state=7311010578d2",
+     "reached": "settings@state=7311010578d2"
+    },
+    {
+     "ord": 188,
+     "kind": "edge",
+     "verdict": "arrived",
+     "why": "on settings, the screen settings.keyboard~significant-figures@state=6af5ca35bb12 is on, in a state the baseline does not hold",
+     "from_state": "settings@state=7311010578d2",
+     "to_state": "settings.keyboard~significant-figures@state=6af5ca35bb12",
+     "reached": "settings.keyboard~significant-figures@state=6af5ca35bb12"
+    },
+    {
+     "ord": 189,
+     "kind": "edge",
+     "verdict": "arrived",
+     "why": "on settings, the screen settings@state=7311010578d2 is on, in a state the baseline does not hold",
+     "from_state": "settings.keyboard~significant-figures@state=6af5ca35bb12",
+     "to_state": "settings@state=7311010578d2",
+     "reached": "settings@state=7311010578d2"
+    },
+    {
+     "ord": 190,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "settings@state=7311010578d2",
+     "to_state": "rpn@state=07112d3a7333",
+     "reached": "rpn@state=07112d3a7333"
+    },
+    {
+     "ord": 191,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn@state=07112d3a7333",
+     "to_state": "rpn@state=07112d3a7333",
+     "reached": "rpn@state=07112d3a7333"
+    },
+    {
+     "ord": 192,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn@state=07112d3a7333",
+     "to_state": "rpn@state=07112d3a7333",
+     "reached": "rpn@state=07112d3a7333"
+    },
+    {
+     "ord": 193,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn@state=07112d3a7333",
+     "to_state": "rpn@state=721fbf29a002",
+     "reached": "rpn@state=721fbf29a002"
+    },
+    {
+     "ord": 194,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn@state=721fbf29a002",
+     "to_state": "rpn.snackbar@state=db0e1176ec71",
+     "reached": "rpn.snackbar@state=db0e1176ec71"
+    },
+    {
+     "ord": 195,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn@state=07112d3a7333",
+     "to_state": "rpn@state=07112d3a7333",
+     "reached": "rpn@state=07112d3a7333"
+    },
+    {
+     "ord": 196,
+     "kind": "edge",
+     "verdict": "arrived",
+     "why": "on rpn-settings, the screen rpn@state=e678fe86228a is on, in a state the baseline does not hold",
+     "from_state": "rpn@state=07112d3a7333",
+     "to_state": "rpn@state=e678fe86228a",
+     "reached": "rpn@state=e678fe86228a"
+    },
+    {
+     "ord": 197,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn@state=e678fe86228a",
+     "to_state": "settings@state=7311010578d2",
+     "reached": "settings@state=7311010578d2"
+    },
+    {
+     "ord": 198,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "settings@state=7311010578d2",
+     "to_state": "select-rounding-mode@state=a8254ce74a6a",
+     "reached": "select-rounding-mode@state=a8254ce74a6a"
+    },
+    {
+     "ord": 199,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "select-rounding-mode@state=a8254ce74a6a",
+     "to_state": "select-rounding-mode@state=33f49bd50ac1",
+     "reached": "select-rounding-mode@state=33f49bd50ac1"
+    },
+    {
+     "ord": 200,
+     "kind": "edge",
+     "verdict": "arrived",
+     "why": "on settings, the screen settings@state=7311010578d2 is on, in a state the baseline does not hold",
+     "from_state": "select-rounding-mode@state=a8254ce74a6a",
+     "to_state": "settings@state=7311010578d2",
+     "reached": "settings@state=7311010578d2"
+    },
+    {
+     "ord": 201,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "settings@state=7311010578d2",
+     "to_state": "select-rounding-mode@state=33f49bd50ac1",
+     "reached": "select-rounding-mode@state=33f49bd50ac1"
+    },
+    {
+     "ord": 202,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "select-rounding-mode@state=33f49bd50ac1",
+     "to_state": "select-rounding-mode@state=a8254ce74a6a",
+     "reached": "select-rounding-mode@state=a8254ce74a6a"
+    },
+    {
+     "ord": 203,
+     "kind": "edge",
+     "verdict": "arrived",
+     "why": "on settings, the screen settings@state=7311010578d2 is on, in a state the baseline does not hold",
+     "from_state": "select-rounding-mode@state=a8254ce74a6a",
+     "to_state": "settings@state=7311010578d2",
+     "reached": "settings@state=7311010578d2"
+    },
+    {
+     "ord": 204,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "settings@state=7311010578d2",
+     "to_state": "select-rounding-mode@state=a8254ce74a6a",
+     "reached": "select-rounding-mode@state=a8254ce74a6a"
+    },
+    {
+     "ord": 205,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "select-rounding-mode@state=a8254ce74a6a",
+     "to_state": "select-rounding-mode@state=577d3ec7faef",
+     "reached": "select-rounding-mode@state=577d3ec7faef"
+    },
+    {
+     "ord": 206,
+     "kind": "edge",
+     "verdict": "arrived",
+     "why": "on settings, the screen settings@state=7311010578d2 is on, in a state the baseline does not hold",
+     "from_state": "select-rounding-mode@state=577d3ec7faef",
+     "to_state": "settings@state=7311010578d2",
+     "reached": "settings@state=7311010578d2"
+    },
+    {
+     "ord": 207,
+     "kind": "edge",
+     "verdict": "arrived",
+     "why": "on select-rounding-mode, the screen select-rounding-mode@state=577d3ec7faef is on, in a state the baseline does not hold",
+     "from_state": "settings@state=7311010578d2",
+     "to_state": "select-rounding-mode@state=577d3ec7faef",
+     "reached": "select-rounding-mode@state=577d3ec7faef"
+    },
+    {
+     "ord": 208,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "select-rounding-mode@state=577d3ec7faef",
+     "to_state": "select-rounding-mode@state=a8254ce74a6a",
+     "reached": "select-rounding-mode@state=a8254ce74a6a"
+    },
+    {
+     "ord": 209,
+     "kind": "edge",
+     "verdict": "arrived",
+     "why": "on settings, the screen settings@state=7311010578d2 is on, in a state the baseline does not hold",
+     "from_state": "select-rounding-mode@state=a8254ce74a6a",
+     "to_state": "settings@state=7311010578d2",
+     "reached": "settings@state=7311010578d2"
+    },
+    {
+     "ord": 210,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "settings@state=7311010578d2",
+     "to_state": "select-rounding-mode@state=a8254ce74a6a",
+     "reached": "select-rounding-mode@state=a8254ce74a6a"
+    },
+    {
+     "ord": 211,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "select-rounding-mode@state=a8254ce74a6a",
+     "to_state": "select-rounding-mode@state=577d3ec7faef",
+     "reached": "select-rounding-mode@state=577d3ec7faef"
+    },
+    {
+     "ord": 212,
+     "kind": "edge",
+     "verdict": "arrived",
+     "why": "on settings, the screen settings@state=7311010578d2 is on, in a state the baseline does not hold",
+     "from_state": "select-rounding-mode@state=577d3ec7faef",
+     "to_state": "settings@state=7311010578d2",
+     "reached": "settings@state=7311010578d2"
+    },
+    {
+     "ord": 213,
+     "kind": "edge",
+     "verdict": "arrived",
+     "why": "on select-rounding-mode, the screen select-rounding-mode@state=577d3ec7faef is on, in a state the baseline does not hold",
+     "from_state": "settings@state=7311010578d2",
+     "to_state": "select-rounding-mode@state=577d3ec7faef",
+     "reached": "select-rounding-mode@state=577d3ec7faef"
+    },
+    {
+     "ord": 214,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "select-rounding-mode@state=577d3ec7faef",
+     "to_state": "select-rounding-mode@state=a8254ce74a6a",
+     "reached": "select-rounding-mode@state=a8254ce74a6a"
+    },
+    {
+     "ord": 215,
+     "kind": "edge",
+     "verdict": "arrived",
+     "why": "on settings, the screen settings@state=7311010578d2 is on, in a state the baseline does not hold",
+     "from_state": "select-rounding-mode@state=a8254ce74a6a",
+     "to_state": "settings@state=7311010578d2",
+     "reached": "settings@state=7311010578d2"
+    },
+    {
+     "ord": 216,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "settings@state=7311010578d2",
+     "to_state": "settings.keyboard~rounding-precision@state=dfb8b1d53d06",
+     "reached": "settings.keyboard~rounding-precision@state=dfb8b1d53d06"
+    },
+    {
+     "ord": 217,
+     "kind": "edge",
+     "verdict": "arrived",
+     "why": "on settings, the screen settings@state=7311010578d2 is on, in a state the baseline does not hold",
+     "from_state": "settings.keyboard~rounding-precision@state=dfb8b1d53d06",
+     "to_state": "settings@state=7311010578d2",
+     "reached": "settings@state=7311010578d2"
+    },
+    {
+     "ord": 218,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "settings@state=7311010578d2",
+     "to_state": "settings.keyboard~rounding-precision@state=dfb8b1d53d06",
+     "reached": "settings.keyboard~rounding-precision@state=dfb8b1d53d06"
+    },
+    {
+     "ord": 219,
+     "kind": "action",
+     "verdict": "arrived",
+     "why": "on settings, the screen settings@state=7311010578d2 is on, in a state the baseline does not hold",
+     "from_state": "settings.keyboard~rounding-precision@state=dfb8b1d53d06",
+     "to_state": "settings@state=7311010578d2",
+     "reached": "settings@state=7311010578d2"
+    },
+    {
+     "ord": 220,
+     "kind": "edge",
+     "verdict": "arrived",
+     "why": "on settings, the screen settings@state=7311010578d2 is on, in a state the baseline does not hold",
+     "from_state": "settings.keyboard~significant-figures@state=6af5ca35bb12",
+     "to_state": "settings@state=7311010578d2",
+     "reached": "settings@state=7311010578d2"
+    },
+    {
+     "ord": 221,
+     "kind": "edge",
+     "verdict": "arrived",
+     "why": "on settings, the screen settings@state=7311010578d2 is on, in a state the baseline does not hold",
+     "from_state": "settings@state=7311010578d2",
+     "to_state": "settings@state=7311010578d2",
+     "reached": "settings@state=7311010578d2"
+    },
+    {
+     "ord": 222,
+     "kind": "edge",
+     "verdict": "failed",
+     "why": "activate-focused-element: cannot_run: step 1/1 (activate-focused-element): no node matches target 'control=android.widget.EditText@android:id/content#1' on the current screen",
+     "from_state": "settings@state=7311010578d2",
+     "to_state": "settings.keyboard~significant-figures@state=6af5ca35bb12",
+     "reached": "rpn@state=07112d3a7333"
+    },
+    {
+     "ord": 223,
+     "kind": "action",
+     "verdict": "arrived",
+     "from_state": "settings.keyboard~significant-figures@state=6af5ca35bb12",
+     "to_state": "settings@state=7311010578d2",
+     "reached": "settings@state=7311010578d2"
+    },
+    {
+     "ord": 224,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "settings@state=7311010578d2",
+     "to_state": "rpn@state=07112d3a7333",
+     "reached": "rpn@state=07112d3a7333"
+    },
+    {
+     "ord": 225,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn@state=07112d3a7333",
+     "to_state": "rpn@state=07112d3a7333",
+     "reached": "rpn@state=07112d3a7333"
+    },
+    {
+     "ord": 226,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn@state=07112d3a7333",
+     "to_state": "rpn@state=07112d3a7333",
+     "reached": "rpn@state=07112d3a7333"
+    },
+    {
+     "ord": 227,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn@state=07112d3a7333",
+     "to_state": "rpn@state=721fbf29a002",
+     "reached": "rpn@state=721fbf29a002"
+    },
+    {
+     "ord": 228,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn@state=721fbf29a002",
+     "to_state": "rpn@state=07112d3a7333",
+     "reached": "rpn@state=07112d3a7333"
+    },
+    {
+     "ord": 229,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn@state=07112d3a7333",
+     "to_state": "rpn@state=07112d3a7333",
+     "reached": "rpn@state=07112d3a7333"
+    },
+    {
+     "ord": 230,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn@state=07112d3a7333",
+     "to_state": "rpn@state=b2baf56e7a25",
+     "reached": "rpn@state=b2baf56e7a25"
+    },
+    {
+     "ord": 231,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn@state=b2baf56e7a25",
+     "to_state": "rpn@state=6cfc5095a80f",
+     "reached": "rpn@state=6cfc5095a80f"
+    },
+    {
+     "ord": 232,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn@state=6cfc5095a80f",
+     "to_state": "android-home",
+     "reached": "android-home"
+    },
+    {
+     "ord": 233,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "android-home",
+     "to_state": "rpn@state=6cfc5095a80f",
+     "reached": "rpn@state=6cfc5095a80f"
+    },
+    {
+     "ord": 234,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn@state=6cfc5095a80f",
+     "to_state": "rpn@state=b2baf56e7a25",
+     "reached": "rpn@state=b2baf56e7a25"
+    },
+    {
+     "ord": 235,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn@state=b2baf56e7a25",
+     "to_state": "android-home",
+     "reached": "android-home"
+    },
+    {
+     "ord": 236,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "android-home",
+     "to_state": "rpn@state=b2baf56e7a25",
+     "reached": "rpn@state=b2baf56e7a25"
+    },
+    {
+     "ord": 237,
+     "kind": "edge",
+     "verdict": "arrived",
+     "from_state": "rpn@state=b2baf56e7a25",
+     "to_state": "android-home",
+     "reached": "android-home"
+    }
+   ],
+   "captures": [
+    {
+     "state": "rpn@state=07112d3a7333",
+     "verdict": "captured",
+     "path_step": 0
+    },
+    {
+     "state": "rpn@state=721fbf29a002",
+     "verdict": "captured",
+     "path_step": 4
+    },
+    {
+     "state": "rpn@state=b2baf56e7a25",
+     "verdict": "captured",
+     "path_step": 18
+    },
+    {
+     "state": "rpn@state=6cfc5095a80f",
+     "verdict": "captured",
+     "path_step": 19
+    },
+    {
+     "state": "rpn@state=e678fe86228a",
+     "verdict": "captured",
+     "path_step": 22
+    },
+    {
+     "state": "settings@state=7311010578d2",
+     "verdict": "captured",
+     "path_step": 29
+    },
+    {
+     "state": "settings@state=e769bae05a3e",
+     "verdict": "captured",
+     "path_step": 31
+    },
+    {
+     "state": "settings@state=a584843d23ad",
+     "verdict": "captured",
+     "path_step": 33
+    },
+    {
+     "state": "settings@state=9c0e631043d1",
+     "verdict": "captured",
+     "path_step": 35
+    },
+    {
+     "state": "settings@state=295b38eed0c7",
+     "verdict": "captured",
+     "path_step": 37
+    },
+    {
+     "state": "settings@state=23ca75aa47ab",
+     "verdict": "captured",
+     "path_step": 39
+    },
+    {
+     "state": "settings@state=55a6305ff914",
+     "verdict": "captured",
+     "path_step": 41
+    },
+    {
+     "state": "settings@state=06151d062458",
+     "verdict": "captured",
+     "path_step": 43
+    },
+    {
+     "state": "select-rounding-mode@state=a8254ce74a6a",
+     "verdict": "captured",
+     "path_step": 45
+    },
+    {
+     "state": "select-rounding-mode@state=33f49bd50ac1",
+     "verdict": "captured",
+     "path_step": 46
+    },
+    {
+     "state": "select-rounding-mode@state=e91f3974d6a7",
+     "verdict": "captured",
+     "path_step": 48
+    },
+    {
+     "state": "select-rounding-mode@state=dc2b58656eca",
+     "verdict": "captured",
+     "path_step": 50
+    },
+    {
+     "state": "select-rounding-mode@state=cc6834db76d0",
+     "verdict": "captured",
+     "path_step": 52
+    },
+    {
+     "state": "select-rounding-mode@state=5bf09618b761",
+     "verdict": "captured",
+     "path_step": 54
+    },
+    {
+     "state": "select-rounding-mode@state=ec66807cd95e",
+     "verdict": "captured",
+     "path_step": 56
+    },
+    {
+     "state": "select-rounding-mode@state=577d3ec7faef",
+     "verdict": "captured",
+     "path_step": 58
+    },
+    {
+     "state": "delete-data@state=f569f911cc97",
+     "verdict": "captured",
+     "path_step": 61
+    },
+    {
+     "state": "settings.keyboard~max-operation-input@state=65d38f3c9ab3",
+     "verdict": "captured",
+     "path_step": 68
+    },
+    {
+     "state": "settings.keyboard~significant-figures@state=6af5ca35bb12",
+     "verdict": "captured",
+     "path_step": 72
+    },
+    {
+     "state": "settings.keyboard~stack-limit@state=c43030620854",
+     "verdict": "captured",
+     "path_step": 76
+    },
+    {
+     "state": "settings.keyboard~undo-history-limit@state=e96d4456cd3c",
+     "verdict": "captured",
+     "path_step": 78
+    },
+    {
+     "state": "rpn@state=a522a769e24a",
+     "verdict": "captured",
+     "path_step": 93
+    },
+    {
+     "state": "rpn.snackbar@state=db0e1176ec71",
+     "verdict": "captured",
+     "path_step": 102
+    },
+    {
+     "state": "settings.popup@state=a3bbbb5052cb",
+     "verdict": "captured",
+     "path_step": 105
+    },
+    {
+     "state": "settings.toast@state=106d9bafa652",
+     "verdict": "differs",
+     "why": "same screen and controls; the tree differs from the stored capture",
+     "path_step": 106
+    },
+    {
+     "state": "settings.snackbar@state=a841134b7a30",
+     "verdict": "not-captured",
+     "why": "unreachable: no route over control-set screens from where the device is to its start, and the relaunch landed on rpn@state=07112d3a7333, and no verified edge chain goes on to delete-data@state=f569f911cc97",
+     "path_step": 108
+    },
+    {
+     "state": "settings.keyboard~rounding-precision@state=dfb8b1d53d06",
+     "verdict": "captured",
+     "path_step": 109
+    }
+   ]
+  },
+  "warnings": {
+   "built": true,
+   "kinds": {
+    "change-count-mismatch": 1,
+    "late-change": 1
+   },
+   "no_change": [
+    {
+     "step": 172,
+     "control_key": "android.view.View:0",
+     "state": "screen-1@state=817cb621fe85"
+    },
+    {
+     "step": 183,
+     "control_key": "android.view.View:3",
+     "state": "screen-1@state=817cb621fe85"
+    },
+    {
+     "step": 221,
+     "control_key": "",
+     "state": "settings@state=7311010578d2"
+    },
+    {
+     "step": 222,
+     "control_key": "",
+     "state": "settings@state=7311010578d2"
+    },
+    {
+     "step": 228,
+     "control_key": "",
+     "state": "settings.keyboard~undo-history-limit@state=8a69534d858f"
+    },
+    {
+     "step": 252,
+     "control_key": "android.view.View:Clear all",
+     "state": "screen-1@state=817cb621fe85"
+    },
+    {
+     "step": 320,
+     "control_key": "",
+     "state": "settings@state=7311010578d2"
+    },
+    {
+     "step": 371,
+     "control_key": "android.view.View:3",
+     "state": "screen-1@state=817cb621fe85"
+    },
+    {
+     "step": 430,
+     "control_key": "android.view.View:Clear all",
+     "state": "screen-1@state=817cb621fe85"
+    }
+   ]
+  },
+  "refusals": [
+   {
+    "after_step": 118,
+    "action": "scroll-down",
+    "control_key": "",
+    "message": "step 1/1 (scroll-down): swipe: 'android.view.View' advertises scroll-backward, scroll-up and not page-down or scroll-down, so it is already at its vertical forward end"
+   },
+   {
+    "after_step": 145,
+    "action": "activate-focused-element",
+    "control_key": "",
+    "message": "step 1/1 (activate-focused-element): no node matches target 'control=android.widget.EditText@android:id/content#3' on the current screen"
+   },
+   {
+    "after_step": 201,
+    "action": "activate-focused-element",
+    "control_key": "",
+    "message": "step 1/1 (activate-focused-element): no node matches target 'Delete accepts=click' on the current screen"
+   },
+   {
+    "after_step": 206,
+    "action": "activate-focused-element",
+    "control_key": "",
+    "message": "step 1/1 (activate-focused-element): no node matches target 'Delete accepts=click' on the current screen"
+   },
+   {
+    "after_step": 210,
+    "action": "activate-focused-element",
+    "control_key": "",
+    "message": "step 1/1 (activate-focused-element): no node matches target 'Delete accepts=click' on the current screen"
+   },
+   {
+    "after_step": 217,
+    "action": "activate-focused-element",
+    "control_key": "",
+    "message": "step 1/1 (activate-focused-element): no node matches target 'control=android.widget.EditText@android:id/content#2' on the current screen"
+   },
+   {
+    "after_step": 232,
+    "action": "ime-enter",
+    "control_key": "",
+    "message": "step 1/1 (ime-enter): no node matches target 'control=android.widget.EditText@android:id/content' on the current screen"
+   },
+   {
+    "after_step": 312,
+    "action": "activate-focused-element",
+    "control_key": "",
+    "message": "step 1/1 (activate-focused-element): no node matches target 'Half Even accepts=click' on the current screen"
+   },
+   {
+    "after_step": 315,
+    "action": "activate-focused-element",
+    "control_key": "",
+    "message": "step 1/1 (activate-focused-element): no node matches target 'Half Even accepts=click' on the current screen"
+   },
+   {
+    "after_step": 319,
+    "action": "activate-focused-element",
+    "control_key": "",
+    "message": "step 1/1 (activate-focused-element): no node matches target 'Half Even accepts=click' on the current screen"
+   },
+   {
+    "after_step": 320,
+    "action": "activate-focused-element",
+    "control_key": "",
+    "message": "step 1/1 (activate-focused-element): no node matches target 'Half Even accepts=click' on the current screen"
+   },
+   {
+    "after_step": 324,
+    "action": "activate-focused-element",
+    "control_key": "",
+    "message": "step 1/1 (activate-focused-element): no node matches target 'Half Even accepts=click' on the current screen"
+   },
+   {
+    "after_step": 327,
+    "action": "activate-focused-element",
+    "control_key": "",
+    "message": "step 1/1 (activate-focused-element): no node matches target 'control=android.widget.EditText@android:id/content#1' on the current screen"
+   },
+   {
+    "after_step": 339,
+    "action": "activate-focused-element",
+    "control_key": "",
+    "message": "step 1/1 (activate-focused-element): no node matches target 'control=android.widget.EditText@android:id/content#4' on the current screen"
+   },
+   {
+    "after_step": 351,
+    "action": "activate-focused-element",
+    "control_key": "",
+    "message": "step 1/1 (activate-focused-element): no node matches target 'control=android.widget.EditText@android:id/content#5' on the current screen"
+   },
+   {
+    "after_step": 420,
+    "action": "activate-focused-element",
+    "control_key": "",
+    "message": "step 1/1 (activate-focused-element): no node matches target 'control=android.widget.EditText@android:id/content#1' on the current screen"
+   }
+  ]
+ }
+}

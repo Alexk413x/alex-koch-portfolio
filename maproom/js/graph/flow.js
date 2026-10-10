@@ -23,29 +23,31 @@ function bez(p0, p1, p2, p3, t) {
   return [a * p0.x + b * p1.x + c * p2.x + d * p3.x, a * p0.y + b * p1.y + c * p2.y + d * p3.y];
 }
 
-function track(pts) {
-  const xs = new Float32Array(SAMPLES + 1);
-  const ys = new Float32Array(SAMPLES + 1);
-  const at = new Float32Array(SAMPLES + 1);
+function track(segs) {
+  const n = SAMPLES * segs.length;
+  const xs = new Float32Array(n + 1);
+  const ys = new Float32Array(n + 1);
+  const at = new Float32Array(n + 1);
   let x0 = Infinity;
   let y0 = Infinity;
   let x1 = -Infinity;
   let y1 = -Infinity;
-  for (let i = 0; i <= SAMPLES; i += 1) {
-    const [x, y] = bez(...pts, i / SAMPLES);
+  for (let i = 0; i <= n; i += 1) {
+    const s = Math.min(segs.length - 1, Math.floor(i / SAMPLES));
+    const [x, y] = bez(...segs[s], (i - s * SAMPLES) / SAMPLES);
     xs[i] = x;
     ys[i] = y;
     at[i] = i ? at[i - 1] + Math.hypot(x - xs[i - 1], y - ys[i - 1]) : 0;
     x0 = Math.min(x0, x); y0 = Math.min(y0, y);
     x1 = Math.max(x1, x); y1 = Math.max(y1, y);
   }
-  return { xs, ys, at, length: at[SAMPLES], box: [x0 - RADIUS, y0 - RADIUS, x1 + RADIUS, y1 + RADIUS] };
+  return { xs, ys, at, n, length: at[n], box: [x0 - RADIUS, y0 - RADIUS, x1 + RADIUS, y1 + RADIUS] };
 }
 
 function pointAt(tr, dist) {
   const { xs, ys, at } = tr;
   let lo = 0;
-  let hi = SAMPLES;
+  let hi = tr.n;
   while (hi - lo > 1) {
     const mid = (lo + hi) >> 1;
     if (at[mid] < dist) lo = mid; else hi = mid;
@@ -57,7 +59,7 @@ function pointAt(tr, dist) {
 
 export function flow(canvas, pulses) {
   const ctx = canvas.getContext('2d');
-  const routes = pulses.map(u => ({ key: u.key, track: track(u.pts), delay: u.delay, state: 'rest' }));
+  const routes = pulses.map(u => ({ key: u.key, track: track(u.segs), delay: u.delay, state: 'rest' }));
   const byKey = new Map(routes.map(r => [r.key, r]));
   const still = window.matchMedia('(prefers-reduced-motion: reduce)');
   const view = { x0: 0, y0: 0, x1: 0, y1: 0, k: 1 };

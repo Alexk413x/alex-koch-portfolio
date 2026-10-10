@@ -7,7 +7,7 @@ const TONE_ICON = { light: 'sun', dark: 'moon' };
 let captionIds = 0;
 
 export function stateLabel(rendition) {
-  return rendition.isCore ? 'core' : rendition.axes;
+  return rendition.name || (rendition.isCore ? 'core' : rendition.axes);
 }
 
 function cellFor(cells, orientation, appearance) {

@@ -117,16 +117,37 @@ export function fillHint(appearance, orientation) {
     + `appearance=${appearance}, orientation=${orientation}.`;
 }
 
-/* The capture a screen's map box shows: the core rendition's when it has this
-   cell, else the first rendition that does. */
-export function screenCapture(state, screen, orientation, appearance) {
-  const ordered = [...screen.renditions].sort((a, b) => Number(b.isCore) - Number(a.isCore));
+/* A screen outside the app is one boundary node (PROMO-56): a capture the manifest files under
+   its screen is its leaf, whatever state id the manifest read the leaf folder back as. */
+function capturesOf(state, screen, first = '') {
+  const own = [...screen.renditions]
+    .sort((a, b) => Number(b.id === first) - Number(a.id === first) || Number(b.isCore) - Number(a.isCore))
+    .map(rendition => ({ rendition, capture: state.captures.get(rendition.id) }));
+  if (!screen.isExternal) return own;
+  const held = new Set(own.map(o => o.capture));
+  for (const capture of state.captures.values()) {
+    if (capture.screen === screen.id && !held.has(capture)) own.push({ rendition: own[0] && own[0].rendition, capture });
+  }
+  return own;
+}
+
+/* The capture a screen's map box shows: the state `first` names when it has this cell, else the core
+   rendition's, else the first rendition that does. */
+export function screenCapture(state, screen, orientation, appearance, first = '') {
   let oriented = false;
-  for (const r of ordered) {
-    const cells = variants(state.captures.get(r.id), state.profile).filter(c => c.orientation === orientation);
+  for (const { rendition, capture } of capturesOf(state, screen, first)) {
+    const cells = variants(capture, state.profile).filter(c => c.orientation === orientation);
     const cell = cells.find(c => c.appearance === appearance);
-    if (cell.url) return { url: cell.url, rendition: r };
+    if (cell.url) return { url: cell.url, rendition };
     oriented = oriented || cells.some(c => c.url);
   }
   return { url: null, missing: oriented ? `no ${appearance} capture` : `no ${orientation} capture` };
+}
+
+export function firstCapture(state, screen) {
+  for (const { capture } of capturesOf(state, screen)) {
+    const cell = variants(capture, state.profile).find(c => c.url);
+    if (cell) return cell;
+  }
+  return null;
 }

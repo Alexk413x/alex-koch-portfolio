@@ -1,0 +1,6 @@
+View
+  View desc="Toggle Menu" checkable+clickable+focusable state:checked
+  View clickable+focusable
+    TextView text="Settings" clickable+focusable
+  View clickable+focusable
+    TextView text="Memory: 0" clickable+focusable

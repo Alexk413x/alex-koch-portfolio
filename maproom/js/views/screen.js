@@ -12,7 +12,7 @@
 import { el, setChildren } from '../util/dom.js';
 import { icon } from '../util/icons.js';
 import { href, param } from '../page.js';
-import { platformOf, variants, localesOf, unplaced } from '../data/sources.js';
+import { platformOf, variants, localesOf, unplaced, firstCapture, provenance } from '../data/sources.js';
 import { variantGrid, variantStrip, stateLabel } from './variants.js';
 
 /* A dropdown: a button carrying the current value, and a menu under it.
@@ -100,14 +100,19 @@ function routeTable(title, edges, far) {
       rows));
 }
 
-/* A screen outside the app has no capture in the baseline, so the viewer's place holds
-   what the map knows of it, and the newest run's own screenshot of it when one exists. */
+/* The baseline's leaf of a screen outside the app (PROMO-56), else the newest run's screenshot of
+   it, with the run it came from. */
 function outsideCard(state, screen) {
-  const shot = ((state.manifest && state.manifest.external_captures) || {})[screen.id];
+  const own = firstCapture(state, screen);
+  const shot = own ? null : ((state.manifest && state.manifest.external_captures) || {})[screen.id];
   return el('div', { class: 'xcard' },
     el('span', { class: 'bx-k', text: 'outside the app' }),
     el('span', { class: 'bx-p', text: screen.package }),
-    el('p', { text: 'A screen of another app, reached by leaving this one. The map records the routes into and out of it and keeps no capture of it.' }),
+    el('p', { text: `A screen of another app, reached by leaving this one. The map records the routes into and out of it and keeps ${own ? 'one capture of it, the first a run took' : 'no capture of it'}.` }),
+    own ? el('figure', { class: 'xshot' },
+      el('a', { href: own.url, target: '_blank' },
+        el('img', { src: own.url, alt: `${screen.package}, as the baseline holds it`, loading: 'lazy' })),
+      el('figcaption', { text: `Stored in the baseline: ${provenance(own.leaf, own.appearance)}.` })) : null,
     shot ? el('figure', { class: 'xshot' },
       el('a', { href: state.source.url + shot.screen, target: '_blank' },
         el('img', { src: state.source.url + shot.screen, alt: `${screen.package}, as run ${shot.run} captured it`, loading: 'lazy' })),
@@ -213,7 +218,7 @@ export function renderScreen(state, screenId) {
     el('div', { class: 'phead' },
       el('div', { class: 'phead-top' },
         el('button', { class: 'x', 'data-tip': 'Back to Map', onclick: () => { location.href = href('map.html'); } }, icon('back', 14)),
-        el('h1', { text: screen.id }),
+        el('h1', { text: screen.name || screen.id }),
         el('span', { class: 'stamp', style: '--c: var(--skip)', text: outside ? 'outside the app' : screen.kind })),
       el('p', { text: screen.summary || 'No summary recorded for this screen.' })),
 

@@ -263,9 +263,11 @@ function stepNotes(run, step) {
   if (target) {
     notes.push(el('div', { class: 'anote' }, el('b', { text: 'hit' }), el('span', { text: target })));
   }
-  if (step.screen_name || step.screen_identity_to) {
+  // A name joined from control labels is never shown (VIEW-19); the identity still is.
+  const shownName = step.screen_name && !step.screen_name.includes('+') ? step.screen_name : '';
+  if (shownName || step.screen_identity_to) {
     notes.push(el('div', { class: 'anote' }, el('b', { text: 'screen' }),
-      el('span', { text: [step.screen_name, step.screen_identity_to && `identity ${step.screen_identity_to}`]
+      el('span', { text: [shownName, step.screen_identity_to && `identity ${step.screen_identity_to}`]
         .filter(Boolean).join('  ') })));
   }
   const files = [step.screenshot, step.screenstate].filter(Boolean)
