@@ -1,0 +1,93 @@
+[
+ {
+  "action": "activate-focused-element",
+  "control_key": "android.view.View:0",
+  "interaction": "tap",
+  "outcome": "no_change",
+  "state": "screen-1@state=817cb621fe85",
+  "step": 172
+ },
+ {
+  "action": "activate-focused-element",
+  "control_key": "android.view.View:3",
+  "interaction": "tap",
+  "outcome": "no_change",
+  "state": "screen-1@state=817cb621fe85",
+  "step": 183
+ },
+ {
+  "action": "tap-at-coordinates",
+  "control_key": "",
+  "final_change_seq": 356,
+  "interaction": "",
+  "reason": "the screen changed after this step answered no_change",
+  "state": "settings.popup@state=9d7c4e0b13ef",
+  "step": 197,
+  "warning": "late-change"
+ },
+ {
+  "action": "clear-text",
+  "control_key": "",
+  "interaction": "",
+  "outcome": "no_change",
+  "state": "settings@state=7311010578d2",
+  "step": 221
+ },
+ {
+  "action": "tap-at-coordinates",
+  "control_key": "",
+  "interaction": "",
+  "outcome": "no_change",
+  "state": "settings@state=7311010578d2",
+  "step": 222
+ },
+ {
+  "action": "tap-at-coordinates",
+  "control_key": "",
+  "interaction": "",
+  "outcome": "no_change",
+  "state": "settings.keyboard~undo-history-limit@state=8a69534d858f",
+  "step": 228
+ },
+ {
+  "action": "activate-focused-element",
+  "control_key": "android.view.View:Clear all",
+  "interaction": "tap",
+  "outcome": "no_change",
+  "state": "screen-1@state=817cb621fe85",
+  "step": 252
+ },
+ {
+  "action": "tap-at-coordinates",
+  "control_key": "",
+  "interaction": "tap",
+  "outcome": "no_change",
+  "state": "settings@state=7311010578d2",
+  "step": 320
+ },
+ {
+  "action": "activate-focused-element",
+  "control_key": "android.view.View:3",
+  "interaction": "tap",
+  "outcome": "no_change",
+  "state": "screen-1@state=817cb621fe85",
+  "step": 371
+ },
+ {
+  "action": "activate-focused-element",
+  "control_key": "android.view.View:Clear all",
+  "interaction": "tap",
+  "outcome": "no_change",
+  "state": "screen-1@state=817cb621fe85",
+  "step": 430
+ },
+ {
+  "accounted_by": "step 201",
+  "filed": 1,
+  "filed_last_seq": 357,
+  "last_change_seq": 357,
+  "pushed": 2,
+  "step": 204,
+  "warning": "change-count-mismatch"
+ }
+]

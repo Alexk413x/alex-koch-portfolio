@@ -1,0 +1,80 @@
+/* The app's fonts, served from this folder. Nothing here reaches the network.
+
+   Vendored for the same reason as sql.js: the page has to work with no
+   connection. Google Fonts also made the first paint wrong -- see the
+   `font-display` note on the icon face below.
+
+   Red Hat Display / Text / Mono are SIL OFL 1.1; Material Symbols Rounded is
+   Apache 2.0. Licences sit beside the files in vendor/fonts/.
+
+   The icon face is SUBSET to the 23 ligatures `js/util/icons.js` names. The
+   full Material Symbols variable font is several megabytes; this is 31 KB. Add
+   an icon name there and this file must be regenerated, or the new mark
+   renders as its own name. */
+
+/* `block`, NOT `swap`. Every icon's element text IS its ligature name, so a
+   swap face paints the literal words "settings" and "chevron_right" until
+   the glyphs arrive -- which is what the Google Fonts link did on every
+   first load. `block` paints nothing until the glyph exists, and the file is
+   local, so that wait is a frame. */
+@font-face {
+  font-family: 'Material Symbols Rounded';
+  font-style: normal;
+  font-weight: 100 700;
+  font-display: block;
+  src: url(../vendor/fonts/material-symbols-rounded.woff2) format('woff2');
+}
+
+@font-face {
+  font-family: 'Red Hat Display';
+  font-style: normal;
+  font-weight: 500 700;
+  font-display: swap;
+  src: url(../vendor/fonts/red-hat-display-latin-ext.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: 'Red Hat Display';
+  font-style: normal;
+  font-weight: 500 700;
+  font-display: swap;
+  src: url(../vendor/fonts/red-hat-display-latin.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Red Hat Mono';
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: swap;
+  src: url(../vendor/fonts/red-hat-mono-latin-ext.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: 'Red Hat Mono';
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: swap;
+  src: url(../vendor/fonts/red-hat-mono-latin.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Red Hat Text';
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: swap;
+  src: url(../vendor/fonts/red-hat-text-latin-ext.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: 'Red Hat Text';
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: swap;
+  src: url(../vendor/fonts/red-hat-text-latin.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}

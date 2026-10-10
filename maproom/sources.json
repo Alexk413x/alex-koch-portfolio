@@ -1,0 +1,13 @@
+{
+ "viewer": "0.15.3",
+ "sources": [
+  {
+   "id": "RPNDominatorCalculator",
+   "name": "RPN Dominator Calculator",
+   "path": "RPNDominatorCalculator/knowledge/cartographer",
+   "url": "../k/RPNDominatorCalculator/",
+   "graph": "baselines/baseline.db",
+   "has_graph": true
+  }
+ ]
+}

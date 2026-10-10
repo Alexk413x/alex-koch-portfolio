@@ -1,0 +1,20 @@
+FrameLayout
+  LinearLayout
+    FrameLayout
+      p00
+        View
+          View
+            View
+              View
+                View
+                  check desc="Dynamic Color" on
+                  check desc="Haptic Feedback" off
+                  check desc="None" on
+                  check desc="System" on
+                View
+                  View
+                    View clickable+focusable
+                      View desc="Back" clickable+focusable
+                      Button clickable+focusable
+                    View
+                      TextView text=<volatile>

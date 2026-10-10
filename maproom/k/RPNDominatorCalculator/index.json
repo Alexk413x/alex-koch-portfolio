@@ -1,0 +1,2648 @@
+{
+ "graph": "baselines/baseline.db",
+ "profiles": [
+  {
+   "key": "Pixel_9_Pro-android17-emu",
+   "name": "Pixel_9_Pro-android17-emu",
+   "device": {
+    "abi": "x86_64",
+    "avd": "Pixel_9_Pro",
+    "codename": "emu64xa16k",
+    "density": "480",
+    "emulator": "1",
+    "fingerprint": "google/sdk_gphone16k_x86_64/emu64xa16k:17/CE2A.260420.050/16231978:user/dev-keys",
+    "make": "Google",
+    "model": "sdk_gphone16k_x86_64",
+    "os": "17",
+    "platform": "android",
+    "resolution": "1280x2856",
+    "sdk": "37"
+   },
+   "renditions": [
+    {
+     "id": "android-home",
+     "screen": "android-home",
+     "axes": "",
+     "leaves": [
+      {
+       "path": "android-home/home/portrait/default",
+       "orientation": "portrait",
+       "locale": "default",
+       "shots": {
+        "dark": "dark.png",
+        "light": "light.png"
+       },
+       "files": [
+        "capture.json",
+        "dark.png",
+        "light.png",
+        "state.raw.xml",
+        "state.uistate.txt"
+       ],
+       "capture": {
+        "run_id": "20261009T224110225Z",
+        "source": "map_promote_run",
+        "captured_at": "2026-10-09T22:41:05Z",
+        "app_version": "3.1.0 (22)"
+       },
+       "shot_captures": {
+        "dark": {
+         "run_id": "20261009T224110225Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T22:41:06Z",
+         "app_version": "3.1.0 (22)"
+        },
+        "light": {
+         "run_id": "20261009T225904319Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T22:58:59Z",
+         "app_version": "3.1.0 (22)"
+        }
+       }
+      }
+     ]
+    },
+    {
+     "id": "delete-data@state=f569f911cc97",
+     "screen": "delete-data",
+     "axes": "state=f569f911cc97",
+     "leaves": [
+      {
+       "path": "settings/delete-data/landscape/default",
+       "orientation": "landscape",
+       "locale": "default",
+       "shots": {
+        "dark": "dark.png",
+        "light": "light.png"
+       },
+       "files": [
+        "capture.json",
+        "dark.png",
+        "light.png",
+        "state.raw.xml",
+        "state.uistate.txt"
+       ],
+       "capture": {
+        "run_id": "20261009T231621629Z",
+        "source": "map_promote_run",
+        "captured_at": "2026-10-09T23:20:07Z",
+        "app_version": "3.1.0 (22)"
+       },
+       "shot_captures": {
+        "dark": {
+         "run_id": "20261009T231621629Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T23:20:07Z",
+         "app_version": "3.1.0 (22)"
+        },
+        "light": {
+         "run_id": "20261009T234836786Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T23:52:46Z",
+         "app_version": "3.1.0 (22)"
+        }
+       }
+      },
+      {
+       "path": "settings/delete-data/portrait/default",
+       "orientation": "portrait",
+       "locale": "default",
+       "shots": {
+        "dark": "dark.png",
+        "light": "light.png"
+       },
+       "files": [
+        "capture.json",
+        "dark.png",
+        "light.png",
+        "state.raw.xml",
+        "state.uistate.txt"
+       ],
+       "capture": {
+        "run_id": "20261009T224110225Z",
+        "source": "map_promote_run",
+        "captured_at": "2026-10-09T22:43:38Z",
+        "app_version": "3.1.0 (22)"
+       },
+       "shot_captures": {
+        "dark": {
+         "run_id": "20261009T224110225Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T22:43:38Z",
+         "app_version": "3.1.0 (22)"
+        },
+        "light": {
+         "run_id": "20261009T225904319Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T23:01:16Z",
+         "app_version": "3.1.0 (22)"
+        }
+       }
+      }
+     ]
+    },
+    {
+     "id": "rpn.snackbar@state=db0e1176ec71",
+     "screen": "rpn.snackbar",
+     "axes": "state=db0e1176ec71",
+     "leaves": [
+      {
+       "path": "rpn/rpn-dismiss/landscape/default",
+       "orientation": "landscape",
+       "locale": "default",
+       "shots": {
+        "dark": "dark.png",
+        "light": "light.png"
+       },
+       "files": [
+        "capture.json",
+        "dark.png",
+        "light.png",
+        "state.raw.xml",
+        "state.uistate.txt"
+       ],
+       "capture": {
+        "run_id": "20261009T231621629Z",
+        "source": "map_promote_run",
+        "captured_at": "2026-10-09T23:22:24Z",
+        "app_version": "3.1.0 (22)"
+       },
+       "shot_captures": {
+        "dark": {
+         "run_id": "20261009T231621629Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T23:22:24Z",
+         "app_version": "3.1.0 (22)"
+        },
+        "light": {
+         "run_id": "20261009T234836786Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T23:55:53Z",
+         "app_version": "3.1.0 (22)"
+        }
+       }
+      },
+      {
+       "path": "rpn/rpn-dismiss/portrait/default",
+       "orientation": "portrait",
+       "locale": "default",
+       "shots": {
+        "dark": "dark.png",
+        "light": "light.png"
+       },
+       "files": [
+        "capture.json",
+        "dark.png",
+        "light.png",
+        "state.raw.xml",
+        "state.uistate.txt"
+       ],
+       "capture": {
+        "run_id": "20261009T224110225Z",
+        "source": "map_promote_run",
+        "captured_at": "2026-10-09T22:45:25Z",
+        "app_version": "3.1.0 (22)"
+       },
+       "shot_captures": {
+        "dark": {
+         "run_id": "20261009T224110225Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T22:45:25Z",
+         "app_version": "3.1.0 (22)"
+        },
+        "light": {
+         "run_id": "20261009T225904319Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T23:02:52Z",
+         "app_version": "3.1.0 (22)"
+        }
+       }
+      }
+     ]
+    },
+    {
+     "id": "rpn.toggle-menu@state=0bbdbc258733",
+     "screen": "rpn.toggle-menu",
+     "axes": "state=0bbdbc258733",
+     "leaves": [
+      {
+       "path": "rpn/rpn-settings/landscape/default",
+       "orientation": "landscape",
+       "locale": "default",
+       "shots": {
+        "dark": "dark.png",
+        "light": "light.png"
+       },
+       "files": [
+        "capture.json",
+        "dark.png",
+        "light.png",
+        "state.raw.xml",
+        "state.uistate.txt"
+       ],
+       "capture": {
+        "run_id": "20261009T231621629Z",
+        "source": "map_promote_run",
+        "captured_at": "2026-10-09T23:33:20Z",
+        "app_version": "3.1.0 (22)"
+       },
+       "shot_captures": {
+        "dark": {
+         "run_id": "20261009T231621629Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T23:33:20Z",
+         "app_version": "3.1.0 (22)"
+        },
+        "light": {
+         "run_id": "20261009T234836786Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-10T00:06:58Z",
+         "app_version": "3.1.0 (22)"
+        }
+       }
+      },
+      {
+       "path": "rpn/rpn-settings/portrait/default",
+       "orientation": "portrait",
+       "locale": "default",
+       "shots": {
+        "dark": "dark.png",
+        "light": "light.png"
+       },
+       "files": [
+        "capture.json",
+        "dark.png",
+        "light.png",
+        "state.raw.xml",
+        "state.uistate.txt"
+       ],
+       "capture": {
+        "run_id": "20261009T224110225Z",
+        "source": "map_promote_run",
+        "captured_at": "2026-10-09T22:50:49Z",
+        "app_version": "3.1.0 (22)"
+       },
+       "shot_captures": {
+        "dark": {
+         "run_id": "20261009T224110225Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T22:50:50Z",
+         "app_version": "3.1.0 (22)"
+        },
+        "light": {
+         "run_id": "20261009T225904319Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T23:08:24Z",
+         "app_version": "3.1.0 (22)"
+        }
+       }
+      }
+     ]
+    },
+    {
+     "id": "rpn@state=07112d3a7333",
+     "screen": "rpn",
+     "axes": "state=07112d3a7333",
+     "leaves": [
+      {
+       "path": "rpn/base/landscape/default",
+       "orientation": "landscape",
+       "locale": "default",
+       "shots": {
+        "dark": "dark.png",
+        "light": "light.png"
+       },
+       "files": [
+        "capture.json",
+        "dark.png",
+        "light.png",
+        "state.raw.xml",
+        "state.uistate.txt"
+       ],
+       "capture": {
+        "run_id": "20261009T231621629Z",
+        "source": "map_promote_run",
+        "captured_at": "2026-10-09T23:16:31Z",
+        "app_version": "3.1.0 (22)"
+       },
+       "shot_captures": {
+        "dark": {
+         "run_id": "20261009T231621629Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T23:16:31Z",
+         "app_version": "3.1.0 (22)"
+        },
+        "light": {
+         "run_id": "20261009T234836786Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T23:48:49Z",
+         "app_version": "3.1.0 (22)"
+        }
+       }
+      },
+      {
+       "path": "rpn/base/portrait/default",
+       "orientation": "portrait",
+       "locale": "default",
+       "shots": {
+        "dark": "dark.png",
+        "light": "light.png"
+       },
+       "files": [
+        "capture.json",
+        "dark.png",
+        "light.png",
+        "state.raw.xml",
+        "state.uistate.txt"
+       ],
+       "capture": {
+        "run_id": "20261009T224110225Z",
+        "source": "map_promote_run",
+        "captured_at": "2026-10-09T22:41:17Z",
+        "app_version": "3.1.0 (22)"
+       },
+       "shot_captures": {
+        "dark": {
+         "run_id": "20261009T224110225Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T22:41:17Z",
+         "app_version": "3.1.0 (22)"
+        },
+        "light": {
+         "run_id": "20261009T225904319Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T22:59:11Z",
+         "app_version": "3.1.0 (22)"
+        }
+       }
+      }
+     ]
+    },
+    {
+     "id": "rpn@state=6cfc5095a80f",
+     "screen": "rpn",
+     "axes": "state=6cfc5095a80f",
+     "leaves": [
+      {
+       "path": "rpn/rpn-e-to-the-power-of-x/landscape/default",
+       "orientation": "landscape",
+       "locale": "default",
+       "shots": {
+        "dark": "dark.png",
+        "light": "light.png"
+       },
+       "files": [
+        "capture.json",
+        "dark.png",
+        "light.png",
+        "state.raw.xml",
+        "state.uistate.txt"
+       ],
+       "capture": {
+        "run_id": "20261009T231621629Z",
+        "source": "map_promote_run",
+        "captured_at": "2026-10-09T23:17:19Z",
+        "app_version": "3.1.0 (22)"
+       },
+       "shot_captures": {
+        "dark": {
+         "run_id": "20261009T231621629Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T23:17:19Z",
+         "app_version": "3.1.0 (22)"
+        },
+        "light": {
+         "run_id": "20261009T234836786Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T23:49:37Z",
+         "app_version": "3.1.0 (22)"
+        }
+       }
+      },
+      {
+       "path": "rpn/rpn-e-to-the-power-of-x/portrait/default",
+       "orientation": "portrait",
+       "locale": "default",
+       "shots": {
+        "dark": "dark.png",
+        "light": "light.png"
+       },
+       "files": [
+        "capture.json",
+        "dark.png",
+        "light.png",
+        "state.raw.xml",
+        "state.uistate.txt"
+       ],
+       "capture": {
+        "run_id": "20261009T224110225Z",
+        "source": "map_promote_run",
+        "captured_at": "2026-10-09T22:42:03Z",
+        "app_version": "3.1.0 (22)"
+       },
+       "shot_captures": {
+        "dark": {
+         "run_id": "20261009T224110225Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T22:42:04Z",
+         "app_version": "3.1.0 (22)"
+        },
+        "light": {
+         "run_id": "20261009T225904319Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T22:59:48Z",
+         "app_version": "3.1.0 (22)"
+        }
+       }
+      }
+     ]
+    },
+    {
+     "id": "rpn@state=721fbf29a002",
+     "screen": "rpn",
+     "axes": "state=721fbf29a002",
+     "leaves": [
+      {
+       "path": "rpn/rpn-copy/landscape/default",
+       "orientation": "landscape",
+       "locale": "default",
+       "shots": {
+        "dark": "dark.png",
+        "light": "light.png"
+       },
+       "files": [
+        "capture.json",
+        "dark.png",
+        "light.png",
+        "state.raw.xml",
+        "state.uistate.txt"
+       ],
+       "capture": {
+        "run_id": "20261009T231621629Z",
+        "source": "map_promote_run",
+        "captured_at": "2026-10-09T23:17:08Z",
+        "app_version": "3.1.0 (22)"
+       },
+       "shot_captures": {
+        "dark": {
+         "run_id": "20261009T231621629Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T23:17:08Z",
+         "app_version": "3.1.0 (22)"
+        },
+        "light": {
+         "run_id": "20261009T234836786Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T23:49:25Z",
+         "app_version": "3.1.0 (22)"
+        }
+       }
+      },
+      {
+       "path": "rpn/rpn-copy/portrait/default",
+       "orientation": "portrait",
+       "locale": "default",
+       "shots": {
+        "dark": "dark.png",
+        "light": "light.png"
+       },
+       "files": [
+        "capture.json",
+        "dark.png",
+        "light.png",
+        "state.raw.xml",
+        "state.uistate.txt"
+       ],
+       "capture": {
+        "run_id": "20261009T224110225Z",
+        "source": "map_promote_run",
+        "captured_at": "2026-10-09T22:45:19Z",
+        "app_version": "3.1.0 (22)"
+       },
+       "shot_captures": {
+        "dark": {
+         "run_id": "20261009T224110225Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T22:45:19Z",
+         "app_version": "3.1.0 (22)"
+        },
+        "light": {
+         "run_id": "20261009T225904319Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T23:02:47Z",
+         "app_version": "3.1.0 (22)"
+        }
+       }
+      }
+     ]
+    },
+    {
+     "id": "rpn@state=a522a769e24a",
+     "screen": "rpn",
+     "axes": "state=a522a769e24a",
+     "leaves": [
+      {
+       "path": "rpn/degrees/landscape/default",
+       "orientation": "landscape",
+       "locale": "default",
+       "shots": {
+        "dark": "dark.png",
+        "light": "light.png"
+       },
+       "files": [
+        "capture.json",
+        "dark.png",
+        "light.png",
+        "state.raw.xml",
+        "state.uistate.txt"
+       ],
+       "capture": {
+        "run_id": "20261009T231621629Z",
+        "source": "map_promote_run",
+        "captured_at": "2026-10-09T23:21:57Z",
+        "app_version": "3.1.0 (22)"
+       },
+       "shot_captures": {
+        "dark": {
+         "run_id": "20261009T231621629Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T23:21:58Z",
+         "app_version": "3.1.0 (22)"
+        },
+        "light": {
+         "run_id": "20261009T234836786Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T23:55:20Z",
+         "app_version": "3.1.0 (22)"
+        }
+       }
+      },
+      {
+       "path": "rpn/degrees/portrait/default",
+       "orientation": "portrait",
+       "locale": "default",
+       "shots": {
+        "dark": "dark.png",
+        "light": "light.png"
+       },
+       "files": [
+        "capture.json",
+        "dark.png",
+        "light.png",
+        "state.raw.xml",
+        "state.uistate.txt"
+       ],
+       "capture": {
+        "run_id": "20261009T224110225Z",
+        "source": "map_promote_run",
+        "captured_at": "2026-10-09T22:45:07Z",
+        "app_version": "3.1.0 (22)"
+       },
+       "shot_captures": {
+        "dark": {
+         "run_id": "20261009T224110225Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T22:45:07Z",
+         "app_version": "3.1.0 (22)"
+        },
+        "light": {
+         "run_id": "20261009T225904319Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T23:02:34Z",
+         "app_version": "3.1.0 (22)"
+        }
+       }
+      }
+     ]
+    },
+    {
+     "id": "rpn@state=b2baf56e7a25",
+     "screen": "rpn",
+     "axes": "state=b2baf56e7a25",
+     "leaves": [
+      {
+       "path": "rpn/rpn-cosine/landscape/default",
+       "orientation": "landscape",
+       "locale": "default",
+       "shots": {
+        "dark": "dark.png",
+        "light": "light.png"
+       },
+       "files": [
+        "capture.json",
+        "dark.png",
+        "light.png",
+        "state.raw.xml",
+        "state.uistate.txt"
+       ],
+       "capture": {
+        "run_id": "20261009T231621629Z",
+        "source": "map_promote_run",
+        "captured_at": "2026-10-09T23:17:16Z",
+        "app_version": "3.1.0 (22)"
+       },
+       "shot_captures": {
+        "dark": {
+         "run_id": "20261009T231621629Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T23:17:16Z",
+         "app_version": "3.1.0 (22)"
+        },
+        "light": {
+         "run_id": "20261009T234836786Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T23:49:35Z",
+         "app_version": "3.1.0 (22)"
+        }
+       }
+      },
+      {
+       "path": "rpn/rpn-cosine/portrait/default",
+       "orientation": "portrait",
+       "locale": "default",
+       "shots": {
+        "dark": "dark.png",
+        "light": "light.png"
+       },
+       "files": [
+        "capture.json",
+        "dark.png",
+        "light.png",
+        "state.raw.xml",
+        "state.uistate.txt"
+       ],
+       "capture": {
+        "run_id": "20261009T224110225Z",
+        "source": "map_promote_run",
+        "captured_at": "2026-10-09T22:42:01Z",
+        "app_version": "3.1.0 (22)"
+       },
+       "shot_captures": {
+        "dark": {
+         "run_id": "20261009T224110225Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T22:42:01Z",
+         "app_version": "3.1.0 (22)"
+        },
+        "light": {
+         "run_id": "20261009T225904319Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T22:59:46Z",
+         "app_version": "3.1.0 (22)"
+        }
+       }
+      }
+     ]
+    },
+    {
+     "id": "select-rounding-mode@state=33f49bd50ac1",
+     "screen": "select-rounding-mode",
+     "axes": "state=33f49bd50ac1",
+     "leaves": [
+      {
+       "path": "settings/select-rounding-mode/values/half-up/landscape/default",
+       "orientation": "landscape",
+       "locale": "default",
+       "shots": {
+        "dark": "dark.png",
+        "light": "light.png"
+       },
+       "files": [
+        "capture.json",
+        "dark.png",
+        "light.png",
+        "state.raw.xml",
+        "state.uistate.txt"
+       ],
+       "capture": {
+        "run_id": "20261009T231621629Z",
+        "source": "map_promote_run",
+        "captured_at": "2026-10-09T23:18:42Z",
+        "app_version": "3.1.0 (22)"
+       },
+       "shot_captures": {
+        "dark": {
+         "run_id": "20261009T231621629Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T23:18:42Z",
+         "app_version": "3.1.0 (22)"
+        },
+        "light": {
+         "run_id": "20261009T234836786Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T23:50:59Z",
+         "app_version": "3.1.0 (22)"
+        }
+       }
+      },
+      {
+       "path": "settings/select-rounding-mode/values/half-up/portrait/default",
+       "orientation": "portrait",
+       "locale": "default",
+       "shots": {
+        "dark": "dark.png",
+        "light": "light.png"
+       },
+       "files": [
+        "capture.json",
+        "dark.png",
+        "light.png",
+        "state.raw.xml",
+        "state.uistate.txt"
+       ],
+       "capture": {
+        "run_id": "20261009T224110225Z",
+        "source": "map_promote_run",
+        "captured_at": "2026-10-09T22:43:11Z",
+        "app_version": "3.1.0 (22)"
+       },
+       "shot_captures": {
+        "dark": {
+         "run_id": "20261009T224110225Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T22:43:12Z",
+         "app_version": "3.1.0 (22)"
+        },
+        "light": {
+         "run_id": "20261009T225904319Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T23:00:51Z",
+         "app_version": "3.1.0 (22)"
+        }
+       }
+      }
+     ]
+    },
+    {
+     "id": "select-rounding-mode@state=577d3ec7faef",
+     "screen": "select-rounding-mode",
+     "axes": "state=577d3ec7faef",
+     "leaves": [
+      {
+       "path": "settings/select-rounding-mode/values/cc59536b/landscape/default",
+       "orientation": "landscape",
+       "locale": "default",
+       "shots": {
+        "dark": "dark.png",
+        "light": "light.png"
+       },
+       "files": [
+        "capture.json",
+        "dark.png",
+        "light.png",
+        "state.raw.xml",
+        "state.uistate.txt"
+       ],
+       "capture": {
+        "run_id": "20261009T231621629Z",
+        "source": "map_promote_run",
+        "captured_at": "2026-10-09T23:19:52Z",
+        "app_version": "3.1.0 (22)"
+       },
+       "shot_captures": {
+        "dark": {
+         "run_id": "20261009T231621629Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T23:19:53Z",
+         "app_version": "3.1.0 (22)"
+        },
+        "light": {
+         "run_id": "20261009T234836786Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T23:52:21Z",
+         "app_version": "3.1.0 (22)"
+        }
+       }
+      },
+      {
+       "path": "settings/select-rounding-mode/values/cc59536b/portrait/default",
+       "orientation": "portrait",
+       "locale": "default",
+       "shots": {
+        "dark": "dark.png",
+        "light": "light.png"
+       },
+       "files": [
+        "capture.json",
+        "dark.png",
+        "light.png",
+        "state.raw.xml",
+        "state.uistate.txt"
+       ],
+       "capture": {
+        "run_id": "20261009T224110225Z",
+        "source": "map_promote_run",
+        "captured_at": "2026-10-09T22:43:32Z",
+        "app_version": "3.1.0 (22)"
+       },
+       "shot_captures": {
+        "dark": {
+         "run_id": "20261009T224110225Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T22:43:32Z",
+         "app_version": "3.1.0 (22)"
+        },
+        "light": {
+         "run_id": "20261009T225904319Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T23:01:10Z",
+         "app_version": "3.1.0 (22)"
+        }
+       }
+      }
+     ]
+    },
+    {
+     "id": "select-rounding-mode@state=5bf09618b761",
+     "screen": "select-rounding-mode",
+     "axes": "state=5bf09618b761",
+     "leaves": [
+      {
+       "path": "settings/select-rounding-mode/values/ceiling/landscape/default",
+       "orientation": "landscape",
+       "locale": "default",
+       "shots": {
+        "dark": "dark.png",
+        "light": "light.png"
+       },
+       "files": [
+        "capture.json",
+        "dark.png",
+        "light.png",
+        "state.raw.xml",
+        "state.uistate.txt"
+       ],
+       "capture": {
+        "run_id": "20261009T231621629Z",
+        "source": "map_promote_run",
+        "captured_at": "2026-10-09T23:19:21Z",
+        "app_version": "3.1.0 (22)"
+       },
+       "shot_captures": {
+        "dark": {
+         "run_id": "20261009T231621629Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T23:19:21Z",
+         "app_version": "3.1.0 (22)"
+        },
+        "light": {
+         "run_id": "20261009T234836786Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T23:51:46Z",
+         "app_version": "3.1.0 (22)"
+        }
+       }
+      },
+      {
+       "path": "settings/select-rounding-mode/values/ceiling/portrait/default",
+       "orientation": "portrait",
+       "locale": "default",
+       "shots": {
+        "dark": "dark.png",
+        "light": "light.png"
+       },
+       "files": [
+        "capture.json",
+        "dark.png",
+        "light.png",
+        "state.raw.xml",
+        "state.uistate.txt"
+       ],
+       "capture": {
+        "run_id": "20261009T224110225Z",
+        "source": "map_promote_run",
+        "captured_at": "2026-10-09T22:43:25Z",
+        "app_version": "3.1.0 (22)"
+       },
+       "shot_captures": {
+        "dark": {
+         "run_id": "20261009T224110225Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T22:43:25Z",
+         "app_version": "3.1.0 (22)"
+        },
+        "light": {
+         "run_id": "20261009T225904319Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T23:01:03Z",
+         "app_version": "3.1.0 (22)"
+        }
+       }
+      }
+     ]
+    },
+    {
+     "id": "select-rounding-mode@state=a8254ce74a6a",
+     "screen": "select-rounding-mode",
+     "axes": "state=a8254ce74a6a",
+     "leaves": [
+      {
+       "path": "settings/select-rounding-mode/base/landscape/default",
+       "orientation": "landscape",
+       "locale": "default",
+       "shots": {
+        "dark": "dark.png",
+        "light": "light.png"
+       },
+       "files": [
+        "capture.json",
+        "dark.png",
+        "light.png",
+        "state.raw.xml",
+        "state.uistate.txt"
+       ],
+       "capture": {
+        "run_id": "20261009T231621629Z",
+        "source": "map_promote_run",
+        "captured_at": "2026-10-09T23:18:40Z",
+        "app_version": "3.1.0 (22)"
+       },
+       "shot_captures": {
+        "dark": {
+         "run_id": "20261009T231621629Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T23:18:40Z",
+         "app_version": "3.1.0 (22)"
+        },
+        "light": {
+         "run_id": "20261009T234836786Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T23:50:56Z",
+         "app_version": "3.1.0 (22)"
+        }
+       }
+      },
+      {
+       "path": "settings/select-rounding-mode/base/portrait/default",
+       "orientation": "portrait",
+       "locale": "default",
+       "shots": {
+        "dark": "dark.png",
+        "light": "light.png"
+       },
+       "files": [
+        "capture.json",
+        "dark.png",
+        "light.png",
+        "state.raw.xml",
+        "state.uistate.txt"
+       ],
+       "capture": {
+        "run_id": "20261009T224110225Z",
+        "source": "map_promote_run",
+        "captured_at": "2026-10-09T22:43:10Z",
+        "app_version": "3.1.0 (22)"
+       },
+       "shot_captures": {
+        "dark": {
+         "run_id": "20261009T224110225Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T22:43:11Z",
+         "app_version": "3.1.0 (22)"
+        },
+        "light": {
+         "run_id": "20261009T225904319Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T23:00:50Z",
+         "app_version": "3.1.0 (22)"
+        }
+       }
+      }
+     ]
+    },
+    {
+     "id": "select-rounding-mode@state=cc6834db76d0",
+     "screen": "select-rounding-mode",
+     "axes": "state=cc6834db76d0",
+     "leaves": [
+      {
+       "path": "settings/select-rounding-mode/values/down/landscape/default",
+       "orientation": "landscape",
+       "locale": "default",
+       "shots": {
+        "dark": "dark.png",
+        "light": "light.png"
+       },
+       "files": [
+        "capture.json",
+        "dark.png",
+        "light.png",
+        "state.raw.xml",
+        "state.uistate.txt"
+       ],
+       "capture": {
+        "run_id": "20261009T231621629Z",
+        "source": "map_promote_run",
+        "captured_at": "2026-10-09T23:19:06Z",
+        "app_version": "3.1.0 (22)"
+       },
+       "shot_captures": {
+        "dark": {
+         "run_id": "20261009T231621629Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T23:19:06Z",
+         "app_version": "3.1.0 (22)"
+        },
+        "light": {
+         "run_id": "20261009T234836786Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T23:51:26Z",
+         "app_version": "3.1.0 (22)"
+        }
+       }
+      },
+      {
+       "path": "settings/select-rounding-mode/values/down/portrait/default",
+       "orientation": "portrait",
+       "locale": "default",
+       "shots": {
+        "dark": "dark.png",
+        "light": "light.png"
+       },
+       "files": [
+        "capture.json",
+        "dark.png",
+        "light.png",
+        "state.raw.xml",
+        "state.uistate.txt"
+       ],
+       "capture": {
+        "run_id": "20261009T224110225Z",
+        "source": "map_promote_run",
+        "captured_at": "2026-10-09T22:43:22Z",
+        "app_version": "3.1.0 (22)"
+       },
+       "shot_captures": {
+        "dark": {
+         "run_id": "20261009T224110225Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T22:43:22Z",
+         "app_version": "3.1.0 (22)"
+        },
+        "light": {
+         "run_id": "20261009T225904319Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T23:01:00Z",
+         "app_version": "3.1.0 (22)"
+        }
+       }
+      }
+     ]
+    },
+    {
+     "id": "select-rounding-mode@state=dc2b58656eca",
+     "screen": "select-rounding-mode",
+     "axes": "state=dc2b58656eca",
+     "leaves": [
+      {
+       "path": "settings/select-rounding-mode/values/up/landscape/default",
+       "orientation": "landscape",
+       "locale": "default",
+       "shots": {
+        "dark": "dark.png",
+        "light": "light.png"
+       },
+       "files": [
+        "capture.json",
+        "dark.png",
+        "light.png",
+        "state.raw.xml",
+        "state.uistate.txt"
+       ],
+       "capture": {
+        "run_id": "20261009T231621629Z",
+        "source": "map_promote_run",
+        "captured_at": "2026-10-09T23:18:51Z",
+        "app_version": "3.1.0 (22)"
+       },
+       "shot_captures": {
+        "dark": {
+         "run_id": "20261009T231621629Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T23:18:51Z",
+         "app_version": "3.1.0 (22)"
+        },
+        "light": {
+         "run_id": "20261009T234836786Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T23:51:09Z",
+         "app_version": "3.1.0 (22)"
+        }
+       }
+      },
+      {
+       "path": "settings/select-rounding-mode/values/up/portrait/default",
+       "orientation": "portrait",
+       "locale": "default",
+       "shots": {
+        "dark": "dark.png",
+        "light": "light.png"
+       },
+       "files": [
+        "capture.json",
+        "dark.png",
+        "light.png",
+        "state.raw.xml",
+        "state.uistate.txt"
+       ],
+       "capture": {
+        "run_id": "20261009T224110225Z",
+        "source": "map_promote_run",
+        "captured_at": "2026-10-09T22:43:18Z",
+        "app_version": "3.1.0 (22)"
+       },
+       "shot_captures": {
+        "dark": {
+         "run_id": "20261009T224110225Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T22:43:19Z",
+         "app_version": "3.1.0 (22)"
+        },
+        "light": {
+         "run_id": "20261009T225904319Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T23:00:57Z",
+         "app_version": "3.1.0 (22)"
+        }
+       }
+      }
+     ]
+    },
+    {
+     "id": "select-rounding-mode@state=e91f3974d6a7",
+     "screen": "select-rounding-mode",
+     "axes": "state=e91f3974d6a7",
+     "leaves": [
+      {
+       "path": "settings/select-rounding-mode/values/4bffd411/landscape/default",
+       "orientation": "landscape",
+       "locale": "default",
+       "shots": {
+        "dark": "dark.png",
+        "light": "light.png"
+       },
+       "files": [
+        "capture.json",
+        "dark.png",
+        "light.png",
+        "state.raw.xml",
+        "state.uistate.txt"
+       ],
+       "capture": {
+        "run_id": "20261009T231621629Z",
+        "source": "map_promote_run",
+        "captured_at": "2026-10-09T23:18:46Z",
+        "app_version": "3.1.0 (22)"
+       },
+       "shot_captures": {
+        "dark": {
+         "run_id": "20261009T231621629Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T23:18:46Z",
+         "app_version": "3.1.0 (22)"
+        },
+        "light": {
+         "run_id": "20261009T234836786Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T23:51:03Z",
+         "app_version": "3.1.0 (22)"
+        }
+       }
+      },
+      {
+       "path": "settings/select-rounding-mode/values/4bffd411/portrait/default",
+       "orientation": "portrait",
+       "locale": "default",
+       "shots": {
+        "dark": "dark.png",
+        "light": "light.png"
+       },
+       "files": [
+        "capture.json",
+        "dark.png",
+        "light.png",
+        "state.raw.xml",
+        "state.uistate.txt"
+       ],
+       "capture": {
+        "run_id": "20261009T224110225Z",
+        "source": "map_promote_run",
+        "captured_at": "2026-10-09T22:43:15Z",
+        "app_version": "3.1.0 (22)"
+       },
+       "shot_captures": {
+        "dark": {
+         "run_id": "20261009T224110225Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T22:43:15Z",
+         "app_version": "3.1.0 (22)"
+        },
+        "light": {
+         "run_id": "20261009T225904319Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T23:00:54Z",
+         "app_version": "3.1.0 (22)"
+        }
+       }
+      }
+     ]
+    },
+    {
+     "id": "select-rounding-mode@state=ec66807cd95e",
+     "screen": "select-rounding-mode",
+     "axes": "state=ec66807cd95e",
+     "leaves": [
+      {
+       "path": "settings/select-rounding-mode/values/floor/landscape/default",
+       "orientation": "landscape",
+       "locale": "default",
+       "shots": {
+        "dark": "dark.png",
+        "light": "light.png"
+       },
+       "files": [
+        "capture.json",
+        "dark.png",
+        "light.png",
+        "state.raw.xml",
+        "state.uistate.txt"
+       ],
+       "capture": {
+        "run_id": "20261009T231621629Z",
+        "source": "map_promote_run",
+        "captured_at": "2026-10-09T23:19:36Z",
+        "app_version": "3.1.0 (22)"
+       },
+       "shot_captures": {
+        "dark": {
+         "run_id": "20261009T231621629Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T23:19:36Z",
+         "app_version": "3.1.0 (22)"
+        },
+        "light": {
+         "run_id": "20261009T234836786Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T23:52:01Z",
+         "app_version": "3.1.0 (22)"
+        }
+       }
+      },
+      {
+       "path": "settings/select-rounding-mode/values/floor/portrait/default",
+       "orientation": "portrait",
+       "locale": "default",
+       "shots": {
+        "dark": "dark.png",
+        "light": "light.png"
+       },
+       "files": [
+        "capture.json",
+        "dark.png",
+        "light.png",
+        "state.raw.xml",
+        "state.uistate.txt"
+       ],
+       "capture": {
+        "run_id": "20261009T224110225Z",
+        "source": "map_promote_run",
+        "captured_at": "2026-10-09T22:43:28Z",
+        "app_version": "3.1.0 (22)"
+       },
+       "shot_captures": {
+        "dark": {
+         "run_id": "20261009T224110225Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T22:43:28Z",
+         "app_version": "3.1.0 (22)"
+        },
+        "light": {
+         "run_id": "20261009T225904319Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T23:01:06Z",
+         "app_version": "3.1.0 (22)"
+        }
+       }
+      }
+     ]
+    },
+    {
+     "id": "select-rounding-mode@state=f1204093836d",
+     "screen": "select-rounding-mode",
+     "axes": "state=f1204093836d",
+     "leaves": [
+      {
+       "path": "settings/select-rounding-mode/state/landscape/default",
+       "orientation": "landscape",
+       "locale": "default",
+       "shots": {
+        "dark": "dark.png",
+        "light": "light.png"
+       },
+       "files": [
+        "capture.json",
+        "dark.png",
+        "light.png",
+        "state.raw.xml",
+        "state.uistate.txt"
+       ],
+       "capture": {
+        "run_id": "20261009T231621629Z",
+        "source": "map_promote_run",
+        "captured_at": "2026-10-09T23:18:53Z",
+        "app_version": "3.1.0 (22)"
+       },
+       "shot_captures": {
+        "dark": {
+         "run_id": "20261009T231621629Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T23:18:53Z",
+         "app_version": "3.1.0 (22)"
+        },
+        "light": {
+         "run_id": "20261009T234836786Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T23:51:11Z",
+         "app_version": "3.1.0 (22)"
+        }
+       }
+      }
+     ]
+    },
+    {
+     "id": "settings.keyboard~max-operation-input@state=65d38f3c9ab3",
+     "screen": "settings.keyboard~max-operation-input",
+     "axes": "state=65d38f3c9ab3",
+     "leaves": [
+      {
+       "path": "settings/keyboard-max-operation-input/landscape/default",
+       "orientation": "landscape",
+       "locale": "default",
+       "shots": {
+        "dark": "dark.png",
+        "light": "light.png"
+       },
+       "files": [
+        "capture.json",
+        "dark.png",
+        "light.png",
+        "state.raw.xml",
+        "state.uistate.txt"
+       ],
+       "capture": {
+        "run_id": "20261009T231621629Z",
+        "source": "map_promote_run",
+        "captured_at": "2026-10-09T23:20:44Z",
+        "app_version": "3.1.0 (22)"
+       },
+       "shot_captures": {
+        "dark": {
+         "run_id": "20261009T231621629Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T23:20:44Z",
+         "app_version": "3.1.0 (22)"
+        },
+        "light": {
+         "run_id": "20261009T234836786Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T23:53:55Z",
+         "app_version": "3.1.0 (22)"
+        }
+       }
+      },
+      {
+       "path": "settings/keyboard-max-operation-input/portrait/default",
+       "orientation": "portrait",
+       "locale": "default",
+       "shots": {
+        "dark": "dark.png",
+        "light": "light.png"
+       },
+       "files": [
+        "capture.json",
+        "dark.png",
+        "light.png",
+        "state.raw.xml",
+        "state.uistate.txt"
+       ],
+       "capture": {
+        "run_id": "20261009T224110225Z",
+        "source": "map_promote_run",
+        "captured_at": "2026-10-09T22:43:58Z",
+        "app_version": "3.1.0 (22)"
+       },
+       "shot_captures": {
+        "dark": {
+         "run_id": "20261009T224110225Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T22:43:58Z",
+         "app_version": "3.1.0 (22)"
+        },
+        "light": {
+         "run_id": "20261009T225904319Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T23:01:35Z",
+         "app_version": "3.1.0 (22)"
+        }
+       }
+      }
+     ]
+    },
+    {
+     "id": "settings.keyboard~rounding-precision@state=dfb8b1d53d06",
+     "screen": "settings.keyboard~rounding-precision",
+     "axes": "state=dfb8b1d53d06",
+     "leaves": [
+      {
+       "path": "settings/keyboard-rounding-precision/landscape/default",
+       "orientation": "landscape",
+       "locale": "default",
+       "shots": {
+        "dark": "dark.png",
+        "light": "light.png"
+       },
+       "files": [
+        "capture.json",
+        "dark.png",
+        "light.png",
+        "state.raw.xml",
+        "state.uistate.txt"
+       ],
+       "capture": {
+        "run_id": "20261009T231621629Z",
+        "source": "map_promote_run",
+        "captured_at": "2026-10-09T23:23:40Z",
+        "app_version": "3.1.0 (22)"
+       },
+       "shot_captures": {
+        "dark": {
+         "run_id": "20261009T231621629Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T23:23:41Z",
+         "app_version": "3.1.0 (22)"
+        },
+        "light": {
+         "run_id": "20261009T234836786Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T23:57:04Z",
+         "app_version": "3.1.0 (22)"
+        }
+       }
+      },
+      {
+       "path": "settings/keyboard-rounding-precision/portrait/default",
+       "orientation": "portrait",
+       "locale": "default",
+       "shots": {
+        "dark": "dark.png",
+        "light": "light.png"
+       },
+       "files": [
+        "capture.json",
+        "dark.png",
+        "light.png",
+        "state.raw.xml",
+        "state.uistate.txt"
+       ],
+       "capture": {
+        "run_id": "20261009T224110225Z",
+        "source": "map_promote_run",
+        "captured_at": "2026-10-09T22:45:52Z",
+        "app_version": "3.1.0 (22)"
+       },
+       "shot_captures": {
+        "dark": {
+         "run_id": "20261009T224110225Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T22:45:52Z",
+         "app_version": "3.1.0 (22)"
+        },
+        "light": {
+         "run_id": "20261009T225904319Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T23:03:18Z",
+         "app_version": "3.1.0 (22)"
+        }
+       }
+      }
+     ]
+    },
+    {
+     "id": "settings.keyboard~significant-figures@state=6af5ca35bb12",
+     "screen": "settings.keyboard~significant-figures",
+     "axes": "state=6af5ca35bb12",
+     "leaves": [
+      {
+       "path": "settings/keyboard-significant-figures/portrait/default",
+       "orientation": "portrait",
+       "locale": "default",
+       "shots": {
+        "dark": "dark.png",
+        "light": "light.png"
+       },
+       "files": [
+        "capture.json",
+        "dark.png",
+        "light.png",
+        "state.raw.xml",
+        "state.uistate.txt"
+       ],
+       "capture": {
+        "run_id": "20261009T224110225Z",
+        "source": "map_promote_run",
+        "captured_at": "2026-10-09T22:44:23Z",
+        "app_version": "3.1.0 (22)"
+       },
+       "shot_captures": {
+        "dark": {
+         "run_id": "20261009T224110225Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T22:44:23Z",
+         "app_version": "3.1.0 (22)"
+        },
+        "light": {
+         "run_id": "20261009T225904319Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T23:01:55Z",
+         "app_version": "3.1.0 (22)"
+        }
+       }
+      }
+     ]
+    },
+    {
+     "id": "settings.keyboard~stack-limit@state=c43030620854",
+     "screen": "settings.keyboard~stack-limit",
+     "axes": "state=c43030620854",
+     "leaves": [
+      {
+       "path": "settings/keyboard-stack-limit/landscape/default",
+       "orientation": "landscape",
+       "locale": "default",
+       "shots": {
+        "dark": "dark.png",
+        "light": "light.png"
+       },
+       "files": [
+        "capture.json",
+        "dark.png",
+        "light.png",
+        "state.raw.xml",
+        "state.uistate.txt"
+       ],
+       "capture": {
+        "run_id": "20261009T231621629Z",
+        "source": "map_promote_run",
+        "captured_at": "2026-10-09T23:20:58Z",
+        "app_version": "3.1.0 (22)"
+       },
+       "shot_captures": {
+        "dark": {
+         "run_id": "20261009T231621629Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T23:20:58Z",
+         "app_version": "3.1.0 (22)"
+        },
+        "light": {
+         "run_id": "20261009T234836786Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T23:54:15Z",
+         "app_version": "3.1.0 (22)"
+        }
+       }
+      },
+      {
+       "path": "settings/keyboard-stack-limit/portrait/default",
+       "orientation": "portrait",
+       "locale": "default",
+       "shots": {
+        "dark": "dark.png",
+        "light": "light.png"
+       },
+       "files": [
+        "capture.json",
+        "dark.png",
+        "light.png",
+        "state.raw.xml",
+        "state.uistate.txt"
+       ],
+       "capture": {
+        "run_id": "20261009T224110225Z",
+        "source": "map_promote_run",
+        "captured_at": "2026-10-09T22:44:36Z",
+        "app_version": "3.1.0 (22)"
+       },
+       "shot_captures": {
+        "dark": {
+         "run_id": "20261009T224110225Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T22:44:36Z",
+         "app_version": "3.1.0 (22)"
+        },
+        "light": {
+         "run_id": "20261009T225904319Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T23:02:06Z",
+         "app_version": "3.1.0 (22)"
+        }
+       }
+      }
+     ]
+    },
+    {
+     "id": "settings.keyboard~undo-history-limit@state=e96d4456cd3c",
+     "screen": "settings.keyboard~undo-history-limit",
+     "axes": "state=e96d4456cd3c",
+     "leaves": [
+      {
+       "path": "settings/keyboard-undo-history-limit/landscape/default",
+       "orientation": "landscape",
+       "locale": "default",
+       "shots": {
+        "dark": "dark.png",
+        "light": "light.png"
+       },
+       "files": [
+        "capture.json",
+        "dark.png",
+        "light.png",
+        "state.raw.xml",
+        "state.uistate.txt"
+       ],
+       "capture": {
+        "run_id": "20261009T231621629Z",
+        "source": "map_promote_run",
+        "captured_at": "2026-10-09T23:20:23Z",
+        "app_version": "3.1.0 (22)"
+       },
+       "shot_captures": {
+        "dark": {
+         "run_id": "20261009T231621629Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T23:20:23Z",
+         "app_version": "3.1.0 (22)"
+        },
+        "light": {
+         "run_id": "20261009T234836786Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T23:53:19Z",
+         "app_version": "3.1.0 (22)"
+        }
+       }
+      },
+      {
+       "path": "settings/keyboard-undo-history-limit/portrait/default",
+       "orientation": "portrait",
+       "locale": "default",
+       "shots": {
+        "dark": "dark.png",
+        "light": "light.png"
+       },
+       "files": [
+        "capture.json",
+        "dark.png",
+        "light.png",
+        "state.raw.xml",
+        "state.uistate.txt"
+       ],
+       "capture": {
+        "run_id": "20261009T224110225Z",
+        "source": "map_promote_run",
+        "captured_at": "2026-10-09T22:44:43Z",
+        "app_version": "3.1.0 (22)"
+       },
+       "shot_captures": {
+        "dark": {
+         "run_id": "20261009T224110225Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T22:44:43Z",
+         "app_version": "3.1.0 (22)"
+        },
+        "light": {
+         "run_id": "20261009T225904319Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T23:02:11Z",
+         "app_version": "3.1.0 (22)"
+        }
+       }
+      }
+     ]
+    },
+    {
+     "id": "settings.popup@state=a3bbbb5052cb",
+     "screen": "settings.popup",
+     "axes": "state=a3bbbb5052cb",
+     "leaves": [
+      {
+       "path": "settings/popup/state/landscape/default",
+       "orientation": "landscape",
+       "locale": "default",
+       "shots": {
+        "dark": "dark.png",
+        "light": "light.png"
+       },
+       "files": [
+        "capture.json",
+        "dark.png",
+        "light.png",
+        "state.raw.xml",
+        "state.uistate.txt"
+       ],
+       "capture": {
+        "run_id": "20261009T231621629Z",
+        "source": "map_promote_run",
+        "captured_at": "2026-10-09T23:22:42Z",
+        "app_version": "3.1.0 (22)"
+       },
+       "shot_captures": {
+        "dark": {
+         "run_id": "20261009T231621629Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T23:22:42Z",
+         "app_version": "3.1.0 (22)"
+        },
+        "light": {
+         "run_id": "20261009T234836786Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T23:56:15Z",
+         "app_version": "3.1.0 (22)"
+        }
+       }
+      },
+      {
+       "path": "settings/popup/state/portrait/default",
+       "orientation": "portrait",
+       "locale": "default",
+       "shots": {
+        "dark": "dark.png",
+        "light": "light.png"
+       },
+       "files": [
+        "capture.json",
+        "dark.png",
+        "light.png",
+        "state.raw.xml",
+        "state.uistate.txt"
+       ],
+       "capture": {
+        "run_id": "20261009T224110225Z",
+        "source": "map_promote_run",
+        "captured_at": "2026-10-09T22:45:35Z",
+        "app_version": "3.1.0 (22)"
+       },
+       "shot_captures": {
+        "dark": {
+         "run_id": "20261009T224110225Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T22:45:35Z",
+         "app_version": "3.1.0 (22)"
+        },
+        "light": {
+         "run_id": "20261009T225904319Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T23:03:03Z",
+         "app_version": "3.1.0 (22)"
+        }
+       }
+      }
+     ]
+    },
+    {
+     "id": "settings.snackbar@state=a841134b7a30",
+     "screen": "settings.snackbar",
+     "axes": "state=a841134b7a30",
+     "leaves": [
+      {
+       "path": "settings/settings-dismiss/portrait/default",
+       "orientation": "portrait",
+       "locale": "default",
+       "shots": {
+        "dark": "dark.png",
+        "light": "light.png"
+       },
+       "files": [
+        "capture.json",
+        "dark.png",
+        "light.png",
+        "state.raw.xml",
+        "state.uistate.txt"
+       ],
+       "capture": {
+        "run_id": "20261009T224110225Z",
+        "source": "map_promote_run",
+        "captured_at": "2026-10-09T22:45:48Z",
+        "app_version": "3.1.0 (22)"
+       },
+       "shot_captures": {
+        "dark": {
+         "run_id": "20261009T224110225Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T22:45:48Z",
+         "app_version": "3.1.0 (22)"
+        },
+        "light": {
+         "run_id": "20261009T225904319Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T23:03:14Z",
+         "app_version": "3.1.0 (22)"
+        }
+       }
+      }
+     ]
+    },
+    {
+     "id": "settings.toast@state=106d9bafa652",
+     "screen": "settings.toast",
+     "axes": "state=106d9bafa652",
+     "leaves": [
+      {
+       "path": "settings/contents-can-t-be-autofilled/landscape/default",
+       "orientation": "landscape",
+       "locale": "default",
+       "shots": {
+        "dark": "dark.png",
+        "light": "light.png"
+       },
+       "files": [
+        "capture.json",
+        "dark.png",
+        "light.png",
+        "state.raw.xml",
+        "state.uistate.txt"
+       ],
+       "capture": {
+        "run_id": "20261009T231621629Z",
+        "source": "map_promote_run",
+        "captured_at": "2026-10-09T23:22:46Z",
+        "app_version": "3.1.0 (22)"
+       },
+       "shot_captures": {
+        "dark": {
+         "run_id": "20261009T231621629Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T23:22:46Z",
+         "app_version": "3.1.0 (22)"
+        },
+        "light": {
+         "run_id": "20261009T234836786Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T23:56:19Z",
+         "app_version": "3.1.0 (22)"
+        }
+       }
+      },
+      {
+       "path": "settings/contents-can-t-be-autofilled/portrait/default",
+       "orientation": "portrait",
+       "locale": "default",
+       "shots": {
+        "dark": "dark.png",
+        "light": "light.png"
+       },
+       "files": [
+        "capture.json",
+        "dark.png",
+        "light.png",
+        "state.raw.xml",
+        "state.uistate.txt"
+       ],
+       "capture": {
+        "run_id": "20261009T224110225Z",
+        "source": "map_promote_run",
+        "captured_at": "2026-10-09T22:45:39Z",
+        "app_version": "3.1.0 (22)"
+       },
+       "shot_captures": {
+        "dark": {
+         "run_id": "20261009T224110225Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T22:45:39Z",
+         "app_version": "3.1.0 (22)"
+        },
+        "light": {
+         "run_id": "20261009T225904319Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T23:03:05Z",
+         "app_version": "3.1.0 (22)"
+        }
+       }
+      }
+     ]
+    },
+    {
+     "id": "settings@state=06151d062458",
+     "screen": "settings",
+     "axes": "state=06151d062458",
+     "leaves": [
+      {
+       "path": "settings/values/group/landscape/default",
+       "orientation": "landscape",
+       "locale": "default",
+       "shots": {
+        "dark": "dark.png",
+        "light": "light.png"
+       },
+       "files": [
+        "capture.json",
+        "dark.png",
+        "light.png",
+        "state.raw.xml",
+        "state.uistate.txt"
+       ],
+       "capture": {
+        "run_id": "20261009T231621629Z",
+        "source": "map_promote_run",
+        "captured_at": "2026-10-09T23:18:32Z",
+        "app_version": "3.1.0 (22)"
+       },
+       "shot_captures": {
+        "dark": {
+         "run_id": "20261009T231621629Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T23:18:32Z",
+         "app_version": "3.1.0 (22)"
+        },
+        "light": {
+         "run_id": "20261009T234836786Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T23:50:47Z",
+         "app_version": "3.1.0 (22)"
+        }
+       }
+      },
+      {
+       "path": "settings/values/group/portrait/default",
+       "orientation": "portrait",
+       "locale": "default",
+       "shots": {
+        "dark": "dark.png",
+        "light": "light.png"
+       },
+       "files": [
+        "capture.json",
+        "dark.png",
+        "light.png",
+        "state.raw.xml",
+        "state.uistate.txt"
+       ],
+       "capture": {
+        "run_id": "20261009T224110225Z",
+        "source": "map_promote_run",
+        "captured_at": "2026-10-09T22:43:06Z",
+        "app_version": "3.1.0 (22)"
+       },
+       "shot_captures": {
+        "dark": {
+         "run_id": "20261009T224110225Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T22:43:06Z",
+         "app_version": "3.1.0 (22)"
+        },
+        "light": {
+         "run_id": "20261009T225904319Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T23:00:46Z",
+         "app_version": "3.1.0 (22)"
+        }
+       }
+      }
+     ]
+    },
+    {
+     "id": "settings@state=23ca75aa47ab",
+     "screen": "settings",
+     "axes": "state=23ca75aa47ab",
+     "leaves": [
+      {
+       "path": "settings/values/finance/landscape/default",
+       "orientation": "landscape",
+       "locale": "default",
+       "shots": {
+        "dark": "dark.png",
+        "light": "light.png"
+       },
+       "files": [
+        "capture.json",
+        "dark.png",
+        "light.png",
+        "state.raw.xml",
+        "state.uistate.txt"
+       ],
+       "capture": {
+        "run_id": "20261009T231621629Z",
+        "source": "map_promote_run",
+        "captured_at": "2026-10-09T23:18:22Z",
+        "app_version": "3.1.0 (22)"
+       },
+       "shot_captures": {
+        "dark": {
+         "run_id": "20261009T231621629Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T23:18:22Z",
+         "app_version": "3.1.0 (22)"
+        },
+        "light": {
+         "run_id": "20261009T234836786Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T23:50:41Z",
+         "app_version": "3.1.0 (22)"
+        }
+       }
+      },
+      {
+       "path": "settings/values/finance/portrait/default",
+       "orientation": "portrait",
+       "locale": "default",
+       "shots": {
+        "dark": "dark.png",
+        "light": "light.png"
+       },
+       "files": [
+        "capture.json",
+        "dark.png",
+        "light.png",
+        "state.raw.xml",
+        "state.uistate.txt"
+       ],
+       "capture": {
+        "run_id": "20261009T224110225Z",
+        "source": "map_promote_run",
+        "captured_at": "2026-10-09T22:42:57Z",
+        "app_version": "3.1.0 (22)"
+       },
+       "shot_captures": {
+        "dark": {
+         "run_id": "20261009T224110225Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T22:42:57Z",
+         "app_version": "3.1.0 (22)"
+        },
+        "light": {
+         "run_id": "20261009T225904319Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T23:00:38Z",
+         "app_version": "3.1.0 (22)"
+        }
+       }
+      }
+     ]
+    },
+    {
+     "id": "settings@state=295b38eed0c7",
+     "screen": "settings",
+     "axes": "state=295b38eed0c7",
+     "leaves": [
+      {
+       "path": "settings/values/dark/landscape/default",
+       "orientation": "landscape",
+       "locale": "default",
+       "shots": {
+        "dark": "dark.png",
+        "light": "light.png"
+       },
+       "files": [
+        "capture.json",
+        "dark.png",
+        "light.png",
+        "state.raw.xml",
+        "state.uistate.txt"
+       ],
+       "capture": {
+        "run_id": "20261009T231621629Z",
+        "source": "map_promote_run",
+        "captured_at": "2026-10-09T23:18:16Z",
+        "app_version": "3.1.0 (22)"
+       },
+       "shot_captures": {
+        "dark": {
+         "run_id": "20261009T231621629Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T23:18:16Z",
+         "app_version": "3.1.0 (22)"
+        },
+        "light": {
+         "run_id": "20261009T234836786Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T23:50:36Z",
+         "app_version": "3.1.0 (22)"
+        }
+       }
+      },
+      {
+       "path": "settings/values/dark/portrait/default",
+       "orientation": "portrait",
+       "locale": "default",
+       "shots": {
+        "dark": "dark.png",
+        "light": "light.png"
+       },
+       "files": [
+        "capture.json",
+        "dark.png",
+        "light.png",
+        "state.raw.xml",
+        "state.uistate.txt"
+       ],
+       "capture": {
+        "run_id": "20261009T224110225Z",
+        "source": "map_promote_run",
+        "captured_at": "2026-10-09T22:42:53Z",
+        "app_version": "3.1.0 (22)"
+       },
+       "shot_captures": {
+        "dark": {
+         "run_id": "20261009T224110225Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T22:42:53Z",
+         "app_version": "3.1.0 (22)"
+        },
+        "light": {
+         "run_id": "20261009T225904319Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T23:00:34Z",
+         "app_version": "3.1.0 (22)"
+        }
+       }
+      }
+     ]
+    },
+    {
+     "id": "settings@state=55a6305ff914",
+     "screen": "settings",
+     "axes": "state=55a6305ff914",
+     "leaves": [
+      {
+       "path": "settings/values/scientific/landscape/default",
+       "orientation": "landscape",
+       "locale": "default",
+       "shots": {
+        "dark": "dark.png",
+        "light": "light.png"
+       },
+       "files": [
+        "capture.json",
+        "dark.png",
+        "light.png",
+        "state.raw.xml",
+        "state.uistate.txt"
+       ],
+       "capture": {
+        "run_id": "20261009T231621629Z",
+        "source": "map_promote_run",
+        "captured_at": "2026-10-09T23:18:27Z",
+        "app_version": "3.1.0 (22)"
+       },
+       "shot_captures": {
+        "dark": {
+         "run_id": "20261009T231621629Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T23:18:27Z",
+         "app_version": "3.1.0 (22)"
+        },
+        "light": {
+         "run_id": "20261009T234836786Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T23:50:44Z",
+         "app_version": "3.1.0 (22)"
+        }
+       }
+      },
+      {
+       "path": "settings/values/scientific/portrait/default",
+       "orientation": "portrait",
+       "locale": "default",
+       "shots": {
+        "dark": "dark.png",
+        "light": "light.png"
+       },
+       "files": [
+        "capture.json",
+        "dark.png",
+        "light.png",
+        "state.raw.xml",
+        "state.uistate.txt"
+       ],
+       "capture": {
+        "run_id": "20261009T224110225Z",
+        "source": "map_promote_run",
+        "captured_at": "2026-10-09T22:43:01Z",
+        "app_version": "3.1.0 (22)"
+       },
+       "shot_captures": {
+        "dark": {
+         "run_id": "20261009T224110225Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T22:43:01Z",
+         "app_version": "3.1.0 (22)"
+        },
+        "light": {
+         "run_id": "20261009T225904319Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T23:00:42Z",
+         "app_version": "3.1.0 (22)"
+        }
+       }
+      }
+     ]
+    },
+    {
+     "id": "settings@state=7311010578d2",
+     "screen": "settings",
+     "axes": "state=7311010578d2",
+     "leaves": [
+      {
+       "path": "settings/base/landscape/default",
+       "orientation": "landscape",
+       "locale": "default",
+       "shots": {
+        "dark": "dark.png",
+        "light": "light.png",
+        "list.dark": "list.dark.png",
+        "list.light": "list.light.png"
+       },
+       "files": [
+        "capture.json",
+        "dark.png",
+        "light.png",
+        "list.dark.png",
+        "list.light.png",
+        "list.raw.xml",
+        "list.uistate.txt",
+        "state.raw.xml",
+        "state.uistate.txt"
+       ],
+       "capture": {
+        "run_id": "20261009T231621629Z",
+        "source": "map_promote_run",
+        "captured_at": "2026-10-09T23:17:46Z",
+        "app_version": "3.1.0 (22)"
+       },
+       "shot_captures": {
+        "dark": {
+         "run_id": "20261009T231621629Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T23:17:46Z",
+         "app_version": "3.1.0 (22)"
+        },
+        "light": {
+         "run_id": "20261009T234836786Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T23:50:06Z",
+         "app_version": "3.1.0 (22)"
+        }
+       }
+      },
+      {
+       "path": "settings/base/portrait/default",
+       "orientation": "portrait",
+       "locale": "default",
+       "shots": {
+        "dark": "dark.png",
+        "light": "light.png",
+        "list.dark": "list.dark.png",
+        "list.light": "list.light.png"
+       },
+       "files": [
+        "capture.json",
+        "dark.png",
+        "light.png",
+        "list.dark.png",
+        "list.light.png",
+        "list.raw.xml",
+        "list.uistate.txt",
+        "state.raw.xml",
+        "state.uistate.txt"
+       ],
+       "capture": {
+        "run_id": "20261009T224110225Z",
+        "source": "map_promote_run",
+        "captured_at": "2026-10-09T22:42:24Z",
+        "app_version": "3.1.0 (22)"
+       },
+       "shot_captures": {
+        "dark": {
+         "run_id": "20261009T224110225Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T22:42:24Z",
+         "app_version": "3.1.0 (22)"
+        },
+        "light": {
+         "run_id": "20261009T225904319Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T23:00:08Z",
+         "app_version": "3.1.0 (22)"
+        }
+       }
+      }
+     ]
+    },
+    {
+     "id": "settings@state=9c0e631043d1",
+     "screen": "settings",
+     "axes": "state=9c0e631043d1",
+     "leaves": [
+      {
+       "path": "settings/values/light/landscape/default",
+       "orientation": "landscape",
+       "locale": "default",
+       "shots": {
+        "dark": "dark.png",
+        "light": "light.png"
+       },
+       "files": [
+        "capture.json",
+        "dark.png",
+        "light.png",
+        "state.raw.xml",
+        "state.uistate.txt"
+       ],
+       "capture": {
+        "run_id": "20261009T231621629Z",
+        "source": "map_promote_run",
+        "captured_at": "2026-10-09T23:18:11Z",
+        "app_version": "3.1.0 (22)"
+       },
+       "shot_captures": {
+        "dark": {
+         "run_id": "20261009T231621629Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T23:18:11Z",
+         "app_version": "3.1.0 (22)"
+        },
+        "light": {
+         "run_id": "20261009T234836786Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T23:50:31Z",
+         "app_version": "3.1.0 (22)"
+        }
+       }
+      },
+      {
+       "path": "settings/values/light/portrait/default",
+       "orientation": "portrait",
+       "locale": "default",
+       "shots": {
+        "dark": "dark.png",
+        "light": "light.png"
+       },
+       "files": [
+        "capture.json",
+        "dark.png",
+        "light.png",
+        "state.raw.xml",
+        "state.uistate.txt"
+       ],
+       "capture": {
+        "run_id": "20261009T224110225Z",
+        "source": "map_promote_run",
+        "captured_at": "2026-10-09T22:42:49Z",
+        "app_version": "3.1.0 (22)"
+       },
+       "shot_captures": {
+        "dark": {
+         "run_id": "20261009T224110225Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T22:42:49Z",
+         "app_version": "3.1.0 (22)"
+        },
+        "light": {
+         "run_id": "20261009T225904319Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T23:00:30Z",
+         "app_version": "3.1.0 (22)"
+        }
+       }
+      }
+     ]
+    },
+    {
+     "id": "settings@state=a584843d23ad",
+     "screen": "settings",
+     "axes": "state=a584843d23ad",
+     "leaves": [
+      {
+       "path": "settings/values/dynamic-color-off/landscape/default",
+       "orientation": "landscape",
+       "locale": "default",
+       "shots": {
+        "dark": "dark.png",
+        "light": "light.png"
+       },
+       "files": [
+        "capture.json",
+        "dark.png",
+        "light.png",
+        "state.raw.xml",
+        "state.uistate.txt"
+       ],
+       "capture": {
+        "run_id": "20261009T231621629Z",
+        "source": "map_promote_run",
+        "captured_at": "2026-10-09T23:18:05Z",
+        "app_version": "3.1.0 (22)"
+       },
+       "shot_captures": {
+        "dark": {
+         "run_id": "20261009T231621629Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T23:18:05Z",
+         "app_version": "3.1.0 (22)"
+        },
+        "light": {
+         "run_id": "20261009T234836786Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T23:50:27Z",
+         "app_version": "3.1.0 (22)"
+        }
+       }
+      },
+      {
+       "path": "settings/values/dynamic-color-off/portrait/default",
+       "orientation": "portrait",
+       "locale": "default",
+       "shots": {
+        "dark": "dark.png",
+        "light": "light.png"
+       },
+       "files": [
+        "capture.json",
+        "dark.png",
+        "light.png",
+        "state.raw.xml",
+        "state.uistate.txt"
+       ],
+       "capture": {
+        "run_id": "20261009T224110225Z",
+        "source": "map_promote_run",
+        "captured_at": "2026-10-09T22:42:43Z",
+        "app_version": "3.1.0 (22)"
+       },
+       "shot_captures": {
+        "dark": {
+         "run_id": "20261009T224110225Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T22:42:43Z",
+         "app_version": "3.1.0 (22)"
+        },
+        "light": {
+         "run_id": "20261009T225904319Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T23:00:25Z",
+         "app_version": "3.1.0 (22)"
+        }
+       }
+      }
+     ]
+    },
+    {
+     "id": "settings@state=e769bae05a3e",
+     "screen": "settings",
+     "axes": "state=e769bae05a3e",
+     "leaves": [
+      {
+       "path": "settings/values/haptic-feedback-on/landscape/default",
+       "orientation": "landscape",
+       "locale": "default",
+       "shots": {
+        "dark": "dark.png",
+        "light": "light.png"
+       },
+       "files": [
+        "capture.json",
+        "dark.png",
+        "light.png",
+        "state.raw.xml",
+        "state.uistate.txt"
+       ],
+       "capture": {
+        "run_id": "20261009T231621629Z",
+        "source": "map_promote_run",
+        "captured_at": "2026-10-09T23:18:01Z",
+        "app_version": "3.1.0 (22)"
+       },
+       "shot_captures": {
+        "dark": {
+         "run_id": "20261009T231621629Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T23:18:01Z",
+         "app_version": "3.1.0 (22)"
+        },
+        "light": {
+         "run_id": "20261009T234836786Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T23:50:22Z",
+         "app_version": "3.1.0 (22)"
+        }
+       }
+      },
+      {
+       "path": "settings/values/haptic-feedback-on/portrait/default",
+       "orientation": "portrait",
+       "locale": "default",
+       "shots": {
+        "dark": "dark.png",
+        "light": "light.png"
+       },
+       "files": [
+        "capture.json",
+        "dark.png",
+        "light.png",
+        "state.raw.xml",
+        "state.uistate.txt"
+       ],
+       "capture": {
+        "run_id": "20261009T224110225Z",
+        "source": "map_promote_run",
+        "captured_at": "2026-10-09T22:42:36Z",
+        "app_version": "3.1.0 (22)"
+       },
+       "shot_captures": {
+        "dark": {
+         "run_id": "20261009T224110225Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T22:42:36Z",
+         "app_version": "3.1.0 (22)"
+        },
+        "light": {
+         "run_id": "20261009T225904319Z",
+         "source": "map_promote_run",
+         "captured_at": "2026-10-09T23:00:18Z",
+         "app_version": "3.1.0 (22)"
+        }
+       }
+      }
+     ]
+    }
+   ],
+   "unparsed": []
+  }
+ ],
+ "strays": [],
+ "runs": [
+  {
+   "id": "20261009T234836786Z",
+   "has_db": true,
+   "db_bytes": 2936832,
+   "files": [
+    "config.json",
+    "logcat.txt",
+    "run.db",
+    "video-2.mp4",
+    "video-3.mp4",
+    "video-4.mp4",
+    "video-5.mp4",
+    "video.mp4"
+   ],
+   "steps": 442,
+   "has_post_map": true,
+   "trace": null
+  },
+  {
+   "id": "20261009T231621629Z",
+   "has_db": true,
+   "db_bytes": 2936832,
+   "files": [
+    "config.json",
+    "logcat.txt",
+    "run.db",
+    "video-2.mp4",
+    "video-3.mp4",
+    "video-4.mp4",
+    "video-5.mp4",
+    "video.mp4"
+   ],
+   "steps": 441,
+   "has_post_map": true,
+   "trace": null
+  },
+  {
+   "id": "20261009T225904319Z",
+   "has_db": true,
+   "db_bytes": 2490368,
+   "files": [
+    "config.json",
+    "logcat.txt",
+    "run.db",
+    "video.mp4"
+   ],
+   "steps": 295,
+   "has_post_map": true,
+   "trace": null
+  },
+  {
+   "id": "20261009T224110225Z",
+   "has_db": true,
+   "db_bytes": 2498560,
+   "files": [
+    "config.json",
+    "logcat.txt",
+    "run.db",
+    "video.mp4"
+   ],
+   "steps": 295,
+   "has_post_map": true,
+   "trace": null
+  }
+ ],
+ "external_captures": {}
+}

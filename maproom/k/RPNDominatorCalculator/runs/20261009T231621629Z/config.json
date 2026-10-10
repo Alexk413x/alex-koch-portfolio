@@ -1,0 +1,859 @@
+{
+ "axes": {
+  "night-mode": "on",
+  "rotation": "1"
+ },
+ "checked_against": {
+  "by": "replay-open",
+  "bytes": 4399104,
+  "modified_at": 1791585465.6959753,
+  "recorded_at": 1791587784.6936226,
+  "schema_version": "6",
+  "sha256": "8c60d53fa156356d11ca853b65cc2eac0341e826b323ccf64fdbf7d3093cda8d"
+ },
+ "cleared_app_data": true,
+ "close": {
+  "app": {
+   "managed": true,
+   "package": "com.gmail.alexk413x.RPN_Dominator_Calculator",
+   "stopped": true,
+   "why": "force-stopped and the launcher confirmed in focus"
+  },
+  "app_build": {
+   "apk_sha256": "0a0daa19f9d97a605da4501f0734cb64a706f6b5d50d327e21a46c34d7a86aae",
+   "apk_splits": [],
+   "build_time": null,
+   "build_time_source": "none: zip entry time 1981-01-01 01:01:02 is a fixed value the packager writes for reproducible builds; the manifest and META-INF carry no build time, and APK signature schemes v2 and v3 sign no timestamp",
+   "debuggable": false,
+   "first_install_time": {
+    "epoch_ms": 1790842741000,
+    "iso": "2026-10-01T08:19:01Z"
+   },
+   "installer": null,
+   "last_update_time": {
+    "epoch_ms": 1791146274000,
+    "iso": "2026-10-04T20:37:54Z"
+   },
+   "package": "com.gmail.alexk413x.RPN_Dominator_Calculator",
+   "version_code": 22,
+   "version_name": "3.1.0",
+   "why": null
+  },
+  "crash_count": 0,
+  "crashes": [],
+  "device": "emulator-5554",
+  "device_snapshot": {
+   "captured_at": 1791588998.1934845,
+   "elapsed_ms": 3259,
+   "phase": "close",
+   "raw": "~\\AppData\\Local\\Temp\\android-driver-session-k253h_ay\\device-close.txt",
+   "sections": [
+    "accessibility",
+    "apk",
+    "battery",
+    "config",
+    "display",
+    "getprop",
+    "input_method",
+    "package",
+    "settings",
+    "thermalservice",
+    "uimode",
+    "window",
+    "wm_density",
+    "wm_size"
+   ],
+   "summary": {
+    "accessibility": {
+     "autoclick": false,
+     "binding_services": [],
+     "crashed_services": [],
+     "enabled": false,
+     "filter_key_events": null,
+     "magnification": false,
+     "send_motion_events": null,
+     "services": [],
+     "services_source": "none",
+     "timeouts_ms": {
+      "interactive_ui_ms": 0,
+      "non_interactive_ui_ms": 0,
+      "touch_and_hold_ms": 400
+     },
+     "touch_exploration": false,
+     "ui_automation": null
+    },
+    "app": {
+     "first_install_time": "2026-10-01 01:19:01",
+     "last_update_time": "2026-10-04 13:37:54",
+     "min_sdk": 23,
+     "package": "com.gmail.alexk413x.RPN_Dominator_Calculator",
+     "permissions_granted": [
+      "android.permission.ACCESS_ADSERVICES_AD_ID",
+      "android.permission.ACCESS_ADSERVICES_ATTRIBUTION",
+      "android.permission.ACCESS_NETWORK_STATE",
+      "android.permission.INTERNET",
+      "android.permission.VIBRATE",
+      "android.permission.WAKE_LOCK"
+     ],
+     "target_sdk": 37,
+     "version_code": 22,
+     "version_name": "3.1.0"
+    },
+    "app_build": {
+     "apk_sha256": "0a0daa19f9d97a605da4501f0734cb64a706f6b5d50d327e21a46c34d7a86aae",
+     "apk_splits": [],
+     "build_time": null,
+     "build_time_source": "none: zip entry time 1981-01-01 01:01:02 is a fixed value the packager writes for reproducible builds; the manifest and META-INF carry no build time, and APK signature schemes v2 and v3 sign no timestamp",
+     "debuggable": false,
+     "first_install_time": {
+      "epoch_ms": 1790842741000,
+      "iso": "2026-10-01T08:19:01Z"
+     },
+     "installer": null,
+     "last_update_time": {
+      "epoch_ms": 1791146274000,
+      "iso": "2026-10-04T20:37:54Z"
+     },
+     "package": "com.gmail.alexk413x.RPN_Dominator_Calculator",
+     "version_code": 22,
+     "version_name": "3.1.0",
+     "why": null
+    },
+    "axes": {
+     "animation_scale": {
+      "animator_duration_scale": null,
+      "transition_animation_scale": "1.0",
+      "window_animation_scale": "1.0"
+     },
+     "dark_mode": true,
+     "display_density": 480,
+     "display_size": "1280x2856",
+     "font_scale": 1.0,
+     "font_scale_setting": "1.0",
+     "night_mode": 2
+    },
+    "battery": {
+     "charging": false,
+     "health": 2,
+     "level": 100,
+     "plugged": null,
+     "powered_by": [],
+     "present": true,
+     "scale": 100,
+     "status": 4,
+     "status_name": "not_charging",
+     "technology": "Li-ion",
+     "temperature_c": 25.0,
+     "voltage": 5000
+    },
+    "display": {
+     "density": 480,
+     "height_px": 2856,
+     "rotation": 0,
+     "width_px": 1280
+    },
+    "input_method": {
+     "bound": true,
+     "id": "com.google.android.inputmethod.latin/com.android.inputmethod.latin.LatinIME",
+     "package": "com.google.android.inputmethod.latin",
+     "showing": false,
+     "soft_input_mode": "STATE_UNSPECIFIED|ADJUST_NOTHING"
+    },
+    "thermal": {
+     "override": false,
+     "sensors": [
+      {
+       "name": "battery",
+       "status": 0,
+       "type": 2,
+       "value_c": 30.2
+      },
+      {
+       "name": "skin",
+       "status": 0,
+       "type": 3,
+       "value_c": 30.1
+      },
+      {
+       "name": "skin",
+       "status": 0,
+       "type": 3,
+       "value_c": 30.1
+      },
+      {
+       "name": "battery",
+       "status": 0,
+       "type": 2,
+       "value_c": 30.2
+      }
+     ],
+     "status": null,
+     "status_name": null,
+     "throttling": null
+    },
+    "window": {
+     "count": 10,
+     "focused": {
+      "activity": "com.google.android.apps.nexuslauncher.NexusLauncherActivity",
+      "package": "com.google.android.apps.nexuslauncher"
+     },
+     "keyboard_visible": false,
+     "keyboard_window_visible": false,
+     "system_bar_insets": {
+      "displayCutout": [
+       0,
+       0,
+       1280,
+       156
+      ],
+      "mandatorySystemGestures": [
+       0,
+       2760,
+       1280,
+       2856
+      ],
+      "navigationBars": [
+       0,
+       2784,
+       1280,
+       2856
+      ],
+      "statusBars": [
+       0,
+       0,
+       1280,
+       156
+      ],
+      "systemGestures": [
+       0,
+       0,
+       90,
+       2856
+      ],
+      "tappableElement": [
+       0,
+       0,
+       1280,
+       156
+      ]
+     }
+    }
+   }
+  },
+  "device_snapshot_before_restore": {
+   "captured_at": 1791588967.972884,
+   "elapsed_ms": 1845,
+   "phase": "close_before_restore",
+   "raw": "~\\AppData\\Local\\Temp\\android-driver-session-k253h_ay\\device-close_before_restore.txt",
+   "sections": [
+    "accessibility",
+    "apk",
+    "battery",
+    "config",
+    "display",
+    "getprop",
+    "input_method",
+    "package",
+    "settings",
+    "thermalservice",
+    "uimode",
+    "window",
+    "wm_density",
+    "wm_size"
+   ],
+   "summary": {
+    "accessibility": {
+     "autoclick": false,
+     "binding_services": [],
+     "crashed_services": [],
+     "enabled": true,
+     "filter_key_events": null,
+     "magnification": false,
+     "send_motion_events": null,
+     "services": [],
+     "services_source": "none",
+     "timeouts_ms": {
+      "interactive_ui_ms": 0,
+      "non_interactive_ui_ms": 0,
+      "touch_and_hold_ms": 400
+     },
+     "touch_exploration": false,
+     "ui_automation": null
+    },
+    "app": {
+     "first_install_time": "2026-10-01 01:19:01",
+     "last_update_time": "2026-10-04 13:37:54",
+     "min_sdk": 23,
+     "package": "com.gmail.alexk413x.RPN_Dominator_Calculator",
+     "permissions_granted": [
+      "android.permission.ACCESS_ADSERVICES_AD_ID",
+      "android.permission.ACCESS_ADSERVICES_ATTRIBUTION",
+      "android.permission.ACCESS_NETWORK_STATE",
+      "android.permission.INTERNET",
+      "android.permission.VIBRATE",
+      "android.permission.WAKE_LOCK"
+     ],
+     "target_sdk": 37,
+     "version_code": 22,
+     "version_name": "3.1.0"
+    },
+    "app_build": {
+     "apk_sha256": "0a0daa19f9d97a605da4501f0734cb64a706f6b5d50d327e21a46c34d7a86aae",
+     "apk_splits": [],
+     "build_time": null,
+     "build_time_source": "none: zip entry time 1981-01-01 01:01:02 is a fixed value the packager writes for reproducible builds; the manifest and META-INF carry no build time, and APK signature schemes v2 and v3 sign no timestamp",
+     "debuggable": false,
+     "first_install_time": {
+      "epoch_ms": 1790842741000,
+      "iso": "2026-10-01T08:19:01Z"
+     },
+     "installer": null,
+     "last_update_time": {
+      "epoch_ms": 1791146274000,
+      "iso": "2026-10-04T20:37:54Z"
+     },
+     "package": "com.gmail.alexk413x.RPN_Dominator_Calculator",
+     "version_code": 22,
+     "version_name": "3.1.0",
+     "why": null
+    },
+    "axes": {
+     "animation_scale": {
+      "animator_duration_scale": null,
+      "transition_animation_scale": "1.0",
+      "window_animation_scale": "1.0"
+     },
+     "dark_mode": true,
+     "display_density": 480,
+     "display_size": "1280x2856",
+     "font_scale": 1.0,
+     "font_scale_setting": "1.0",
+     "night_mode": 2
+    },
+    "battery": {
+     "charging": false,
+     "health": 2,
+     "level": 100,
+     "plugged": null,
+     "powered_by": [],
+     "present": true,
+     "scale": 100,
+     "status": 4,
+     "status_name": "not_charging",
+     "technology": "Li-ion",
+     "temperature_c": 25.0,
+     "voltage": 5000
+    },
+    "display": {
+     "density": 480,
+     "height_px": 2856,
+     "rotation": 0,
+     "width_px": 1280
+    },
+    "input_method": {
+     "bound": true,
+     "id": "com.google.android.inputmethod.latin/com.android.inputmethod.latin.LatinIME",
+     "package": "com.google.android.inputmethod.latin",
+     "showing": false,
+     "soft_input_mode": "STATE_UNSPECIFIED|ADJUST_NOTHING"
+    },
+    "thermal": {
+     "override": false,
+     "sensors": [
+      {
+       "name": "battery",
+       "status": 0,
+       "type": 2,
+       "value_c": 30.2
+      },
+      {
+       "name": "skin",
+       "status": 0,
+       "type": 3,
+       "value_c": 30.1
+      },
+      {
+       "name": "skin",
+       "status": 0,
+       "type": 3,
+       "value_c": 30.1
+      },
+      {
+       "name": "battery",
+       "status": 0,
+       "type": 2,
+       "value_c": 30.2
+      }
+     ],
+     "status": null,
+     "status_name": null,
+     "throttling": null
+    },
+    "window": {
+     "count": 10,
+     "focused": {
+      "activity": "com.google.android.apps.nexuslauncher.NexusLauncherActivity",
+      "package": "com.google.android.apps.nexuslauncher"
+     },
+     "keyboard_visible": false,
+     "keyboard_window_visible": false,
+     "system_bar_insets": {
+      "displayCutout": [
+       0,
+       0,
+       1280,
+       156
+      ],
+      "mandatorySystemGestures": [
+       0,
+       2760,
+       1280,
+       2856
+      ],
+      "navigationBars": [
+       0,
+       2784,
+       1280,
+       2856
+      ],
+      "statusBars": [
+       0,
+       0,
+       1280,
+       156
+      ],
+      "systemGestures": [
+       0,
+       0,
+       90,
+       2856
+      ],
+      "tappableElement": [
+       0,
+       0,
+       1280,
+       156
+      ]
+     }
+    }
+   }
+  },
+  "driver_restored": [
+   "rotation:emulator-posture"
+  ],
+  "driver_shot_failures": [],
+  "driver_unrestored": [],
+  "ended_processes": [],
+  "events": {
+   "backpressure_events": 0,
+   "backpressure_max_ms": 0,
+   "backpressure_ms": 0,
+   "delivered": 1184,
+   "error": null,
+   "missed_seqs": 0,
+   "out_of_order": 0,
+   "pending": 0,
+   "queue_peak": 10,
+   "received": 1206
+  },
+  "events_accounted": {
+   "change_rows": 46,
+   "delivered": 1184,
+   "dropped_in_flight": 22,
+   "event_rows": 1138,
+   "pending": 0,
+   "received": 1206,
+   "received_unaccounted": 0,
+   "unaccounted": 0,
+   "unfiled_changes": 0
+  },
+  "files": {
+   "logcat": "logcat.txt",
+   "trace": "trace.pftrace.gz",
+   "video": "video.mp4",
+   "videos": [
+    "video.mp4",
+    "video-2.mp4",
+    "video-3.mp4",
+    "video-4.mp4",
+    "video-5.mp4"
+   ]
+  },
+  "foreign_window": null,
+  "launcher_in_focus": true,
+  "message": null,
+  "ok": true,
+  "outcome": "closed",
+  "restored": [
+   "rotation:emulator-posture",
+   "Ceiling - Round towards positive infinity. / Up - Rounds away from zero on dialog (android.view.View:Ceiling - Round towards positive infinity.): on -> off",
+   "Up - Rounds away from zero on dialog (android.view.View:Up - Rounds away from zero): on -> off",
+   "Floor - Round towards negative infinity. on dialog (android.view.View:Floor - Round towards negative infinity.): off -> on",
+   "Unnecessary - No rounding. on dialog (android.view.View:Unnecessary - No rounding.): off -> on"
+  ],
+  "run_id": null,
+  "settings": {
+   "message": "4 toggle(s) the run changed are back on their defaults: it opened on cleared app data, and close cleared it again.",
+   "recorded": [
+    {
+     "control_key": "android.view.View:Inverse functions",
+     "screen": "add+change-sign+clear-all",
+     "setting": "Inverse functions / Standard functions",
+     "value": "off",
+     "value_now": "off"
+    },
+    {
+     "control_key": "android.view.View:Haptic Feedback",
+     "screen": "settings",
+     "setting": "Haptic Feedback",
+     "value": "off",
+     "value_now": "off"
+    },
+    {
+     "control_key": "android.view.View:Dynamic Color",
+     "screen": "settings",
+     "setting": "Dynamic Color",
+     "value": "on",
+     "value_now": "on"
+    },
+    {
+     "control_key": "android.view.View:Light",
+     "screen": "settings",
+     "setting": "Light",
+     "value": "off",
+     "value_now": "off"
+    },
+    {
+     "control_key": "android.view.View:System",
+     "screen": "settings",
+     "setting": "System",
+     "value": "on",
+     "value_now": "on"
+    },
+    {
+     "control_key": "android.view.View:Dark",
+     "screen": "settings",
+     "setting": "Dark",
+     "value": "off",
+     "value_now": "off"
+    },
+    {
+     "control_key": "android.view.View:Finance",
+     "screen": "settings",
+     "setting": "Finance",
+     "value": "off",
+     "value_now": "off"
+    },
+    {
+     "control_key": "android.view.View:None",
+     "screen": "settings",
+     "setting": "None",
+     "value": "on",
+     "value_now": "on"
+    },
+    {
+     "control_key": "android.view.View:Scientific",
+     "screen": "settings",
+     "setting": "Scientific",
+     "value": "off",
+     "value_now": "off"
+    },
+    {
+     "control_key": "android.view.View:Group",
+     "screen": "settings",
+     "setting": "Group",
+     "value": "off",
+     "value_now": "off"
+    },
+    {
+     "control_key": "android.view.View:Half Even - (Default) Round towards nearest neighbor, if equal even neighbor.",
+     "screen": "dialog",
+     "setting": "Half Even - (Default) Round towards nearest neighbor, if equal even neighbor.",
+     "value": "on",
+     "value_now": "on"
+    },
+    {
+     "control_key": "android.view.View:Half Up - Round towards nearest neighbor, if equal round up.",
+     "screen": "dialog",
+     "setting": "Half Up - Round towards nearest neighbor, if equal round up.",
+     "value": "off",
+     "value_now": "off"
+    },
+    {
+     "control_key": "android.view.View:Half Down - Round towards nearest neighbor, if equal round down.",
+     "screen": "dialog",
+     "setting": "Half Down - Round towards nearest neighbor, if equal round down.",
+     "value": "off",
+     "value_now": "off"
+    },
+    {
+     "control_key": "android.view.View:Ceiling - Round towards positive infinity.",
+     "screen": "dialog",
+     "setting": "Ceiling - Round towards positive infinity. / Up - Rounds away from zero",
+     "value": "on",
+     "value_now": "off"
+    },
+    {
+     "control_key": "android.view.View:Up - Rounds away from zero",
+     "screen": "dialog",
+     "setting": "Up - Rounds away from zero",
+     "value": "on",
+     "value_now": "off"
+    },
+    {
+     "control_key": "android.view.View:Down - Round towards zero.",
+     "screen": "dialog",
+     "setting": "Down - Round towards zero.",
+     "value": "off",
+     "value_now": "off"
+    },
+    {
+     "control_key": "android.view.View:Floor - Round towards negative infinity.",
+     "screen": "dialog",
+     "setting": "Floor - Round towards negative infinity.",
+     "value": "off",
+     "value_now": "on"
+    },
+    {
+     "control_key": "android.view.View:Unnecessary - No rounding.",
+     "screen": "dialog",
+     "setting": "Unnecessary - No rounding.",
+     "value": "off",
+     "value_now": "on"
+    },
+    {
+     "control_key": "android.view.View:Degrees",
+     "screen": "add+change-sign+clear-all",
+     "setting": "Degrees / Radians",
+     "value": "on",
+     "value_now": "on"
+    }
+   ],
+   "restored": [
+    "Ceiling - Round towards positive infinity. / Up - Rounds away from zero on dialog (android.view.View:Ceiling - Round towards positive infinity.): on -> off",
+    "Up - Rounds away from zero on dialog (android.view.View:Up - Rounds away from zero): on -> off",
+    "Floor - Round towards negative infinity. on dialog (android.view.View:Floor - Round towards negative infinity.): off -> on",
+    "Unnecessary - No rounding. on dialog (android.view.View:Unnecessary - No rounding.): off -> on"
+   ],
+   "unrestored": [],
+   "why": "a run that starts fresh ends fresh, so no setting outlives it"
+  },
+  "shot_failures": [],
+  "shot_stream_error": null,
+  "trace_report": {
+   "bounds": {
+    "max_duration_ms": 5400000,
+    "max_file_bytes": 536870912
+   },
+   "bytes": 58784508,
+   "file": "trace.pftrace.gz",
+   "mode": "lite",
+   "on": true,
+   "remote": "/data/misc/perfetto-traces/a11y-android-driver-session-k253h_ay.pftrace",
+   "remote_deleted": true,
+   "sources": [
+    "linux.ftrace",
+    "android.surfaceflinger.frametimeline",
+    "linux.process_stats",
+    "linux.sys_stats",
+    "android.gpu.memory",
+    "android.cpu_per_uid"
+   ],
+   "sources_data_unknown": [
+    "linux.ftrace",
+    "android.surfaceflinger.frametimeline",
+    "linux.process_stats",
+    "linux.sys_stats",
+    "android.gpu.memory",
+    "android.cpu_per_uid"
+   ],
+   "sources_missing": [],
+   "start_ms": 160,
+   "started_at": 1791587771.744526,
+   "stop": {
+    "forced": false,
+    "pids": {
+     "14271": "exited"
+    },
+    "running": false
+   },
+   "stopped_at": 1791588997.6877778,
+   "tracing": {
+    "found": {
+     "atrace": "0",
+     "tracing_on": "0"
+    },
+    "left": {
+     "atrace": "0",
+     "tracing_on": "0"
+    },
+    "restored": [],
+    "unrestored": []
+   }
+  },
+  "unfiled_changes": [],
+  "unrestored": [],
+  "video_report": {
+   "files": [
+    "video-000.mp4",
+    "video-001.mp4",
+    "video-002.mp4",
+    "video-003.mp4",
+    "video-004.mp4"
+   ],
+   "on": true,
+   "rotation": 0,
+   "segments": [
+    {
+     "ended_at": 1791587786.1220102,
+     "file": "video-000.mp4",
+     "rotation": 0,
+     "size": [
+      1280,
+      2856
+     ],
+     "started_at": 1791587771.5383093
+    },
+    {
+     "ended_at": 1791587849.2761185,
+     "file": "video-001.mp4",
+     "rotation": 0,
+     "size": [
+      2856,
+      1280
+     ],
+     "started_at": 1791587786.7146025
+    },
+    {
+     "ended_at": 1791587852.642519,
+     "file": "video-002.mp4",
+     "rotation": 0,
+     "size": [
+      1280,
+      2856
+     ],
+     "started_at": 1791587849.6912382
+    },
+    {
+     "ended_at": 1791588970.0144453,
+     "file": "video-003.mp4",
+     "rotation": 0,
+     "size": [
+      2856,
+      1280
+     ],
+     "started_at": 1791587853.1866736
+    },
+    {
+     "ended_at": 1791589002.0834522,
+     "file": "video-004.mp4",
+     "rotation": 0,
+     "size": [
+      1280,
+      2856
+     ],
+     "started_at": 1791588970.8353002
+    }
+   ],
+   "size": [
+    1280,
+    2856
+   ],
+   "started_at": 1791587771.5383093,
+   "transport": "emu"
+  },
+  "video_source": "emulator-screenrecord"
+ },
+ "completeness": {
+  "actions": 341,
+  "appearance": "dark",
+  "complete": null,
+  "kind": "replay",
+  "max_actions": null,
+  "mode": "touch",
+  "orientation": "landscape",
+  "screens_owing": [
+   {
+    "items": [
+     "android.widget.EditText@android:id/content:scroll-into-view",
+     "android.widget.EditText@android:id/content:tap",
+     "android.widget.EditText@android:id/content:long-press",
+     "android.widget.EditText@android:id/content:type-text",
+     "android.widget.EditText@android:id/content:ime-enter",
+     "android.view.View:Haptic Feedback:confirm-rows",
+     "android.view.View:Light:confirm-rows",
+     "android.widget.EditText@android:id/content#3:confirm-rows",
+     "android.view.View:Half Even:confirm-rows"
+    ],
+    "owed": 9,
+    "rows_unseen": [
+     "android.widget.EditText@android:id/content#1",
+     "android.widget.EditText@android:id/content#2",
+     "android.view.View:Half Even"
+    ],
+    "screen": "settings",
+    "screen_identity": "20cca2853246",
+    "screen_name": "settings",
+    "unseen": 3
+   }
+  ],
+  "screens_owing_total": 1,
+  "stop_reason": "replay",
+  "why": "a replay run is judged on its replay, not on exhaustion"
+ },
+ "declared_gestures": [],
+ "device": "emulator-5554",
+ "driver_api_version": 2,
+ "ended_at": 1791589203.948951,
+ "foreign_window": null,
+ "label": "path replay skeleton:6 dark",
+ "librarian": {
+  "built_from": "~\\.claude\\plugins\\cache\\accessibility-tools\\android-driver\\0.17.7\\scripts\\librarian-dex.jar",
+  "found_md5": "4aa9a4d14198a4a3ea6ec197b4f710f8",
+  "local_md5": "4aa9a4d14198a4a3ea6ec197b4f710f8",
+  "md5": "4aa9a4d14198a4a3ea6ec197b4f710f8",
+  "path": "/data/local/tmp/librarian-dex.jar",
+  "server": "started",
+  "server_md5": "4aa9a4d14198a4a3ea6ec197b4f710f8",
+  "source": "on-device"
+ },
+ "librarian_deployed": false,
+ "max_actions": null,
+ "package": "com.gmail.alexk413x.RPN_Dominator_Calculator",
+ "parent_run": "",
+ "perf": {
+  "bounds": {
+   "max_duration_ms": 5400000,
+   "max_file_bytes": 536870912
+  },
+  "mode": "lite",
+  "on": true,
+  "sources": [
+   "linux.ftrace",
+   "android.surfaceflinger.frametimeline",
+   "linux.process_stats",
+   "linux.sys_stats",
+   "android.gpu.memory",
+   "android.cpu_per_uid"
+  ],
+  "sources_data_unknown": [
+   "linux.ftrace",
+   "android.surfaceflinger.frametimeline",
+   "linux.process_stats",
+   "linux.sys_stats",
+   "android.gpu.memory",
+   "android.cpu_per_uid"
+  ],
+  "sources_missing": [],
+  "start_ms": 160,
+  "started_at": 1791587771.744526
+ },
+ "run_id": "20261009T231621629Z",
+ "scope": {
+  "appearance": "dark",
+  "navigation": true,
+  "orientation": "landscape",
+  "path_test": "skeleton:6"
+ },
+ "started_at": 1791587781.631489
+}

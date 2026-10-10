@@ -1,0 +1,83 @@
+{
+ "app_build": {
+  "apk_sha256": "0a0daa19f9d97a605da4501f0734cb64a706f6b5d50d327e21a46c34d7a86aae",
+  "apk_splits": [],
+  "build_time": null,
+  "build_time_iso": "",
+  "build_time_source": "none: zip entry time 1981-01-01 01:01:02 is a fixed value the packager writes for reproducible builds; the manifest and META-INF carry no build time, and APK signature schemes v2 and v3 sign no timestamp",
+  "debuggable": false,
+  "first_install_iso": "2026-10-01T08:19:01Z",
+  "first_install_time": 1790842741000,
+  "id": "22:0a0daa19f9d97a605da4501f0734cb64a706f6b5d50d327e21a46c34d7a86aae",
+  "installer": "",
+  "last_update_iso": "2026-10-04T20:37:54Z",
+  "last_update_time": 1791146274000,
+  "package": "com.gmail.alexk413x.RPN_Dominator_Calculator",
+  "partial": false,
+  "version_code": 22,
+  "version_name": "3.1.0"
+ },
+ "app_version": "3.1.0 (22)",
+ "axes": "state=f569f911cc97;appearance=dark",
+ "captured_at": "2026-10-09T23:20:07Z",
+ "observed": {
+  "appearance": "dark",
+  "capture": "own",
+  "orientation": "landscape",
+  "run_state": "delete-data@state=f569f911cc97",
+  "step": "132"
+ },
+ "run_id": "20261009T231621629Z",
+ "shots": {
+  "dark": {
+   "app_build": {
+    "apk_sha256": "0a0daa19f9d97a605da4501f0734cb64a706f6b5d50d327e21a46c34d7a86aae",
+    "apk_splits": [],
+    "build_time": null,
+    "build_time_iso": "",
+    "build_time_source": "none: zip entry time 1981-01-01 01:01:02 is a fixed value the packager writes for reproducible builds; the manifest and META-INF carry no build time, and APK signature schemes v2 and v3 sign no timestamp",
+    "debuggable": false,
+    "first_install_iso": "2026-10-01T08:19:01Z",
+    "first_install_time": 1790842741000,
+    "id": "22:0a0daa19f9d97a605da4501f0734cb64a706f6b5d50d327e21a46c34d7a86aae",
+    "installer": "",
+    "last_update_iso": "2026-10-04T20:37:54Z",
+    "last_update_time": 1791146274000,
+    "package": "com.gmail.alexk413x.RPN_Dominator_Calculator",
+    "partial": false,
+    "version_code": 22,
+    "version_name": "3.1.0"
+   },
+   "app_version": "3.1.0 (22)",
+   "captured_at": "2026-10-09T23:20:07Z",
+   "run_id": "20261009T231621629Z",
+   "source": "map_promote_run"
+  },
+  "light": {
+   "app_build": {
+    "apk_sha256": "0a0daa19f9d97a605da4501f0734cb64a706f6b5d50d327e21a46c34d7a86aae",
+    "apk_splits": [],
+    "build_time": null,
+    "build_time_iso": "",
+    "build_time_source": "none: zip entry time 1981-01-01 01:01:02 is a fixed value the packager writes for reproducible builds; the manifest and META-INF carry no build time, and APK signature schemes v2 and v3 sign no timestamp",
+    "debuggable": false,
+    "first_install_iso": "2026-10-01T08:19:01Z",
+    "first_install_time": 1790842741000,
+    "id": "22:0a0daa19f9d97a605da4501f0734cb64a706f6b5d50d327e21a46c34d7a86aae",
+    "installer": "",
+    "last_update_iso": "2026-10-04T20:37:54Z",
+    "last_update_time": 1791146274000,
+    "package": "com.gmail.alexk413x.RPN_Dominator_Calculator",
+    "partial": false,
+    "version_code": 22,
+    "version_name": "3.1.0"
+   },
+   "app_version": "3.1.0 (22)",
+   "captured_at": "2026-10-09T23:52:46Z",
+   "run_id": "20261009T234836786Z",
+   "source": "map_promote_run"
+  }
+ },
+ "source": "map_promote_run",
+ "state_id": "delete-data@state=f569f911cc97"
+}
