@@ -6,4 +6,4 @@
 import { page, param } from '../page.js';
 import { renderRuns } from '../views/runs.js';
 
-page({ current: 'runs.html', needsModel: false, render: state => renderRuns(state, param('id')) });
+page({ current: 'runs.html', needsModel: false, showHealth: false, render: state => renderRuns(state, param('id')) });

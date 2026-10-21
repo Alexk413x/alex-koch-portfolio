@@ -1,17 +1,19 @@
 /* Hover wash and press pulse, ported from docs/report-design/gen-map.py's `armPress`.
 
-   Every fill takes 300ms whatever the size, so the speed comes from the far
-   corner. The wash grows from the pointer's entry point and retracts to its
-   exit point. A toggle pulses from the control that changed: outward when it
+   Hover fills travel at 600 screen pixels per second. Screenshot borders trace
+   both ways from the nearest edge; other washes expand from the pointer.
+   A toggle pulses from the control that changed: outward when it
    turns on, inward when it turns off. A plain press pulses outward.
 
-   This is a PORT. The selectors, the timings and the ink rules are the
-   canvas's; only the element list is extended for classes this app adds. */
+   The ink rules come from the canvas; map borders add perimeter-based timing. */
 
-const PRESS_SEL = 'button, .btn, .tab, .row, .app, .brand, .go, .rcard, .case-h, .trend, '
-  + '.rtbl .rn, .box, .fold:not(.flat) .fold-h, .drop div, .cell, .rl, .ih-name, .search, '
-  + '.toggle, .check, .keybtn, .step, .visit, .nchip';
+const PRESS_SEL = 'button:not(.frame-close), .btn, .tab, .row, .app, .brand, .go, .rcard, .case-h, .trend, '
+  + '.rtbl .rn, .box:not(.open), .map-shot, .fold:not(.flat) .fold-h, .drop div, .cell, .ih-name, .search, '
+  + '.toggle, .check, .keybtn, .step, .visit, .nchip, .select-surface:has(select:enabled), '
+  + '.select-surface select:enabled option:not(:disabled)';
 const TOGGLE_SEL = '.toggle, .check, .seg button, .tab';
+const HOVER_SPEED = 300;
+const FILL_SPEED = 600;
 
 /* The colour an element actually sits on, walking up past transparent
    backgrounds. Ink is measured from the surface, not assumed. */
@@ -71,17 +73,43 @@ export function armPress(root) {
     const h = el.offsetHeight || r.height;
     const far = Math.max(Math.hypot(px, py), Math.hypot(w - px, py),
       Math.hypot(px, h - py), Math.hypot(w - px, h - py));
-    return { px, py, far };
+    return { px, py, far, duration: far * k / FILL_SPEED };
   };
 
   root.addEventListener('pointerover', (e) => {
     const el = e.target.closest && e.target.closest(PRESS_SEL);
     if (!el || el.contains(e.relatedTarget) || el.matches('.off')) return;
-    const { px, py, far } = geom(el, e.clientX, e.clientY);
+    const outline = el.matches('.map-shot') ? el.querySelector('.shot-border rect') : null;
+    const empty = outline && parseFloat(getComputedStyle(outline).strokeDasharray) === 0;
+    if (empty) {
+      outline.style.transition = 'none';
+      const r = outline.ownerSVGElement.getBoundingClientRect();
+      const x = Math.max(0, Math.min(r.width, e.clientX - r.left));
+      const y = Math.max(0, Math.min(r.height, e.clientY - r.top));
+      const perimeter = 2 * (r.width + r.height);
+      const sides = [
+        { distance: y, at: x },
+        { distance: r.width - x, at: r.width + y },
+        { distance: r.height - y, at: r.width + r.height + r.width - x },
+        { distance: x, at: perimeter - y },
+      ];
+      const origin = sides.reduce((a, b) => a.distance <= b.distance ? a : b).at / perimeter;
+      el.style.setProperty('--border-start', String(-origin));
+      el.style.setProperty('--border-end', String(.5 - origin));
+    }
+    if (el.matches('.map-shot')) {
+      const r = outline.ownerSVGElement.getBoundingClientRect();
+      el.style.setProperty('--border-duration', `${(r.width + r.height) / HOVER_SPEED}s`);
+      // Commit the empty dash at its pointer origin before starting the reveal.
+      getComputedStyle(outline).strokeDashoffset;
+      if (empty) outline.style.removeProperty('transition');
+    }
+    const { px, py, far, duration } = geom(el, e.clientX, e.clientY);
     el.setAttribute('data-press', '');
     el.style.setProperty('--hx', `${px}px`);
     el.style.setProperty('--hy', `${py}px`);
     el.style.setProperty('--hr', `${far}px`);
+    el.style.setProperty('--hover-duration', `${duration}s`);
     el.style.setProperty('--wash', inkFor(el).wash);
     el.setAttribute('data-hov', '1');
   }, true);
@@ -89,9 +117,11 @@ export function armPress(root) {
   root.addEventListener('pointerout', (e) => {
     const el = e.target.closest && e.target.closest(PRESS_SEL);
     if (!el || el.contains(e.relatedTarget)) return;
-    const { px, py } = geom(el, e.clientX, e.clientY);
+    const { px, py, far, duration } = geom(el, e.clientX, e.clientY);
     el.style.setProperty('--hx', `${px}px`);
     el.style.setProperty('--hy', `${py}px`);
+    el.style.setProperty('--hr', `${far}px`);
+    el.style.setProperty('--hover-duration', `${duration}s`);
     el.setAttribute('data-hov', '0');
   }, true);
 
@@ -99,7 +129,7 @@ export function armPress(root) {
     const el = e.target.closest && e.target.closest(PRESS_SEL);
     // A screen box gets no surface wash or pulse: its own border sweep is the
     // whole response, which is what keeps a capture from being washed over.
-    if (!el || el.matches('.off') || el.matches('.box')) return;
+    if (!el || el.matches('.off, .box, .map-shot')) return;
     const ctl = el.closest(TOGGLE_SEL);
     // The pulse covers exactly what the click changes: the whole group when
     // picking one member deselects the rest, otherwise the element alone.

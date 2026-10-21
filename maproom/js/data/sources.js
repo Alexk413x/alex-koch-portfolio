@@ -133,10 +133,10 @@ function capturesOf(state, screen, first = '') {
 
 /* The capture a screen's map box shows: the state `first` names when it has this cell, else the core
    rendition's, else the first rendition that does. */
-export function screenCapture(state, screen, orientation, appearance, first = '') {
+export function screenCapture(state, screen, orientation, appearance, first = '', locale = '') {
   let oriented = false;
   for (const { rendition, capture } of capturesOf(state, screen, first)) {
-    const cells = variants(capture, state.profile).filter(c => c.orientation === orientation);
+    const cells = variants(capture, state.profile, locale).filter(c => c.orientation === orientation);
     const cell = cells.find(c => c.appearance === appearance);
     if (cell.url) return { url: cell.url, rendition };
     oriented = oriented || cells.some(c => c.url);

@@ -32,7 +32,7 @@ function axesSeen(model) {
     .sort((a, b) => a.axis.localeCompare(b.axis));
 }
 
-/* One mode's row: a bar, its counts, and the screens behind them.
+/* One mode's graph reachability counts, separate from recorded health verdicts.
 
    Modes are NOT an axis. An axis is a condition a screen is captured under; a
    mode is a way of driving the app, and the question it answers is reachability
@@ -53,32 +53,21 @@ function modeRow(row) {
         el('span', { class: 'axnone', text: 'no route has ever been recorded under this mode, so nothing here is a finding about it' })));
   }
 
-  const total = row.total || 1;
-  const pct = n => `${(100 * n / total).toFixed(1)}%`;
   const body = el('div', { class: 'gaps' }, gaps.map(c => el('div', { class: 'gap' },
-    el('span', { class: 'gk', style: `--c: var(--${c.status === 'expensive' ? 'warn' : 'skip'})`, text: c.screen }),
+    el('span', { class: 'gk', style: '--c: var(--text)', text: c.screen }),
     el('span', { text: c.why }))));
-  body.hidden = true;
 
-  const head = el('div', { class: 'axv' },
+  const head = el(gaps.length ? 'summary' : 'div', { class: 'axv mode-counts' },
     el('span', { class: 'axn', 'data-tip': row.mode.note },
       icon(row.mode.name, 14), row.mode.label),
-    el('div', { class: 'meter' },
-      row.reached ? el('i', { class: 'p', style: `width:${pct(row.reached)}` }) : null,
-      row.expensive ? el('i', { class: 'w', style: `width:${pct(row.expensive)}` }) : null,
-      el('i', { class: 'r' })),
-    el('span', { class: 'vs' },
-      el('span', { class: `v ${row.reached ? 'v-p' : 'v-n'}`, text: String(row.reached) }),
-      el('span', { class: `v ${row.expensive ? 'v-w' : 'v-n'}`, text: String(row.expensive) }),
-      el('span', { class: `v ${row.unreachable ? 'v-r' : 'v-n'}`, text: String(row.unreachable) })),
-    el('span', { class: 'ftot', text: String(row.total) }));
+    el('span', { class: 'mode-inventory' },
+      el('span', { text: `${row.reached} within route budget` }),
+      el('span', { text: `${row.expensive} above route budget` }),
+      el('span', { text: `${row.unreachable} without a recorded route` })),
+    el('span', { class: 'ftot', text: `${row.total} screens` }));
 
-  if (gaps.length) {
-    head.style.cursor = 'pointer';
-    head.title = 'show the screens behind these counts';
-    head.addEventListener('click', () => { body.hidden = !body.hidden; });
-  }
-  return el('div', {}, head, body);
+  return gaps.length ? el('details', { class: 'mode-coverage' }, head, body)
+    : el('div', {}, head);
 }
 
 function tile(n, label, ink) {
@@ -134,7 +123,7 @@ export function renderCoverage(state) {
       tile(model.appScreens.length, model.externalScreens.length
         ? `screens, not counting ${model.externalScreens.length} outside the app` : 'screens', 'text'),
       tile(model.appRenditions.length, 'conditions', 'text'),
-      tile(captured, 'with a capture', captured === model.appRenditions.length ? 'pass' : 'warn'),
+      tile(captured, 'with a recorded tree', 'text'),
       tile(coreOnly.length, 'core condition only', 'skip')),
 
     el('div', { class: 'psec' },
@@ -152,7 +141,7 @@ export function renderCoverage(state) {
       el('div', { class: 'psec-h' },
         el('span', { class: 'h2', text: 'Modes' }),
         el('span', { class: 'cap', text: `${modes.measured.length} of ${modes.rows.length} driven` })),
-      el('p', { class: 'covnote', text: 'How the app can be driven, and how much of it each way reaches. Reachable is not the same as usable: a route counts as expensive when it costs several times what the same screen costs by touch.' }),
+      el('p', { class: 'covnote', text: 'Whole-baseline graph inventory, not test results or the filtered health totals above. A missing recorded route is a coverage gap, not a confirmed failure. Above-budget routes exceed the navigation-step budget; they are not measured performance regressions.' }),
       el('div', { class: 'axg' }, modes.rows.map(modeRow))),
 
     el('div', { class: 'psec' },

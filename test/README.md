@@ -46,6 +46,10 @@ actually did.
   grounds for removal from the index — so the suite fails rather than letting it ship. It also checks that
   `robots.txt` and `sitemap.xml` serve, that every `<loc>` resolves, and that each lab is canonical at its
   own URL and credits the same author `@id` as the home page.
+- **`suite_maproom`** — the published databases, capture manifest and recorded evidence paths.
+  It compares the browser's map and run models with SQLite counts and outcomes, then opens the
+  survey, coverage, screen, run-detail and run-map pages. It also checks that comparison hashes
+  match the published baseline and that known internal command disclosures do not remain in file bytes.
 
 ## Three things the harness does that matter
 

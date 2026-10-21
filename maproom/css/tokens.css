@@ -20,6 +20,8 @@
   --accent: #0e70c8;
   --accent-ink: #04070a;
   --accent-text: #5aa9ef;
+  --pulse-base: #0e70c880;
+  --pulse: #0e70c880;
 
   --fail: #ff9384;
   --warn: #ffb549;
@@ -36,10 +38,8 @@
 }
 
 /* The light palette. Foundations.dc.html declares none, so these follow its roles:
-   each ink clears 4.5:1 on --panel and --page. `.root` repeats the tokens in
-   app.css, so each block names it too. Auto, the default, follows the system. */
-:root[data-theme="light"],
-:root[data-theme="light"] .root {
+   each ink clears 4.5:1 on --panel and --page. Auto, the default, follows the system. */
+:root[data-theme="light"] {
   --page: #f4f7f9;
   --plate: #eaeff3;
   --panel: #ffffff;
@@ -68,8 +68,7 @@
 }
 
 @media (prefers-color-scheme: light) {
-  :root:not([data-theme]),
-  :root:not([data-theme]) .root {
+  :root:not([data-theme]) {
     --page: #f4f7f9;
     --plate: #eaeff3;
     --panel: #ffffff;
