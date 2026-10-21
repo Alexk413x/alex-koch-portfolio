@@ -17,6 +17,8 @@ const NAMES = {
   gear: 'settings',
   search: 'search',
   close: 'close',
+  contract: 'fullscreen_exit',
+  expand: 'fullscreen',
   plus: 'add',
   minus: 'remove',
   chevron: 'chevron_right',
@@ -31,6 +33,11 @@ const NAMES = {
   // The map's own controls.
   brightness: 'filter_center_focus',
   fit: 'fit_screen',
+  filters: 'filter_list',
+  elements: 'select_all',
+  interactive: 'ads_click',
+  tracked: 'info',
+  info: 'info',
 
   // Subjects. `screen` is the generic phone, used where no device is in hand.
   screen: 'smartphone',
@@ -69,21 +76,23 @@ const BRANDS = {
 };
 
 /* One icon, sized in px.
-   `title` becomes a tooltip, which is how a control with no label says what it
-   does -- the standing rule is no labels on controls whose options are
-   self-evident. A mode filter is the exception the tooltip exists for. */
+   `title` becomes the site's themed tooltip, which is how a control with no
+   label says what it does -- the standing rule is no labels on controls whose
+   options are self-evident. A mode filter is the exception the tooltip exists for. */
 export function icon(name, size = 16, title = '', rot = false) {
   if (BRANDS[name]) return brandIcon(name, size, title, rot);
   const glyph = NAMES[name];
   if (!glyph) throw new Error(`no icon named ${name}`);
   const node = document.createElement('span');
   node.className = rot ? 'msym rot' : 'msym';
-  // The ligature name is the glyph. It must be the element's only text, with
-  // no whitespace around it, or the font renders the fallback letters instead.
-  node.textContent = glyph;
+  const directGlyph = name === 'expand' ? 0xe5d0 : name === 'contract' ? 0xe5d1
+    : name === 'info' ? 0xe88e : name === 'filters' ? 0xe152 : null;
+  // Small supplemental subsets use direct codepoints instead of ligatures.
+  node.textContent = directGlyph ? String.fromCodePoint(directGlyph) : glyph;
+  if (directGlyph) node.setAttribute('data-icon', glyph);
   node.style.fontSize = `${size}px`;
   node.setAttribute('aria-hidden', 'true');
-  if (title) node.setAttribute('title', title);
+  if (title) node.setAttribute('data-tip', title);
   return node;
 }
 
@@ -103,7 +112,7 @@ function brandIcon(name, size, title, rot) {
   svg.setAttribute('aria-hidden', 'true');
   svg.setAttribute('class', rot ? 'brand rot' : 'brand');
   svg.innerHTML = BRANDS[name];
-  if (title) svg.setAttribute('title', title);
+  if (title) svg.setAttribute('data-tip', title);
   return svg;
 }
 

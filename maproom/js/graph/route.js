@@ -8,7 +8,11 @@ function bez(p0, p1, p2, p3, t) {
   };
 }
 
-const CLEAR = 12;
+export const ROUTE_CLEARANCE = 20;
+export const ROUTE_TURN_DEPTH = 40;
+export const SELF_ROUTE_WIDTH = 40;
+export const SELF_ROUTE_SPACE = SELF_ROUTE_WIDTH;
+const CLEAR = ROUTE_CLEARANCE;
 const BEND = 80;
 const ROUND = [48, 24, 8, 0];
 const SAMPLES = 64;
@@ -22,6 +26,24 @@ export function segsPath(segs) {
   return `M${s0[0].x} ${s0[0].y}${segs.map(([, a, b, c]) => ` C ${a.x} ${a.y}, ${b.x} ${b.y}, ${c.x} ${c.y}`).join('')}`;
 }
 
+export function trimArrowEnds(segs, start = { x: 0, y: 0 }, end = { x: 0, y: 0 }) {
+  const out = segs.map(segment => segment.map(point => ({ ...point })));
+  if (start.x || start.y) {
+    for (const point of out[0].slice(0, 2)) {
+      point.x += start.x;
+      point.y += start.y;
+    }
+  }
+  if (end.x || end.y) {
+    const last = out.at(-1);
+    for (const point of last.slice(2)) {
+      point.x += end.x;
+      point.y += end.y;
+    }
+  }
+  return out;
+}
+
 function samples(segs) {
   const out = [];
   for (const s of segs) for (let i = 0; i <= SAMPLES; i += 1) out.push(bez(...s, i / SAMPLES));
@@ -31,6 +53,41 @@ function samples(segs) {
 export function crosses(segs, rects) {
   const pts = samples(segs);
   return rects.some(o => pts.some(p => p.x > o.x + 1 && p.x < o.x + o.w - 1 && p.y > o.y + 1 && p.y < o.y + o.h - 1));
+}
+
+export function tooClose(segs, rects) {
+  return crosses(segs, rects.map(o => {
+    const pad = padOf(o);
+    return { x: o.x - pad, y: o.y - pad, w: o.w + pad * 2, h: o.h + pad * 2 };
+  }));
+}
+
+export function spreadPorts(left, width, targets) {
+  if (!targets.length) return [];
+  const ordered = targets.map((x, index) => ({ x, index })).sort((a, b) => a.x - b.x || a.index - b.index);
+  const ports = new Array(targets.length);
+  if (ordered.length % 2) {
+    const center = left + width / 2;
+    let middle = 0;
+    for (let i = 1; i < ordered.length; i += 1) {
+      const distance = Math.abs(ordered[i].x - center);
+      const nearest = Math.abs(ordered[middle].x - center);
+      if (distance < nearest - 1e-6
+        || (Math.abs(distance - nearest) <= 1e-6 && ordered[i].x > ordered[middle].x)) middle = i;
+    }
+    ports[ordered[middle].index] = center;
+    ordered.slice(0, middle).forEach((target, i) => {
+      ports[target.index] = left + width / 2 * (i + 1) / (middle + 1);
+    });
+    ordered.slice(middle + 1).forEach((target, i) => {
+      ports[target.index] = center + width / 2 * (i + 1) / (ordered.length - middle);
+    });
+    return ports;
+  }
+  ordered.forEach((target, i) => {
+    ports[target.index] = left + width * (i + 1) / (ordered.length + 1);
+  });
+  return ports;
 }
 
 export function along(segs, t) {
@@ -236,24 +293,44 @@ function simplify(pts) {
   return out;
 }
 
-export function under(p0, p3, rects, depth = CLEAR) {
+export function under(p0, p3, rects, depth = CLEAR, rounds = ROUND) {
   const lo = Math.min(p0.x, p3.x);
   const hi = Math.max(p0.x, p3.x);
   const lane = Math.max(p0.y, p3.y, ...rects.filter(o => o.x < hi && o.x + o.w > lo).map(o => o.y + o.h)) + depth;
   const pts = [p0, { x: p0.x, y: lane }, { x: p3.x, y: lane }, p3];
-  for (const r of ROUND) {
+  for (const r of rounds) {
     const segs = rounded(pts, r);
     if (!crosses(segs, rects)) return segs;
   }
   return null;
 }
 
-export function detour(p0, d0, p3, d3, rects) {
-  const s = { x: p0.x, y: p0.y + d0 * CLEAR };
-  const t = { x: p3.x, y: p3.y + d3 * CLEAR };
-  const mid = channel(s, t, rects, d0);
+export function detour(p0, d0, p3, d3, rects, { start = ROUTE_TURN_DEPTH, end = ROUTE_TURN_DEPTH, laneX = null } = {}) {
+  const s = { x: p0.x, y: p0.y + d0 * start };
+  const t = { x: p3.x, y: p3.y + d3 * end };
+  let mid = null;
+  if (laneX !== null) {
+    const preferred = [p0, s, { x: laneX, y: s.y }, { x: laneX, y: t.y }, t, p3];
+    if (!crosses(rounded(preferred, 0), rects)) mid = preferred.slice(1, -1);
+  }
+  mid ||= channel(s, t, rects, d0);
   if (!mid) return null;
-  const pts = simplify([p0, ...mid, p3]);
+  let pts = simplify([p0, ...mid, p3]);
+  const compact = (points, near) => {
+    if (points.length < 4 || points[0].x !== points[1].x
+      || points[1].y !== points[2].y || points[2].x !== points[3].x) return points;
+    const candidates = [...new Set([near.y, ...rects.flatMap(o =>
+      [o.y - padOf(o), o.y + o.h + padOf(o)]), points[1].y])]
+      .filter(y => y >= Math.min(near.y, points[1].y) && y <= Math.max(near.y, points[1].y))
+      .sort((a, b) => Math.abs(a - near.y) - Math.abs(b - near.y));
+    for (const y of candidates) {
+      const next = points.map((p, i) => i === 1 || i === 2 ? { ...p, y } : p);
+      if (!crosses(rounded(next, 0), rects)) return next;
+    }
+    return points;
+  };
+  pts = compact(pts, s);
+  pts = compact([...pts].reverse(), t).reverse();
   for (const r of ROUND) {
     const segs = rounded(pts, r);
     if (!crosses(segs, rects)) return segs;

@@ -1,5 +1,5 @@
 {
- "viewer": "0.15.3",
+ "viewer": "0.16.0",
  "sources": [
   {
    "id": "RPNDominatorCalculator",
@@ -9,5 +9,6 @@
    "graph": "baselines/baseline.db",
    "has_graph": true
   }
- ]
+ ],
+ "viewer_commit": "22a479241653f5b7b02bf5fd145b4a7c98be5fa6"
 }

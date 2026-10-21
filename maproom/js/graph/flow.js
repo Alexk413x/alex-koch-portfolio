@@ -1,17 +1,18 @@
-/* The map's ambient pulse: every route's nine trailing dots, drawn on one canvas
-   by one animation loop. */
+/* The map's ambient pulse: rotate a bounded set of beads through visible routes. */
 
-const PERIOD = 2.6;
-const SPACING = 3;
-const RADIUS = 1.5;
+const MIN_SPEED = 60;
+const MAX_SPEED = 80;
+const pause = () => 1 + Math.random() * 9;
+const RADIUS = 1;
+const GLOW_RADIUS = 2;
+const SPRITE_SIZE = 16;
+const MAX_BEADS = 6;
 const SAMPLES = 48;
 
-// The same tier opacities as the `.routes circle.pulse` block in app.css, which
-// is the canvas port and stays the reference for how the pulse looks.
 const ALPHA = {
-  rest: [0.50, 0.44, 0.39, 0.33, 0.28, 0.22, 0.17, 0.11, 0.06],
-  lit: [0.95, 0.84, 0.74, 0.63, 0.53, 0.42, 0.32, 0.21, 0.11],
-  dim: Array(9).fill(0.08),
+  rest: 1,
+  lit: 1,
+  dim: 0.08,
 };
 
 function bez(p0, p1, p2, p3, t) {
@@ -41,7 +42,7 @@ function track(segs) {
     x0 = Math.min(x0, x); y0 = Math.min(y0, y);
     x1 = Math.max(x1, x); y1 = Math.max(y1, y);
   }
-  return { xs, ys, at, n, length: at[n], box: [x0 - RADIUS, y0 - RADIUS, x1 + RADIUS, y1 + RADIUS] };
+  return { xs, ys, at, n, length: at[n], box: [x0, y0, x1, y1] };
 }
 
 function pointAt(tr, dist) {
@@ -57,46 +58,134 @@ function pointAt(tr, dist) {
   return [xs[lo] + (xs[hi] - xs[lo]) * f, ys[lo] + (ys[hi] - ys[lo]) * f];
 }
 
-export function flow(canvas, pulses) {
+function channels(color, fallback) {
+  const hex = color.match(/^#([\da-f]{3}|[\da-f]{6})$/i);
+  if (hex) {
+    const value = hex[1].length === 3 ? [...hex[1]].map(c => c + c).join('') : hex[1];
+    return [0, 2, 4].map(i => parseInt(value.slice(i, i + 2), 16));
+  }
+  const rgb = color.match(/^rgba?\(\s*([\d.]+)[,\s]+([\d.]+)[,\s]+([\d.]+)/i);
+  return rgb ? rgb.slice(1, 4).map(Number) : fallback;
+}
+
+function makeSprite(glowColour, coreColour) {
+  const sprite = typeof OffscreenCanvas === 'function'
+    ? new OffscreenCanvas(SPRITE_SIZE, SPRITE_SIZE)
+    : Object.assign(document.createElement('canvas'), { width: SPRITE_SIZE, height: SPRITE_SIZE });
+  const paint = sprite.getContext('2d');
+  const [r, g, b] = channels(glowColour, [14, 112, 200]);
+  const gradient = paint.createRadialGradient(8, 8, 0, 8, 8, 8);
+  gradient.addColorStop(0, `rgba(${r}, ${g}, ${b}, .3)`);
+  gradient.addColorStop(0.35, `rgba(${r}, ${g}, ${b}, .12)`);
+  gradient.addColorStop(0.72, `rgba(${r}, ${g}, ${b}, .04)`);
+  gradient.addColorStop(1, `rgba(${r}, ${g}, ${b}, 0)`);
+  paint.fillStyle = gradient;
+  paint.fillRect(0, 0, SPRITE_SIZE, SPRITE_SIZE);
+  paint.beginPath();
+  paint.arc(8, 8, RADIUS * SPRITE_SIZE / (GLOW_RADIUS * 2), 0, Math.PI * 2);
+  const core = channels(coreColour, [90, 169, 239]).map(c => Math.round(c + (255 - c) * .45));
+  paint.fillStyle = `rgb(${core.join(', ')})`;
+  paint.fill();
+  return sprite;
+}
+
+export function flow(canvas, pulses, labels = []) {
   const ctx = canvas.getContext('2d');
-  const routes = pulses.map(u => ({ key: u.key, track: track(u.segs), delay: u.delay, state: 'rest' }));
+  const routes = pulses.map(u => ({ key: u.key, track: track(u.segs), state: 'rest' }))
+    .sort((a, b) => a.key.localeCompare(b.key));
   const byKey = new Map(routes.map(r => [r.key, r]));
   const still = window.matchMedia('(prefers-reduced-motion: reduce)');
-  const view = { x0: 0, y0: 0, x1: 0, y1: 0, k: 1 };
-  let colour = '';
+  const view = { x0: 0, y0: 0, x1: 0, y1: 0, k: 1, scale: 1 };
+  let shown = [];
+  let active = [];
+  let cursor = 0;
+  let glowColour = '';
+  let coreColour = '';
+  let sprite = null;
   let frame = 0;
   let held = 0;
   let heldFor = 0;
   let alive = true;
 
   const clock = () => ((held || performance.now()) - heldFor) / 1000;
+  let lastTime = clock();
+
+  function nextRoute(exclude = null) {
+    for (let i = 0; i < shown.length; i += 1) {
+      const route = shown[cursor % shown.length];
+      cursor = (cursor + 1) % shown.length;
+      if (!active.some(slot => slot !== exclude && slot.route === route)) return route;
+    }
+    return null;
+  }
+
+  function refreshShown() {
+    const radius = GLOW_RADIUS / view.scale;
+    shown = routes.filter(r => r.state !== 'hidden' && r.track.length > 0
+      && r.track.box[2] + radius >= view.x0 && r.track.box[0] - radius <= view.x1
+      && r.track.box[3] + radius >= view.y0 && r.track.box[1] - radius <= view.y1);
+    active = active.filter(slot => shown.includes(slot.route));
+    while (active.length < Math.min(MAX_BEADS, shown.length)) {
+      active.push({ route: nextRoute(), distance: 0,
+        speed: MIN_SPEED + Math.random() * (MAX_SPEED - MIN_SPEED), wait: pause() });
+    }
+  }
+
+  function advance() {
+    const t = clock();
+    const elapsed = Math.max(0, t - lastTime);
+    lastTime = t;
+    for (const slot of active) {
+      let remaining = elapsed;
+      while (remaining > 0) {
+        const waiting = Math.min(remaining, slot.wait);
+        slot.wait -= waiting;
+        remaining -= waiting;
+        if (!remaining) break;
+        const travel = (slot.route.track.length - slot.distance) * view.scale / slot.speed;
+        if (remaining < travel) {
+          slot.distance += remaining * slot.speed / view.scale;
+          break;
+        }
+        remaining -= travel;
+        slot.distance = 0;
+        slot.route = nextRoute(slot);
+        slot.wait = pause();
+      }
+    }
+  }
 
   function draw() {
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    advance();
     if (still.matches) return;
     ctx.setTransform(view.k, 0, 0, view.k, -view.x0 * view.k, -view.y0 * view.k);
-    if (!colour) colour = getComputedStyle(canvas).getPropertyValue('--accent').trim() || '#0e70c8';
-    ctx.fillStyle = colour;
-    const t = clock();
-    const shown = routes.filter(r => r.state !== 'hidden'
-      && r.track.box[2] >= view.x0 && r.track.box[0] <= view.x1
-      && r.track.box[3] >= view.y0 && r.track.box[1] <= view.y1);
-    for (const state of ['rest', 'dim', 'lit']) {
-      const mine = shown.filter(r => r.state === state);
-      if (!mine.length) continue;
-      for (let tier = 0; tier < 9; tier += 1) {
-        ctx.globalAlpha = ALPHA[state][tier];
-        ctx.beginPath();
-        for (const r of mine) {
-          const p = (((t - r.delay) / PERIOD) % 1 + 1) % 1;
-          const d = Math.min(r.track.length, Math.max(0, p * r.track.length - tier * SPACING));
-          const [x, y] = pointAt(r.track, d);
-          ctx.moveTo(x + RADIUS, y);
-          ctx.arc(x, y, RADIUS, 0, Math.PI * 2);
+    if (!glowColour) {
+      const style = getComputedStyle(canvas);
+      glowColour = style.getPropertyValue('--accent').trim() || '#0e70c8';
+      coreColour = style.getPropertyValue('--accent-text').trim() || '#5aa9ef';
+      sprite = makeSprite(glowColour, coreColour);
+    }
+    const radius = GLOW_RADIUS / view.scale;
+    for (const slot of active) {
+      if (slot.wait > 0) continue;
+      const r = slot.route;
+      const [x, y] = pointAt(r.track, slot.distance);
+      const covers = labels.filter(label => x + radius > label.x && x - radius < label.x + label.w
+        && y + radius > label.y && y - radius < label.y + label.h);
+      if (covers.length) {
+        ctx.save();
+        for (const label of covers) {
+          ctx.beginPath();
+          ctx.rect(view.x0, view.y0, view.x1 - view.x0, view.y1 - view.y0);
+          ctx.rect(label.x, label.y, label.w, label.h);
+          ctx.clip('evenodd');
         }
-        ctx.fill();
       }
+      ctx.globalAlpha = ALPHA[r.state];
+      ctx.drawImage(sprite, x - radius, y - radius, radius * 2, radius * 2);
+      if (covers.length) ctx.restore();
     }
     ctx.globalAlpha = 1;
   }
@@ -105,7 +194,7 @@ export function flow(canvas, pulses) {
     frame = 0;
     if (!alive) return;
     draw();
-    if (!held && !still.matches) frame = requestAnimationFrame(tick);
+    if (!held && !still.matches && shown.length) frame = requestAnimationFrame(tick);
   }
 
   function kick() {
@@ -117,18 +206,21 @@ export function flow(canvas, pulses) {
   return {
     set(key, state) {
       const r = byKey.get(key);
-      if (r && r.state !== state) { r.state = state; kick(); }
+      if (r && r.state !== state) { r.state = state; refreshShown(); kick(); }
     },
 
     // The canvas covers only the visible part of the world: sized to the world,
     // it would outgrow any GPU texture at 8x zoom.
     view(tx, ty, scale, w, h) {
+      advance();
       const dpr = window.devicePixelRatio || 1;
       view.x0 = -tx / scale;
       view.y0 = -ty / scale;
       view.x1 = view.x0 + w / scale;
       view.y1 = view.y0 + h / scale;
       view.k = scale * dpr;
+      view.scale = scale;
+      refreshShown();
       const pw = Math.max(1, Math.round(w * dpr));
       const ph = Math.max(1, Math.round(h * dpr));
       if (canvas.width !== pw) canvas.width = pw;

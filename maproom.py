@@ -5,6 +5,10 @@
                               copy it from a cartographer repository at its current commit instead
     python maproom.py data    copy the RPN Dominator Calculator baseline and runs, trim them, and
                               pre-generate the two JSON files serve.py answers dynamically
+    python maproom.py data --baseline <file>
+                              use a baseline file other than source/baselines/baseline.db
+    python maproom.py data --checkout <repo>
+                              use that cartographer checkout's serve.py to generate the JSON
 
 maproom's serve.py answers /k/<id>/index.json and /k/<id>/runs/<run>/view.json by walking the
 cartographer folder. Pages serves static files only, so `data` writes both files to those paths,
@@ -13,7 +17,8 @@ would drift from them.
 
 `data` only reads the source folder, and never reads baseline.db.new. Each run is copied without its
 trace, its view.json is computed, and then every file that neither run.db nor view.json names is
-deleted. A run folder with no run.db, or whose run has not ended, is skipped.
+deleted. Cartographer's public_export.py sanitizes the copy and validates it before publication.
+A run folder with no run.db, or whose run has not ended, is skipped.
 """
 import argparse
 import importlib.util
@@ -29,6 +34,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
 DEST = ROOT / 'maproom'
+STAGING = ROOT / '.claude' / 'maproom-staging'
 PLUGIN = Path.home() / '.claude' / 'plugins' / 'cache' / 'cartographer' / 'cartographer'
 SOURCE = Path(os.environ.get('MAPROOM_SOURCE', r'C:\Android\RPNDominatorCalculator\knowledge\cartographer'))
 SOURCE_ID = 'RPNDominatorCalculator'
@@ -42,7 +48,8 @@ PATCHES = [('js/data/sources.js', "getJson('/sources.json')", "getJson('../sourc
 # Read by nothing in the viewer; the Perfetto link needs a local trace_processor that Pages cannot run.
 SKIP_COPY = ('trace.pftrace',)
 KEEP_ALWAYS = ('run.db', 'config.json', 'logcat.txt', 'calls.jsonl',
-               'post/map.db', 'post/analysis/warnings.json', 'post/states/index.json')
+               'suite.json', 'post/map.db', 'post/analysis/warnings.json',
+               'post/a11y-audit.json', 'post/states/index.json')
 
 # The home folder in any spelling a run records it: C:\Users\x, C:\\Users\\x (JSON), C:/Users/x, /c/Users/x.
 HOME_PATH = re.compile(r'(?:[A-Za-z]:|/[a-z])(?:\\\\|\\|/)Users(?:\\\\|\\|/)[^\\/"\s]+', re.IGNORECASE)
@@ -76,11 +83,18 @@ def plugin_dir(version=None):
     return dirs[-1]
 
 
-def load_serve(plugin):
-    spec = importlib.util.spec_from_file_location('maproom_serve', plugin / 'maproom' / 'serve.py')
+def load_viewer_module(plugin, name):
+    path = plugin / 'maproom' / (name + '.py')
+    if not path.is_file():
+        sys.exit('%s is missing; use a Cartographer checkout with public-export support' % path)
+    spec = importlib.util.spec_from_file_location('maproom_' + name, path)
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
+
+
+def load_serve(plugin):
+    return load_viewer_module(plugin, 'serve')
 
 
 def checkout_viewer(repo):
@@ -192,6 +206,9 @@ def copy_run(src, dst):
 def trim_run(run_dir, run_id, view):
     db_paths, legacy = referenced_paths(run_dir / 'run.db')
     keep = set(KEEP_ALWAYS) | db_paths
+    cases = run_dir / 'cases'
+    if cases.is_dir():
+        keep.update(p.relative_to(run_dir).as_posix() for p in cases.rglob('*') if p.is_file())
     prefix = 'runs/%s/' % run_id
     for s in json_strings(view):
         keep.add(s[len(prefix):] if s.startswith(prefix) else s)
@@ -214,18 +231,32 @@ def trim_run(run_dir, run_id, view):
 
 def data(args):
     source = Path(args.source)
-    stage = DEST / 'k' / (SOURCE_ID + '.new')
+    baseline = Path(args.baseline) if args.baseline else source / 'baselines' / 'baseline.db'
+    stage = STAGING / (SOURCE_ID + '.new')
     final = DEST / 'k' / SOURCE_ID
-    viewer = None
+    viewer_doc = {}
     if (DEST / 'sources.json').is_file():
-        viewer = json.loads((DEST / 'sources.json').read_text(encoding='utf-8')).get('viewer')
-    serve = load_serve(plugin_dir(viewer))
+        viewer_doc = json.loads((DEST / 'sources.json').read_text(encoding='utf-8'))
+    viewer = viewer_doc.get('viewer')
+    if args.checkout:
+        plugin, version, commit = checkout_viewer(args.checkout)
+        if viewer and version != viewer:
+            sys.exit('viewer version %s does not match checkout version %s; run ui --checkout first'
+                     % (viewer, version))
+        expected_commit = viewer_doc.get('viewer_commit')
+        if expected_commit and expected_commit != commit:
+            sys.exit('viewer commit %s does not match checkout commit %s; run ui --checkout first'
+                     % (expected_commit, commit))
+    else:
+        plugin = plugin_dir(viewer)
+    serve = load_serve(plugin)
+    public_export = load_viewer_module(plugin, 'public_export')
 
     if stage.exists():
         sys.exit('%s exists: another data run is in progress, or one failed. Delete it once no run is going.'
                  % stage.relative_to(ROOT))
     (stage / 'baselines').mkdir(parents=True)
-    screens = copy_baseline(source / 'baselines' / 'baseline.db', stage / 'baselines' / 'baseline.db')
+    screens = copy_baseline(baseline, stage / 'baselines' / 'baseline.db')
     print('baseline.db: %d screens' % screens)
     for profile in sorted((source / 'baselines').iterdir()):
         if profile.is_dir() and (profile / 'device.json').is_file():
@@ -244,6 +275,9 @@ def data(args):
                 print('%s: scrubbed %d local paths' % (run.name, scrubbed))
             runs.append(run.name)
 
+    sanitized = public_export.sanitize_snapshot(stage)
+    print('public export: sanitized %d database values in %d files'
+          % (sanitized['redacted_values'], sanitized['changed_files']))
     views = {r: serve.run_view(stage, r) for r in runs}
     for run_id in runs:
         trimmed = trim_run(stage / 'runs' / run_id, run_id, views[run_id])
@@ -257,8 +291,12 @@ def data(args):
     write_json(stage / 'index.json', manifest)
     for run_id, view in views.items():
         write_json(stage / 'runs' / run_id / 'view.json', view)
+    public_export.sanitize_snapshot(stage)
+    validated = public_export.validate_snapshot(stage)
+    print('public export: validated %d files and %d databases'
+          % (validated['files'], validated['databases']))
 
-    old = DEST / 'k' / (SOURCE_ID + '.old')
+    old = STAGING / (SOURCE_ID + '.old')
     shutil.rmtree(old, ignore_errors=True)
     if final.exists():
         retry_rename(final, old)
@@ -288,6 +326,13 @@ def scrub_run(run_dir):
     count = 0
     for name in ('config.json', 'path-replay.json', 'logcat.txt', 'calls.jsonl'):
         path = run_dir / name
+        if path.is_file():
+            text, n = scrub(path.read_text(encoding='utf-8', errors='surrogateescape'))
+            if n:
+                path.write_text(text, encoding='utf-8', errors='surrogateescape', newline='')
+                count += n
+    for path in [run_dir / 'suite.json', run_dir / 'post' / 'a11y-audit.json',
+                 *(run_dir / 'cases').glob('*.json')]:
         if path.is_file():
             text, n = scrub(path.read_text(encoding='utf-8', errors='surrogateescape'))
             if n:
@@ -361,6 +406,8 @@ def main():
     p.add_argument('--checkout', help='copy from this cartographer repository instead, at its current commit')
     p = sub.add_parser('data', help='copy, trim and index the baseline and runs')
     p.add_argument('--source', default=str(SOURCE), help='the knowledge/cartographer folder to snapshot')
+    p.add_argument('--baseline', help='baseline database to snapshot instead of source/baselines/baseline.db')
+    p.add_argument('--checkout', help='use this cartographer checkout for serve.py, matching ui --checkout')
     args = parser.parse_args()
     sys.exit({'ui': ui, 'data': data}[args.mode](args) or 0)
 

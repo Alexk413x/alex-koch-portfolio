@@ -7,10 +7,26 @@
    Red Hat Display / Text / Mono are SIL OFL 1.1; Material Symbols Rounded is
    Apache 2.0. Licences sit beside the files in vendor/fonts/.
 
-   The icon face is SUBSET to the 23 ligatures `js/util/icons.js` names. The
-   full Material Symbols variable font is several megabytes; this is 31 KB. Add
-   an icon name there and this file must be regenerated, or the new mark
-   renders as its own name. */
+   The icon faces are subsets of the symbols in `js/util/icons.js`. Most use
+   ligatures; full-screen and info icons use direct codepoints in small subsets. */
+
+@font-face {
+  font-family: 'Material Symbols Rounded';
+  font-style: normal;
+  font-weight: 400;
+  font-display: block;
+  src: url(../vendor/fonts/material-symbols-filters.ttf?v=1) format('truetype');
+  unicode-range: U+E152;
+}
+
+@font-face {
+  font-family: 'Material Symbols Rounded';
+  font-style: normal;
+  font-weight: 400;
+  font-display: block;
+  src: url(../vendor/fonts/material-symbols-info.ttf?v=1) format('truetype');
+  unicode-range: U+E88E;
+}
 
 /* `block`, NOT `swap`. Every icon's element text IS its ligature name, so a
    swap face paints the literal words "settings" and "chevron_right" until
@@ -20,9 +36,19 @@
 @font-face {
   font-family: 'Material Symbols Rounded';
   font-style: normal;
-  font-weight: 100 700;
+  font-weight: 400;
   font-display: block;
-  src: url(../vendor/fonts/material-symbols-rounded.woff2) format('woff2');
+  src: url(../vendor/fonts/material-symbols-rounded.woff2?v=3) format('woff2');
+  unicode-range: U+0000-00FF;
+}
+
+@font-face {
+  font-family: 'Material Symbols Rounded';
+  font-style: normal;
+  font-weight: 400;
+  font-display: block;
+  src: url(../vendor/fonts/material-symbols-fullscreen.ttf?v=1) format('truetype');
+  unicode-range: U+E5D0-E5D1;
 }
 
 @font-face {

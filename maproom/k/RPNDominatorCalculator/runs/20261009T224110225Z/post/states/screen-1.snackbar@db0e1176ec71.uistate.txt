@@ -1,7 +1,0 @@
-View
-  View
-    View
-      TextView text=<volatile>
-      View clickable+focusable
-        View desc="Dismiss" clickable+focusable
-        Button clickable+focusable

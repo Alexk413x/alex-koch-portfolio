@@ -34,20 +34,40 @@ python maproom.py ui      copy the viewer from the newest installed cartographer
 python maproom.py ui --checkout <repo>
                           copy it from a cartographer repository at its current commit instead
 python maproom.py data    copy the baseline and runs, trim them, and regenerate the JSON
+python maproom.py data --baseline <file>
+                          use a baseline database from another path
+python maproom.py data --checkout <repo>
+                          generate the JSON with that checkout's serve.py
 ```
 
 - **`ui`** replaces `maproom/screens`, `css`, `js` and `vendor` with the plugin's copies, makes the viewer's
-  one absolute URL relative, and writes `maproom/sources.json` with the plugin version it copied.
+  one absolute URL relative, and writes `maproom/sources.json` with the plugin version it copied. Use
+  `ui --checkout <repo>` to copy from a Cartographer checkout instead of the installed plugin.
 - **`data`** copies `baselines/baseline.db` (never `baseline.db.new`), the capture tree and every finished
   run from `C:\Android\RPNDominatorCalculator\knowledge\cartographer`. To read another folder, pass
-  `--source <path>` or set `MAPROOM_SOURCE`. It drops each run's trace, replaces your home folder with `~`
-  in the copied run files, and generates `index.json` and each run's `view.json` with the plugin's own
-  `serve.py`, in place of its two dynamic endpoints. It then deletes every run file that neither `run.db`
-  nor `view.json` names.
+  `--source <path>` or set `MAPROOM_SOURCE`. Pass `--baseline <file>` to use a baseline database outside
+  that folder. It drops each run's trace, replaces your home folder with `~`
+  in the copied run files, and generates `index.json` and each run's `view.json` with Cartographer's own
+  `serve.py`, in place of its two dynamic endpoints. Use `data --checkout <repo>` with the same checkout
+  passed to `ui --checkout` so the generated JSON matches that viewer. The trim keeps the small suite,
+  case and accessibility-report JSON used by run-health summaries, plus files referenced by `run.db` and
+  `view.json`; it removes other run files.
+
+The data refresh requires Cartographer's `maproom/public_export.py` in the selected plugin or checkout.
+That module owns the public-export policy. The generator sanitizes the copied databases and evidence
+before generating the viewer JSON, sanitizes the generated files, and validates the snapshot before
+replacing the published folder. It removes internal implementation notes and raw execution diagnostics,
+not recorded action identifiers, parameters, screenshots, or test outcomes. The source stays unchanged.
+Raw logs become explicit omission notices. Sanitized database hashes differ from the source; generated
+run comparisons reference the published database hash.
+The public snapshot is a static report, not a connection to a running Librarian.
+Intermediate copies and swap backups stay under `.claude/maproom-staging/`, which the Pages workflow
+excludes from deployment.
 
 Both modes print the snapshot's size against GitHub's 100 MB file limit and Pages' 1 GB site limit, and exit
-1 when either is exceeded. Run `ui` before `data` after a plugin update, so the JSON comes from the same
-viewer version. Run only one `data` at a time: it refuses to start while `maproom/k/*.new` exists.
+1 when either is exceeded. After a plugin update, run `ui` before `data`. With a repository checkout, pass
+the same checkout to both commands. Run only one `data` at a time: it refuses to start while
+`.claude/maproom-staging/*.new` exists.
 
 ## Running it locally
 

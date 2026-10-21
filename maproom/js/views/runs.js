@@ -15,6 +15,7 @@
 
 import { el } from '../util/dom.js';
 import { icon } from '../util/icons.js';
+import { picker } from '../util/picker.js';
 import { href } from '../page.js';
 import { loadRun, runMinutes, videoAt, fileName, verdict, OUTCOMES } from '../data/run.js';
 
@@ -64,68 +65,9 @@ function ago(id) {
    id and the "how long ago" text together: `212` finds a time, `ff37` finds a
    hash, `d ago` finds the older ones. */
 function runPicker(runs, current, onPick) {
-  const rows = runs.map((r) => {
-    const when = r.has_db ? ago(r.id) : 'no run.db';
-    const row = el('div', {
-      class: r.id === current ? 'on' : '',
-      onclick: () => onPick(r.id),
-    }, r.id, el('span', { text: when }));
-    row.dataset.find = `${r.id} ${when}`.toLowerCase();
-    return row;
-  });
-
-  const none = el('div', { class: 'dnone', text: 'no run matches' });
-  none.hidden = true;
-  const list = el('div', { class: 'dlist' }, rows, none);
-
-  const find = el('input', {
-    class: 'dsearch',
-    type: 'search',
-    placeholder: 'find a run',
-    // A menu is not a form; Enter picking the only visible run is what makes
-    // typing three characters a complete gesture.
-    onkeydown: (ev) => {
-      if (ev.key === 'Escape') { close(); return; }
-      if (ev.key !== 'Enter') return;
-      const hit = rows.find(row => !row.hidden);
-      if (hit) hit.click();
-    },
-  });
-  find.addEventListener('input', () => {
-    const q = find.value.trim().toLowerCase();
-    let shown = 0;
-    for (const row of rows) {
-      row.hidden = Boolean(q) && !row.dataset.find.includes(q);
-      if (!row.hidden) shown += 1;
-    }
-    none.hidden = shown > 0;
-  });
-
-  const drop = el('div', { class: 'drop', 'data-scope': 'group' }, find, list);
-  drop.hidden = true;
-
-  const dd = el('div', { class: 'dd' });
-  function close() {
-    drop.hidden = true;
-    dd.className = 'dd';
-  }
-  const button = el('button', {
-    'data-tip': 'Run',
-    onclick: () => {
-      const open = drop.hidden;
-      drop.hidden = !open;
-      dd.className = open ? 'dd open' : 'dd';
-      if (!open) return;
-      // Opening starts from the whole list, not from whatever was typed last
-      // time: a menu that opens already filtered looks like it lost its runs.
-      find.value = '';
-      find.dispatchEvent(new Event('input'));
-      list.scrollTop = 0;
-      find.focus();
-    },
-  }, el('span', { class: 'k', text: 'run' }), current || 'none', icon('caret', 12));
-  dd.append(button, drop);
-  return dd;
+  return picker('run', runs.map(r => ({
+    value: r.id, label: r.id, note: r.has_db ? ago(r.id) : 'no run.db',
+  })), current, onPick, { search: 'find a run' });
 }
 
 const pad = ord => String(ord).padStart(3, '0');
@@ -467,7 +409,7 @@ function device(run) {
         flat.map((f, i) => el('td', {
           class: i && String(f[k]) !== String(first[k]) ? 'moved' : null,
           text: axisText(k, f[k]),
-        }))))), true));
+        })))))));
   }
   if (run.settingsAtOpen.length) {
     parts.push(fold('Settings found at open', run.settingsAtOpen.length, table('App settings as found at open',
@@ -525,14 +467,26 @@ function traceLink(listed, sourceUrl) {
 
 export async function renderRuns(state, wanted) {
   const stepHash = /^#step-\d+$/.test(location.hash) ? location.hash : '';
-  const runs = (state.manifest.runs || []).filter(r => r.has_db);
-  const page = el('div', { class: 'page' });
+  const runs = (state.manifest.runs || []).filter(r => r.has_db
+    || r.health?.cases?.length || r.health?.warnings?.length || r.health?.a11y?.status);
+  const page = el('div', { class: 'run-content' });
+  const out = el('div', { class: 'page' }, page);
+  const casesSection = listed => {
+    const cases = listed.health?.cases || [];
+    return el('section', { class: 'psec run-case-results' },
+      el('div', { class: 'psec-h' },
+        el('h2', { class: 'h2', text: 'Recorded test results in this run' }),
+        el('span', { class: 'cap', text: String(cases.length) })),
+      cases.length ? el('ul', {}, cases.map(c => el('li', {},
+        el('b', { text: c.case }), `: ${c.verdict}${c.reason ? ` — ${c.reason}` : ''}`)))
+        : el('p', { class: 'empty-run', text: 'No test results recorded in this run. This does not mean tests passed.' }));
+  };
 
   if (!runs.length) {
     page.append(el('div', { class: 'rhead' },
       el('div', { class: 'rhead-top' }, el('h1', { style: 'margin:0; font:700 22px/1.1 var(--display)', text: 'Runs' }))),
-      el('p', { class: 'empty-run', text: 'No run folder under runs/ holds a run.db. Nothing has driven this app yet.' }));
-    return page;
+      el('p', { class: 'empty-run', text: 'No readable run recordings or test results are available.' }));
+    return out;
   }
 
   let current = runs.some(r => r.id === wanted) ? wanted : runs[0].id;
@@ -542,6 +496,20 @@ export async function renderRuns(state, wanted) {
     // The URL carries the run, so a reload and a shared link both land here.
     history.replaceState(null, '', href('runs.html', { id }));
     page.replaceChildren(el('p', { class: 'empty-run', text: `Reading ${id}…` }));
+    const listed = runs.find(r => r.id === id);
+    if (!listed.has_db) {
+      page.replaceChildren(
+        el('div', { class: 'rhead' },
+          el('h1', { class: 'h2', text: 'Selected run' }),
+          runPicker(runs, current, show)),
+        el('p', { class: 'health-note', text: 'This folder has evidence but no run.db step recording.' }),
+        casesSection(listed),
+        el('p', {}, el('a', { href: `${state.source.url}runs/${encodeURIComponent(id)}/post/analysis/warnings.json`,
+          text: 'Recorded warnings', hidden: !listed.health?.warnings?.length })),
+        el('p', {}, el('a', { href: `${state.source.url}runs/${encodeURIComponent(id)}/post/a11y-audit.json`,
+          text: 'Accessibility audit record', hidden: !listed.health?.a11y?.status })));
+      return;
+    }
 
     let run;
     try {
@@ -573,6 +541,7 @@ export async function renderRuns(state, wanted) {
 
     page.replaceChildren(
       el('div', { class: 'rhead' },
+        el('h1', { class: 'h2', text: 'Selected run' }),
         el('div', { class: 'rhead-top' }, runPicker(runs, current, show)),
         el('div', { class: 'verdict' },
           el('b', { style: `--c: var(--${v.ink})`, text: v.text }),
@@ -598,13 +567,7 @@ export async function renderRuns(state, wanted) {
       recording(run, has),
       device(run),
 
-      el('div', { class: 'psec' },
-        el('div', { class: 'psec-h' },
-          el('span', { class: 'h2', text: 'Cases' }),
-          el('span', { class: 'cap', text: '0' })),
-        // Named rather than hidden: an empty section a reader cannot explain
-        // looks like a broken view.
-        el('p', { class: 'empty-run', text: 'Nothing has written test_case, so this run has no cases above its steps. What follows is the run itself, in the order it happened.' })),
+      casesSection(listed),
 
       lifecycleSection(run, 'Session setup', setup),
 
@@ -621,5 +584,5 @@ export async function renderRuns(state, wanted) {
   await show(current);
   const target = stepHash ? page.querySelector(stepHash) : null;
   if (target) requestAnimationFrame(() => { target.openNotes(); target.scrollIntoView({ block: 'center' }); });
-  return page;
+  return out;
 }

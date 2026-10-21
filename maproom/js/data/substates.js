@@ -50,7 +50,7 @@ function stateTag(r) {
 }
 
 const KINDS = new Set(['dialog', 'snackbar', 'toast', 'alert', 'popup', 'foreign', 'keyboard',
-  'reveal', 'setting', 'mode']);
+  'reader-menu', 'reveal', 'setting', 'mode']);
 const POPUPS = new Set(['menu', 'sheet']);
 
 export function displayKind(row, state, host) {

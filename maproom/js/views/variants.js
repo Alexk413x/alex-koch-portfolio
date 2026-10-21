@@ -1,6 +1,7 @@
 import { el } from '../util/dom.js';
 import { icon, phoneIcon } from '../util/icons.js';
 import { APPEARANCES, ORIENTATIONS, fillHint, portraitAspect, provenance } from '../data/sources.js';
+import { alignElementOverlayToImage, elementOverlay } from './elements.js';
 
 const TONE_ICON = { light: 'sun', dark: 'moon' };
 
@@ -14,17 +15,27 @@ function cellFor(cells, orientation, appearance) {
   return cells.find(c => c.orientation === orientation && c.appearance === appearance);
 }
 
-function frame(c, screen, rendition, ratio) {
+function frame(c, screen, rendition, ratio, inspection = {}, trees = new Map()) {
   const aspect = c.orientation === 'landscape' ? 1 / ratio : ratio;
   if (!c.url) {
     return el('figure', { class: `vcell none ${c.orientation}`, style: `aspect-ratio:${aspect}` },
       el('figcaption', { text: fillHint(c.appearance, c.orientation) }));
   }
+  const hasTree = Boolean(c.leaf && c.leaf.files.includes('state.raw.xml'));
+  const treeResult = c.leaf && trees.get(c.leaf.path);
+  const overlay = treeResult && treeResult.tree
+    ? elementOverlay(treeResult.tree, {
+      filter: inspection.showBoxes === false ? null : 'all',
+      interactive: false,
+      className: 'element-overlay-inline',
+    })
+    : null;
   const id = `vcap${captionIds += 1}`;
   const img = el('img', {
     src: c.url,
     alt: `${screen.id}, ${stateLabel(rendition)}, ${c.appearance} appearance, ${c.orientation}`,
   });
+  if (overlay) alignElementOverlayToImage(overlay, img);
   const figure = el('figure', { class: `vcell ${c.orientation}`, style: `aspect-ratio:${aspect}` },
     el('a', {
       href: c.url,
@@ -32,7 +43,13 @@ function frame(c, screen, rendition, ratio) {
       rel: 'noopener',
       'data-tip': provenance(c.leaf, c.appearance),
       'aria-describedby': id,
+      onclick: event => {
+        if (!hasTree || !inspection.onInspect) return;
+        event.preventDefault();
+        inspection.onInspect(c);
+      },
     }, img),
+    overlay,
     el('figcaption', { class: 'sr', id, text: provenance(c.leaf, c.appearance) }));
   img.addEventListener('load', () => {
     if (img.naturalWidth && img.naturalHeight) figure.style.aspectRatio = `${img.naturalWidth} / ${img.naturalHeight}`;
@@ -40,7 +57,8 @@ function frame(c, screen, rendition, ratio) {
   return figure;
 }
 
-export function variantGrid({ screen, rendition, cells, profile, platform, unplaced = [] }) {
+export function variantGrid({ screen, rendition, cells, profile, platform, unplaced = [],
+  inspection = {}, trees = new Map() }) {
   const ratio = portraitAspect(profile);
   const grid = el('div', {
     class: 'vgrid',
@@ -51,7 +69,7 @@ export function variantGrid({ screen, rendition, cells, profile, platform, unpla
     APPEARANCES.map(a => el('div', { class: 'vg-h' }, icon(TONE_ICON[a], 14), el('span', { class: 'cap', text: a }))),
     ORIENTATIONS.map(o => [
       el('div', { class: 'vg-r' }, icon(phoneIcon(platform), 14, '', o === 'landscape'), el('span', { class: 'cap', text: o })),
-      APPEARANCES.map(a => frame(cellFor(cells, o, a), screen, rendition, ratio)),
+      APPEARANCES.map(a => frame(cellFor(cells, o, a), screen, rendition, ratio, inspection, trees)),
     ]));
   if (!unplaced.length) return grid;
   return el('div', { class: 'vgwrap' }, grid,

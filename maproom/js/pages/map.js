@@ -9,6 +9,7 @@ const run = param('run');
 page({
   current: run ? 'runs.html' : 'map.html',
   needsModel: !run,
+  showHealth: false,
   render: async (state) => {
     if (!run) return renderMap(state);
     const loaded = await loadRunMap(state, run);

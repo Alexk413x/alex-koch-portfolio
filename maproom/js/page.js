@@ -4,12 +4,14 @@
    then the page's own content. The nav tabs exist only once a survey is open --
    on the health screen the bar is the brand and the cog and nothing else. */
 
-import { el, fill, svgEl } from './util/dom.js';
-import { icon, platformIcon } from './util/icons.js';
+import { el, fill } from './util/dom.js';
+import { icon } from './util/icons.js';
 import { armPress } from './util/press.js';
 import { armTips } from './util/tip.js';
-import { listSources, readManifest, captureIndex, platformOf } from './data/sources.js';
+import { listSources, readManifest, captureIndex } from './data/sources.js';
 import { loadBaseline, SUPPORTED_SCHEMA } from './data/baseline.js';
+import { healthContext } from './data/health-scope.js';
+import { renderHealth } from './views/health.js';
 
 /* The tabs, in the canvas's reading order.
    `perf` and `a11y` are declared because the design has them, and marked off
@@ -97,24 +99,44 @@ function bar(state, current) {
   const kids = [el('button', { class: 'brand', onclick: () => { location.href = 'index.html'; } }, 'cartographer')];
 
   if (state.source) {
-    kids.push(el('span', { class: 'appname', text: state.source.name }));
     kids.push(el('div', { class: 'tabs', 'data-scope': 'group' }, NAV.map(n => n.off
       ? el('span', { class: 'tab off', 'data-tip': n.off, text: n.label })
       : el('a', { class: `tab${n.file === current ? ' on' : ''}`, href: href(n.file), text: n.label }))));
-    kids.push(el('span', { class: 'src' }, icon(platformIcon(platformOf(state.profile)), 14), state.model ? state.model.meta.app || '' : ''));
+    const selector = el('details', { class: 'mobile-nav' },
+      el('summary', { 'aria-label': 'Choose page' },
+        NAV.find(n => n.file === current)?.label || 'map'),
+      el('nav', { 'aria-label': 'Pages' }, NAV.map(n => n.off
+        ? el('span', { 'aria-disabled': 'true', text: n.label, 'data-tip': n.off })
+        : el('a', { href: href(n.file), text: n.label,
+          ...(n.file === current ? { 'aria-current': 'page' } : {}) }))));
+    selector.addEventListener('keydown', e => {
+      if (e.key === 'Escape') {
+        selector.open = false;
+        selector.querySelector('summary').focus();
+      }
+    });
+    selector.addEventListener('focusout', e => {
+      if (!selector.contains(e.relatedTarget)) selector.open = false;
+    });
+    kids.push(selector);
   }
   kids.push(gear());
   return el('header', { class: 'bar' }, kids);
 }
 
 /* Load everything a page needs, then hand it to `render`. */
-export async function page({ current, needsBaseline = true, needsModel = true, render }) {
+export async function page({ current, needsBaseline = true, needsModel = true, showHealth = true, render }) {
   applyTheme(storedTheme());
   // Armed once on the document, capturing, so every page gets the hover wash
   // and press pulse without each view wiring its own controls.
   armPress(document);
   // The site's own tooltip, for every `data-tip` on every page.
   armTips(document);
+  document.addEventListener('pointerdown', e => {
+    for (const menu of document.querySelectorAll('.mobile-nav[open]')) {
+      if (!menu.contains(e.target)) menu.open = false;
+    }
+  });
   const root = el('div', { class: 'root' });
   const host = document.getElementById('app');
   fill(host, root);
@@ -126,7 +148,13 @@ export async function page({ current, needsBaseline = true, needsModel = true, r
      A failed draw reports itself and rethrows, so the console keeps the stack. */
   const draw = async () => {
     try {
-      show(await render(state));
+      const content = await render(state);
+      // The map owns its live summary. Other pages keep the baseline summary
+      // outside their local screen/run content, whose scope is different.
+      if (state.model && showHealth && content instanceof Element) {
+        content.prepend(renderHealth(state, healthContext(state)));
+      }
+      show(content);
     } catch (err) {
       show(message('This page failed to draw', String(err.message || err)));
       throw err;
@@ -191,5 +219,3 @@ export async function page({ current, needsBaseline = true, needsModel = true, r
 
   await draw();
 }
-
-export { svgEl };
