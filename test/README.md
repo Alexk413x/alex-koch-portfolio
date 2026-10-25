@@ -50,6 +50,9 @@ actually did.
   It compares the browser's map and run models with SQLite counts and outcomes, then opens the
   survey, coverage, screen, run-detail and run-map pages. It also checks that comparison hashes
   match the published baseline and that known internal command disclosures do not remain in file bytes.
+  Run playback checks decode published video frames, exercise play/pause and segment switching,
+  check cut-aware timing and desktop/mobile overflow, and verify byte-range responses and
+  snapshot-only access through `maproom.py serve`.
 
 ## Three things the harness does that matter
 

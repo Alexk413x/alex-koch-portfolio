@@ -604,6 +604,36 @@ export function elementMatchesFilter(node, filter) {
   return false;
 }
 
+const FILTER_ICON_PATHS = {
+  all: [
+    ['path', { d: 'M2.5 2.5h4v4h-4zM9.5 2.5h4v4h-4zM2.5 9.5h4v4h-4zM9.5 9.5h4v4h-4z' }],
+  ],
+  interactive: [
+    ['path', { d: 'M6.2 14.8 3.5 12a1.2 1.2 0 0 1 1.7-1.7l1.1 1.1V4.3a1.2 1.2 0 0 1 2.4 0v4.1-2.1a1.1 1.1 0 0 1 2.2 0v2.1-1.1a1.1 1.1 0 0 1 2.2 0v1.4-.3a1.1 1.1 0 0 1 2.2 0v2.1a4.3 4.3 0 0 1-4.3 4.3H8a2.5 2.5 0 0 1-1.8-.8z' }],
+  ],
+  state: [
+    ['circle', { cx: 8, cy: 8, r: 4.5 }],
+    ['path', { d: 'M8 1.5v2M8 12.5v2M1.5 8h2M12.5 8h2' }],
+    ['path', { d: 'M8 6.5v3M6.5 8h3' }],
+  ],
+};
+
+export function elementFilterIcon(kind) {
+  return svgEl('svg', {
+    class: 'element-filter-icon',
+    viewBox: '0 0 16 16',
+    width: 16,
+    height: 16,
+    fill: 'none',
+    stroke: 'currentColor',
+    'stroke-width': 1.4,
+    'stroke-linecap': 'round',
+    'stroke-linejoin': 'round',
+    'aria-hidden': 'true',
+    focusable: 'false',
+  }, FILTER_ICON_PATHS[kind].map(([tag, attrs]) => svgEl(tag, attrs)));
+}
+
 function treeWithInteractiveRoutes(tree, routes) {
   if (!tree) return tree;
   return {

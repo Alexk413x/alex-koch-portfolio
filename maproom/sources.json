@@ -10,5 +10,20 @@
    "has_graph": true
   }
  ],
- "viewer_commit": "22a479241653f5b7b02bf5fd145b4a7c98be5fa6"
+ "viewer_commit": "22a479241653f5b7b02bf5fd145b4a7c98be5fa6",
+ "run_details": {
+  "viewer": "0.17.0",
+  "viewer_commit": "ac0e99a28dcc5f413a42af11e6a6522428977a1f",
+  "files": [
+   "js/data/run.js",
+   "js/views/runs.js",
+   "js/views/elements.js",
+   "js/util/icons.js",
+   "js/util/picker.js",
+   "js/util/press.js",
+   "css/app.css",
+   "css/fonts.css",
+   "vendor/fonts/material-symbols-playback.ttf"
+  ]
+ }
 }

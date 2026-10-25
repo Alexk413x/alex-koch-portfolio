@@ -7,7 +7,7 @@
 
    The ink rules come from the canvas; map borders add perimeter-based timing. */
 
-const PRESS_SEL = 'button:not(.frame-close), .btn, .tab, .row, .app, .brand, .go, .rcard, .case-h, .trend, '
+const PRESS_SEL = '.run-content .rfold > summary, button:not(.frame-close), .btn, .tab, .row, .app, .brand, .go, .rcard, .case-h, .trend, '
   + '.rtbl .rn, .box:not(.open), .map-shot, .fold:not(.flat) .fold-h, .drop div, .cell, .ih-name, .search, '
   + '.toggle, .check, .keybtn, .step, .visit, .nchip, .select-surface:has(select:enabled), '
   + '.select-surface select:enabled option:not(:disabled)';
