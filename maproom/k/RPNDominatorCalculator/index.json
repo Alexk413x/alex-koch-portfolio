@@ -2820,7 +2820,12 @@
         ],
         "a11y": {},
         "cases": []
-      }
+      },
+      "orientation": "landscape",
+      "appearance": "Light",
+      "mode": "Light",
+      "locale": "",
+      "platform": "android"
     },
     {
       "id": "20261009T231621629Z",
@@ -2863,7 +2868,12 @@
         ],
         "a11y": {},
         "cases": []
-      }
+      },
+      "orientation": "landscape",
+      "appearance": "Dark",
+      "mode": "Dark",
+      "locale": "",
+      "platform": "android"
     },
     {
       "id": "20261009T225904319Z",
@@ -2888,7 +2898,12 @@
         ],
         "a11y": {},
         "cases": []
-      }
+      },
+      "orientation": "portrait",
+      "appearance": "Light",
+      "mode": "Light",
+      "locale": "",
+      "platform": "android"
     },
     {
       "id": "20261009T224110225Z",
@@ -2907,7 +2922,12 @@
         "warnings": [],
         "a11y": {},
         "cases": []
-      }
+      },
+      "orientation": "portrait",
+      "appearance": "Dark",
+      "mode": "Dark",
+      "locale": "",
+      "platform": "android"
     }
   ],
   "external_captures": {}

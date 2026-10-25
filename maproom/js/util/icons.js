@@ -1,8 +1,5 @@
-/* The icon set: Material Symbols Rounded, loaded as a variable font.
-
-   Every icon is a NAME, not a path. That is the point of the change -- a mark
-   that reads badly is swapped by editing one string here, and no icon in this
-   app is ever hand-drawn again.
+/* The icon set: Material Symbols Rounded, loaded as a variable font, with SVG
+   fallbacks for the playback skip controls the local font subset does not contain.
 
    One fixed set of axes, applied in `.msym` in app.css and never varied per
    call: Rounded to match the round caps the rest of the design uses, FILL 0 for
@@ -19,6 +16,10 @@ const NAMES = {
   close: 'close',
   contract: 'fullscreen_exit',
   expand: 'fullscreen',
+  play: 'play_arrow',
+  pause: 'pause',
+  mute: 'volume_off',
+  volume: 'volume_up',
   plus: 'add',
   minus: 'remove',
   chevron: 'chevron_right',
@@ -48,6 +49,7 @@ const NAMES = {
   'phone-android': 'phone_android',
   'phone-ios': 'phone_iphone',
   'phone-web': 'computer',
+  language: 'language',
 
   // The five driving modes, from `data/modes.js`. Material has no three-way
   // TalkBack distinction either, so the trio differs by how TalkBack is being
@@ -61,6 +63,11 @@ const NAMES = {
   'tb-touch': 'touch_double',
   'tb-gesture': 'swipe_right',
   'tb-keyboard': 'keyboard_alt',
+};
+
+const PLAYER_SVGS = {
+  'skip-previous': '<path d="M7 6v12"/><path d="M18 6v12l-9-6z"/>',
+  'skip-next': '<path d="M17 6v12"/><path d="M6 6v12l9-6z"/>',
 };
 
 /* The three platform brands, which Material deliberately does not carry:
@@ -81,6 +88,7 @@ const BRANDS = {
    options are self-evident. A mode filter is the exception the tooltip exists for. */
 export function icon(name, size = 16, title = '', rot = false) {
   if (BRANDS[name]) return brandIcon(name, size, title, rot);
+  if (PLAYER_SVGS[name]) return playerIcon(name, size, title, rot);
   const glyph = NAMES[name];
   if (!glyph) throw new Error(`no icon named ${name}`);
   const node = document.createElement('span');
@@ -90,10 +98,29 @@ export function icon(name, size = 16, title = '', rot = false) {
   // Small supplemental subsets use direct codepoints instead of ligatures.
   node.textContent = directGlyph ? String.fromCodePoint(directGlyph) : glyph;
   if (directGlyph) node.setAttribute('data-icon', glyph);
+  if (['play', 'pause', 'mute', 'volume'].includes(name))
+    node.style.fontFamily = '"Material Symbols Playback"';
   node.style.fontSize = `${size}px`;
   node.setAttribute('aria-hidden', 'true');
   if (title) node.setAttribute('data-tip', title);
   return node;
+}
+
+function playerIcon(name, size, title, rot) {
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('width', String(size));
+  svg.setAttribute('height', String(size));
+  svg.setAttribute('viewBox', '0 0 24 24');
+  svg.setAttribute('fill', 'none');
+  svg.setAttribute('stroke', 'currentColor');
+  svg.setAttribute('stroke-width', '2');
+  svg.setAttribute('stroke-linecap', 'round');
+  svg.setAttribute('stroke-linejoin', 'round');
+  svg.setAttribute('aria-hidden', 'true');
+  svg.setAttribute('class', rot ? 'player-icon rot' : 'player-icon');
+  svg.innerHTML = PLAYER_SVGS[name];
+  if (title) svg.setAttribute('data-tip', title);
+  return svg;
 }
 
 /* A brand mark as SVG, matching what `icon` returns for every other name.

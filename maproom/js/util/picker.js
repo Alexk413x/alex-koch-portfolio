@@ -17,16 +17,19 @@ export function picker(label, options, current, onPick, { search = '' } = {}) {
     if (restoreFocus) button.focus();
   }
   const rows = options.map(option => {
+    const noteText = typeof option.note === 'string' ? option.note : option.note?.textContent || '';
     const row = el('button', {
       type: 'button', role: 'option', class: `picker-option${option.value === current ? ' on' : ''}`,
       'aria-selected': String(option.value === current),
+      'aria-label': option.ariaLabel,
       tabindex: -1,
       onclick: () => {
         close(true);
         onPick(option.value);
       },
-    }, option.label, option.note ? el('span', { text: option.note }) : null);
-    row.dataset.find = `${option.label} ${option.note || ''}`.toLowerCase();
+    }, el('span', { class: 'picker-option-label', text: option.label }),
+    option.note ? el('span', { class: 'picker-option-note' }, option.note) : null);
+    row.dataset.find = `${option.label} ${noteText} ${option.searchText || ''}`.toLowerCase();
     return row;
   });
   const none = el('div', { class: 'dnone', role: 'status', text: `No ${label} matches` });

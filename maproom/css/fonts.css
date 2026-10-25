@@ -52,6 +52,15 @@
 }
 
 @font-face {
+  font-family: 'Material Symbols Playback';
+  font-style: normal;
+  font-weight: 400;
+  font-display: block;
+  src: url(../vendor/fonts/material-symbols-playback.ttf?v=1) format('truetype');
+  unicode-range: U+0000-00FF;
+}
+
+@font-face {
   font-family: 'Red Hat Display';
   font-style: normal;
   font-weight: 500 700;

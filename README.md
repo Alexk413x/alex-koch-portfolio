@@ -26,13 +26,16 @@ host, the page shell, persistence, the frame loop and the units.
 ## The Cartographer map
 
 [`maproom/`](maproom/screens/index.html) is a static snapshot of cartographer's maproom viewer, loaded with
-the RPN Dominator Calculator baseline and its runs. The Cartographer demo page links to it. Do not edit it by
+the RPN Dominator Calculator baseline and its runs. The Cartographer demo page links to the map.
+The viewer's Runs navigation opens the recorded run player. Do not edit the snapshot by
 hand: `maproom.py` writes all of it, in two modes.
 
 ```
 python maproom.py ui      copy the viewer from the newest installed cartographer plugin
 python maproom.py ui --checkout <repo>
                           copy it from a cartographer repository at its current commit instead
+python maproom.py ui --checkout <repo> --run-details
+                          copy PR #94's run player, details and required shared assets
 python maproom.py data    copy the baseline and runs, trim them, and regenerate the JSON
 python maproom.py data --baseline <file>
                           use a baseline database from another path
@@ -43,6 +46,13 @@ python maproom.py data --checkout <repo>
 - **`ui`** replaces `maproom/screens`, `css`, `js` and `vendor` with the plugin's copies, makes the viewer's
   one absolute URL relative, and writes `maproom/sources.json` with the plugin version it copied. Use
   `ui --checkout <repo>` to copy from a Cartographer checkout instead of the installed plugin.
+  For the run surface only, pass `--run-details`. This reads committed files from Cartographer
+  PR #94's merge, `ac0e99a28dcc5f413a42af11e6a6522428977a1f`, regardless of the checkout's
+  current branch. It copies the run model and view, capture-inspector helper, shared stylesheet,
+  picker and press helpers, and playback icons and font. It keeps the survey pages and all
+  published data unchanged. `sources.json` records the focused refresh under `run_details`,
+  separate from the viewer provenance used for data exports. A full `ui` refresh replaces
+  that marker and the focused files with the selected viewer.
 - **`data`** copies `baselines/baseline.db` (never `baseline.db.new`), the capture tree and every finished
   run from `C:\Android\RPNDominatorCalculator\knowledge\cartographer`. To read another folder, pass
   `--source <path>` or set `MAPROOM_SOURCE`. Pass `--baseline <file>` to use a baseline database outside
@@ -61,6 +71,9 @@ not recorded action identifiers, parameters, screenshots, or test outcomes. The 
 Raw logs become explicit omission notices. Sanitized database hashes differ from the source; generated
 run comparisons reference the published database hash.
 The public snapshot is a static report, not a connection to a running Librarian.
+The run player reads the published MP4 files and their timing rows in `run.db`. It supports
+play/pause, seeking across kept segments, step selection, rotation, mute and fullscreen.
+The focused refresh does not publish additional recordings or change the sanitization policy.
 Intermediate copies and swap backups stay under `.claude/maproom-staging/`, which the Pages workflow
 excludes from deployment.
 
@@ -78,6 +91,13 @@ python -m http.server 8000
 ```
 
 Then open http://localhost:8000/ and pick a page.
+
+For Maproom video seeking, use `python maproom.py serve` and open
+http://127.0.0.1:8742/screens/index.html. This loopback-only preview serves files inside the
+published `maproom/` snapshot, refuses directory listings and paths outside it, and supports
+MP4 byte-range requests. It does not read the original knowledge folder or run Cartographer
+services. The standard Python server above can play video but does not support byte-range
+seeking. GitHub Pages serves the static video files without a Python service.
 
 ## License
 

@@ -58,8 +58,14 @@ async function builtWarnings(base) {
 export async function loadRun(baseUrl, runId, { built = true } = {}) {
   const base = `${baseUrl}runs/${runId}/`;
   const analysis = built ? builtWarnings(base) : Promise.resolve(null);
-  const db = await openDatabase(`${base}run.db`);
-  const warnings = await analysis;
+  const configRequest = fetch(`${base}config.json`, { cache: 'no-cache' }).then(async res => {
+    if (res.status === 404) return {};
+    if (!res.ok) throw new Error(`Could not read ${runId}/config.json: HTTP ${res.status}`);
+    return res.json();
+  });
+  const [db, warnings, config] = await Promise.all([
+    openDatabase(`${base}run.db`), analysis, configRequest,
+  ]);
   try {
     const present = tableNames(db);
     if (!present.has('run') || !present.has('step')) {
@@ -114,6 +120,23 @@ export async function loadRun(baseUrl, runId, { built = true } = {}) {
     for (const s of steps) counts[s.outcome] = (counts[s.outcome] || 0) + 1;
     const first = steps.find(s => s.ord === 0);
 
+    const videos = readTable(db, present, 'video', 'ord')
+      .map(v => ({ ...v, url: v.path ? base + v.path : null, cuts: parseJson(v.cuts) || [] }));
+    const rotationValue = config.axes?.rotation;
+    const rotation = Number(rotationValue);
+    const firstDriven = steps.find(s => !s.lifecycle && Number.isFinite(s.started_at));
+    const firstVideo = videos.find(v => firstDriven
+      && firstDriven.started_at <= v.ended_at
+      && (Number.isFinite(firstDriven.ended_at)
+        ? firstDriven.ended_at >= v.started_at
+        : firstDriven.started_at >= v.started_at));
+    const targetOrientation = ['portrait', 'landscape'].includes(rotationValue)
+      ? rotationValue
+      : Number.isInteger(rotation)
+        ? (Math.abs(rotation) % 2 ? 'landscape' : 'portrait')
+      : (firstVideo ? (Number(firstVideo.width) >= Number(firstVideo.height) ? 'landscape' : 'portrait') : null);
+    const targetRotation = Number.isInteger(rotation) ? ((rotation % 4) + 4) % 4 : null;
+
     return {
       id: runId,
       base,
@@ -131,11 +154,13 @@ export async function loadRun(baseUrl, runId, { built = true } = {}) {
       warnings: warnings || steps.flatMap(s => s.warningList),
       steps,
       counts,
+      config,
+      targetOrientation,
+      targetRotation,
       snapshots,
       settingsAtOpen: byStep(readTable(db, present, 'setting_at_open')),
       controlNotes: byStep(readTable(db, present, 'control_note')),
-      videos: readTable(db, present, 'video', 'ord')
-        .map(v => ({ ...v, url: v.path ? base + v.path : null, cuts: parseJson(v.cuts) || [] })),
+      videos,
       // An old run keeps the device as found at ordinal zero with no step row.
       found: paired ? (first && first.screenshot) : `${base}screens/0000.png`,
     };
@@ -181,7 +206,7 @@ export function videoAt(run, step) {
   const at = step.started_at;
   if (!at) return null;
   for (const v of run.videos) {
-    if (v.started_at == null || v.ended_at == null || at < v.started_at || at > v.ended_at) continue;
+    if (v.started_at == null || v.ended_at == null || at < v.started_at || at >= v.ended_at) continue;
     let skipped = 0;
     let inGap = false;
     for (const cut of [...v.cuts].sort((a, b) => (a.at || 0) - (b.at || 0))) {
@@ -190,7 +215,7 @@ export function videoAt(run, step) {
       if (at >= cut.at) skipped += cut.gap_s;
       else { inGap = true; skipped += at - (cut.at - cut.gap_s); }
     }
-    return { url: v.url, offset: at - v.started_at - skipped, inGap };
+    return { url: v.url, offset: at - v.started_at - skipped, inGap, video: v };
   }
   return null;
 }
@@ -199,6 +224,50 @@ function videoOffset(run, step) {
   const first = run.steps.length ? run.steps[0].started_at : 0;
   if (!first || !step.started_at) return 0;
   return Math.max(0, step.started_at - first + 1);
+}
+
+export function offsetAt(video, at) {
+  if (!video || !Number.isFinite(at) || !Number.isFinite(video.started_at)) return null;
+  let skipped = 0;
+  for (const cut of [...(video.cuts || [])].sort((a, b) => (a.at || 0) - (b.at || 0))) {
+    if (cut.at == null || cut.gap_s == null) continue;
+    if (at >= cut.at) skipped += cut.gap_s;
+    else if (at > cut.at - cut.gap_s) skipped += at - (cut.at - cut.gap_s);
+    else break;
+  }
+  return Math.max(0, at - video.started_at - skipped);
+}
+
+/* Every kept video segment, positioned on the run's recorded timestamps. */
+export function runVideoSegments(run) {
+  const steps = run.steps.filter(s => Number.isFinite(s.started_at) && Number.isFinite(s.ended_at));
+  if (!steps.length) return [];
+  const firstAt = Math.min(...steps.map(s => s.started_at));
+  const startAt = run.startedAt || firstAt;
+  const endAt = run.endedAt || Math.max(...steps.map(s => s.ended_at));
+  if (!run.videos?.length) {
+    return [{
+      url: `${run.base}video.mp4`, source: 'video.mp4',
+      startAt, endAt, started_at: startAt, ended_at: endAt,
+      startOffset: 0, endOffset: Math.max(0, endAt - startAt),
+      width: 0, height: 0, cuts: [],
+    }];
+  }
+  return run.videos
+    .filter(v => v.url && Number.isFinite(v.started_at) && Number.isFinite(v.ended_at)
+      && v.ended_at >= startAt && v.started_at <= endAt)
+    .map(v => {
+      const from = Math.max(startAt, v.started_at);
+      const to = Math.min(endAt, v.ended_at);
+      return {
+        ...v,
+        startAt: from,
+        endAt: to,
+        startOffset: offsetAt(v, from),
+        endOffset: offsetAt(v, to),
+      };
+    })
+    .filter(v => v.endAt >= v.startAt);
 }
 
 export function fileName(url) {
