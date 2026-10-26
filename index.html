@@ -1295,7 +1295,7 @@ html.css-pending body{visibility:hidden}
 <!-- THE BOOKING DIALOG. Cal.com's booker is mounted inside .book-frame by book.js on the first open, not at
      load: the embed script stays off the page until someone asks for the calendar. The plain link in the
      failure text is the no-JS route. -->
-<div id="cal-dialog" class="book-dialog" data-provider="cal" role="dialog" aria-modal="true" aria-labelledby="cal-title" hidden>
+<div id="cal-dialog" class="book-dialog" data-provider="cal" data-link="calendar" role="dialog" aria-modal="true" aria-labelledby="cal-title" hidden>
   <div class="book-panel" tabindex="-1">
     <!-- A thin strip above the scroller, so the close mark never leaves the top. -->
     <div class="book-head">
@@ -1312,6 +1312,10 @@ html.css-pending body{visibility:hidden}
         <div class="kit-ring" aria-hidden="true"><svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="56" fill="none" stroke="rgba(255,180,84,.13)" stroke-width="1"/><circle cx="60" cy="60" r="52" fill="none" stroke="rgba(255,180,84,.15)" stroke-width="2.5"/><circle cx="60" cy="60" r="33" fill="none" stroke="rgba(255,180,84,.17)" stroke-width="1" stroke-dasharray="1 14"/></svg><svg class="kr-dash" viewBox="0 0 120 120"><circle cx="60" cy="60" r="46" fill="none" stroke-width="1.5" stroke="var(--panel-accent, #ffb454)" stroke-dasharray="2 11" opacity=".55"/></svg><svg class="kr-hair" viewBox="0 0 120 120"><circle cx="60" cy="60" r="41" fill="none" stroke-width="1" stroke="rgba(255,217,160,.24)" stroke-dasharray="1 8"/></svg><svg class="kr-arc" viewBox="0 0 120 120"><circle cx="60" cy="60" r="52" fill="none" stroke-width="2.5" stroke="var(--panel-accent, #ffb454)" stroke-linecap="round" stroke-dasharray="70 257" transform="rotate(-90 60 60)"/></svg></div><div class="kit-load-name">CONNECTION TIME!</div><div class="kit-load-stage">Loading Cal.com</div>
       </div>
     </div>
+    </div>
+    <!-- Out here, not in the booker: its confirmation screen is Cal.com's page in a cross-origin frame. -->
+    <div class="book-foot" hidden>
+      <button class="book-done" type="button">CONTINUE TO THE SITE</button>
     </div>
     <p class="book-failed">Cal.com did not load.
       <a href="https://cal.com/alexk413x/connect" target="_blank" rel="noopener">Open the calendar in a new tab &#8599;</a></p>

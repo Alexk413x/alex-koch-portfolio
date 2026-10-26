@@ -104,6 +104,8 @@
           if (iframe) api.fit(iframe.getBoundingClientRect().height);
           api.drawn();
         }, 400) });
+        // V2 is the current name; the first is deprecated but still sent by older embed builds.
+        ['bookingSuccessfulV2', 'bookingSuccessful'].forEach((action) => Cal('on', { action, callback: api.booked }));
         Cal('inline', { elementOrSelector: frame, calLink: this.calLink, config: { layout: 'month_view', theme: 'dark' } });
       },
     },
@@ -114,6 +116,9 @@
     const scroll = dlg.querySelector('.book-scroll');
     const frame = dlg.querySelector('.book-frame');
     const closeBtn = dlg.querySelector('.book-close');
+    const foot = dlg.querySelector('.book-foot');
+    const doneBtn = dlg.querySelector('.book-done');
+    const link = dlg.getAttribute('data-link');
     const openBtns = document.querySelectorAll('[data-open="' + dlg.id + '"]');
 
     let lastFocus = null;
@@ -133,6 +138,8 @@
         ring.addEventListener('transitionend', drop, { once: true });
         setTimeout(drop, 900);
       },
+      // Not focused: focus stays on the confirmation the visitor is reading, and Tab reaches the button.
+      booked() { if (foot) foot.hidden = false; },
     };
 
     // The scheduler is mounted once and kept: an iframe restarts its flow from the top if it is remade, so
@@ -153,6 +160,7 @@
     }
 
     function open() {
+      if (!dlg.hidden) return;
       lastFocus = document.activeElement;
       dlg.hidden = false;
       document.documentElement.classList.add('dialog-open');
@@ -165,6 +173,10 @@
       dlg.hidden = true;
       document.documentElement.classList.remove('dialog-open');
       document.removeEventListener('keydown', onKey);
+      // Left in the address, the link would reopen the calendar on the next refresh.
+      if (link && location.hash === '#' + link && history.replaceState) {
+        history.replaceState(null, '', location.pathname + location.search);
+      }
       if (lastFocus && lastFocus.focus) lastFocus.focus();
     }
 
@@ -190,8 +202,17 @@
 
     openBtns.forEach((btn) => btn.addEventListener('click', open));
     closeBtn.addEventListener('click', close);
+    if (doneBtn) doneBtn.addEventListener('click', close);
     // The backdrop closes; the panel does not, since the scheduler inside it is what a click there is for.
     dlg.addEventListener('click', (e) => { if (e.target === dlg) close(); });
+
+    // The shareable address, e.g. alexk413x.com/#calendar. Any hash already skips the intro (index.html's
+    // head script), so the calendar is the first thing a visitor from the link sees.
+    if (link) {
+      const fromHash = () => { if (location.hash === '#' + link) open(); };
+      addEventListener('hashchange', fromHash);
+      fromHash();
+    }
   }
 
   document.querySelectorAll('.book-dialog[data-provider]').forEach((dlg) => {
