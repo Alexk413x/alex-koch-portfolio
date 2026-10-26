@@ -68,3 +68,24 @@ def run(page, r):
     page.js("document.getElementById('cal-dialog').click();1")
     time.sleep(0.1)
     r.ok('the backdrop closes it', page.js("document.getElementById('cal-dialog').hidden"))
+
+    # The shareable link. A query that differs makes this a fresh load rather than a same-document hash change,
+    # and a shared link usually carries one.
+    page.goto('index.html?utm_source=test#calendar')
+    time.sleep(0.2)
+    r.ok('#calendar opens the dialog on load', page.js("!document.getElementById('cal-dialog').hidden"))
+    r.ok('with no intro over it', not page.js("document.documentElement.classList.contains('intro-live')"))
+    r.ok('the continue button waits for a booking', page.js("document.querySelector('#cal-dialog .book-foot').hidden"))
+
+    # A real booking cannot be made from a test; the button is revealed as booked() reveals it.
+    page.js("document.querySelector('#cal-dialog .book-foot').hidden=false;"
+            "document.querySelector('#cal-dialog .book-done').click();1")
+    time.sleep(0.1)
+    r.ok('continue closes the dialog', page.js("document.getElementById('cal-dialog').hidden"))
+    r.check('and takes #calendar out of the address', page.js('location.hash'), '')
+    r.check('keeping the rest of it', page.js('location.search'), '?utm_source=test')
+
+    page.js("location.hash='calendar';1")
+    time.sleep(0.2)
+    r.ok('a hash change to #calendar opens it too', page.js("!document.getElementById('cal-dialog').hidden"))
+    page.js("document.querySelector('#cal-dialog .book-close').click();1")
